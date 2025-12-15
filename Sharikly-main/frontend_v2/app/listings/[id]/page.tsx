@@ -313,7 +313,7 @@ export default function ListingDetail() {
             <Card className="overflow-hidden">
               <div className="flex gap-4 p-4">
                 <div className="flex flex-col gap-2 overflow-y-auto max-h-[500px]">
-                  {images.map((url, idx) => (
+                  {images.map((url: string, idx: number) => (
                     <button
                       key={idx}
                       onClick={() => {
