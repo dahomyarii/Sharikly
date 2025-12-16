@@ -19,6 +19,7 @@ export default function HomePage() {
   const [token, setToken] = useState<string>('')
   const [tokenLoaded, setTokenLoaded] = useState(false)
   const [favorites, setFavorites] = useState<Set<number>>(new Set())
+  const [categories, setCategories] = useState<any[]>([])
 
   // Initialize token from localStorage
   useEffect(() => {
@@ -148,20 +149,53 @@ export default function HomePage() {
   const handleMouseEnter = () => setIsAutoScrolling(false)
   const handleMouseLeave = () => setIsAutoScrolling(true)
 
-  const categories = [
-    { id: 1, name: "Weddings", icon: Sparkles, color: "from-pink-500 to-rose-500" },
-    { id: 2, name: "Corporate", icon: Briefcase, color: "from-blue-500 to-cyan-500" },
-    { id: 3, name: "Music & Insturments", icon: Music, color: "from-purple-500 to-violet-500" },
-    { id: 4, name: "Photography", icon: Camera, color: "from-orange-500 to-amber-500" },
-    { id: 5, name: "Catering", icon: Utensils, color: "from-green-500 to-emerald-500" },
-    { id: 6, name: "Audio & Mic", icon: Mic, color: "from-red-500 to-pink-500" },
-  ]
+  // Fetch categories from the backend
+  useEffect(() => {
+    axios
+      .get(`${API}/categories/`)
+      .then(res => setCategories(res.data))
+      .catch(err => console.error('Failed to fetch categories:', err))
+  }, [])
+
+  // Map category names to icons and colors for display
+  const getCategoryIcon = (categoryName: string) => {
+    const iconMap: { [key: string]: { icon: any; color: string } } = {
+      'Weddings': { icon: Sparkles, color: 'from-pink-500 to-rose-500' },
+      'Corporate': { icon: Briefcase, color: 'from-blue-500 to-cyan-500' },
+      'Music': { icon: Music, color: 'from-purple-500 to-violet-500' },
+      'Photography': { icon: Camera, color: 'from-orange-500 to-amber-500' },
+      'Catering': { icon: Utensils, color: 'from-green-500 to-emerald-500' },
+      'Audio': { icon: Mic, color: 'from-red-500 to-pink-500' },
+    }
+    
+    // Try exact match first, then partial match
+    if (iconMap[categoryName]) return iconMap[categoryName]
+    
+    for (const [key, value] of Object.entries(iconMap)) {
+      if (categoryName.includes(key) || key.includes(categoryName)) {
+        return value
+      }
+    }
+    
+    // Default icon
+    return { icon: Sparkles, color: 'from-blue-500 to-cyan-500' }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header / Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400 text-white py-16 md:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section 
+        className="relative text-white py-16 md:py-20 bg-cover bg-center"
+        style={{
+          backgroundImage: 'url(/image.jpeg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/40"></div>
+        
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <Badge className="bg-white/20 text-white border-0 mb-4 backdrop-blur-sm">
             <TrendingUp className="h-3 w-3 mr-1" />
             Browse Listings
@@ -187,11 +221,11 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {categories.map(cat => {
-                const Icon = cat.icon
+                const { icon: IconComponent, color } = getCategoryIcon(cat.name)
                 return (
                   <Link key={cat.id} href="#" className="flex flex-col items-center p-4 rounded-lg shadow-sm bg-white hover:shadow-md transition">
-                    <div className={`p-3 rounded-full bg-gradient-to-br ${cat.color} mb-2`}>
-                      <Icon className="h-6 w-6 text-white" />
+                    <div className={`p-3 rounded-full bg-gradient-to-br ${color} mb-2`}>
+                      <IconComponent className="h-6 w-6 text-white" />
                     </div>
                     <span className="text-sm font-medium text-gray-700">{cat.name}</span>
                   </Link>
@@ -223,7 +257,7 @@ export default function HomePage() {
                   </div>
                   <div className="p-8 md:p-10 flex flex-col justify-between bg-gradient-to-br from-white to-blue-50">
                     <div>
-                      <Badge variant="secondary" className="mb-4">{featuredService.category || "Listing"}</Badge>
+                      <Badge variant="secondary" className="mb-4">{featuredService.category?.name || "Listing"}</Badge>
                       <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">{featuredService.title}</h3>
                       <p className="text-gray-600 mb-6 text-lg">{featuredService.description}</p>
                     </div>
@@ -268,7 +302,7 @@ export default function HomePage() {
                   </Button>
                 </div>
                 <div className="p-5">
-                  <Badge variant="secondary" className="mb-3 text-xs">{service.category || "Listing"}</Badge>
+                  <Badge variant="secondary" className="mb-3 text-xs">{service.category?.name || "Listing"}</Badge>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">{service.title}</h3>
                   <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold text-gray-800">${service.price_per_day}</span>
@@ -311,7 +345,7 @@ export default function HomePage() {
                   </Button>
                 </div>
                 <div className="p-4">
-                  <Badge variant="secondary" className="mb-2 text-xs">{service.category || "Listing"}</Badge>
+                  <Badge variant="secondary" className="mb-2 text-xs">{service.category?.name || "Listing"}</Badge>
                   <h3 className="text-base font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">{service.title}</h3>
                   <div className="flex items-center justify-between">
                     <span className="text-xl font-bold text-gray-800">${service.price_per_day}</span>

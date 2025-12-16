@@ -19,7 +19,8 @@ urlpatterns = [
     path('chat/messages/', views.SendMessageView.as_view(), name='chat_messages'),
     path('chat/messages/<int:room_id>/', views.MessageListView.as_view(), name='chat_messages_list'),
 
-    # ListingsListingListCreateView
+    # Listings & Categories
+    path('categories/', views.CategoryListView.as_view(), name='categories'),
     path('listings/', views.ListingListCreateView.as_view(), name='listings'),
     path('listings/<int:pk>/', views.ListingRetrieveUpdateView.as_view(), name='listing_detail'),
 

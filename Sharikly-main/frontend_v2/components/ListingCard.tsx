@@ -108,10 +108,15 @@ export default function ListingCard({ listing }: { listing: any }) {
         </button>
       </div>
       <div className="p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold">{listing.title}</h3>
           <span className="text-sm">${listing.price_per_day}</span>
         </div>
+        {listing.category && (
+          <div className="mb-2 inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+            {listing.category.name}
+          </div>
+        )}
         <div className="text-sm text-gray-500">{listing.city || '—'}</div>
       </div>
     </Link>

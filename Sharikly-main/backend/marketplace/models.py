@@ -19,16 +19,32 @@ class User(AbstractUser):
 
 
 # ==========================
+# CATEGORY
+# ==========================
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    icon = models.CharField(max_length=50, blank=True, null=True)  # For storing icon name or emoji
+
+    class Meta:
+        verbose_name_plural = "Categories"
+
+    def __str__(self):
+        return self.name
+
+
+# ==========================
 # LISTINGS
 # ==========================
 class Listing(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='listings')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='listings')
     title = models.CharField(max_length=200)
     description = models.TextField()
     price_per_day = models.DecimalField(max_digits=8, decimal_places=2)
     city = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return self.title
 
@@ -111,12 +127,6 @@ class Favorite(models.Model):
     def __str__(self):
         return f"{self.user.email} {self.listing.title}"
 
-class category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
 
 # ==========================
 # REVIEWS (Rating + Comments)

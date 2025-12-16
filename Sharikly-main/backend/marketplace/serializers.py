@@ -24,6 +24,15 @@ class ListingImageSerializer(serializers.ModelSerializer):
 
 
 # ==========================
+# CATEGORY SERIALIZER
+# ==========================
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'description', 'icon']
+
+
+# ==========================
 # REVIEW SERIALIZER (rating + comment)
 # ==========================
 class ReviewSerializer(serializers.ModelSerializer):
@@ -34,11 +43,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ['id', 'user', 'listing', 'rating', 'comment', 'created_at']
 
+
 # ==========================
 # LISTING SERIALIZER (MAIN)
 # ==========================
 class ListingSerializer(serializers.ModelSerializer):
     owner = UserSerializer(read_only=True)
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.IntegerField(write_only=True, required=False)
     images = ListingImageSerializer(many=True, read_only=True)
 
     # ⭐ Extra fields
@@ -52,6 +64,7 @@ class ListingSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'owner', 'title', 'description',
             'price_per_day', 'city', 'created_at',
+            'category', 'category_id',
             'images',            
             # ⭐ NEW:
             'average_rating',
@@ -60,15 +73,25 @@ class ListingSerializer(serializers.ModelSerializer):
             'favorites_count'
         ]
 
+    def create(self, validated_data):
+        category_id = validated_data.pop('category_id', None)
+        listing = Listing.objects.create(**validated_data)
+        if category_id:
+            try:
+                category = Category.objects.get(id=category_id)
+                listing.category = category
+                listing.save()
+            except Category.DoesNotExist:
+                pass
+        return listing
+
     def get_is_favorited(self, obj):
         """Check if the current authenticated user has favorited this listing"""
         request = self.context.get("request")
-        print(request)
         if not request:
             return False
         
         user = request.user
-        print(user)
         if not user or not user.is_authenticated:
             return False
         
@@ -162,12 +185,6 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 #        fields = ['id', 'listing', 'user', 'user_name', 'user_avatar', 'rating', 'comment', 'created_at']
 #        read_only_fields = ['user', 'created_at', 'user_name', 'user_avatar']
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = category
-        fields = ['id', 'name']
-
-        
 
 # ==========================
 # HELPFUL / NOT HELPFUL SERIALIZER

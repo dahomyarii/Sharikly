@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import User, Listing, Booking, ListingImage, category
+from .models import User, Listing, Booking, ListingImage, Category
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -21,7 +21,7 @@ class BookingAdmin(admin.ModelAdmin):
     list_display = ('listing', 'renter', 'start_date', 'end_date', 'status')
     list_filter = ('status',)
 
-@admin.register(category)
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
     search_fields = ('name',)

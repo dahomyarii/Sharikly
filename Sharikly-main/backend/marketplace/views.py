@@ -103,6 +103,13 @@ class BookingListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
 
+# --- Category Views ---
+class CategoryListView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
+
+
 # --- Chat Views ---
 class ChatRoomListCreateView(generics.ListCreateAPIView):
     serializer_class = ChatRoomSerializer
@@ -179,11 +186,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
-class categoryListView(generics.ListAPIView):
-    queryset = category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [permissions.AllowAny()]
 
 class SubmitReviewView(generics.CreateAPIView):
     serializer_class = ReviewSerializer

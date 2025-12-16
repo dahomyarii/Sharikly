@@ -1,9 +1,16 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
+
+interface Category {
+  id: number
+  name: string
+  description: string
+  icon: string | null
+}
 
 export default function NewListing() {
   const [title, setTitle] = useState('')
@@ -11,8 +18,18 @@ export default function NewListing() {
   const [city, setCity] = useState('')
   const [description, setDescription] = useState('')
   const [image, setImage] = useState<File | null>(null)
+  const [categoryId, setCategoryId] = useState<string>('')
+  const [categories, setCategories] = useState<Category[]>([])
   const [msg, setMsg] = useState('')
   const router = useRouter()
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    axios
+      .get(`${API}/categories/`)
+      .then(res => setCategories(res.data))
+      .catch(err => console.error('Failed to fetch categories:', err))
+  }, [])
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -38,6 +55,9 @@ const token =
       formData.append('description', description)
       formData.append('price_per_day', price)
       formData.append('city', city)
+      if (categoryId) {
+        formData.append('category_id', categoryId)
+      }
       formData.append('images', image)
       
       await axios.post(`${API}/listings/`, formData, {
@@ -87,6 +107,18 @@ const token =
             onChange={e => setCity(e.target.value)}
           />
         </div>
+        <select
+          className="w-full border rounded-xl px-4 py-3"
+          value={categoryId}
+          onChange={e => setCategoryId(e.target.value)}
+        >
+          <option value="">Select a Category</option>
+          {categories.map(category => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
         <textarea
           className="w-full border rounded-xl px-4 py-3 h-40"
           placeholder="Description"
