@@ -34,7 +34,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-1">{children}</main>
           <footer className="bg-gray-100 p-4 text-center mt-auto">
-            © 2025 ShareThings — Inspired by best marketplace UX patterns.
+            © 2025 EKRA — Inspired by best marketplace UX patterns.
           </footer>
           <FloatingChatButton />
         </LocaleProvider>

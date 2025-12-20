@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer className="border-t mt-8">
       <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-500">
-        © {new Date().getFullYear()} ShareThings — Built with ❤️
+        © {new Date().getFullYear()} EKRA — Built with ❤️
       </div>
     </footer>
   )

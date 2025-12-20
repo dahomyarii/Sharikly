@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
 export const metadata = {
-  title: 'ShareThings — Rent what you need',
+  title: 'EKRA — Rent what you need',
   description: 'Peer-to-peer rentals. Find items near you.',
 }
 

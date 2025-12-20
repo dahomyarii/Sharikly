@@ -27,7 +27,7 @@ export default function Header() {
 
   return (
     <header className="bg-gray-100 p-4 flex justify-between items-center">
-      <Link href="/" className="text-xl font-bold">ShareThings</Link>
+      <Link href="/" className="text-xl font-bold">EKRA</Link>
       <div className="flex gap-4 items-center">
         <LanguageSwitcher />
         {user ? (

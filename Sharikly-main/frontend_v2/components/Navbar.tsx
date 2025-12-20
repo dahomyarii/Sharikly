@@ -21,7 +21,7 @@ export default function Navbar() {
   return (
     <header className="border-b bg-white">
       <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold">ShareThings</Link>
+        <Link href="/" className="text-2xl font-bold">EKRA</Link>
 
         <div className="flex items-center gap-4">
           <Link href="/listings/new" className="px-3 py-1 rounded-full border">{t('list_item')}</Link>
