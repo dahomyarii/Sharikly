@@ -8,7 +8,7 @@ import { Eye, EyeOff } from "lucide-react"
 import FloatingModal from "@/components/FloatingModal"
 
 const API = process.env.NEXT_PUBLIC_API_BASE
-
+console.log("API Base URL:", API)
 export default function SignupModal({ onClose }: { onClose?: () => void }) {
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
