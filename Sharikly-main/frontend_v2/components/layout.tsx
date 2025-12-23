@@ -2,7 +2,7 @@
 import './globals.css'
 import { LocaleProvider } from '../components/LocaleProvider'
 import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import Footer from '../components/footer'
 
 export const metadata = {
   title: 'EKRA — Rent what you need',
