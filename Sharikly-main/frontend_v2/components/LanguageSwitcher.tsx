@@ -19,12 +19,6 @@ export default function LanguageSwitcher() {
       >
         AR
       </button>
-      <button
-        className={`px-2 py-1 rounded ${lang === 'es' ? 'bg-gray-900 text-white' : 'bg-transparent'}`}
-        onClick={() => setLang('es')}
-      >
-        ES
-      </button>
     </div>
   )
 }

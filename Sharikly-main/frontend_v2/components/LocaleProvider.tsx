@@ -2,7 +2,7 @@
 'use client'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
-type Lang = 'en' | 'ar' | 'es'
+type Lang = 'en' | 'ar' 
 type TFn = (key: string) => string
 
 const translations: Record<Lang, Record<string, string>> = {
@@ -38,22 +38,7 @@ const translations: Record<Lang, Record<string, string>> = {
     list_new: 'أضف إعلانًا',
     request_book: 'طلب الحجز',
   },
-  es: {
-    hero_title: 'Alquila casi cualquier cosa cerca de ti',
-    hero_sub: 'Cámaras, lentes, equipo y más—ahorra dinero y reduce el desperdicio.',
-    list_item: 'Publicar un artículo',
-    browse: 'Explorar artículos',
-    sign_in: 'Iniciar sesión',
-    sign_up: 'Registrarse',
-    price_per_day: '/día',
-    city: 'Ciudad',
-    description: 'Descripción',
-    save: 'Guardar',
-    login: 'Iniciar sesión',
-    logout: 'Cerrar sesión',
-    list_new: 'Publicar artículo',
-    request_book: 'Solicitar reserva',
-  },
+
 }
 
 const LocaleContext = createContext<{
@@ -74,7 +59,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const saved = (localStorage.getItem('locale') as Lang) || null
-      if (saved && ['en', 'ar', 'es'].includes(saved)) setLang(saved)
+      if (saved && ['en', 'ar'].includes(saved)) setLang(saved)
     } catch (e) {}
     setReady(true)
   }, [])
