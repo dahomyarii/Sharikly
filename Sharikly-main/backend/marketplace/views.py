@@ -22,13 +22,14 @@ class RegisterView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        password = data.pop('password', None)
+        password = data.pop("password", None)
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         user = User.objects.create_user(
-            username=serializer.validated_data.get('username') or serializer.validated_data['email'],
-            email=serializer.validated_data['email'],
-            password=password
+            username=serializer.validated_data.get("username")
+            or serializer.validated_data["email"],
+            email=serializer.validated_data["email"],
+            password=password,
         )
         return Response(UserSerializer(user).data)
 
@@ -43,7 +44,7 @@ class MeView(generics.RetrieveAPIView):
 
 # --- JWT Login View ---
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = 'email'
+    username_field = "email"
 
     @classmethod
     def get_token(cls, user):
@@ -57,23 +58,23 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 # --- Listings Views ---
 class ListingListCreateView(generics.ListCreateAPIView):
-    queryset = Listing.objects.all().order_by('-created_at')
+    queryset = Listing.objects.all().order_by("-created_at")
     serializer_class = ListingSerializer
     parser_classes = [MultiPartParser, FormParser]
 
     def get_permissions(self):
-        if self.request.method == 'POST':
+        if self.request.method == "POST":
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     def get_serializer_context(self):
         """Ensure the request is passed to the serializer context"""
         context = super().get_serializer_context()
-        context['request'] = self.request
+        context["request"] = self.request
         return context
 
     def perform_create(self, serializer):
-        images = self.request.FILES.getlist('images')
+        images = self.request.FILES.getlist("images")
         if not images:
             raise ValidationError({"images": "At least one image is required"})
         listing = serializer.save(owner=self.request.user)
@@ -86,19 +87,19 @@ class ListingRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     serializer_class = ListingSerializer
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH']:
+        if self.request.method in ["PUT", "PATCH"]:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     def get_serializer_context(self):
         """Ensure the request is passed to the serializer context"""
         context = super().get_serializer_context()
-        context['request'] = self.request
+        context["request"] = self.request
         return context
 
 
 class BookingListCreateView(generics.ListCreateAPIView):
-    queryset = Booking.objects.all().order_by('-created_at')
+    queryset = Booking.objects.all().order_by("-created_at")
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -120,7 +121,7 @@ class ChatRoomListCreateView(generics.ListCreateAPIView):
         return ChatRoom.objects.filter(participants=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        participants_ids = request.data.get('participants', [])
+        participants_ids = request.data.get("participants", [])
         if not participants_ids:
             raise ValidationError("Participants are required")
 
@@ -145,7 +146,7 @@ class MessageListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        room_id = self.kwargs['room_id']
+        room_id = self.kwargs["room_id"]
         room = get_object_or_404(ChatRoom, id=room_id)
         if self.request.user not in room.participants.all():
             raise ValidationError("You are not a participant of this chat room")
@@ -154,15 +155,17 @@ class MessageListView(generics.ListAPIView):
 
 class SendMessageView(generics.CreateAPIView):
     serializer_class = MessageSerializer
-    parser_classes = [JSONParser, MultiPartParser, FormParser] 
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
     permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        room_id = request.data.get('room')
+        room_id = request.data.get("room")
         room = get_object_or_404(ChatRoom, id=room_id)
 
         if request.user not in room.participants.all():
-            raise ValidationError("You cannot send messages in a room you are not part of")
+            raise ValidationError(
+                "You cannot send messages in a room you are not part of"
+            )
 
         # Prevent sending message to yourself if alone
         if room.participants.count() == 1 and room.participants.first() == request.user:
@@ -179,7 +182,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        listing_id = self.request.query_params.get('listing')
+        listing_id = self.request.query_params.get("listing")
         if listing_id:
             return Review.objects.filter(listing_id=listing_id)
         return Review.objects.all()
@@ -187,12 +190,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+
 class SubmitReviewView(generics.CreateAPIView):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        listing_id = self.kwargs['listing_id']
+        listing_id = self.kwargs["listing_id"]
         listing = get_object_or_404(Listing, id=listing_id)
 
         serializer = self.get_serializer(data=request.data)
@@ -204,18 +208,18 @@ class SubmitReviewView(generics.CreateAPIView):
 # --- Favorites Views ---
 class AddFavoriteView(generics.CreateAPIView):
     """Add a listing to the user's favorites"""
+
     serializer_class = FavoriteSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        listing_id = self.kwargs['listing_id']
+        listing_id = self.kwargs["listing_id"]
         listing = get_object_or_404(Listing, id=listing_id)
-        
+
         favorite, created = Favorite.objects.get_or_create(
-            user=request.user,
-            listing=listing
+            user=request.user, listing=listing
         )
-        
+
         serializer = self.get_serializer(favorite)
         # Return 201 if newly created, 200 if already existed
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
@@ -224,47 +228,94 @@ class AddFavoriteView(generics.CreateAPIView):
 
 class RemoveFavoriteView(generics.DestroyAPIView):
     """Remove a listing from the user's favorites"""
+
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
-        listing_id = self.kwargs['listing_id']
+        listing_id = self.kwargs["listing_id"]
         listing = get_object_or_404(Listing, id=listing_id)
-        
-        favorite = get_object_or_404(
-            Favorite,
-            user=request.user,
-            listing=listing
-        )
-        
+
+        favorite = get_object_or_404(Favorite, user=request.user, listing=listing)
+
         favorite.delete()
         return Response(
             {"detail": "Listing removed from favorites"},
-            status=status.HTTP_204_NO_CONTENT
+            status=status.HTTP_204_NO_CONTENT,
         )
 
 
 class UserFavoritesListView(generics.ListAPIView):
     """Get all favorite listings for the authenticated user"""
+
     serializer_class = FavoriteSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Favorite.objects.filter(user=self.request.user).order_by('-created_at')
+        return Favorite.objects.filter(user=self.request.user).order_by("-created_at")
 
-# class MarkReviewHelpfulView(generics.UpdateAPIView):
-#     serializer_class = HelpfulSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-#     def update(self, request, *args, **kwargs):
-#         review_id = self.kwargs['review_id']
-#         review = get_object_or_404(Review, id=review_id)
 
-#         return Response({"detail": "Review marked as helpful"}, status=status.HTTP_200_OK)
+# --- Review Vote Views ---
+class ReviewVoteView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
 
-# class MarkReviewNotHelpfulView(generics.UpdateAPIView):
-#     serializer_class = NotHelpfulSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-#     def update(self, request, *args, **kwargs):
-#         review_id = self.kwargs['review_id']
-#         review = get_object_or_404(Review, id=review_id)
+    def post(self, request, *args, **kwargs):
+        review_id = self.kwargs["review_id"]
+        review = get_object_or_404(Review, id=review_id)
+        vote_type = request.data.get("vote_type", "").upper()
 
-#         return Response({"detail": "Review marked as not helpful"}, status=status.HTTP_200_OK)
+        if vote_type not in ["HELPFUL", "NOT_HELPFUL"]:
+            return Response(
+                {"error": "vote_type must be 'HELPFUL' or 'NOT_HELPFUL'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check if user already voted
+        existing_vote = ReviewVote.objects.filter(
+            review=review, user=request.user
+        ).first()
+
+        if existing_vote:
+            # If voting the same type, remove the vote (toggle off)
+            if existing_vote.vote_type == vote_type:
+                existing_vote.delete()
+                return Response(
+                    {
+                        "detail": f"Vote removed",
+                        "helpful": review.votes.filter(vote_type="HELPFUL").count(),
+                        "not_helpful": review.votes.filter(
+                            vote_type="NOT_HELPFUL"
+                        ).count(),
+                        "user_vote": None,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                # If voting different type, update the vote (switch)
+                existing_vote.vote_type = vote_type
+                existing_vote.save()
+                return Response(
+                    {
+                        "detail": f"Vote updated to {vote_type}",
+                        "helpful": review.votes.filter(vote_type="HELPFUL").count(),
+                        "not_helpful": review.votes.filter(
+                            vote_type="NOT_HELPFUL"
+                        ).count(),
+                        "user_vote": vote_type,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+        else:
+            # Create new vote
+            ReviewVote.objects.create(
+                review=review, user=request.user, vote_type=vote_type
+            )
+            return Response(
+                {
+                    "detail": f"Vote added as {vote_type}",
+                    "helpful": review.votes.filter(vote_type="HELPFUL").count(),
+                    "not_helpful": review.votes.filter(vote_type="NOT_HELPFUL").count(),
+                    "user_vote": vote_type,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+

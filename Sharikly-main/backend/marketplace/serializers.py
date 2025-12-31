@@ -11,7 +11,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'avatar', 'bio']
+        fields = ["id", "username", "email", "avatar", "bio"]
 
 
 # ==========================
@@ -20,7 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ListingImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ListingImage
-        fields = ['id', 'image']
+        fields = ["id", "image"]
 
 
 # ==========================
@@ -29,7 +29,7 @@ class ListingImageSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'description', 'icon']
+        fields = ["id", "name", "description", "icon"]
 
 
 # ==========================
@@ -38,10 +38,41 @@ class CategorySerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     listing = serializers.PrimaryKeyRelatedField(read_only=True)
+    helpful = serializers.SerializerMethodField()
+    not_helpful = serializers.SerializerMethodField()
+    user_vote = serializers.SerializerMethodField()
 
     class Meta:
         model = Review
-        fields = ['id', 'user', 'listing', 'rating', 'comment', 'created_at']
+        fields = [
+            "id",
+            "user",
+            "listing",
+            "rating",
+            "comment",
+            "created_at",
+            "helpful",
+            "not_helpful",
+            "user_vote",
+        ]
+
+    def get_helpful(self, obj):
+        return obj.votes.filter(vote_type="HELPFUL").count()
+
+    def get_not_helpful(self, obj):
+        return obj.votes.filter(vote_type="NOT_HELPFUL").count()
+
+    def get_user_vote(self, obj):
+        """Get the current user's vote type if they've voted"""
+        request = self.context.get("request")
+        if not request or not request.user or not request.user.is_authenticated:
+            return None
+
+        try:
+            vote = obj.votes.filter(user=request.user).first()
+            return vote.vote_type if vote else None
+        except Exception:
+            return None
 
 
 # ==========================
@@ -55,26 +86,32 @@ class ListingSerializer(serializers.ModelSerializer):
 
     # ⭐ Extra fields
     average_rating = serializers.FloatField(read_only=True)
-    reviews = ReviewSerializer(many=True, read_only=True)
+    reviews = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     favorites_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Listing
         fields = [
-            'id', 'owner', 'title', 'description',
-            'price_per_day', 'city', 'created_at',
-            'category', 'category_id',
-            'images',            
+            "id",
+            "owner",
+            "title",
+            "description",
+            "price_per_day",
+            "city",
+            "created_at",
+            "category",
+            "category_id",
+            "images",
             # ⭐ NEW:
-            'average_rating',
-            'reviews',
-            'is_favorited',
-            'favorites_count'
+            "average_rating",
+            "reviews",
+            "is_favorited",
+            "favorites_count",
         ]
 
     def create(self, validated_data):
-        category_id = validated_data.pop('category_id', None)
+        category_id = validated_data.pop("category_id", None)
         listing = Listing.objects.create(**validated_data)
         if category_id:
             try:
@@ -90,11 +127,11 @@ class ListingSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if not request:
             return False
-        
+
         user = request.user
         if not user or not user.is_authenticated:
             return False
-        
+
         try:
             is_fav = Favorite.objects.filter(user=user, listing=obj).exists()
             return is_fav
@@ -105,6 +142,12 @@ class ListingSerializer(serializers.ModelSerializer):
     def get_favorites_count(self, obj):
         return obj.favorited_by.count()
 
+    def get_reviews(self, obj):
+        """Serialize reviews with proper context"""
+        reviews = obj.reviews.all()
+        serializer = ReviewSerializer(reviews, many=True, context=self.context)
+        return serializer.data
+
 
 # ==========================
 # FAVORITES SERIALIZER
@@ -114,7 +157,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Favorite
-        fields = ['id', 'listing', 'created_at']
+        fields = ["id", "listing", "created_at"]
 
 
 # ==========================
@@ -127,10 +170,14 @@ class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            'id', 'listing', 'renter',
-            'start_date', 'end_date',
-            'total_price', 'status',
-            'created_at'
+            "id",
+            "listing",
+            "renter",
+            "start_date",
+            "end_date",
+            "total_price",
+            "status",
+            "created_at",
         ]
 
 
@@ -145,10 +192,15 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = [
-            'id', 'room', 'sender',
-            'text', 'image', 'image_url',
-            'audio', 'audio_url',
-            'created_at'
+            "id",
+            "room",
+            "sender",
+            "text",
+            "image",
+            "image_url",
+            "audio",
+            "audio_url",
+            "created_at",
         ]
 
     def get_image_url(self, obj):
@@ -167,16 +219,17 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatRoom
-        fields = ['id', 'participants', 'created_at', 'last_message']
+        fields = ["id", "participants", "created_at", "last_message"]
 
     def get_last_message(self, obj):
         last_msg = obj.messages.last()
         return MessageSerializer(last_msg).data if last_msg else None
 
+
 # ==========================
 # REVIEWS SERIALIZER
 # ==========================
-#class ReviewSerializer(serializers.ModelSerializer):
+# class ReviewSerializer(serializers.ModelSerializer):
 #    user_name = serializers.CharField(source='user.username', read_only=True)
 #    user_avatar = serializers.ImageField(source='user.avatar', read_only=True)
 
