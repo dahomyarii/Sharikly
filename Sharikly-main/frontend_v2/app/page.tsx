@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import useSWR from "swr"
+import useSWR, { mutate } from "swr"
 import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,24 +23,73 @@ export default function HomePage() {
 
   // Initialize token from localStorage
   useEffect(() => {
-    const storedToken = localStorage.getItem('access_token')
-    if (storedToken) {
-      setToken(storedToken)
+    const loadToken = () => {
+      const storedToken = localStorage.getItem('access_token')
+      if (storedToken) {
+        setToken(storedToken)
+      }
+      setTokenLoaded(true)
     }
-    setTokenLoaded(true)
+    
+    loadToken()
+
+    // Listen for login events to update token and refresh data
+    const handleLogin = (event: CustomEvent) => {
+      const newToken = event.detail?.token || localStorage.getItem('access_token')
+      if (newToken) {
+        setToken(newToken)
+        // Revalidate SWR data with new token
+        if (API) {
+          mutate(`${API}/listings/`)
+        }
+      }
+    }
+
+    window.addEventListener('userLogin', handleLogin as EventListener)
+    
+    return () => {
+      window.removeEventListener('userLogin', handleLogin as EventListener)
+    }
   }, [])
 
   // Custom fetcher that includes the auth token
   const fetcher = useCallback((url: string) => {
+    if (!url || !API) {
+      return Promise.resolve([])
+    }
     const headers: any = {}
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }
-    return axios.get(url, { headers }).then(res => res.data)
+    return axios.get(url, { headers })
+      .then(res => res.data)
+      .catch(error => {
+        // Silently handle 400/401/403 errors (expected when not authenticated or endpoint issues)
+        // Only log unexpected errors
+        if (error.response?.status && ![400, 401, 403, 404].includes(error.response.status)) {
+          console.error('Error fetching listings:', error)
+        }
+        return []
+      })
   }, [token])
 
-  // Only fetch listings after token is loaded
-  const { data: listings } = useSWR(tokenLoaded ? `${API}/listings/` : null, fetcher)
+  // Only fetch listings after token is loaded and API is defined
+  const { data: listings } = useSWR(
+    tokenLoaded && API ? `${API}/listings/` : null, 
+    fetcher,
+    {
+      onError: (error: any) => {
+        // Silently handle expected errors (400, 401, 403, 404)
+        // Only log unexpected errors
+        if (error?.response?.status && ![400, 401, 403, 404].includes(error.response.status)) {
+          console.error('SWR error:', error)
+        }
+      },
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false,
+    }
+  )
   const featuredService = listings?.[0]
   const hotServices = listings?.slice(1, 4) || []
   const recommendations = listings?.slice(4, 10) || []
@@ -151,10 +200,20 @@ export default function HomePage() {
 
   // Fetch categories from the backend
   useEffect(() => {
+    if (!API) {
+      return
+    }
     axios
       .get(`${API}/categories/`)
       .then(res => setCategories(res.data))
-      .catch(err => console.error('Failed to fetch categories:', err))
+      .catch(err => {
+        // Silently handle expected errors (400, 401, 403, 404)
+        // Only log unexpected errors
+        if (err.response?.status && ![400, 401, 403, 404].includes(err.response.status)) {
+          console.error('Failed to fetch categories:', err)
+        }
+        setCategories([])
+      })
   }, [])
 
   // Map category names to icons and colors for display

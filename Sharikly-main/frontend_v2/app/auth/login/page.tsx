@@ -29,7 +29,12 @@ export default function LoginPage() {
       })
       localStorage.setItem('user', JSON.stringify(me.data))
 
+      // Dispatch custom event to notify components about login
+      window.dispatchEvent(new CustomEvent("userLogin", { detail: { user: me.data, token } }))
+
+      // Soft refresh using router
       router.push('/')
+      router.refresh()
     } catch (err: any) {
       setMsg(err?.response?.data?.detail || 'Login failed')
     }

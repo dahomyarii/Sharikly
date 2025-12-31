@@ -1,38 +1,53 @@
-"use client"
-import type React from "react"
-import { useState } from "react"
-import axios from "axios"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff } from "lucide-react"
-import FloatingModal from "@/components/FloatingModal"
+"use client";
+import type React from "react";
+import { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import FloatingModal from "@/components/FloatingModal";
 
-const API = process.env.NEXT_PUBLIC_API_BASE
+const API = process.env.NEXT_PUBLIC_API_BASE;
 
 export default function LoginModal({ onClose }: { onClose?: () => void }) {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [msg, setMsg] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [msg, setMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
+    setIsLoading(true);
+    setMsg("");
 
     try {
-      const res = await axios.post(`${API}/auth/token/`, { email, password })
-      const token = res.data.access
+      const res = await axios.post(`${API}/auth/token/`, { email, password });
+      const token = res.data.access;
 
-      localStorage.setItem("access_token", token)
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+      localStorage.setItem("access_token", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       const me = await axios.get(`${API}/auth/me/`, {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      localStorage.setItem("user", JSON.stringify(me.data))
+      });
+      localStorage.setItem("user", JSON.stringify(me.data));
 
-      router.push("/")
+      // Close the modal first
+      if (onClose) {
+        onClose();
+      }
+
+      // Dispatch custom event to notify components about login
+      window.dispatchEvent(
+        new CustomEvent("userLogin", { detail: { user: me.data, token } })
+      );
+
+      // Soft refresh using router
+      router.refresh();
     } catch (err: any) {
-      setMsg(err?.response?.data?.detail || "Login failed")
+      setMsg(err?.response?.data?.detail || "Login failed");
+      setIsLoading(false);
     }
   }
 
@@ -50,6 +65,7 @@ export default function LoginModal({ onClose }: { onClose?: () => void }) {
             className="w-full h-12 border rounded-lg px-4 focus:ring-2 focus:ring-blue-500"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
             required
           />
         </div>
@@ -64,6 +80,7 @@ export default function LoginModal({ onClose }: { onClose?: () => void }) {
               className="w-full h-12 border rounded-lg px-4 pr-10 focus:ring-2 focus:ring-blue-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
               required
             />
             <button
@@ -80,8 +97,13 @@ export default function LoginModal({ onClose }: { onClose?: () => void }) {
         {msg && <p className="text-center text-sm text-red-600">{msg}</p>}
 
         {/* Login button */}
-        <button type="submit" className="w-full h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          Login
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {isLoading ? "Logging in..." : "Login"}
         </button>
 
         {/* Switch to signup */}
@@ -96,5 +118,5 @@ export default function LoginModal({ onClose }: { onClose?: () => void }) {
         </p>
       </form>
     </FloatingModal>
-  )
+  );
 }

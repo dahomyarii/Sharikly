@@ -14,8 +14,28 @@ export default function Header() {
   const [showLogin, setShowLogin] = useState(false)
 
   React.useEffect(() => {
-    const stored = localStorage.getItem('user')
-    if (stored) setUser(JSON.parse(stored))
+    const loadUser = () => {
+      const stored = localStorage.getItem('user')
+      if (stored) setUser(JSON.parse(stored))
+    }
+    
+    // Load user on mount
+    loadUser()
+
+    // Listen for login events
+    const handleLogin = (event: CustomEvent) => {
+      if (event.detail?.user) {
+        setUser(event.detail.user)
+      } else {
+        loadUser()
+      }
+    }
+
+    window.addEventListener('userLogin', handleLogin as EventListener)
+    
+    return () => {
+      window.removeEventListener('userLogin', handleLogin as EventListener)
+    }
   }, [])
 
   function handleLogout() {

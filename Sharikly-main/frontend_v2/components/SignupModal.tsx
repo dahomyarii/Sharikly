@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import axios from "axios"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
 import FloatingModal from "@/components/FloatingModal"
 
 const API = process.env.NEXT_PUBLIC_API_BASE
@@ -16,11 +16,13 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [msg, setMsg] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
     setMsg("")
+    setIsLoading(true)
     try {
       const res = await axios.post(`${API}/auth/register/`, {
         username,
@@ -29,9 +31,13 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
         password,
       })
       setMsg("Account created!")
-      setTimeout(() => router.push("/auth/login"), 1000)
+      setTimeout(() => {
+        setIsLoading(false)
+        router.push("/auth/login")
+      }, 1000)
     } catch (err: any) {
       setMsg(err?.response?.data?.detail || "Signup failed")
+      setIsLoading(false)
     }
   }
 
@@ -44,10 +50,11 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
           <label className="text-sm text-gray-700">Username</label>
           <input
             type="text"
-            className="w-full h-12 border rounded-lg px-4 focus:ring-2 focus:ring-blue-500"
+            className="w-full h-12 border rounded-lg px-4 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             placeholder="Your username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            disabled={isLoading}
             required
           />
         </div>
@@ -57,10 +64,11 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
           <label className="text-sm text-gray-700">Email</label>
           <input
             type="email"
-            className="w-full h-12 border rounded-lg px-4 focus:ring-2 focus:ring-blue-500"
+            className="w-full h-12 border rounded-lg px-4 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             placeholder="example@gmail.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
             required
           />
         </div>
@@ -70,10 +78,11 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
           <label className="text-sm text-gray-700">Phone</label>
           <input
             type="tel"
-            className="w-full h-12 border rounded-lg px-4 focus:ring-2 focus:ring-blue-500"
+            className="w-full h-12 border rounded-lg px-4 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             placeholder="05xxxxxxxx"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            disabled={isLoading}
           />
         </div>
 
@@ -83,10 +92,11 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              className="w-full h-12 border rounded-lg px-4 pr-10 focus:ring-2 focus:ring-blue-500"
+              className="w-full h-12 border rounded-lg px-4 pr-10 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Enter a password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
               required
             />
             <button
@@ -105,8 +115,13 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
         )}
 
         {/* Signup button */}
-        <button type="submit" className="w-full h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          Sign Up
+        <button 
+          type="submit" 
+          disabled={isLoading}
+          className="w-full h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {isLoading ? "Creating account..." : "Sign Up"}
         </button>
 
         {/* Login link */}
