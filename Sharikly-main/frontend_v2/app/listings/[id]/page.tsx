@@ -19,6 +19,9 @@ import {
   ThumbsUp,
   ThumbsDown,
 } from "lucide-react";
+import { DayPicker } from "react-day-picker";
+import type { DateRange } from "react-day-picker";
+import "react-day-picker/dist/style.css";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -61,7 +64,7 @@ export default function ListingDetail() {
   const { data } = useSWR(id ? `${API}/listings/${id}/` : null, fetcher);
 
   const [user, setUser] = useState<any>(null);
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [mainImage, setMainImage] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fullscreenIndex, setFullscreenIndex] = useState(0);
@@ -749,49 +752,34 @@ export default function ListingDetail() {
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   Available Dates
                 </h3>
-                <div className="grid grid-cols-7 gap-1">
-                  <div className="text-center text-xs font-medium text-gray-500 py-2">
-                    Sun
-                  </div>
-                  <div className="text-center text-xs font-medium text-gray-500 py-2">
-                    Mon
-                  </div>
-                  <div className="text-center text-xs font-medium text-gray-500 py-2">
-                    Tue
-                  </div>
-                  <div className="text-center text-xs font-medium text-gray-500 py-2">
-                    Wed
-                  </div>
-                  <div className="text-center text-xs font-medium text-gray-500 py-2">
-                    Thu
-                  </div>
-                  <div className="text-center text-xs font-medium text-gray-500 py-2">
-                    Fri
-                  </div>
-                  <div className="text-center text-xs font-medium text-gray-500 py-2">
-                    Sat
-                  </div>
-                  {[...Array(30)].map((_, i) => {
-                    const day = i + 1;
-                    return (
-                      <button
-                        key={day}
-                        onClick={() => setSelectedDate(day)}
-                        className={`aspect-square flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
-                          selectedDate === day
-                            ? "bg-orange-500 text-white shadow-md"
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`}
-                      >
-                        {day}
-                      </button>
-                    );
-                  })}
+                <div className="calendar-wrapper">
+                  <DayPicker
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={1}
+                    showOutsideDays={true}
+                    className="w-full"
+                  />
                 </div>
-                {selectedDate && (
+                {dateRange?.from && (
                   <p className="mt-4 text-sm text-gray-600 text-center">
-                    Selected:{" "}
-                    <span className="font-semibold">Day {selectedDate}</span>
+                    {dateRange.to ? (
+                      <>
+                        Selected:{" "}
+                        <span className="font-semibold">
+                          {dateRange.from.toLocaleDateString()} - {dateRange.to.toLocaleDateString()}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        Selected:{" "}
+                        <span className="font-semibold">
+                          {dateRange.from.toLocaleDateString()}
+                        </span>
+                        {" (select end date)"}
+                      </>
+                    )}
                   </p>
                 )}
               </div>
