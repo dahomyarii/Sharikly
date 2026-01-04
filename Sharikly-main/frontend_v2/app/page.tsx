@@ -325,7 +325,9 @@ export default function HomePage() {
                         <span className="text-4xl font-bold text-gray-800">${featuredService.price_per_day}</span>
                         <span className="text-gray-500 ml-1">/day</span>
                       </div>
-                      <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-8">Book Now</Button>
+                      <Link href={`/listings/${featuredService.id}`}>
+                        <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-8">Book Now</Button>
+                      </Link>
                     </div>
                   </div>
                 </div>
