@@ -305,15 +305,15 @@ export default function HomePage() {
 
               <Card className="overflow-hidden border-0 shadow-2xl hover:shadow-3xl transition-all duration-300">
                 <div className="grid md:grid-cols-2 gap-0">
-                  <div className="relative h-64 md:h-full min-h-[400px]">
+                  <Link href={`/listings/${featuredService.id}`} className="relative h-64 md:h-full md:min-h-[400px] block cursor-pointer group bg-black overflow-hidden">
                     {featuredService.images?.[0]?.image && (
                       <img
                         src={featuredService.images[0].image.startsWith('http') ? featuredService.images[0].image : `${API}${featuredService.images[0].image}`}
                         alt={featuredService.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     )}
-                  </div>
+                  </Link>
                   <div className="p-8 md:p-10 flex flex-col justify-between bg-gradient-to-br from-white to-blue-50">
                     <div>
                       <Badge variant="secondary" className="mb-4">{featuredService.category?.name || "Listing"}</Badge>
@@ -341,12 +341,12 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hotServices.map((service: any) => (
               <Card key={service.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white">
-                <div className="relative overflow-hidden">
+                <Link href={`/listings/${service.id}`} className="relative w-full block cursor-pointer bg-black overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
                   {service.images?.[0]?.image && (
                     <img
                       src={service.images[0].image.startsWith('http') ? service.images[0].image : `${API}${service.images[0].image}`}
                       alt={service.title}
-                      className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   )}
                   <Button
@@ -361,7 +361,7 @@ export default function HomePage() {
                   >
                     <Heart className="h-5 w-5" fill={favorites.has(service.id) ? 'currentColor' : 'none'} />
                   </Button>
-                </div>
+                </Link>
                 <div className="p-5">
                   <Badge variant="secondary" className="mb-3 text-xs">{service.category?.name || "Listing"}</Badge>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">{service.title}</h3>
@@ -384,12 +384,12 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-6 overflow-x-auto scrollbar-hide" ref={scrollContainerRef} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
             {recommendations.map((service: any) => (
               <Card key={service.id} className="group flex-shrink-0 w-80 overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white">
-                <div className="relative overflow-hidden">
+                <Link href={`/listings/${service.id}`} className="relative w-full block cursor-pointer bg-black overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
                   {service.images?.[0]?.image && (
                     <img
                       src={service.images[0].image.startsWith('http') ? service.images[0].image : `${API}${service.images[0].image}`}
                       alt={service.title}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   )}
                   <Button
@@ -404,7 +404,7 @@ export default function HomePage() {
                   >
                     <Heart className="h-4 w-4" fill={favorites.has(service.id) ? 'currentColor' : 'none'} />
                   </Button>
-                </div>
+                </Link>
                 <div className="p-4">
                   <Badge variant="secondary" className="mb-2 text-xs">{service.category?.name || "Listing"}</Badge>
                   <h3 className="text-base font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">{service.title}</h3>
