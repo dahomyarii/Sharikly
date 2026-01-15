@@ -9,7 +9,13 @@ import FloatingModal from "@/components/FloatingModal"
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
-export default function SignupModal({ onClose }: { onClose?: () => void }) {
+export default function SignupModal({ 
+  onClose, 
+  onSwitchToLogin 
+}: { 
+  onClose?: () => void;
+  onSwitchToLogin?: () => void;
+}) {
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
@@ -128,7 +134,13 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
         <p className="text-center text-sm text-gray-600">
           Already have an account?{" "}
           <span
-            onClick={() => router.push("/auth/login")}
+            onClick={() => {
+              if (onSwitchToLogin) {
+                onSwitchToLogin();
+              } else {
+                router.push("/auth/login");
+              }
+            }}
             className="text-blue-600 font-medium cursor-pointer hover:underline"
           >
             Login

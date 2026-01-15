@@ -82,8 +82,24 @@ export default function Header() {
           </>
         )}
       </div>
-      {showSignup && <SignupModal onClose={() => setShowSignup(false)} />}
-      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
-    </header>
+      {showSignup && (
+        <SignupModal 
+          onClose={() => setShowSignup(false)} 
+          onSwitchToLogin={() => {
+            setShowSignup(false);
+            setShowLogin(true);
+          }}
+        />
+      )}
+      {showLogin && (
+        <LoginModal 
+          onClose={() => setShowLogin(false)} 
+          onSwitchToSignup={() => {
+            setShowLogin(false);
+            setShowSignup(true);
+          }}
+        />
+      )}
+    </header> 
   );
 }
