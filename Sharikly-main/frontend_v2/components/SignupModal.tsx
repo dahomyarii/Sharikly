@@ -37,10 +37,17 @@ export default function SignupModal({
         password,
       })
       setMsg("Account created!")
-      setTimeout(() => {
-        setIsLoading(false)
+      setIsLoading(false)
+      // Immediately switch to login modal if available, otherwise redirect
+      if (onSwitchToLogin) {
+        onSwitchToLogin()
+      } else {
+        // Fallback: redirect if modal switching is not available
+        if (onClose) {
+          onClose()
+        }
         router.push("/auth/login")
-      }, 1000)
+      }
     } catch (err: any) {
       setMsg(err?.response?.data?.detail || "Signup failed")
       setIsLoading(false)

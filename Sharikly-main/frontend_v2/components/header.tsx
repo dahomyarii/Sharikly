@@ -66,20 +66,12 @@ export default function Header() {
             </button>
           </>
         ) : (
-          <>
-            <button
-              onClick={() => setShowSignup(true)}
-              className="px-4 py-2 bg-black text-white rounded-full"
-            >
-              {t("sign_up")}
-            </button>
-            <button
-              onClick={() => setShowLogin(true)}
-              className="px-4 py-2 border rounded-full"
-            >
-              {t("login")}
-            </button>
-          </>
+          <button
+            onClick={() => setShowSignup(true)}
+            className="px-4 py-2 bg-black text-white rounded-full"
+          >
+            {t("sign_up")}
+          </button>
         )}
       </div>
       {showSignup && (

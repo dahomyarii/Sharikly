@@ -74,6 +74,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         except Exception:
             return None
 
+    def validate_rating(self, value):
+        """Validate that rating is between 0 and 5"""
+        if value < 0 or value > 5:
+            raise serializers.ValidationError("Rating must be between 0 and 5.")
+        return value
+
 
 # ==========================
 # LISTING SERIALIZER (MAIN)

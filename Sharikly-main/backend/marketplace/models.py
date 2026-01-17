@@ -1,5 +1,6 @@
 from typing import Any
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 
@@ -153,7 +154,11 @@ class Review(models.Model):
     listing = models.ForeignKey(
         Listing, on_delete=models.CASCADE, related_name="reviews"
     )
-    rating = models.IntegerField(default=0)  # 1–5 stars
+    rating = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(5)],
+        help_text="Rating must be between 0 and 5"
+    )  # 0–5 stars
     comment = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
