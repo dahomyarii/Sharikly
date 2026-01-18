@@ -199,6 +199,16 @@ class SubmitReviewView(generics.CreateAPIView):
         listing_id = self.kwargs["listing_id"]
         listing = get_object_or_404(Listing, id=listing_id)
 
+        # Check if user has already reviewed this listing
+        existing_review = Review.objects.filter(
+            user=request.user, listing=listing
+        ).first()
+        if existing_review:
+            return Response(
+                {"error": "You have already reviewed this listing. You can only review once."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user, listing=listing)

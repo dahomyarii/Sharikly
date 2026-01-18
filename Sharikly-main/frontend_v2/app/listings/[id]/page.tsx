@@ -83,6 +83,45 @@ export default function ListingDetail() {
     }
   }, []);
 
+  // Fetch reviews from backend
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!id) return;
+      try {
+        const response = await axios.get(`${API}/reviews/?listing=${id}`);
+        if (Array.isArray(response.data)) {
+          const normalized = response.data.map((r: any) => ({
+            id: r.id,
+            user: {
+              name: r.user?.username || r.user?.email || "Anonymous",
+              avatar: r.user?.avatar
+                ? r.user.avatar.startsWith("http")
+                  ? r.user.avatar
+                  : `${API}${r.user.avatar}`
+                : DEFAULT_AVATAR,
+            },
+            rating: r.rating ?? 0,
+            comment: r.comment ?? "",
+            helpful: r.helpful ?? 0,
+            notHelpful: r.not_helpful ?? 0,
+            userVote: r.user_vote ?? null,
+            date: r.created_at ? new Date(r.created_at).toLocaleDateString() : "",
+            raw: r,
+          }));
+          normalized.sort(
+            (a: any, b: any) =>
+              b.helpful - b.notHelpful - (a.helpful - a.notHelpful)
+          );
+          setReviews(normalized);
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      }
+    };
+
+    fetchReviews();
+  }, [id]);
+
   useEffect(() => {
     if (!data) return;
 
@@ -97,34 +136,6 @@ export default function ListingDetail() {
 
     if (typeof data.is_favorited !== "undefined") {
       setIsFavorite(Boolean(data.is_favorited));
-    }
-
-    if (Array.isArray(data.reviews)) {
-      const normalized = data.reviews.map((r: any) => ({
-        id: r.id,
-        user: {
-          name: r.user?.username || r.user?.email || "Anonymous",
-          avatar: r.user?.avatar
-            ? r.user.avatar.startsWith("http")
-              ? r.user.avatar
-              : `${API}${r.user.avatar}`
-            : DEFAULT_AVATAR,
-        },
-        rating: r.rating ?? 0,
-        comment: r.comment ?? "",
-        helpful: r.helpful ?? 0,
-        notHelpful: r.not_helpful ?? 0,
-        userVote: r.user_vote ?? null, // Get user's vote state from API
-        date: r.created_at ? new Date(r.created_at).toLocaleDateString() : "",
-        raw: r,
-      }));
-      normalized.sort(
-        (a: any, b: any) =>
-          b.helpful - b.notHelpful - (a.helpful - a.notHelpful)
-      );
-      setReviews(normalized);
-    } else {
-      setReviews([]);
     }
   }, [data]);
 
@@ -144,6 +155,9 @@ export default function ListingDetail() {
       : ["/hero.jpg"];
 
   const isOwner = user?.id === data.owner?.id;
+
+  // Check if current user has already reviewed this listing
+  const userHasReviewed = user && reviews.some((r: any) => r.raw?.user?.id === user?.id);
 
   const averageRating =
     reviews.length > 0
@@ -369,7 +383,10 @@ export default function ListingDetail() {
       return;
     }
 
-    if (newRating <= 0 && newComment.trim() === "") return;
+    if (newRating <= 0 && newComment.trim() === "") {
+      alert("Please provide a rating and comment");
+      return;
+    }
 
     setSubmittingReview(true);
 
@@ -398,33 +415,10 @@ export default function ListingDetail() {
     setNewRating(0);
 
     try {
-      async function getAccessToken() {
-        let token = localStorage.getItem("access");
-        if (!token) token = localStorage.getItem("access_token");
-        if (!token) token = localStorage.getItem("token");
-        return token;
-      }
-
-      async function refreshAccessToken() {
-        try {
-          const refresh = localStorage.getItem("refresh");
-          if (!refresh) return null;
-
-          const res = await axios.post(`${API}/auth/refresh/`, { refresh });
-          if (res.data.access) {
-            localStorage.setItem("access", res.data.access);
-            return res.data.access;
-          }
-        } catch (err) {
-          return null;
-        }
-      }
-
-      const token = await getAccessToken();
-      if (!token) {
-        const newToken = await refreshAccessToken();
-        if (!newToken) throw new Error("Auth failed");
-      }
+      const token =
+        localStorage.getItem("access") ||
+        localStorage.getItem("access_token") ||
+        localStorage.getItem("token");
 
       const res = await axios.post(
         `${API}/listings/${id}/reviews/`,
@@ -462,8 +456,15 @@ export default function ListingDetail() {
               : r
           )
         );
+        alert("Review submitted successfully!");
       }
     } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.error ||
+        err.response?.data?.non_field_errors?.[0] ||
+        "Error submitting review. Please try again.";
+      alert(errorMessage);
+      console.error("Error submitting review:", err);
       setReviews((prev) => prev.filter((r) => r.id !== tmpId));
     } finally {
       setSubmittingReview(false);
@@ -600,53 +601,84 @@ export default function ListingDetail() {
                 Leave a review
               </h2>
 
-              <div className="mb-3">
-                <div className="flex items-center gap-2">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => setNewRatingFromStar(n)}
-                      type="button"
-                      aria-label={`Rate ${n} stars`}
-                      className="p-1"
-                    >
-                      <Star
-                        className={`h-6 w-6 cursor-pointer ${
-                          n <= newRating
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    </button>
-                  ))}
+              {userHasReviewed ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-blue-800 font-medium">
+                    ✓ You have already reviewed this listing
+                  </p>
+                  <p className="text-blue-600 text-sm mt-1">
+                    You can only review a listing once.
+                  </p>
                 </div>
-              </div>
+              ) : !user ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <p className="text-gray-700 font-medium">
+                    Please log in to leave a review
+                  </p>
+                  <Button
+                    onClick={() => router.push("/auth/login")}
+                    className="mt-3 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Log In
+                  </Button>
+                </div>
+              ) : isOwner ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <p className="text-gray-700 font-medium">
+                    You cannot review your own listing
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-3">
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          onClick={() => setNewRatingFromStar(n)}
+                          type="button"
+                          aria-label={`Rate ${n} stars`}
+                          className="p-1"
+                        >
+                          <Star
+                            className={`h-6 w-6 cursor-pointer ${
+                              n <= newRating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write your review..."
-                className="w-full border rounded-md p-3 h-28 resize-none"
-              />
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Write your review..."
+                    className="w-full border rounded-md p-3 h-28 resize-none"
+                  />
 
-              <div className="mt-4 flex gap-2">
-                <Button
-                  onClick={submitReview}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  disabled={submittingReview}
-                >
-                  {submittingReview ? "Submitting..." : "Submit Review"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setNewRating(0);
-                    setNewComment("");
-                  }}
-                >
-                  Clear
-                </Button>
-              </div>
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      onClick={submitReview}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      disabled={submittingReview}
+                    >
+                      {submittingReview ? "Submitting..." : "Submit Review"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setNewRating(0);
+                        setNewComment("");
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </>
+              )}
             </Card>
 
             <Card className="p-6">
