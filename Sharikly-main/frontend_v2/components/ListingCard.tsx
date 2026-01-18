@@ -3,12 +3,38 @@
 import Link from 'next/link'
 import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
+import { Star } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
 export default function ListingCard({ listing }: { listing: any }) {
   const [isFavorited, setIsFavorited] = useState(listing?.is_favorited || false)
   const [token, setToken] = useState<string>('')
+  const [averageRating, setAverageRating] = useState<number>(0)
+  const [reviewCount, setReviewCount] = useState<number>(0)
+
+  // Fetch reviews and calculate average rating
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!listing?.id) return
+      try {
+        const response = await axios.get(`${API}/reviews/?listing=${listing.id}`)
+        if (Array.isArray(response.data)) {
+          const reviews = response.data
+          const count = reviews.length
+          const avgRating = count > 0
+            ? Math.round((reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / count) * 10) / 10
+            : 0
+          setReviewCount(count)
+          setAverageRating(avgRating)
+        }
+      } catch (error) {
+        console.error('Error fetching reviews:', error)
+      }
+    }
+
+    fetchReviews()
+  }, [listing?.id])
 
   useEffect(() => {
     const storedToken = localStorage.getItem('access_token')
@@ -117,7 +143,29 @@ export default function ListingCard({ listing }: { listing: any }) {
             {listing.category.name}
           </div>
         )}
-        <div className="text-sm text-gray-500">{listing.city || '—'}</div>
+        <div className="text-sm text-gray-500 mb-3">{listing.city || '—'}</div>
+        
+        {/* Rating and Reviews */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`w-4 h-4 ${
+                  i < Math.round(averageRating)
+                    ? 'fill-orange-500 text-orange-500'
+                    : 'text-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-sm font-medium text-gray-700">
+            {averageRating > 0 ? `${averageRating}` : 'No ratings'}
+          </span>
+          <span className="text-xs text-gray-500">
+            ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+          </span>
+        </div>
       </div>
     </Link>
   )

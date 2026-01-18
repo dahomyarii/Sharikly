@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import { Search, Heart, TrendingUp, Sparkles, Briefcase, Music, Camera, Utensils, Mic, Plus } from 'lucide-react'
+import { Search, Heart, TrendingUp, Sparkles, Briefcase, Music, Camera, Utensils, Mic, Plus, Star } from 'lucide-react'
 import Link from "next/link"
 
 const API = process.env.NEXT_PUBLIC_API_BASE
@@ -240,6 +240,52 @@ export default function HomePage() {
     return { icon: Sparkles, color: 'from-blue-500 to-cyan-500' }
   }
 
+  // Component to display ratings
+  const RatingDisplay = ({ serviceId }: { serviceId: number }) => {
+    const [rating, setRating] = useState<number>(0)
+    const [reviewCount, setReviewCount] = useState<number>(0)
+
+    useEffect(() => {
+      const fetchRating = async () => {
+        try {
+          const response = await axios.get(`${API}/reviews/?listing=${serviceId}`)
+          if (Array.isArray(response.data)) {
+            const reviews = response.data
+            const count = reviews.length
+            const avg = count > 0
+              ? Math.round((reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / count) * 10) / 10
+              : 0
+            setRating(avg)
+            setReviewCount(count)
+          }
+        } catch (error) {
+          console.error('Error fetching rating:', error)
+        }
+      }
+      fetchRating()
+    }, [serviceId])
+
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {[...Array(5)].map((_, i) => (
+            <Star
+              key={i}
+              className={`w-4 h-4 ${
+                i < Math.round(rating)
+                  ? 'fill-orange-500 text-orange-500'
+                  : 'text-gray-300'
+              }`}
+            />
+          ))}
+        </div>
+        <span className="text-xs text-gray-500">
+          ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header / Hero Section */}
@@ -319,6 +365,9 @@ export default function HomePage() {
                       <Badge variant="secondary" className="mb-4">{featuredService.category?.name || "Listing"}</Badge>
                       <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">{featuredService.title}</h3>
                       <p className="text-gray-600 mb-6 text-lg">{featuredService.description}</p>
+                      <div className="mb-6">
+                        <RatingDisplay serviceId={featuredService.id} />
+                      </div>
                     </div>
                     <div className="flex items-center justify-between pt-6 border-t border-gray-200">
                       <div>
@@ -365,6 +414,9 @@ export default function HomePage() {
                 <div className="p-5">
                   <Badge variant="secondary" className="mb-3 text-xs">{service.category?.name || "Listing"}</Badge>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">{service.title}</h3>
+                  <div className="mb-3">
+                    <RatingDisplay serviceId={service.id} />
+                  </div>
                   <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold text-gray-800">${service.price_per_day}</span>
                       <Link href={`/listings/${service.id}`}>
@@ -408,6 +460,9 @@ export default function HomePage() {
                 <div className="p-4">
                   <Badge variant="secondary" className="mb-2 text-xs">{service.category?.name || "Listing"}</Badge>
                   <h3 className="text-base font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">{service.title}</h3>
+                  <div className="mb-3">
+                    <RatingDisplay serviceId={service.id} />
+                  </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xl font-bold text-gray-800">${service.price_per_day}</span>
                     <Button size="sm" variant="outline" className="rounded-full text-blue-600 border-blue-600 hover:bg-blue-50">View</Button>

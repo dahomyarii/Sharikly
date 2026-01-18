@@ -165,6 +165,7 @@ class Review(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        unique_together = ("user", "listing")
 
     def __str__(self):
         return f"{self.rating}★ by {self.user.email} on {self.listing.title}"
