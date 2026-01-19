@@ -67,10 +67,10 @@ export default function Header() {
           </>
         ) : (
           <button
-            onClick={() => setShowSignup(true)}
+            onClick={() => setShowLogin(true)}
             className="px-4 py-2 bg-black text-white rounded-full"
           >
-            {t("sign_up")}
+            {t("join_us")}
           </button>
         )}
       </div>
@@ -89,6 +89,15 @@ export default function Header() {
           onSwitchToSignup={() => {
             setShowLogin(false);
             setShowSignup(true);
+          }}
+        />
+      )}
+      {showSignup && (
+        <SignupModal 
+          onClose={() => setShowSignup(false)} 
+          onSwitchToLogin={() => {
+            setShowSignup(false);
+            setShowLogin(true);
           }}
         />
       )}
