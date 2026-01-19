@@ -111,10 +111,14 @@ export default function ListingDetail() {
             date: r.created_at ? new Date(r.created_at).toLocaleDateString() : "",
             raw: r,
           }));
-          normalized.sort(
-            (a: any, b: any) =>
-              b.helpful - b.notHelpful - (a.helpful - a.notHelpful)
-          );
+          // Preserve stable ordering by review date (newest first).
+          const getTime = (r: any) =>
+            r.raw?.created_at
+              ? new Date(r.raw.created_at).getTime()
+              : r.date
+              ? new Date(r.date).getTime()
+              : 0;
+          normalized.sort((a: any, b: any) => getTime(b) - getTime(a));
           setReviews(normalized);
         }
       } catch (error) {
@@ -250,20 +254,18 @@ export default function ListingDetail() {
       newUserVote = voteType;
     }
 
-    // Update UI optimistically
+    // Update UI optimistically — keep existing order (by date)
     setReviews((prev) =>
-      prev
-        .map((r) =>
-          r.id === reviewId
-            ? {
-                ...r,
-                helpful: newHelpful,
-                notHelpful: newNotHelpful,
-                userVote: newUserVote,
-              }
-            : r
-        )
-        .sort((a, b) => b.helpful - b.notHelpful - (a.helpful - a.notHelpful))
+      prev.map((r) =>
+        r.id === reviewId
+          ? {
+              ...r,
+              helpful: newHelpful,
+              notHelpful: newNotHelpful,
+              userVote: newUserVote,
+            }
+          : r
+      )
     );
 
     try {
@@ -303,37 +305,33 @@ export default function ListingDetail() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Update with server response
+      // Update with server response — keep existing order (by date)
       setReviews((prev) =>
-        prev
-          .map((r) =>
-            r.id === reviewId
-              ? {
-                  ...r,
-                  helpful: res.data.helpful ?? newHelpful,
-                  notHelpful: res.data.not_helpful ?? newNotHelpful,
-                  userVote: res.data.user_vote ?? newUserVote,
-                }
-              : r
-          )
-          .sort((a, b) => b.helpful - b.notHelpful - (a.helpful - a.notHelpful))
+        prev.map((r) =>
+          r.id === reviewId
+            ? {
+                ...r,
+                helpful: res.data.helpful ?? newHelpful,
+                notHelpful: res.data.not_helpful ?? newNotHelpful,
+                userVote: res.data.user_vote ?? newUserVote,
+              }
+            : r
+        )
       );
     } catch (err: any) {
       console.error("Error voting on review:", err);
-      // Revert on error
+      // Revert on error — keep existing order (by date)
       setReviews((prev) =>
-        prev
-          .map((r) =>
-            r.id === reviewId
-              ? {
-                  ...r,
-                  helpful: previousState.helpful,
-                  notHelpful: previousState.notHelpful,
-                  userVote: previousState.userVote,
-                }
-              : r
-          )
-          .sort((a, b) => b.helpful - b.notHelpful - (a.helpful - a.notHelpful))
+        prev.map((r) =>
+          r.id === reviewId
+            ? {
+                ...r,
+                helpful: previousState.helpful,
+                notHelpful: previousState.notHelpful,
+                userVote: previousState.userVote,
+              }
+            : r
+        )
       );
       alert("Error voting on review. Please try again.");
     }
