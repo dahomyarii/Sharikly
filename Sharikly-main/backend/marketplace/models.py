@@ -3,6 +3,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
+import random
 
 
 # ==========================
@@ -49,10 +50,24 @@ class Listing(models.Model):
     description = models.TextField()
     price_per_day = models.DecimalField(max_digits=8, decimal_places=2)
     city = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Location picker fields
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    pickup_radius_m = models.IntegerField(default=300, validators=[MinValueValidator(100), MaxValueValidator(2000)])
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        """Slightly randomize coordinates for privacy (±~150m)"""
+        if self.latitude is not None and self.longitude is not None:
+            # ~150m randomization in degrees (~0.00135 degrees ≈ 150m at equator)
+            self.latitude += random.uniform(-0.00135, 0.00135)
+            self.longitude += random.uniform(-0.00135, 0.00135)
+        super().save(*args, **kwargs)
 
     # Average rating helper (optional)
     @property

@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import LocationPicker from "@/components/LocationPicker";
 import {
   ArrowLeft,
   Search,
@@ -620,6 +621,15 @@ export default function ListingDetail() {
                   {data.description}
                 </p>
               </Card>
+
+              {data.latitude && data.longitude && (
+                <LocationPicker
+                  readOnly={true}
+                  initialLat={data.latitude}
+                  initialLng={data.longitude}
+                  initialRadius={data.pickup_radius_m || 300}
+                />
+              )}
             </div>
 
             <Card className="p-6">

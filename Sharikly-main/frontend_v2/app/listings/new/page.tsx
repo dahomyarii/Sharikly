@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
+import LocationPicker from '@/components/LocationPicker'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -21,6 +22,9 @@ export default function NewListing() {
   const [categoryId, setCategoryId] = useState<string>('')
   const [categories, setCategories] = useState<Category[]>([])
   const [msg, setMsg] = useState('')
+  const [latitude, setLatitude] = useState<number | null>(null)
+  const [longitude, setLongitude] = useState<number | null>(null)
+  const [radius, setRadius] = useState(300)
   const router = useRouter()
 
   // Fetch categories on component mount
@@ -49,12 +53,20 @@ const token =
       return
     }
 
+    if (latitude === null || longitude === null) {
+      setMsg('Location is required. Please select a location on the map.')
+      return
+    }
+
     try {
       const formData = new FormData()
       formData.append('title', title)
       formData.append('description', description)
       formData.append('price_per_day', price)
       formData.append('city', city)
+      formData.append('latitude', String(latitude))
+      formData.append('longitude', String(longitude))
+      formData.append('pickup_radius_m', String(radius))
       if (categoryId) {
         formData.append('category_id', categoryId)
       }
@@ -126,6 +138,15 @@ const token =
           onChange={e => setDescription(e.target.value)}
         />
         <input type="file" accept="image/*" onChange={e => setImage(e.target.files?.[0] || null)} />
+        
+        <LocationPicker
+          onLocationChange={(lat, lng, rad) => {
+            setLatitude(lat)
+            setLongitude(lng)
+            setRadius(rad)
+          }}
+        />
+        
         <div className="flex items-center gap-4">
           <button
             type="submit"
