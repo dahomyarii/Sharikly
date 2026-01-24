@@ -59,6 +59,28 @@ urlpatterns = [
         views.ReviewVoteView.as_view(),
         name="review_vote",
     ),
+    # Contact Messages
+    path(
+        "contact-messages/",
+        views.ContactMessageListCreateView.as_view(),
+        name="contact_messages",
+    ),
+    path(
+        "contact-messages/<int:pk>/",
+        views.ContactMessageDetailView.as_view(),
+        name="contact_message_detail",
+    ),
+    # User to Admin Messages
+    path(
+        "user-admin-messages/",
+        views.UserAdminMessageListCreateView.as_view(),
+        name="user_admin_messages",
+    ),
+    path(
+        "user-admin-messages/<int:pk>/",
+        views.UserAdminMessageDetailView.as_view(),
+        name="user_admin_message_detail",
+    ),
     # Include router URLs
     path("", include(router.urls)),
 ]

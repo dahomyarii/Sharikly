@@ -248,6 +248,8 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 #        read_only_fields = ['user', 'created_at', 'user_name', 'user_avatar']
 
 
+
+
 # ==========================
 # HELPFUL / NOT HELPFUL SERIALIZER
 # ==========================
@@ -266,3 +268,59 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = ReviewNotHelpfulMark
 #         fields = ['id', 'user', 'review', 'created_at']
+
+
+# ==========================
+# CONTACT MESSAGE SERIALIZER
+# ==========================
+class ContactMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = [
+            "id",
+            "name",
+            "email",
+            "phone",
+            "message",
+            "created_at",
+            "admin_response",
+            "admin_response_date",
+            "responded",
+        ]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "admin_response",
+            "admin_response_date",
+            "responded",
+        ]
+
+
+# ==========================
+# USER TO ADMIN MESSAGE SERIALIZER
+# ==========================
+class UserAdminMessageSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    user_id = serializers.IntegerField(write_only=True, required=False)
+
+    class Meta:
+        model = UserAdminMessage
+        fields = [
+            "id",
+            "user",
+            "user_id",
+            "subject",
+            "message",
+            "created_at",
+            "admin_response",
+            "admin_response_date",
+            "responded",
+        ]
+        read_only_fields = [
+            "id",
+            "user",
+            "created_at",
+            "admin_response",
+            "admin_response_date",
+            "responded",
+        ]

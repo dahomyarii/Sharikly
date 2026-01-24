@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import User, Listing, Booking, ListingImage, Category, Review, ReviewVote
+from .models import User, Listing, Booking, ListingImage, Category, Review, ReviewVote, ContactMessage, UserAdminMessage
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -41,3 +41,41 @@ class ReviewVoteAdmin(admin.ModelAdmin):
     search_fields = ('user__email', 'user__username', 'review__comment')
     readonly_fields = ('created_at',)
     date_hierarchy = 'created_at'
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'phone', 'created_at', 'responded')
+    list_filter = ('responded', 'created_at')
+    search_fields = ('name', 'email', 'phone', 'message')
+    readonly_fields = ('created_at', 'admin_response_date')
+    date_hierarchy = 'created_at'
+    fieldsets = (
+        ('Contact Information', {
+            'fields': ('name', 'email', 'phone')
+        }),
+        ('Message', {
+            'fields': ('message', 'created_at')
+        }),
+        ('Admin Response', {
+            'fields': ('admin_response', 'admin_response_date', 'responded')
+        }),
+    )
+
+@admin.register(UserAdminMessage)
+class UserAdminMessageAdmin(admin.ModelAdmin):
+    list_display = ('user', 'subject', 'created_at', 'responded')
+    list_filter = ('responded', 'created_at')
+    search_fields = ('user__email', 'user__username', 'subject', 'message')
+    readonly_fields = ('created_at', 'admin_response_date')
+    date_hierarchy = 'created_at'
+    fieldsets = (
+        ('User Information', {
+            'fields': ('user',)
+        }),
+        ('Message', {
+            'fields': ('subject', 'message', 'created_at')
+        }),
+        ('Admin Response', {
+            'fields': ('admin_response', 'admin_response_date', 'responded')
+        }),
+    )

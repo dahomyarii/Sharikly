@@ -50,8 +50,15 @@ export default function Header() {
       <Link href="/" className="text-xl font-bold">
         EKRA
       </Link>
+
       <div className="flex gap-4 items-center">
         <LanguageSwitcher />
+        <Link
+          href="/contact"
+          className="px-4 py-2 border rounded-full"
+        >
+          {t("Contact us")}
+        </Link>
         {user ? (
           <>
             <Link href="/favorites" className="px-4 py-2 border rounded-full">
@@ -89,15 +96,6 @@ export default function Header() {
           onSwitchToSignup={() => {
             setShowLogin(false);
             setShowSignup(true);
-          }}
-        />
-      )}
-      {showSignup && (
-        <SignupModal 
-          onClose={() => setShowSignup(false)} 
-          onSwitchToLogin={() => {
-            setShowSignup(false);
-            setShowLogin(true);
           }}
         />
       )}

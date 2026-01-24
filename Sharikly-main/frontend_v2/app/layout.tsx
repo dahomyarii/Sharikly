@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import FloatingChatButton from "@/components/FloatingChatButton";
 
@@ -33,9 +34,7 @@ export default function RootLayout({
         <LocaleProvider>
           <Header />
           <main className="flex-1">{children}</main>
-          <footer className="bg-gray-100 p-4 text-center mt-auto">
-            © 2025 EKRA — Inspired by best marketplace UX patterns.
-          </footer>
+          <Footer />
           <FloatingChatButton />
         </LocaleProvider>
         

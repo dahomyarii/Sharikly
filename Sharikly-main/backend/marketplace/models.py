@@ -206,3 +206,42 @@ class ReviewVote(models.Model):
 
     def __str__(self):
         return f"{self.vote_type} vote by {self.user.email} on Review {self.review.id}"
+
+
+# ==========================
+# USER TO ADMIN MESSAGES
+# ==========================
+class UserAdminMessage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="admin_messages")
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    admin_response = models.TextField(blank=True, null=True)
+    admin_response_date = models.DateTimeField(blank=True, null=True)
+    responded = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Message from {self.user.email}: {self.subject}"
+
+
+# ==========================
+# CONTACT MESSAGES
+# ==========================
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    admin_response = models.TextField(blank=True, null=True)
+    admin_response_date = models.DateTimeField(blank=True, null=True)
+    responded = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Message from {self.name} ({self.email})"

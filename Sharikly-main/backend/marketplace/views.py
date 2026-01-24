@@ -6,6 +6,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from .models import *
 from .serializers import *
@@ -329,3 +330,100 @@ class ReviewVoteView(generics.CreateAPIView):
                 status=status.HTTP_201_CREATED,
             )
 
+
+# --- CONTACT MESSAGE VIEWS ---
+class ContactMessageListCreateView(generics.ListCreateAPIView):
+    """Create contact messages (public) and list them (admin only)"""
+    queryset = ContactMessage.objects.all()
+    serializer_class = ContactMessageSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        """Only admins can see all messages"""
+        if self.request.user and self.request.user.is_staff:
+            return ContactMessage.objects.all()
+        return ContactMessage.objects.none()
+
+    def get_permissions(self):
+        """Allow anyone to create, but only admins to list"""
+        if self.request.method == "POST":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+    def create(self, request, *args, **kwargs):
+        """Create a new contact message"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ContactMessageDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Admin only: retrieve, update (add response), or delete a message"""
+    queryset = ContactMessage.objects.all()
+    serializer_class = ContactMessageSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def update(self, request, *args, **kwargs):
+        """Allow admin to add a response to the message"""
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+
+        # Only allow updating admin_response field
+        if "admin_response" in request.data:
+            instance.admin_response = request.data["admin_response"]
+            instance.admin_response_date = timezone.now()
+            instance.responded = True
+            instance.save()
+
+        serializer = self.get_serializer(instance, partial=partial)
+        return Response(serializer.data)
+
+
+# --- USER TO ADMIN MESSAGE VIEWS ---
+class UserAdminMessageListCreateView(generics.ListCreateAPIView):
+    """Authenticated users can create and view their own messages"""
+    serializer_class = UserAdminMessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """Users see only their own messages, admins see all"""
+        if self.request.user.is_staff:
+            return UserAdminMessage.objects.all()
+        return UserAdminMessage.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        """Create message with current user"""
+        serializer.save(user=self.request.user)
+
+
+class UserAdminMessageDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Users can view/delete their messages, admins can respond"""
+    serializer_class = UserAdminMessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """Users see only their own, admins see all"""
+        if self.request.user.is_staff:
+            return UserAdminMessage.objects.all()
+        return UserAdminMessage.objects.filter(user=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        """Only admins can add responses"""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only admins can respond to messages"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+
+        if "admin_response" in request.data:
+            instance.admin_response = request.data["admin_response"]
+            instance.admin_response_date = timezone.now()
+            instance.responded = True
+            instance.save()
+
+        serializer = self.get_serializer(instance, partial=partial)
+        return Response(serializer.data)
