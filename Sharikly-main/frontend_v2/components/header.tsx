@@ -55,12 +55,6 @@ export default function Header() {
 
         <div className="hidden md:flex gap-4 items-center">
           <LanguageSwitcher />
-          <Link
-            href="/contact"
-            className="px-4 py-2 border rounded-full"
-          >
-            {t("Contact us")}
-          </Link>
           {user ? (
             <>
               <Link href="/favorites" className="px-4 py-2 border rounded-full">
