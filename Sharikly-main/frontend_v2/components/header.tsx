@@ -47,51 +47,28 @@ export default function Header() {
   }
 
   return (
-<<<<<<< HEAD
-    <header className="bg-gray-100 p-4 flex justify-between items-center">
-      <Link href="/" className="text-xl font-bold">
-        EKRA
-      </Link>
-
-      <div className="flex gap-4 items-center">
-        <LanguageSwitcher />
-        <Link
-          href="/contact"
-          className="px-4 py-2 border rounded-full"
-        >
-          {t("Contact us")}
-        </Link>
-        {user ? (
-          <>
-            <Link href="/favorites" className="px-4 py-2 border rounded-full">
-              {t("favorites")}
-            </Link>
-            <span className="font-semibold">{user.username}</span>
-=======
     <>
       <header className="bg-gray-100 p-4 flex justify-between items-center">
         <Link href="/" className="text-xl font-bold">
           EKRA
         </Link>
 
-        {/* Desktop Menu */}
         <div className="hidden md:flex gap-4 items-center">
           <LanguageSwitcher />
           {user ? (
             <>
-              <Link href="/favorites" className="px-4 py-2 border rounded-full hover:bg-gray-200 transition">
+              <Link href="/favorites" className="px-4 py-2 border rounded-full">
                 {t("favorites")}
               </Link>
-              <span className="font-semibold text-gray-800">{user.username}</span>
+              <span className="font-semibold">{user.username}</span>
               <button
-                onClick={handleLogout}
-                className="px-4 py-2 border rounded-full hover:bg-gray-200 transition"
+                onClick={() => handleLogout()}
+                className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition"
               >
                 {t("logout")}
               </button>
             </>
           ) : (
->>>>>>> 0302a5eb520144585eca19846f3803c34bc01a18
             <button
               onClick={() => setShowLogin(true)}
               className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition"
@@ -183,10 +160,6 @@ export default function Header() {
           }}
         />
       )}
-<<<<<<< HEAD
-    </header> 
-=======
     </>
->>>>>>> 0302a5eb520144585eca19846f3803c34bc01a18
   );
 }

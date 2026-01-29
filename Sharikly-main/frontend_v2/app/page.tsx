@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Search, Heart, TrendingUp, Sparkles, Briefcase, Music, Camera, Utensils, Mic, Plus, Star } from 'lucide-react'
 import Link from "next/link"
+import SkeletonLoader from "@/components/SkeletonLoader"
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -74,7 +75,7 @@ export default function HomePage() {
   }, [token])
 
   // Only fetch listings after token is loaded and API is defined
-  const { data: listings } = useSWR(
+  const { data: listings, isLoading: isListingsLoading } = useSWR(
     tokenLoaded && API ? `${API}/listings/` : null, 
     fetcher,
     {
@@ -301,10 +302,12 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-black/40"></div>
         
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-          <Badge className="bg-white/20 text-white border-0 mb-4 backdrop-blur-sm">
-            <TrendingUp className="h-3 w-3 mr-1" />
-            Browse Listings
-          </Badge>
+          <Link href="/listings">
+            <Badge className="bg-white/20 text-white border-0 mb-4 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition">
+              <TrendingUp className="h-3 w-3 mr-1" />
+              Browse Listings
+            </Badge>
+          </Link>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Explore Our Latest Listings</h1>
           <p className="text-lg md:text-xl text-blue-50 max-w-2xl mx-auto">
             Discover premium rentals and services tailored to your needs.
@@ -388,7 +391,14 @@ export default function HomePage() {
         {/* Hot Services */}
         <section className="py-12 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {hotServices.map((service: any) => (
+            {isListingsLoading ? (
+              // Show skeleton loaders while loading
+              [...Array(3)].map((_, i) => (
+                <SkeletonLoader key={i} />
+              ))
+            ) : (
+              // Show actual listings
+              hotServices.map((service: any) => (
               <Card key={service.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white">
                 <Link href={`/listings/${service.id}`} className="relative w-full block cursor-pointer bg-black overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
                   {service.images?.[0]?.image && (
@@ -427,14 +437,24 @@ export default function HomePage() {
                   </div>
                 </div>
               </Card>
-            ))}
+            ))
+            )}
           </div>
         </section>
 
         {/* Recommendations */}
         <section className="py-12 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-6 overflow-x-auto scrollbar-hide" ref={scrollContainerRef} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-            {recommendations.map((service: any) => (
+            {isListingsLoading ? (
+              // Show skeleton loaders while loading
+              [...Array(6)].map((_, i) => (
+                <div key={i} className="flex-shrink-0 w-80">
+                  <SkeletonLoader />
+                </div>
+              ))
+            ) : (
+              // Show actual listings
+              recommendations.map((service: any) => (
               <Card key={service.id} className="group flex-shrink-0 w-80 overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white">
                 <Link href={`/listings/${service.id}`} className="relative w-full block cursor-pointer bg-black overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
                   {service.images?.[0]?.image && (
@@ -469,7 +489,8 @@ export default function HomePage() {
                   </div>
                 </div>
               </Card>
-            ))}
+            ))
+            )}
           </div>
         </section>
       </div>
