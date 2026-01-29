@@ -245,3 +245,61 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} ({self.email})"
+
+
+# ==========================
+# BLOG POSTS
+# ==========================
+class BlogPost(models.Model):
+    CATEGORY_CHOICES = [
+        ('tips', 'Tips & Guides'),
+        ('news', 'News'),
+        ('stories', 'Stories'),
+        ('featured', 'Featured'),
+        ('tutorial', 'Tutorial'),
+    ]
+    
+    title = models.CharField(max_length=300)
+    slug = models.SlugField(unique=True, blank=True)
+    excerpt = models.TextField(max_length=500)
+    content = models.TextField()
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blog_posts")
+    featured_image = models.ImageField(upload_to="blog_images/", blank=True, null=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='tips')
+    tags = models.CharField(max_length=500, blank=True, help_text="Comma-separated tags")
+    
+    # SEO & Meta
+    meta_title = models.CharField(max_length=200, blank=True)
+    meta_description = models.CharField(max_length=500, blank=True)
+    meta_keywords = models.CharField(max_length=500, blank=True)
+    
+    # Status & Publishing
+    published = models.BooleanField(default=False)
+    featured = models.BooleanField(default=False)
+    views_count = models.IntegerField(default=0)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    published_date = models.DateTimeField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ["-published_date", "-created_at"]
+        verbose_name = "Blog Post"
+        verbose_name_plural = "Blog Posts"
+    
+    def __str__(self):
+        return self.title
+    
+    def save(self, *args, **kwargs):
+        """Auto-generate slug from title"""
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.title)
+        
+        # Set published_date when publishing
+        if self.published and not self.published_date:
+            from django.utils import timezone
+            self.published_date = timezone.now()
+        
+        super().save(*args, **kwargs)

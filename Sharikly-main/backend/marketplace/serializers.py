@@ -324,3 +324,54 @@ class UserAdminMessageSerializer(serializers.ModelSerializer):
             "admin_response_date",
             "responded",
         ]
+
+
+# ==========================
+# BLOG POST SERIALIZER
+# ==========================
+class BlogPostSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+    author_id = serializers.IntegerField(write_only=True, required=False)
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
+    tags_list = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BlogPost
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "excerpt",
+            "content",
+            "author",
+            "author_id",
+            "featured_image",
+            "category",
+            "category_display",
+            "tags",
+            "tags_list",
+            "meta_title",
+            "meta_description",
+            "meta_keywords",
+            "published",
+            "featured",
+            "views_count",
+            "created_at",
+            "updated_at",
+            "published_date",
+        ]
+        read_only_fields = [
+            "id",
+            "author",
+            "created_at",
+            "updated_at",
+            "published_date",
+            "views_count",
+            "slug",
+        ]
+    
+    def get_tags_list(self, obj):
+        """Convert comma-separated tags to list"""
+        if obj.tags:
+            return [tag.strip() for tag in obj.tags.split(',')]
+        return []

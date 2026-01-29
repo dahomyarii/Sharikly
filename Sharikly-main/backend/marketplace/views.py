@@ -427,3 +427,78 @@ class UserAdminMessageDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         serializer = self.get_serializer(instance, partial=partial)
         return Response(serializer.data)
+
+
+# ==========================
+# BLOG POST VIEWS
+# ==========================
+class BlogPostListCreateView(generics.ListCreateAPIView):
+    """
+    GET: Anyone can view published blogs + admins see all
+    POST: Only admins can create blogs
+    """
+    serializer_class = BlogPostSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
+
+    def get_queryset(self):
+        """Users see published, admins see all"""
+        if self.request.user and self.request.user.is_staff:
+            return BlogPost.objects.all()
+        return BlogPost.objects.filter(published=True)
+
+    def create(self, request, *args, **kwargs):
+        """Only admins can create"""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only admins can create blog posts"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class BlogPostDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    GET: Anyone can view published blogs
+    PATCH/PUT: Only admins (or author) can edit
+    DELETE: Only admins (or author) can delete
+    """
+    serializer_class = BlogPostSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
+
+    def get_queryset(self):
+        """Users see published, admins see all"""
+        if self.request.user and self.request.user.is_staff:
+            return BlogPost.objects.all()
+        return BlogPost.objects.filter(published=True)
+
+    def update(self, request, *args, **kwargs):
+        """Only admins or author can update"""
+        instance = self.get_object()
+        if not (request.user.is_staff or request.user == instance.author):
+            return Response(
+                {"detail": "You can only edit your own blog posts"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        partial = kwargs.pop("partial", False)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        """Only admins or author can delete"""
+        instance = self.get_object()
+        if not (request.user.is_staff or request.user == instance.author):
+            return Response(
+                {"detail": "You can only delete your own blog posts"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

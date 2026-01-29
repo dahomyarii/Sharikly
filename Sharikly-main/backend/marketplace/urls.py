@@ -81,6 +81,17 @@ urlpatterns = [
         views.UserAdminMessageDetailView.as_view(),
         name="user_admin_message_detail",
     ),
+    # Blog Posts
+    path(
+        "blog/",
+        views.BlogPostListCreateView.as_view(),
+        name="blog_list",
+    ),
+    path(
+        "blog/<int:pk>/",
+        views.BlogPostDetailView.as_view(),
+        name="blog_detail",
+    ),
     # Include router URLs
     path("", include(router.urls)),
 ]
