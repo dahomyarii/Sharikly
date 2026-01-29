@@ -21,6 +21,7 @@ export default function HomePage() {
   const [tokenLoaded, setTokenLoaded] = useState(false)
   const [favorites, setFavorites] = useState<Set<number>>(new Set())
   const [categories, setCategories] = useState<any[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
 
   // Initialize token from localStorage
   useEffect(() => {
@@ -91,9 +92,14 @@ export default function HomePage() {
       shouldRetryOnError: false,
     }
   )
-  const featuredService = listings?.[0]
-  const hotServices = listings?.slice(1, 4) || []
-  const recommendations = listings?.slice(4, 10) || []
+  // Filter listings based on selected category
+  const filteredListings = selectedCategory
+    ? listings?.filter((listing: any) => listing.category?.id === selectedCategory)
+    : listings
+
+  const featuredService = filteredListings?.[0]
+  const hotServices = filteredListings?.slice(1, 4) || []
+  const recommendations = filteredListings?.slice(4, 10) || []
 
   // Set initial favorite state from listings data
   useEffect(() => {
@@ -328,15 +334,39 @@ export default function HomePage() {
         <section className="py-6 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {/* All Categories Button */}
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`flex flex-col items-center p-4 rounded-lg shadow-sm transition ${
+                  selectedCategory === null
+                    ? 'bg-orange-500 text-white shadow-md'
+                    : 'bg-white hover:shadow-md'
+                }`}
+              >
+                <div className={`p-3 rounded-full mb-2 ${selectedCategory === null ? 'bg-orange-600' : 'bg-gray-200'}`}>
+                  <Sparkles className={`h-6 w-6 ${selectedCategory === null ? 'text-white' : 'text-gray-600'}`} />
+                </div>
+                <span className={`text-sm font-medium ${selectedCategory === null ? 'text-white' : 'text-gray-700'}`}>All</span>
+              </button>
+              
               {categories.map(cat => {
                 const { icon: IconComponent, color } = getCategoryIcon(cat.name)
+                const isSelected = selectedCategory === cat.id
                 return (
-                  <Link key={cat.id} href="#" className="flex flex-col items-center p-4 rounded-lg shadow-sm bg-white hover:shadow-md transition">
-                    <div className={`p-3 rounded-full bg-gradient-to-br ${color} mb-2`}>
-                      <IconComponent className="h-6 w-6 text-white" />
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`flex flex-col items-center p-4 rounded-lg shadow-sm transition ${
+                      isSelected
+                        ? 'bg-orange-500 text-white shadow-md'
+                        : 'bg-white hover:shadow-md'
+                    }`}
+                  >
+                    <div className={`p-3 rounded-full mb-2 ${isSelected ? 'bg-orange-600' : `bg-gradient-to-br ${color}`}`}>
+                      <IconComponent className={`h-6 w-6 ${isSelected ? 'text-white' : 'text-white'}`} />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{cat.name}</span>
-                  </Link>
+                    <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-gray-700'}`}>{cat.name}</span>
+                  </button>
                 )
               })}
             </div>
