@@ -308,12 +308,20 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-black/40"></div>
         
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-          <Link href="/listings">
-            <Badge className="bg-white/20 text-white border-0 mb-4 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition">
-              <TrendingUp className="h-3 w-3 mr-1" />
-              Browse Listings
-            </Badge>
-          </Link>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Link href="/listings">
+              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                Browse Listings
+              </Badge>
+            </Link>
+            <Link href="/blog">
+              <Badge className="bg-white/10 text-white/90 border-0 backdrop-blur-sm cursor-pointer hover:bg-white/20 transition">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Blog
+              </Badge>
+            </Link>
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Explore Our Latest Listings</h1>
           <p className="text-lg md:text-xl text-blue-50 max-w-2xl mx-auto">
             Discover premium rentals and services tailored to your needs.

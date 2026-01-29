@@ -1,6 +1,7 @@
 'use client'
 
-import { ArrowLeft, Calendar, User } from 'lucide-react'
+import { ArrowLeft, Calendar, User, Search } from 'lucide-react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
@@ -27,6 +28,18 @@ export default function BlogPage() {
       author: 'Noor'
     }
   ]
+
+  const [query, setQuery] = useState('')
+
+  const filteredPosts = useMemo(() => {
+    if (!query) return posts
+    const q = query.toLowerCase()
+    return posts.filter(p =>
+      (p.title || '').toLowerCase().includes(q) ||
+      (p.excerpt || '').toLowerCase().includes(q) ||
+      (p.author || '').toLowerCase().includes(q)
+    )
+  }, [query, posts])
 
   return (
     <div className="min-h-screen bg-white">
@@ -55,23 +68,44 @@ export default function BlogPage() {
           </p>
         </div>
 
+        {/* Search */}
+        <div className="">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+            <input
+              aria-label="Search blog posts"
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search posts by title, excerpt, or author"
+              className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            />
+          </div>
+        </div>
+
         <div className="space-y-4">
-          {posts.map((post, idx) => (
-            <div key={idx} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
-              <p className="text-gray-600 mb-4">{post.excerpt}</p>
-              <div className="flex gap-4 text-sm text-gray-600">
-                <span className="flex items-center gap-1">
-                  <User className="w-4 h-4" />
-                  {post.author}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  {new Date(post.date).toLocaleDateString()}
-                </span>
+          {filteredPosts.length > 0 ? (
+            filteredPosts.map((post, idx) => (
+              <div key={idx} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
+                <p className="text-gray-600 mb-4">{post.excerpt}</p>
+                <div className="flex gap-4 text-sm text-gray-600">
+                  <span className="flex items-center gap-1">
+                    <User className="w-4 h-4" />
+                    {post.author}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    {new Date(post.date).toLocaleDateString()}
+                  </span>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              No posts found. Try a different search term.
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
