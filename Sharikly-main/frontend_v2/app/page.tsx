@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import useSWR, { mutate } from "swr"
-import axios from "axios"
+import axiosInstance from "@/lib/axios"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -47,37 +47,57 @@ export default function HomePage() {
       }
     }
 
+    // Listen for logout events to clear token
+    const handleLogout = () => {
+      setToken('')
+      if (API) {
+        mutate(`${API}/listings/`)
+      }
+    }
+
     window.addEventListener('userLogin', handleLogin as EventListener)
+    window.addEventListener('userLogout', handleLogout as EventListener)
     
     return () => {
       window.removeEventListener('userLogin', handleLogin as EventListener)
+      window.removeEventListener('userLogout', handleLogout as EventListener)
     }
   }, [])
 
-  // Custom fetcher that includes the auth token
+  // Custom fetcher for public endpoints (like listings)
+  // Don't send token for public endpoints - if token is expired, it causes 401 errors
   const fetcher = useCallback((url: string) => {
     if (!url || !API) {
       return Promise.resolve([])
     }
-    const headers: any = {}
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`
-    }
-    return axios.get(url, { headers })
+    
+    // For public endpoints like /listings/, don't send token
+    // The endpoint has AllowAny permission, so token is optional
+    // If token is expired, sending it causes 401 errors
+    return axiosInstance.get(url)
       .then(res => res.data)
       .catch(error => {
-        // Silently handle 400/401/403 errors (expected when not authenticated or endpoint issues)
+        // If 401 occurs, the interceptor will clear the token
+        // Retry once without token for public endpoints
+        if (error.response?.status === 401 && url.includes('/listings/')) {
+          // Token was cleared by interceptor, retry without token
+          return axiosInstance.get(url)
+            .then(res => res.data)
+            .catch(() => [])
+        }
+        
+        // Silently handle expected errors (400, 401, 403, 404)
         // Only log unexpected errors
         if (error.response?.status && ![400, 401, 403, 404].includes(error.response.status)) {
           console.error('Error fetching listings:', error)
         }
         return []
       })
-  }, [token])
+  }, [])
 
-  // Only fetch listings after token is loaded and API is defined
+  // Fetch listings immediately - it's a public endpoint, no token needed
   const { data: listings, isLoading: isListingsLoading } = useSWR(
-    tokenLoaded && API ? `${API}/listings/` : null, 
+    API ? `${API}/listings/` : null, 
     fetcher,
     {
       onError: (error: any) => {
@@ -131,7 +151,7 @@ export default function HomePage() {
         newSet.delete(listingId)
         
         // Make the API call
-        axios.delete(
+        axiosInstance.delete(
           `${API}/listings/${listingId}/unfavorite/`,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -150,7 +170,7 @@ export default function HomePage() {
         newSet.add(listingId)
         
         // Make the API call
-        axios.post(
+        axiosInstance.post(
           `${API}/listings/${listingId}/favorite/`,
           {},
           {
@@ -210,7 +230,7 @@ export default function HomePage() {
     if (!API) {
       return
     }
-    axios
+    axiosInstance
       .get(`${API}/categories/`)
       .then(res => setCategories(res.data))
       .catch(err => {
@@ -255,7 +275,7 @@ export default function HomePage() {
     useEffect(() => {
       const fetchRating = async () => {
         try {
-          const response = await axios.get(`${API}/reviews/?listing=${serviceId}`)
+          const response = await axiosInstance.get(`${API}/reviews/?listing=${serviceId}`)
           if (Array.isArray(response.data)) {
             const reviews = response.data
             const count = reviews.length
