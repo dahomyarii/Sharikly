@@ -7,9 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import { Search, Heart, TrendingUp, Sparkles, Briefcase, Music, Camera, Utensils, Mic, Plus, Star } from 'lucide-react'
+import { Search, Heart, TrendingUp, Sparkles, Briefcase, Music, Camera, Utensils, Mic, Plus, Star, MapPin, Clock } from 'lucide-react'
 import Link from "next/link"
 import SkeletonLoader from "@/components/SkeletonLoader"
+import BannerBadge from "@/components/banner/BannerBadge"
+import InfoCard from "@/components/banner/InfoCard"
+import TrustIndicators from "@/components/banner/TrustIndicators"
+import SearchSection from "@/components/banner/SearchSection"
+import CategoriesGrid from "@/components/banner/CategoriesGrid"
+import StatsSection from "@/components/banner/StatsSection"
+import CTAButtons from "@/components/banner/CTAButtons"
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -223,6 +230,56 @@ export default function HomePage() {
       })
   }, [])
 
+  // Get emoji icon for category based on its name
+  const getCategoryEmoji = (categoryName: string): string => {
+    const emojiMap: { [key: string]: string } = {
+      'Electronics': '📱',
+      'Furniture': '🛋️',
+      'Sports': '⚽',
+      'Music': '🎵',
+      'Photography': '📷',
+      'Weddings': '💐',
+      'Party': '🎉',
+      'Tools': '🔧',
+      'Books': '📚',
+      'Toys': '🧩',
+      'Games': '🎮',
+      'Fashion': '👗',
+      'Jewelry': '💍',
+      'Kitchen': '🍳',
+      'Garden': '🌱',
+      'Cars': '🚗',
+      'Bikes': '🚴',
+      'Home': '🏠',
+      'Audio': '🎧',
+      'Video': '🎬',
+      'Camera': '📹',
+      'Computers': '💻',
+      'Office': '💼',
+      'Business': '🏢',
+      'Corporate': '💼',
+      'Events': '🎪',
+      'Catering': '🍽️',
+      'Appliances': '⚙️',
+      'Outdoor': '⛺',
+      'Sports Equipment': '⚽',
+      'Rental': '🔑',
+    }
+    
+    // Try exact match first
+    if (emojiMap[categoryName]) return emojiMap[categoryName]
+    
+    // Try partial match
+    for (const [key, emoji] of Object.entries(emojiMap)) {
+      if (categoryName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(categoryName.toLowerCase())) {
+        return emoji
+      }
+    }
+    
+    // Default icon
+    return '📦'
+  }
+
   // Map category names to icons and colors for display
   const getCategoryIcon = (categoryName: string) => {
     const iconMap: { [key: string]: { icon: any; color: string } } = {
@@ -295,66 +352,121 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header / Hero Section */}
+      {/* Professional Hero / Banner Section */}
       <section 
-        className="relative text-white py-16 md:py-20 bg-cover bg-center"
-        style={{
-          backgroundImage: 'url(/image.jpeg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
+        className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50 to-white -mt-20"
       >
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black/40"></div>
+        {/* Professional Background Pattern */}
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-amber-300 to-orange-300 rounded-full -mr-48 -mt-48 blur-3xl opacity-20"></div>
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-blue-300 to-cyan-300 rounded-full -ml-40 -mb-40 blur-3xl opacity-15"></div>
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-r from-purple-200 to-pink-200 rounded-full -ml-48 -mt-48 blur-3xl opacity-10"></div>
+        </div>
         
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Link href="/listings">
-              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                Browse Listings
-              </Badge>
-            </Link>
-            <Link href="/blog">
-              <Badge className="bg-white/10 text-white/90 border-0 backdrop-blur-sm cursor-pointer hover:bg-white/20 transition">
-                <Sparkles className="h-3 w-3 mr-1" />
-                Blog
-              </Badge>
-            </Link>
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 opacity-5 bg-[linear-gradient(90deg,#000_1px,transparent_1px),linear-gradient(0deg,#000_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-32 z-10">
+          {/* Main Content Grid */}
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            
+            {/* Left Content */}
+            <div className="space-y-8">
+              {/* Professional Badge */}
+              <BannerBadge />
+
+              {/* Primary Tagline */}
+              <div>
+                <h1 className="text-5xl md:text-6xl font-black text-gray-900 mb-6 leading-tight drop-shadow-sm">
+                  Share instead of buying
+                </h1>
+                <p className="text-xl text-gray-700 font-medium">
+                  Nearby and at times that suit you
+                </p>
+              </div>
+
+              {/* Description */}
+              <p className="text-lg text-gray-600 leading-relaxed max-w-xl">
+                Welcome to EKRA, where sharing is smarter than buying. Find everything you need in your neighborhood, rent from verified community members, and enjoy the freedom of flexible timing that works for your lifestyle.
+              </p>
+
+              {/* Location & Time Info */}
+              <div className="space-y-4">
+                <InfoCard 
+                  icon={MapPin}
+                  label="🎯 Find items nearby"
+                  value="Usually closer than your nearest store"
+                  colorClass="from-amber-50 to-orange-50"
+                />
+                <InfoCard 
+                  icon={Clock}
+                  label="⏰ Flexible timing"
+                  value="Before & after work, weekends - your choice"
+                  colorClass="from-blue-50 to-cyan-50"
+                />
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="pt-4">
+                <TrustIndicators />
+              </div>
+            </div>
+
+            {/* Right Content - Search Section */}
+            <div className="space-y-6">
+              {/* Main Search Bar */}
+              <SearchSection />
+
+              {/* Popular Categories Grid */}
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-gray-700">📂 Browse popular categories</p>
+                <CategoriesGrid categories={categories} getCategoryEmoji={getCategoryEmoji} />
+              </div>
+
+              {/* CTA Buttons */}
+              <CTAButtons />
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Explore Our Latest Listings</h1>
-          <p className="text-lg md:text-xl text-blue-50 max-w-2xl mx-auto">
-            Discover premium rentals and services tailored to your needs.
-          </p>
-          <div className="mt-6 flex justify-center">
-            <Link href="/listings/new">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Listing
-              </Button>
-            </Link>
+
+          {/* Bottom Trust Section */}
+          <div className="mt-20 pt-12 border-t border-gray-300">
+            <StatsSection />
           </div>
         </div>
       </section>
 
       <div className="min-h-screen bg-white">
         {/* Categories */}
-        <section className="py-6 bg-gray-50">
+        {/* Categories Section */}
+        <section className="py-16 md:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {/* Section Header */}
+            <div className="mb-12">
+              <div className="inline-block mb-4">
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-300 rounded-full text-amber-700 font-semibold text-sm">
+                  <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                  Explore Categories
+                </span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-3">Browse by Category</h2>
+              <p className="text-lg text-gray-600 max-w-2xl">Discover items and services across all categories in your neighborhood</p>
+            </div>
+
+            {/* Horizontal Scrolling Categories */}
+            <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
               {/* All Categories Button */}
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`flex flex-col items-center p-4 rounded-lg shadow-sm transition ${
+                className={`group relative px-6 py-4 min-w-max rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-3 flex-row ${
                   selectedCategory === null
-                    ? 'bg-orange-500 text-white shadow-md'
-                    : 'bg-white hover:shadow-md'
+                    ? 'bg-gradient-to-br from-amber-500 to-orange-500 border-amber-500 shadow-lg'
+                    : 'bg-white border-gray-200 hover:border-amber-300 hover:shadow-lg'
                 }`}
               >
-                <div className={`p-3 rounded-full mb-2 ${selectedCategory === null ? 'bg-orange-600' : 'bg-gray-200'}`}>
-                  <Sparkles className={`h-6 w-6 ${selectedCategory === null ? 'text-white' : 'text-gray-600'}`} />
-                </div>
-                <span className={`text-sm font-medium ${selectedCategory === null ? 'text-white' : 'text-gray-700'}`}>All</span>
+                <Sparkles className={`h-6 w-6 ${selectedCategory === null ? 'text-white' : 'text-amber-600'}`} />
+                <span className={`text-sm font-bold whitespace-nowrap ${selectedCategory === null ? 'text-white' : 'text-gray-900'}`}>
+                  All Items
+                </span>
               </button>
               
               {categories.map(cat => {
@@ -364,20 +476,45 @@ export default function HomePage() {
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`flex flex-col items-center p-4 rounded-lg shadow-sm transition ${
+                    className={`group relative px-6 py-4 min-w-max rounded-2xl border-2 transition-all duration-300 flex items-center gap-3 ${
                       isSelected
-                        ? 'bg-orange-500 text-white shadow-md'
-                        : 'bg-white hover:shadow-md'
+                        ? 'bg-gradient-to-br from-amber-500 to-orange-500 border-amber-500 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-amber-300 hover:shadow-lg'
                     }`}
                   >
-                    <div className={`p-3 rounded-full mb-2 ${isSelected ? 'bg-orange-600' : `bg-gradient-to-br ${color}`}`}>
-                      <IconComponent className={`h-6 w-6 ${isSelected ? 'text-white' : 'text-white'}`} />
-                    </div>
-                    <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-gray-700'}`}>{cat.name}</span>
+                    {isSelected ? (
+                      <div className={`p-2 rounded-lg transition-all duration-300 bg-orange-600`}>
+                        <IconComponent className={`h-5 w-5 text-white`} />
+                      </div>
+                    ) : null}
+                    <span className={`text-sm font-bold whitespace-nowrap ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                      {cat.name}
+                    </span>
                   </button>
                 )
               })}
             </div>
+
+            {/* Filter indicator */}
+            {selectedCategory && (
+              <div className="mt-8 flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-500 rounded-lg">
+                    <Sparkles className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Filtering by: <span className="text-amber-600">{categories.find(c => c.id === selectedCategory)?.name}</span></p>
+                    <p className="text-xs text-gray-600">Showing results for this category</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  className="px-4 py-2 text-sm font-semibold text-amber-600 hover:bg-amber-100 rounded-lg transition-colors duration-300"
+                >
+                  Clear Filter
+                </button>
+              </div>
+            )}
           </div>
         </section>
 

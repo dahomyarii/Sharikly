@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import User, Listing, Booking, ListingImage, Category, Review, ReviewVote, ContactMessage, UserAdminMessage, BlogPost
+from .models import User, Listing, Booking, ListingImage, Category, Review, ReviewVote
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -41,74 +41,3 @@ class ReviewVoteAdmin(admin.ModelAdmin):
     search_fields = ('user__email', 'user__username', 'review__comment')
     readonly_fields = ('created_at',)
     date_hierarchy = 'created_at'
-
-@admin.register(ContactMessage)
-class ContactMessageAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'phone', 'created_at', 'responded')
-    list_filter = ('responded', 'created_at')
-    search_fields = ('name', 'email', 'phone', 'message')
-    readonly_fields = ('created_at', 'admin_response_date')
-    date_hierarchy = 'created_at'
-    fieldsets = (
-        ('Contact Information', {
-            'fields': ('name', 'email', 'phone')
-        }),
-        ('Message', {
-            'fields': ('message', 'created_at')
-        }),
-        ('Admin Response', {
-            'fields': ('admin_response', 'admin_response_date', 'responded')
-        }),
-    )
-
-@admin.register(BlogPost)
-class BlogPostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'category', 'published', 'featured', 'views_count', 'published_date')
-    list_filter = ('published', 'featured', 'category', 'created_at', 'updated_at')
-    search_fields = ('title', 'excerpt', 'content', 'author__email', 'author__username', 'tags')
-    readonly_fields = ('created_at', 'updated_at', 'views_count', 'published_date', 'slug')
-    date_hierarchy = 'created_at'
-    
-    fieldsets = (
-        ('Post Information', {
-            'fields': ('title', 'slug', 'excerpt', 'content', 'featured_image')
-        }),
-        ('Publishing', {
-            'fields': ('author', 'published', 'featured', 'published_date')
-        }),
-        ('Categorization', {
-            'fields': ('category', 'tags')
-        }),
-        ('SEO & Meta', {
-            'fields': ('meta_title', 'meta_description', 'meta_keywords'),
-            'classes': ('collapse',),
-            'description': 'Fields for search engine optimization'
-        }),
-        ('Statistics', {
-            'fields': ('views_count',),
-            'classes': ('collapse',)
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )
-
-@admin.register(UserAdminMessage)
-class UserAdminMessageAdmin(admin.ModelAdmin):
-    list_display = ('user', 'subject', 'created_at', 'responded')
-    list_filter = ('responded', 'created_at')
-    search_fields = ('user__email', 'user__username', 'subject', 'message')
-    readonly_fields = ('created_at', 'admin_response_date')
-    date_hierarchy = 'created_at'
-    fieldsets = (
-        ('User Information', {
-            'fields': ('user',)
-        }),
-        ('Message', {
-            'fields': ('subject', 'message', 'created_at')
-        }),
-        ('Admin Response', {
-            'fields': ('admin_response', 'admin_response_date', 'responded')
-        }),
-    )
