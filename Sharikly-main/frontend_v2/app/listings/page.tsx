@@ -1,13 +1,13 @@
 'use client'
 import useSWR from 'swr'
-import axios from 'axios'
+import axiosInstance from '@/lib/axios'
 import ListingCard from '@/components/ListingCard'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import { useState } from 'react'
 import { Search } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
-const fetcher = (url: string) => axios.get(url).then(res => res.data)
+const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data)
 
 export default function ListingsPage() {
   const { data: listings, error, isLoading } = useSWR(`${API}/listings/`, fetcher)

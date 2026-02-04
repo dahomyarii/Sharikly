@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import useSWR from "swr";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +49,7 @@ export default function ListingDetail() {
         headers["Authorization"] = `Bearer ${token}`;
       }
     }
-    return axios
+    return axiosInstance
       .get(url, { headers })
       .then((res) => res.data)
       .catch((error) => {
@@ -92,7 +92,7 @@ export default function ListingDetail() {
     const fetchReviews = async () => {
       if (!id) return;
       try {
-        const response = await axios.get(`${API}/reviews/?listing=${id}`);
+        const response = await axiosInstance.get(`${API}/reviews/?listing=${id}`);
         if (Array.isArray(response.data)) {
           const normalized = response.data.map((r: any) => ({
             id: r.id,
@@ -282,7 +282,7 @@ export default function ListingDetail() {
           const refresh = localStorage.getItem("refresh");
           if (!refresh) return null;
 
-          const res = await axios.post(`${API}/auth/token/refresh/`, {
+          const res = await axiosInstance.post(`${API}/auth/token/refresh/`, {
             refresh,
           });
           if (res.data.access) {
@@ -300,7 +300,7 @@ export default function ListingDetail() {
         if (!newToken) throw new Error("Auth failed");
       }
 
-      const res = await axios.post(
+      const res = await axiosInstance.post(
         `${API}/reviews/${reviewId}/vote/`,
         { vote_type: voteType },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -356,12 +356,12 @@ export default function ListingDetail() {
 
       if (isFavorite) {
         // Remove from favorites
-        await axios.delete(`${API}/listings/${id}/unfavorite/`, {
+        await axiosInstance.delete(`${API}/listings/${id}/unfavorite/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
         // Add to favorites
-        await axios.post(
+        await axiosInstance.post(
           `${API}/listings/${id}/favorite/`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
@@ -423,7 +423,7 @@ export default function ListingDetail() {
         localStorage.getItem("access_token") ||
         localStorage.getItem("token");
 
-      const res = await axios.post(
+      const res = await axiosInstance.post(
         `${API}/listings/${id}/reviews/`,
         { rating: newRating, comment: newComment },
         { headers: { Authorization: `Bearer ${token}` } }

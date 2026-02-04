@@ -1,7 +1,7 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import FloatingModal from "@/components/FloatingModal";
@@ -28,13 +28,13 @@ export default function LoginModal({
     setMsg("");
 
     try {
-      const res = await axios.post(`${API}/auth/token/`, { email, password });
+      const res = await axiosInstance.post(`${API}/auth/token/`, { email, password });
       const token = res.data.access;
 
       localStorage.setItem("access_token", token);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-      const me = await axios.get(`${API}/auth/me/`, {
+      const me = await axiosInstance.get(`${API}/auth/me/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       localStorage.setItem("user", JSON.stringify(me.data));

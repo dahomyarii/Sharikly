@@ -1,13 +1,14 @@
 'use client'
+  
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
-import axios from 'axios'
+import axiosInstance from '@/lib/axios'
 import ListingCard from '@/components/ListingCard'
 import { useRouter } from 'next/navigation'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 const fetcher = (url: string, token: string) =>
-  axios.get(url, {
+  axiosInstance.get(url, {
     headers: { Authorization: `Bearer ${token}` },
   }).then(res => res.data)
 

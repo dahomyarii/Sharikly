@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import axios from "axios"
+import axiosInstance from "@/lib/axios"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import FloatingModal from "@/components/FloatingModal"
@@ -30,7 +30,7 @@ export default function SignupModal({
     setMsg("")
     setIsLoading(true)
     try {
-      const res = await axios.post(`${API}/auth/register/`, {
+      const res = await axiosInstance.post(`${API}/auth/register/`, {
         username,
         email,
         phone_number: phone,

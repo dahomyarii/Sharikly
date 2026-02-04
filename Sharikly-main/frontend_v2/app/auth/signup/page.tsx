@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import axios from "axios"
+import axiosInstance from "@/lib/axios"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
 import FloatingModal from "@/components/FloatingModal"
@@ -22,7 +22,7 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
     e.preventDefault()
     setMsg("")
     try {
-      const res = await axios.post(`${API}/auth/register/`, {
+      const res = await axiosInstance.post(`${API}/auth/register/`, {
         username,
         email,
         phone_number: phone,
