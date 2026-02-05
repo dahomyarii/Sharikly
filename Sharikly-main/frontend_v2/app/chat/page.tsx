@@ -1,173 +1,452 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
-import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import axiosInstance from '@/lib/axios'
+import { MessageCircle, Search, ArrowLeft, User } from 'lucide-react'
+import Image from 'next/image'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
+interface Message {
+  id: number
+  text?: string
+  image?: string
+  sender: {
+    id: number
+    username: string
+    email: string
+  }
+  created_at: string
+}
+
+interface ChatRoom {
+  id: number
+  participants: Array<{
+    id: number
+    username: string
+    email: string
+  }>
+  last_message?: Message
+}
+
 export default function ChatPage() {
-  const [rooms, setRooms] = useState<any[]>([])
-  const [currentRoom, setCurrentRoom] = useState<any>(null)
+  const router = useRouter()
+  const [rooms, setRooms] = useState<ChatRoom[]>([])
+  const [currentRoom, setCurrentRoom] = useState<ChatRoom | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [recording, setRecording] = useState(false)
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
+  const previousMessagesLength = useRef(0)
+  const [showSidebar, setShowSidebar] = useState(true)
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  const userId = typeof window !== 'undefined' ? parseInt(localStorage.getItem('userId') || '0') : 0
-  const headers = token ? { Authorization: `Bearer ${token}` } : {}
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user')
+      if (storedUser) {
+        setUser(JSON.parse(storedUser))
+      } else {
+        router.push('/auth/login')
+      }
+    }
+  }, [router])
 
-  // Fetch chat rooms and their messages
+  // Fetch chat rooms
   const fetchRooms = async () => {
     try {
-      const res = await axios.get(`${API}/chat/rooms/`, { headers })
-      const roomsWithMessages = await Promise.all(
-        res.data.map(async (room: any) => {
-          const messagesRes = await axios.get(`${API}/chat/messages/?room=${room.id}`, { headers })
-          return { ...room, messages: messagesRes.data }
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const res = await axiosInstance.get(`${API}/chat/rooms/`, {
+        headers: { Authorization: `Bearer ${token}` }
         })
-      )
-      setRooms(roomsWithMessages)
-      if (!currentRoom && roomsWithMessages.length) setCurrentRoom(roomsWithMessages[0])
+      setRooms(res.data)
+      setLoading(false)
     } catch (err) {
       console.error('Error fetching rooms:', err)
+      setLoading(false)
+    }
+  }
+
+  // Fetch messages for a room
+  const fetchMessages = async (roomId: number) => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const res = await axiosInstance.get(`${API}/chat/messages/${roomId}/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setMessages(res.data)
+    } catch (err) {
+      console.error('Error fetching messages:', err)
     }
   }
 
   useEffect(() => {
+    if (user) {
+      fetchRooms()
+      const interval = setInterval(() => {
     fetchRooms()
-  }, [])
+        if (currentRoom) {
+          fetchMessages(currentRoom.id)
+        }
+      }, 3000)
+      return () => clearInterval(interval)
+    }
+  }, [user, currentRoom])
 
-  // Send a message (text, image, or audio)
-  const sendMessage = async (text?: string, file?: File | Blob) => {
-    if (!currentRoom) return
+  useEffect(() => {
+    if (currentRoom) {
+      fetchMessages(currentRoom.id)
+      setShouldAutoScroll(true) // Reset auto-scroll when switching rooms
+    }
+  }, [currentRoom])
+
+  // Check if user is near bottom of scroll
+  const checkIfNearBottom = () => {
+    if (!messagesContainerRef.current) return true
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+    return distanceFromBottom < 100 // Within 100px of bottom
+  }
+
+  // Handle scroll events
+  useEffect(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      setShouldAutoScroll(checkIfNearBottom())
+    }
+
+    container.addEventListener('scroll', handleScroll)
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [currentRoom])
+
+  // Only auto-scroll if user is near bottom and there are new messages
+  useEffect(() => {
+    const hasNewMessages = messages.length > previousMessagesLength.current
+    previousMessagesLength.current = messages.length
+
+    if (shouldAutoScroll && hasNewMessages) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+  }, [messages, shouldAutoScroll])
+
+  const sendMessage = async (text?: string, file?: File) => {
+    if (!currentRoom || (!text && !file)) return
+
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+
     const formData = new FormData()
     formData.append('room', currentRoom.id.toString())
     if (text) formData.append('text', text)
-    if (file) formData.append(file instanceof File ? 'image' : 'audio', file, 'upload')
+    if (file) formData.append('image', file)
+
     try {
-      const res = await axios.post(`${API}/chat/messages/`, formData, {
-        headers: { ...headers, 'Content-Type': 'multipart/form-data' }
+      await axiosInstance.post(`${API}/chat/messages/`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       })
-      setCurrentRoom({ ...currentRoom, messages: [...currentRoom.messages, res.data] })
       setNewMessage('')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      setShouldAutoScroll(true) // Ensure scroll when sending
+      fetchMessages(currentRoom.id)
+      fetchRooms()
     } catch (err) {
       console.error('Failed to send message:', err)
-      alert('Failed to send message. Check console.')
     }
   }
 
-  // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return
-    sendMessage(undefined, e.target.files[0])
+  const handleSend = () => {
+    if (newMessage.trim()) {
+      sendMessage(newMessage)
+    }
   }
 
-  // Handle voice recording
-  const toggleRecording = async () => {
-    if (recording) {
-      mediaRecorderRef.current?.stop()
-      setRecording(false)
-    } else {
-      if (!navigator.mediaDevices?.getUserMedia) return
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mediaRecorder = new MediaRecorder(stream)
-      mediaRecorderRef.current = mediaRecorder
-      const chunks: BlobPart[] = []
-      mediaRecorder.ondataavailable = e => chunks.push(e.data)
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' })
-        sendMessage(undefined, blob)
-      }
-      mediaRecorder.start()
-      setRecording(true)
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
     }
+  }
+
+  const getOtherParticipant = (room: ChatRoom) => {
+    return room.participants.find(p => p.id !== user?.id) || room.participants[0]
+  }
+
+  const getFullImageUrl = (imgPath: string) => {
+    if (!imgPath) return ''
+    if (imgPath.startsWith('http')) return imgPath
+    return `${API?.replace('/api', '')}${imgPath}`
+  }
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 1) return 'Just now'
+    if (minutes < 60) return `${minutes}m ago`
+    if (hours < 24) return `${hours}h ago`
+    if (days < 7) return `${days}d ago`
+    return date.toLocaleDateString()
+  }
+
+  const filteredRooms = rooms.filter(room => {
+    if (!searchQuery) return true
+    const other = getOtherParticipant(room)
+    return other.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           other.email.toLowerCase().includes(searchQuery.toLowerCase())
+  })
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-gray-500">Please log in to access chat</div>
+      </div>
+    )
   }
 
   return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <aside className="w-64 border-r overflow-y-auto bg-white">
-        <div className="p-4 font-bold text-lg">Recent Chats</div>
-        <ul>
-          {rooms.map(room => {
-            const other = room.participants.find((p: any) => p.id !== userId)
-            return (
-              <li
-                key={room.id}
-                onClick={() => setCurrentRoom(room)}
-                className={`p-4 cursor-pointer hover:bg-gray-100 ${
-                  currentRoom?.id === room.id ? 'bg-gray-200' : ''
-                }`}
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Sidebar - Show on mobile when no room selected, always on desktop */}
+      <div className={`${!currentRoom || showSidebar ? 'flex' : 'hidden'} md:flex w-full md:w-80 bg-white border-r flex-col min-w-0 absolute md:relative z-10 h-full`}>
+        {/* Header */}
+        <div className="p-4 border-b">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-bold text-gray-900">Messages</h1>
+            <div className="flex gap-2">
+              {currentRoom && (
+                <button
+                  onClick={() => {
+                    setCurrentRoom(null)
+                    setShowSidebar(true)
+                  }}
+                  className="md:hidden p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+              )}
+              <button
+                onClick={() => router.push('/')}
+                className="p-2 hover:bg-gray-100 rounded-full"
               >
-                {other?.email}
-              </li>
-            )
-          })}
-        </ul>
-      </aside>
-
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {currentRoom ? (
-          <>
-            <div className="border-b p-4 font-semibold">
-              {currentRoom.participants
-                .map((p: any) => p.email)
-                .filter((email: string) => email !== localStorage.getItem('userEmail'))
-                .join(', ')}
+                <ArrowLeft className="h-5 w-5" />
+              </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
-              {currentRoom.messages.map((msg: any) => (
+          </div>
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search conversations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            />
+          </div>
+        </div>
+
+        {/* Rooms List */}
+        <div className="flex-1 overflow-y-auto">
+          {loading ? (
+            <div className="p-4 text-center text-gray-500">Loading...</div>
+          ) : filteredRooms.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">
+              {searchQuery ? 'No conversations found' : 'No conversations yet'}
+            </div>
+          ) : (
+            filteredRooms.map(room => {
+              const other = getOtherParticipant(room)
+              const isActive = currentRoom?.id === room.id
+            return (
                 <div
-                  key={msg.id}
-                  className={`flex ${
-                    msg.sender.id === userId ? 'justify-end' : 'justify-start'
+                key={room.id}
+                onClick={() => {
+                  setCurrentRoom(room)
+                  setShowSidebar(false) // Hide sidebar on mobile when selecting room
+                }}
+                  className={`p-4 border-b cursor-pointer hover:bg-gray-50 transition ${
+                    isActive ? 'bg-gray-50 border-l-4 border-l-black' : ''
                   }`}
                 >
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                      <User className="h-6 w-6 text-gray-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-semibold text-gray-900 truncate">
+                          {other.username || other.email}
+                        </h3>
+                        {room.last_message && (
+                          <span className="text-xs text-gray-500 ml-2">
+                            {formatTime(room.last_message.created_at)}
+                          </span>
+                        )}
+                      </div>
+                      {room.last_message && (
+                        <p className="text-sm text-gray-600 truncate">
+                          {room.last_message.text || '📷 Image'}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Chat Area - Show on mobile when room selected, always on desktop */}
+      <div className={`${currentRoom ? 'flex' : 'hidden md:flex'} flex-1 flex-col min-w-0 overflow-hidden`}>
+        {currentRoom ? (
+          <>
+            {/* Chat Header */}
+            <div className="bg-white border-b p-4 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowSidebar(true)}
+                  className="md:hidden p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-gray-900">
+                    {getOtherParticipant(currentRoom).username || getOtherParticipant(currentRoom).email}
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    {getOtherParticipant(currentRoom).email}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div 
+              ref={messagesContainerRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
+            >
+              {messages.length === 0 ? (
+                <div className="text-center text-gray-500 py-12">
+                  No messages yet. Start the conversation!
+                </div>
+              ) : (
+                messages.map((msg) => {
+                  const isOwn = msg.sender.id === user.id
+                  return (
+                <div
+                  key={msg.id}
+                      className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                >
+                      <div className={`flex gap-2 max-w-[70%] ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
+                        {!isOwn && (
+                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                            <User className="h-4 w-4 text-gray-400" />
+                          </div>
+                        )}
+                        <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
                   {msg.text && (
                     <div
-                      className={`px-4 py-2 rounded-xl ${
-                        msg.sender.id === userId ? 'bg-black text-white' : 'bg-gray-200'
+                              className={`px-4 py-2 rounded-2xl ${
+                                isOwn
+                                  ? 'bg-black text-white rounded-tr-sm'
+                                  : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'
                       }`}
                     >
                       {msg.text}
                     </div>
                   )}
-                  {msg.image_url && (
-                    <img
-                      src={msg.image_url}
-                      alt="uploaded"
-                      className="w-48 h-48 object-cover rounded-xl"
+                          {msg.image && (
+                            <div className="mb-2">
+                              <Image
+                                src={getFullImageUrl(msg.image)}
+                                alt="Message image"
+                                width={300}
+                                height={300}
+                                className="rounded-2xl object-cover max-w-full"
                     />
-                  )}
-                  {msg.audio_url && <audio controls src={msg.audio_url} className="w-48" />}
+                            </div>
+                          )}
+                          <span className="text-xs text-gray-500 mt-1 px-1">
+                            {formatTime(msg.created_at)}
+                          </span>
+                        </div>
+                      </div>
                 </div>
-              ))}
+                  )
+                })
+              )}
+              <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <div className="border-t p-4 flex gap-2 items-center bg-white">
+            {/* Input Area */}
+            <div className="bg-white border-t p-4 flex-shrink-0">
+              <div className="flex items-end gap-2">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 hover:bg-gray-100 rounded-full transition"
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </button>
               <input
-                type="text"
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      sendMessage(undefined, e.target.files[0])
+                    }
+                  }}
+                />
+                <textarea
                 value={newMessage}
-                onChange={e => setNewMessage(e.target.value)}
-                className="flex-1 border rounded-xl px-4 py-2"
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
+                  rows={1}
+                  className="flex-1 min-w-0 px-4 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black resize-none max-h-32"
               />
-              <button onClick={() => sendMessage(newMessage)} className="px-4 py-2 bg-black text-white rounded-full">
+                <button
+                  onClick={handleSend}
+                  disabled={!newMessage.trim()}
+                  className="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
                 Send
               </button>
-              <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 border rounded-full">
-                📷
-              </button>
-              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
-              <button onClick={toggleRecording} className="px-4 py-2 border rounded-full">
-                {recording ? '⏹ Stop' : '🎤 Record'}
-              </button>
+              </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-400">No chats yet</div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <MessageCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">Select a conversation to start chatting</p>
+            </div>
+          </div>
         )}
       </div>
     </div>

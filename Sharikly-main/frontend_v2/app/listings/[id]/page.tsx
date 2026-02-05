@@ -31,7 +31,9 @@ const API = process.env.NEXT_PUBLIC_API_BASE;
 const DEFAULT_AVATAR = "/placeholder.svg";
 
 export default function ListingDetail() {
-  const { id } = useParams();
+  // In Next.js 15 client components, useParams() works directly
+  const params = useParams();
+  const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : String(params.id || '');
   const router = useRouter();
 
   // Custom fetcher that includes the auth token
@@ -180,7 +182,16 @@ export default function ListingDetail() {
       router.push("/auth/login");
       return;
     }
-    router.push(`/listings/${id}/request_booking`);
+    // Pass selected dates via URL params
+    let url = `/listings/${id}/request_booking`
+    if (dateRange?.from && dateRange?.to) {
+      const params = new URLSearchParams({
+        from: dateRange.from.toISOString(),
+        to: dateRange.to.toISOString()
+      })
+      url += `?${params.toString()}`
+    }
+    router.push(url);
   };
 
   const openFullscreen = (index: number) => {

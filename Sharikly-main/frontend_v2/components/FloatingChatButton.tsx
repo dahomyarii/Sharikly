@@ -18,7 +18,7 @@ export default function FloatingChatButton() {
   return (
     <button
       onClick={() => router.push('/chat')}
-      className="fixed bottom-6 right-6 w-16 h-16 bg-black text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition"
+      className="fixed bottom-6 right-6 w-16 h-16 bg-black text-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-800 transition z-50"
       title="Open Chat"
     >
       💬
