@@ -25,6 +25,7 @@ import {
 import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { useToast } from "@/components/ui/toast";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -80,7 +81,7 @@ export default function ListingDetail() {
   const [newRating, setNewRating] = useState<number>(0);
   const [newComment, setNewComment] = useState<string>("");
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; id: number } | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -397,8 +398,7 @@ export default function ListingDetail() {
     }
 
     if (newRating <= 0 && newComment.trim() === "") {
-      setToast({ message: "Please provide a rating and comment", type: 'error', id: Date.now() });
-      setTimeout(() => setToast(null), 3000);
+      showToast("Please provide a rating and comment", "error");
       return;
     }
 
@@ -470,16 +470,14 @@ export default function ListingDetail() {
               : r
           )
         );
-        setToast({ message: "Review submitted successfully!", type: 'success', id: Date.now() });
-        setTimeout(() => setToast(null), 3000);
+        showToast("Review submitted successfully!", "success");
       }
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.non_field_errors?.[0] ||
         "Error submitting review. Please try again.";
-      setToast({ message: errorMessage, type: 'error', id: Date.now() });
-      setTimeout(() => setToast(null), 3000);
+      showToast(errorMessage, "error");
       console.error("Error submitting review:", err);
       setReviews((prev) => prev.filter((r) => r.id !== tmpId));
     } finally {
@@ -489,27 +487,6 @@ export default function ListingDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Toast Notification */}
-      {toast && (
-        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm border ${
-            toast.type === 'success' 
-              ? 'bg-green-50/95 border-green-200' 
-              : 'bg-red-50/95 border-red-200'
-          }`}>
-            {toast.type === 'success' ? (
-              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            )}
-            <span className={`text-sm font-medium ${
-              toast.type === 'success' ? 'text-green-800' : 'text-red-800'
-            }`}>
-              {toast.message}
-            </span>
-          </div>
-        </div>
-      )}
 
       <header className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 text-white p-4 sticky top-0 z-40 shadow-md">
         <div className="max-w-7xl mx-auto flex items-center gap-4">

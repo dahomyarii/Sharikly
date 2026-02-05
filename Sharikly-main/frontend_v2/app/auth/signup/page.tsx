@@ -6,6 +6,7 @@ import axiosInstance from "@/lib/axios"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
 import FloatingModal from "@/components/FloatingModal"
+import { useToast } from "@/components/ui/toast"
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 console.log("API Base URL:", API)
@@ -17,6 +18,7 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
   const [showPassword, setShowPassword] = useState(false)
   const [msg, setMsg] = useState("")
   const router = useRouter()
+  const { showToast } = useToast()
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -28,10 +30,12 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
         phone_number: phone,
         password,
       })
-      setMsg("Account created!")
+      showToast("Account created successfully!", "success")
       setTimeout(() => router.push("/auth/login"), 1000)
     } catch (err: any) {
-      setMsg(err?.response?.data?.detail || "Signup failed")
+      const errorMsg = err?.response?.data?.detail || "Signup failed"
+      showToast(errorMsg, "error")
+      setMsg(errorMsg)
     }
   }
 

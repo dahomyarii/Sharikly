@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import LocationPicker from '@/components/LocationPicker'
+import { useToast } from '@/components/ui/toast'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -25,7 +26,40 @@ export default function NewListing() {
   const [latitude, setLatitude] = useState<number | null>(null)
   const [longitude, setLongitude] = useState<number | null>(null)
   const [radius, setRadius] = useState(300)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [cooldownSeconds, setCooldownSeconds] = useState(0)
   const router = useRouter()
+  const { showToast } = useToast()
+
+  const COOLDOWN_DURATION = 30 // 30 seconds cooldown
+
+  // Check cooldown on mount and set up interval
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const checkCooldown = () => {
+      const lastListingTime = localStorage.getItem('lastListingTime')
+      if (!lastListingTime) {
+        setCooldownSeconds(0)
+        return
+      }
+
+      const timeSinceLastListing = Date.now() - parseInt(lastListingTime)
+      const remainingSeconds = Math.ceil((COOLDOWN_DURATION * 1000 - timeSinceLastListing) / 1000)
+      
+      if (remainingSeconds > 0) {
+        setCooldownSeconds(remainingSeconds)
+      } else {
+        setCooldownSeconds(0)
+        localStorage.removeItem('lastListingTime')
+      }
+    }
+
+    checkCooldown()
+    const interval = setInterval(checkCooldown, 1000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -37,12 +71,23 @@ export default function NewListing() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-const token =
-  typeof window !== 'undefined'
-    ? localStorage.getItem('access') ||
-      localStorage.getItem('access_token') ||
-      localStorage.getItem('token')
-    : null
+
+    // Check cooldown
+    if (cooldownSeconds > 0) {
+      showToast(`Please wait ${cooldownSeconds} seconds before creating another listing`, 'warning')
+      return
+    }
+
+    if (isSubmitting) {
+      return
+    }
+
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('access') ||
+          localStorage.getItem('access_token') ||
+          localStorage.getItem('token')
+        : null
     if (!token) {
       setMsg('You are not logged in properly')
       return
@@ -57,6 +102,8 @@ const token =
       setMsg('Location is required. Please select a location on the map.')
       return
     }
+
+    setIsSubmitting(true)
 
     try {
       const formData = new FormData()
@@ -79,19 +126,27 @@ const token =
         }
       })
 
-      setMsg('Listing created! Redirecting...')
+      // Store timestamp of successful listing creation
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lastListingTime', Date.now().toString())
+        setCooldownSeconds(COOLDOWN_DURATION)
+      }
+
+      showToast('Listing created successfully!', 'success')
       setTimeout(() => router.push('/'), 1000)
     } catch (err: any) {
       console.error(err)
       // Show either detailed backend error or generic message
+      let errorMsg = 'Failed to create listing'
       if (err?.response?.data) {
         const errors = Object.entries(err.response.data)
           .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(', ') : val}`)
           .join(' | ')
-        setMsg(errors)
-      } else {
-        setMsg('Failed to create listing')
+        errorMsg = errors
       }
+      showToast(errorMsg, 'error')
+      setMsg(errorMsg)
+      setIsSubmitting(false)
     }
   }
 
@@ -147,14 +202,24 @@ const token =
           }}
         />
         
-        <div className="flex items-center gap-4">
-          <button
-            type="submit"
-            className="px-5 py-3 bg-black text-white rounded-full"
-          >
-            Save
-          </button>
-          <div className="text-sm text-red-600">{msg}</div>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4">
+            <button
+              type="submit"
+              disabled={isSubmitting || cooldownSeconds > 0}
+              className="px-5 py-3 bg-black text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
+            >
+              {isSubmitting ? 'Creating...' : cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s` : 'Save'}
+            </button>
+            {cooldownSeconds > 0 && (
+              <div className="text-sm text-orange-600">
+                Please wait {cooldownSeconds} second{cooldownSeconds !== 1 ? 's' : ''} before creating another listing
+              </div>
+            )}
+          </div>
+          {msg && (
+            <div className="text-sm text-red-600">{msg}</div>
+          )}
         </div>
       </form>
     </div>

@@ -6,6 +6,7 @@ import axiosInstance from "@/lib/axios"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import FloatingModal from "@/components/FloatingModal"
+import { useToast } from "@/components/ui/toast"
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -24,6 +25,7 @@ export default function SignupModal({
   const [msg, setMsg] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { showToast } = useToast()
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -36,7 +38,7 @@ export default function SignupModal({
         phone_number: phone,
         password,
       })
-      setMsg("Account created!")
+      showToast("Account created successfully!", "success")
       setIsLoading(false)
       // Immediately switch to login modal if available, otherwise redirect
       if (onSwitchToLogin) {
@@ -49,7 +51,9 @@ export default function SignupModal({
         router.push("/auth/login")
       }
     } catch (err: any) {
-      setMsg(err?.response?.data?.detail || "Signup failed")
+      const errorMsg = err?.response?.data?.detail || "Signup failed"
+      showToast(errorMsg, "error")
+      setMsg(errorMsg)
       setIsLoading(false)
     }
   }
