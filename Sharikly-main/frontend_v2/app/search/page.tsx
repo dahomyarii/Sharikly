@@ -50,7 +50,7 @@ export default function SearchPage() {
     <div className="mx-auto max-w-6xl p-4 md:p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Search Listings</h1>
-        <p className="text-sm text-gray-600">Find services, rentals, and more.</p>
+        <p className="text-sm text-gray-600">Find services, rentals, and more.</p>                                    
       </div>
 
       {/* Search bar */}

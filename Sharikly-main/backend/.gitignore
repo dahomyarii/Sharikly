@@ -1,21 +1,14 @@
-# Dependencies
-node_modules
-
 # Database files
 *.sqlite3
 *.db
 *.sql
-backend/db.sqlite3
-backend/*.sqlite3
+db.sqlite3
+db.sqlite3-journal
 
 # Environment variables
 .env
 .env.local
 .env.*.local
-backend/.env
-frontend_v2/.env
-frontend_v2/.env.local
-frontend_v2/.env.production
 
 # Python
 __pycache__/
@@ -46,8 +39,6 @@ env/
 # Django
 *.log
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
 /media
 /staticfiles
 /static
@@ -57,15 +48,11 @@ db.sqlite3-journal
 .idea/
 *.swp
 *.swo
-*~
-.DS_Store
 
 # OS
 Thumbs.db
 .DS_Store
 
-# Build outputs
-frontend_v2/.next/
-frontend_v2/out/
-frontend_v2/build/
-frontend_v2/dist/
+
+
+
