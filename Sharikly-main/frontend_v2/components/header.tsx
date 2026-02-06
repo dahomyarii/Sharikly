@@ -49,8 +49,9 @@ export default function Header() {
   return (
     <>
       <header className="bg-gray-100 p-4 flex justify-between items-center">
-        <Link href="/" className="text-xl font-bold">
-          EKRA
+        <Link href="/" className="flex items-center gap-2">
+          <img src="/logo.png" alt="EKRA" className="h-8 w-8" />
+          <span className="text-xl font-bold">EKRA</span>
         </Link>
 
         <div className="hidden md:flex gap-4 items-center">

@@ -12,7 +12,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
           {/* Brand Column */}
           <div className="lg:col-span-1">
-            <div className="mb-6">
+            <div className="mb-6 flex items-center gap-2">
+              <img src="/logo.png" alt="EKRA" className="h-8 w-8" />
               <h2 className="text-white font-bold text-2xl bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
                 EKRA
               </h2>

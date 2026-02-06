@@ -29,7 +29,7 @@ import { useToast } from "@/components/ui/toast";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
-const DEFAULT_AVATAR = "/placeholder.svg";
+const DEFAULT_AVATAR = "/logo.png";
 
 export default function ListingDetail() {
   // In Next.js 15 client components, useParams() works directly
@@ -527,7 +527,7 @@ export default function ListingDetail() {
                       }`}
                     >
                       <img
-                        src={url || "/placeholder.svg"}
+                        src={url || "/logo.png"}
                         alt={`thumbnail ${idx}`}
                         className="w-16 h-16 object-cover"
                       />
