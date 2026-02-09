@@ -35,9 +35,10 @@ class RegisterView(generics.CreateAPIView):
         return Response(UserSerializer(user).data)
 
 
-class MeView(generics.RetrieveAPIView):
+class MeView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
 
     def get_object(self):
         return self.request.user

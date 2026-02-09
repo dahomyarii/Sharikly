@@ -5,7 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import FloatingChatButton from "@/components/FloatingChatButton";
-import { ToastProvider } from "@/components/ui/toast";
+import { Providers } from "@/components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,12 +38,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <LocaleProvider>
-          <ToastProvider>
+          <Providers>
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
             <FloatingChatButton />
-          </ToastProvider>
+          </Providers>
         </LocaleProvider>
         
       </body>

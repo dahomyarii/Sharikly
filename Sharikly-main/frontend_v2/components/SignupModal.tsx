@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import FloatingModal from "@/components/FloatingModal"
 import { useToast } from "@/components/ui/toast"
+import { useProfileSetup } from "@/contexts/ProfileSetupContext"
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -26,29 +27,65 @@ export default function SignupModal({
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { showToast } = useToast()
+  const { showProfileSetup } = useProfileSetup()
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
     setMsg("")
     setIsLoading(true)
     try {
-      const res = await axiosInstance.post(`${API}/auth/register/`, {
+      // Register the user
+      const registerRes = await axiosInstance.post(`${API}/auth/register/`, {
         username,
         email,
         phone_number: phone,
         password,
       })
-      showToast("Account created successfully!", "success")
-      setIsLoading(false)
-      // Immediately switch to login modal if available, otherwise redirect
-      if (onSwitchToLogin) {
-        onSwitchToLogin()
-      } else {
-        // Fallback: redirect if modal switching is not available
+
+      // Auto-login after registration
+      try {
+        const loginRes = await axiosInstance.post(`${API}/auth/token/`, { email, password })
+        const token = loginRes.data.access
+
+        localStorage.setItem('access_token', token)
+        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
+        // Fetch user data
+        const meRes = await axiosInstance.get(`${API}/auth/me/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const userData = meRes.data
+        localStorage.setItem('user', JSON.stringify(userData))
+
+        // Dispatch login event
+        window.dispatchEvent(
+          new CustomEvent('userLogin', { detail: { user: userData, token } })
+        )
+
+        showToast("Account created successfully! Welcome!", "success")
+        setIsLoading(false)
+
+        // Close signup modal first
         if (onClose) {
           onClose()
         }
-        router.push("/auth/login")
+
+        // Show profile setup modal globally after a brief delay
+        setTimeout(() => {
+          showProfileSetup(userData)
+        }, 500)
+      } catch (loginErr: any) {
+        // If auto-login fails, redirect to login page
+        showToast("Account created! Please log in.", "info")
+        if (onSwitchToLogin) {
+          onSwitchToLogin()
+        } else {
+          if (onClose) {
+            onClose()
+          }
+          router.push("/auth/login")
+        }
+        setIsLoading(false)
       }
     } catch (err: any) {
       const errorMsg = err?.response?.data?.detail || "Signup failed"
@@ -60,7 +97,7 @@ export default function SignupModal({
 
   return (
     <FloatingModal onClose={onClose}>
-      <h1 className="text-2xl font-semibold text-center mb-6">Create Account</h1>
+        <h1 className="text-2xl font-semibold text-center mb-6">Create Account</h1>
       <form onSubmit={handleSignup} className="space-y-5">
         {/* Username */}
         <div className="space-y-1">

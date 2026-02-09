@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
-import { Star } from 'lucide-react'
+import { Star, User } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -100,7 +100,7 @@ export default function ListingCard({ listing }: { listing: any }) {
       return imageUrl
     }
     // If it's a relative path, prepend the API base
-    return `http://localhost:8000${imageUrl}`
+    return `${API?.replace('/api', '')}${imageUrl}`
   }
 
   const imageUrl = getImageUrl()
@@ -144,6 +144,26 @@ export default function ListingCard({ listing }: { listing: any }) {
           </div>
         )}
         <div className="text-sm text-gray-500 mb-3">{listing.city || '—'}</div>
+        
+        {/* Owner Info */}
+        {listing.owner && (
+          <div className="flex items-center gap-2 mb-3 pb-3 border-b">
+            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {listing.owner.avatar ? (
+                <img
+                  src={listing.owner.avatar.startsWith('http') ? listing.owner.avatar : `${API?.replace('/api', '')}${listing.owner.avatar}`}
+                  alt={listing.owner.username || listing.owner.email}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-4 h-4 text-gray-400" />
+              )}
+            </div>
+            <span className="text-xs text-gray-600 truncate">
+              {listing.owner.username || listing.owner.email}
+            </span>
+          </div>
+        )}
         
         {/* Rating and Reviews */}
         <div className="flex items-center gap-2">
