@@ -13,6 +13,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from .models import *
 from .serializers import *
 from accounts.views import send_verification_email
+from accounts.tokens import email_verification_token
 from rest_framework import viewsets
 
 User = get_user_model()
