@@ -42,50 +42,20 @@ export default function SignupModal({
         password,
       })
 
-      // Auto-login after registration
-      try {
-        const loginRes = await axiosInstance.post(`${API}/auth/token/`, { email, password })
-        const token = loginRes.data.access
+      // Show success message and prompt for email verification
+      showToast("Account created! Please check your email to verify your account.", "success")
+      setIsLoading(false)
 
-        localStorage.setItem('access_token', token)
-        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      // Close signup modal
+      if (onClose) {
+        onClose()
+      }
 
-        // Fetch user data
-        const meRes = await axiosInstance.get(`${API}/auth/me/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        const userData = meRes.data
-        localStorage.setItem('user', JSON.stringify(userData))
-
-        // Dispatch login event
-        window.dispatchEvent(
-          new CustomEvent('userLogin', { detail: { user: userData, token } })
-        )
-
-        showToast("Account created successfully! Welcome!", "success")
-        setIsLoading(false)
-
-        // Close signup modal first
-        if (onClose) {
-          onClose()
-        }
-
-        // Show profile setup modal globally after a brief delay
-        setTimeout(() => {
-          showProfileSetup(userData)
-        }, 500)
-      } catch (loginErr: any) {
-        // If auto-login fails, redirect to login page
-        showToast("Account created! Please log in.", "info")
-        if (onSwitchToLogin) {
-          onSwitchToLogin()
-        } else {
-          if (onClose) {
-            onClose()
-          }
-          router.push("/auth/login")
-        }
-        setIsLoading(false)
+      // Redirect to login page
+      if (onSwitchToLogin) {
+        onSwitchToLogin()
+      } else {
+        router.push("/auth/login")
       }
     } catch (err: any) {
       const errorMsg = err?.response?.data?.detail || "Signup failed"

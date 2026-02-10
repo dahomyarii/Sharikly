@@ -1,10 +1,6 @@
 
 from django.contrib import admin
-from .models import User, Listing, Booking, ListingImage, Category, Review, ReviewVote, ContactMessage, UserAdminMessage, BlogPost
-
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('email', 'username', 'is_staff')
+from .models import Listing, Booking, ListingImage, Category, Review, ReviewVote, ContactMessage, UserAdminMessage, BlogPost
 
 class ListingImageInline(admin.TabularInline):
     model = ListingImage

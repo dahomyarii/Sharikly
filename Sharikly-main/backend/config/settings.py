@@ -24,6 +24,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "storages",  # Added for R2 / S3
+    "anymail",  # Email backend for Amazon SES
+    "accounts",
     "marketplace",
 
 ]
@@ -142,7 +144,7 @@ STORAGES = {
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-AUTH_USER_MODEL = "marketplace.User"
+AUTH_USER_MODEL = "accounts.User"
 
 # REST Framework & JWT
 REST_FRAMEWORK = {
@@ -157,3 +159,17 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+# Email Configuration (Amazon SES)
+EMAIL_BACKEND = "anymail.backends.amazon_ses.EmailBackend"
+
+ANYMAIL = {
+    "AMAZON_SES_CLIENT_PARAMS": {
+        "aws_access_key_id": os.getenv("AWS_ACCESS_KEY_ID"),
+        "aws_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
+        "region_name": os.getenv("AWS_SES_REGION", "us-east-1"),
+    },
+}
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@ekra.app")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL

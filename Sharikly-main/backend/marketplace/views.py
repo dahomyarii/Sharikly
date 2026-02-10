@@ -3,13 +3,16 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from .models import *
 from .serializers import *
+from accounts.views import send_verification_email
 from rest_framework import viewsets
 
 User = get_user_model()
@@ -31,8 +34,15 @@ class RegisterView(generics.CreateAPIView):
             or serializer.validated_data["email"],
             email=serializer.validated_data["email"],
             password=password,
+            is_email_verified=False,
         )
-        return Response(UserSerializer(user).data)
+        # Send verification email
+        try:
+            send_verification_email(user)
+        except Exception as e:
+            # Log error but don't fail registration
+            print(f"Error sending verification email: {e}")
+        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
 class MeView(generics.RetrieveUpdateAPIView):
@@ -42,6 +52,53 @@ class MeView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class VerifyEmailView(generics.GenericAPIView):
+    """Verify user email using token from URL"""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        uid = request.query_params.get("uid")
+        token = request.query_params.get("token")
+
+        if not uid or not token:
+            return Response(
+                {"error": "Missing uid or token parameter"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Decode user ID
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_id)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response(
+                {"error": "Invalid verification link"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check if token is valid
+        if not email_verification_token.check_token(user, token):
+            return Response(
+                {"error": "Invalid or expired verification token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verify email
+        if user.is_email_verified:
+            return Response(
+                {"message": "Email already verified"},
+                status=status.HTTP_200_OK,
+            )
+
+        user.is_email_verified = True
+        user.save()
+
+        return Response(
+            {"message": "Email verified successfully"},
+            status=status.HTTP_200_OK,
+        )
 
 
 # --- JWT Login View ---
@@ -56,6 +113,23 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        
+        # Get user from email
+        email = request.data.get("email")
+        if email:
+            try:
+                user = User.objects.get(email=email)
+                if not user.is_email_verified:
+                    raise AuthenticationFailed(
+                        "Please verify your email address before logging in. Check your inbox for the verification email."
+                    )
+            except User.DoesNotExist:
+                pass
+        
+        return response
 
 
 # --- Listings Views ---
