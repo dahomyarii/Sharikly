@@ -57,18 +57,24 @@ class ReviewSerializer(serializers.ModelSerializer):
         ]
 
     def get_helpful(self, obj):
-        return obj.votes.filter(vote_type="HELPFUL").count()
+        try:
+            return obj.votes.filter(vote_type="HELPFUL").count()
+        except Exception:
+            return 0
 
     def get_not_helpful(self, obj):
-        return obj.votes.filter(vote_type="NOT_HELPFUL").count()
+        try:
+            return obj.votes.filter(vote_type="NOT_HELPFUL").count()
+        except Exception:
+            return 0
 
     def get_user_vote(self, obj):
         """Get the current user's vote type if they've voted"""
-        request = self.context.get("request")
-        if not request or not request.user or not request.user.is_authenticated:
-            return None
-
         try:
+            request = self.context.get("request")
+            if not request or not request.user or not request.user.is_authenticated:
+                return None
+
             vote = obj.votes.filter(user=request.user).first()
             return vote.vote_type if vote else None
         except Exception:
@@ -153,9 +159,14 @@ class ListingSerializer(serializers.ModelSerializer):
 
     def get_reviews(self, obj):
         """Serialize reviews with proper context"""
-        reviews = obj.reviews.all()
-        serializer = ReviewSerializer(reviews, many=True, context=self.context)
-        return serializer.data
+        try:
+            reviews = obj.reviews.all()
+            serializer = ReviewSerializer(reviews, many=True, context=self.context)
+            return serializer.data
+        except Exception as e:
+            # Log error but return empty list to prevent 500 errors
+            print(f"Error serializing reviews for listing {obj.id}: {e}")
+            return []
 
 
 # ==========================

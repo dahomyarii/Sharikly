@@ -145,10 +145,10 @@ export default function ListingCard({ listing }: { listing: any }) {
         )}
         <div className="text-sm text-gray-500 mb-3">{listing.city || '—'}</div>
         
-        {/* Owner Info */}
+        {/* Lender/Owner Info */}
         {listing.owner && (
           <div className="flex items-center gap-2 mb-3 pb-3 border-b">
-            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
               {listing.owner.avatar ? (
                 <img
                   src={listing.owner.avatar.startsWith('http') ? listing.owner.avatar : `${API?.replace('/api', '')}${listing.owner.avatar}`}
@@ -156,12 +156,15 @@ export default function ListingCard({ listing }: { listing: any }) {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="w-4 h-4 text-gray-400" />
+                <User className="w-5 h-5 text-gray-400" />
               )}
             </div>
-            <span className="text-xs text-gray-600 truncate">
-              {listing.owner.username || listing.owner.email}
-            </span>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs text-gray-500">Lender</div>
+              <span className="text-sm font-medium text-gray-700 truncate block">
+                {listing.owner.username || listing.owner.email}
+              </span>
+            </div>
           </div>
         )}
         

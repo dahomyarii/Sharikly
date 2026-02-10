@@ -189,6 +189,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
             return Review.objects.filter(listing_id=listing_id)
         return Review.objects.all()
 
+    def get_serializer_context(self):
+        """Ensure the request is passed to the serializer context"""
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 

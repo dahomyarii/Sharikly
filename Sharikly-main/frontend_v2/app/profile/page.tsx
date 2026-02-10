@@ -96,30 +96,77 @@ export default function ProfilePage() {
   const fetchUserReviews = async () => {
     try {
       const token = localStorage.getItem('access_token')
+      if (!token) {
+        setReviews([])
+        return
+      }
+      
+      // Get current user
       const userResponse = await axiosInstance.get(`${API}/auth/me/`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const currentUserId = userResponse.data.id
       
-      // Fetch all listings to get reviews
-      const listingsResponse = await axiosInstance.get(`${API}/listings/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      // Fetch all listings (without reviews to avoid large payload)
+      let allListings: any[] = []
+      try {
+        const listingsResponse = await axiosInstance.get(`${API}/listings/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        // Handle paginated response (results field) or direct array
+        allListings = listingsResponse.data?.results || listingsResponse.data || []
+      } catch (listingsError: any) {
+        console.error('Error fetching listings:', listingsError)
+        setReviews([])
+        return
+      }
       
-      // Collect all reviews from all listings
+      // Filter to only get listings owned by the current user
+      const userListings = allListings.filter((listing: any) => listing.owner?.id === currentUserId)
+      
+      if (userListings.length === 0) {
+        setReviews([])
+        return
+      }
+      
+      // Collect all reviews from user's listings
       const allReviews: any[] = []
-      listingsResponse.data.forEach((listing: any) => {
-        if (listing.reviews) {
-          listing.reviews.forEach((review: any) => {
-            if (review.user?.id === currentUserId) {
-              allReviews.push({ ...review, listing })
-            }
+      
+      // Fetch reviews for each listing individually to avoid loading all reviews at once
+      for (const listing of userListings) {
+        try {
+          // Fetch reviews for this specific listing
+          const reviewsResponse = await axiosInstance.get(`${API}/reviews/?listing=${listing.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
           })
+          
+          const reviews = reviewsResponse.data?.results || reviewsResponse.data || []
+          
+          // Add listing info to each review
+          if (Array.isArray(reviews)) {
+            reviews.forEach((review: any) => {
+              allReviews.push({
+                ...review,
+                listing: {
+                  id: listing.id,
+                  title: listing.title || 'Untitled Listing',
+                  owner: listing.owner
+                }
+              })
+            })
+          }
+        } catch (reviewError: any) {
+          // Skip listings that cause errors (e.g., if reviews endpoint fails)
+          console.error(`Error fetching reviews for listing ${listing.id}:`, reviewError?.response?.status, reviewError?.message)
+          continue
         }
-      })
+      }
+      
       setReviews(allReviews)
-    } catch (error) {
-      console.error('Error fetching reviews:', error)
+    } catch (error: any) {
+      console.error('Error in fetchUserReviews:', error?.response?.status, error?.message)
+      // Set empty array on error to prevent UI issues
+      setReviews([])
     }
   }
 

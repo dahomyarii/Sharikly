@@ -1,10 +1,13 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { User } from 'lucide-react'
 
 interface ListingCardProps {
   listing: any
 }
+
+const API = process.env.NEXT_PUBLIC_API_BASE
 
 export default function ListingCard({ listing }: ListingCardProps) {
   const [user, setUser] = useState<any>(null)
@@ -37,7 +40,30 @@ export default function ListingCard({ listing }: ListingCardProps) {
             <h3 className="font-semibold">{listing.title}</h3>
             <span className="text-sm">${listing.price_per_day}/day</span>
           </div>
-          <div className="text-sm text-gray-500">{listing.city || '—'}</div>
+          <div className="text-sm text-gray-500 mb-3">{listing.city || '—'}</div>
+          
+          {/* Lender/Owner Info */}
+          {listing.owner && (
+            <div className="flex items-center gap-2 mb-3 pb-3 border-b">
+              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {listing.owner.avatar ? (
+                  <img
+                    src={listing.owner.avatar.startsWith('http') ? listing.owner.avatar : `${API?.replace('/api', '')}${listing.owner.avatar}`}
+                    alt={listing.owner.username || listing.owner.email}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-5 h-5 text-gray-400" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-gray-500">Lender</div>
+                <span className="text-sm font-medium text-gray-700 truncate block">
+                  {listing.owner.username || listing.owner.email}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </Link>
 

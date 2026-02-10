@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import { Search, Heart, TrendingUp, Sparkles, Briefcase, Music, Camera, Utensils, Mic, Plus, Star } from 'lucide-react'
+import { Search, Heart, TrendingUp, Sparkles, Briefcase, Music, Camera, Utensils, Mic, Plus, Star, User } from 'lucide-react'
 import Link from "next/link"
 import SkeletonLoader from "@/components/SkeletonLoader"
 
@@ -482,6 +482,30 @@ export default function HomePage() {
                 <div className="p-5">
                   <Badge variant="secondary" className="mb-3 text-xs">{service.category?.name || "Listing"}</Badge>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">{service.title}</h3>
+                  
+                  {/* Lender/Owner Info */}
+                  {service.owner && (
+                    <div className="flex items-center gap-2 mb-3 pb-3 border-b">
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {service.owner.avatar ? (
+                          <img
+                            src={service.owner.avatar.startsWith('http') ? service.owner.avatar : `${API?.replace('/api', '')}${service.owner.avatar}`}
+                            alt={service.owner.username || service.owner.email}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-5 h-5 text-gray-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs text-gray-500">Lender</div>
+                        <span className="text-sm font-medium text-gray-700 truncate block">
+                          {service.owner.username || service.owner.email}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="mb-3">
                     <RatingDisplay serviceId={service.id} />
                   </div>
