@@ -27,7 +27,7 @@ export default function VerifyEmailPage() {
       }
 
       try {
-        const response = await axiosInstance.get(`${API}/verify-email/`, {
+        const response = await axiosInstance.get(`${API}/auth/verify-email/`, {
           params: { uid, token },
         })
 

@@ -118,6 +118,28 @@ Login endpoint. Blocks unverified users.
 
 ## Testing
 
+### Local testing (no real email)
+
+When `DEBUG=1`, the backend uses Django’s **console** email backend. The verification link is not sent by email; it is printed in the terminal where the Django server is running.
+
+1. **Start backend and frontend**
+   - Backend: `cd backend && python manage.py runserver`
+   - Frontend: `cd frontend_v2 && npm run dev`
+2. **Register a new user** (e.g. on signup page).
+3. **In the backend terminal**, find the log that looks like:
+   ```
+   Content-Type: text/plain; charset="utf-8"
+   ...
+   http://localhost:3000/verify-email?uid=...&token=...
+   ```
+4. **Copy that full URL** and open it in your browser (or click if your terminal supports links).
+5. You should see “Email verified!” and then redirect to login.
+6. **Login** with the same user → should succeed.
+
+To use real email (SES) locally, set `USE_CONSOLE_EMAIL=0` in `backend/.env`.
+
+### Production-style testing (real email)
+
 1. Register a new user
 2. Check email inbox for verification email
 3. Click verification link

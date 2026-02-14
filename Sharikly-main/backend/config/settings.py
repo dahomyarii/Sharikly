@@ -160,8 +160,27 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
-# Email Configuration (Amazon SES)
-EMAIL_BACKEND = "anymail.backends.amazon_ses.EmailBackend"
+# Email Configuration
+# EMAIL_MODE in .env: "console" = print in terminal, "gmail" = Gmail SMTP, "ses" = Amazon SES
+_email_mode = os.getenv("EMAIL_MODE", "console").lower()
+
+if _email_mode == "gmail":
+    # Gmail SMTP — works locally, sends real emails to any address
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = "smtp.gmail.com"
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.getenv("GMAIL_ADDRESS", "")
+    EMAIL_HOST_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "")
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+elif _email_mode == "ses":
+    # Amazon SES — for production
+    EMAIL_BACKEND = "anymail.backends.amazon_ses.EmailBackend"
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@ekra.app")
+else:
+    # Console — just prints email in terminal (default for local dev)
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@ekra.app")
 
 ANYMAIL = {
     "AMAZON_SES_CLIENT_PARAMS": {
@@ -171,5 +190,4 @@ ANYMAIL = {
     },
 }
 
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@ekra.app")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
