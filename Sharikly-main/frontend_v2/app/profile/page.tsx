@@ -1,147 +1,166 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import axiosInstance from '@/lib/axios'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
-import { Edit2, Save, X, Camera, Mail, User, FileText, Package, Star } from 'lucide-react'
-import ListingCard from '@/components/ListingCard'
-import SkeletonLoader from '@/components/SkeletonLoader'
-import { useToast } from '@/components/ui/toast'
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import axiosInstance from "@/lib/axios";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import {
+  Edit2,
+  Save,
+  X,
+  Camera,
+  Mail,
+  User,
+  FileText,
+  Package,
+  Star,
+} from "lucide-react";
+import ListingCard from "@/components/ListingCard";
+import SkeletonLoader from "@/components/SkeletonLoader";
+import { useToast } from "@/components/ui/toast";
 
-const API = process.env.NEXT_PUBLIC_API_BASE
+const API = process.env.NEXT_PUBLIC_API_BASE;
 
 export default function ProfilePage() {
-  const router = useRouter()
-  const { showToast } = useToast()
-  const [user, setUser] = useState<any>(null)
-  const [isEditing, setIsEditing] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [listings, setListings] = useState<any[]>([])
-  const [reviews, setReviews] = useState<any[]>([])
-  const [isLoadingListings, setIsLoadingListings] = useState(true)
+  const router = useRouter();
+  const { showToast } = useToast();
+  const [user, setUser] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [listings, setListings] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [isLoadingListings, setIsLoadingListings] = useState(true);
 
   // Form state
   const [formData, setFormData] = useState({
-    username: '',
-    bio: '',
+    username: "",
+    bio: "",
     avatar: null as File | null,
-  })
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  });
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   // Check authentication
   useEffect(() => {
-    const token = localStorage.getItem('access_token')
+    const token = localStorage.getItem("access_token");
     if (!token) {
-      router.push('/auth/login')
-      return
+      router.push("/auth/login");
+      return;
     }
 
-    fetchUserProfile()
-    fetchUserListings()
-    fetchUserReviews()
-  }, [router])
+    fetchUserProfile();
+    fetchUserListings();
+    fetchUserReviews();
+  }, [router]);
 
   const fetchUserProfile = async () => {
     try {
-      const token = localStorage.getItem('access_token')
+      const token = localStorage.getItem("access_token");
       const response = await axiosInstance.get(`${API}/auth/me/`, {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      const userData = response.data
-      setUser(userData)
+      });
+      const userData = response.data;
+      setUser(userData);
       setFormData({
-        username: userData.username || '',
-        bio: userData.bio || '',
+        username: userData.username || "",
+        bio: userData.bio || "",
         avatar: null,
-      })
+      });
       if (userData.avatar) {
-        setAvatarPreview(userData.avatar)
+        setAvatarPreview(userData.avatar);
       }
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
-      console.error('Error fetching profile:', error)
+      console.error("Error fetching profile:", error);
       if (error.response?.status === 401) {
-        router.push('/auth/login')
+        router.push("/auth/login");
       }
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const fetchUserListings = async () => {
     try {
-      const token = localStorage.getItem('access_token')
+      const token = localStorage.getItem("access_token");
       const response = await axiosInstance.get(`${API}/listings/`, {
         headers: { Authorization: `Bearer ${token}` },
-      })
+      });
       // Filter listings by current user
-      const allListings = response.data
-      const token2 = localStorage.getItem('access_token')
+      const allListings = response.data;
+      const token2 = localStorage.getItem("access_token");
       const userResponse = await axiosInstance.get(`${API}/auth/me/`, {
         headers: { Authorization: `Bearer ${token2}` },
-      })
-      const currentUserId = userResponse.data.id
-      const userListings = allListings.filter((listing: any) => listing.owner?.id === currentUserId)
-      setListings(userListings)
-      setIsLoadingListings(false)
+      });
+      const currentUserId = userResponse.data.id;
+      const userListings = allListings.filter(
+        (listing: any) => listing.owner?.id === currentUserId,
+      );
+      setListings(userListings);
+      setIsLoadingListings(false);
     } catch (error) {
-      console.error('Error fetching listings:', error)
-      setIsLoadingListings(false)
+      console.error("Error fetching listings:", error);
+      setIsLoadingListings(false);
     }
-  }
+  };
 
   const fetchUserReviews = async () => {
     try {
-      const token = localStorage.getItem('access_token')
+      const token = localStorage.getItem("access_token");
       if (!token) {
-        setReviews([])
-        return
+        setReviews([]);
+        return;
       }
-      
+
       // Get current user
       const userResponse = await axiosInstance.get(`${API}/auth/me/`, {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      const currentUserId = userResponse.data.id
-      
+      });
+      const currentUserId = userResponse.data.id;
+
       // Fetch all listings (without reviews to avoid large payload)
-      let allListings: any[] = []
+      let allListings: any[] = [];
       try {
         const listingsResponse = await axiosInstance.get(`${API}/listings/`, {
           headers: { Authorization: `Bearer ${token}` },
-        })
+        });
         // Handle paginated response (results field) or direct array
-        allListings = listingsResponse.data?.results || listingsResponse.data || []
+        allListings =
+          listingsResponse.data?.results || listingsResponse.data || [];
       } catch (listingsError: any) {
-        console.error('Error fetching listings:', listingsError)
-        setReviews([])
-        return
+        console.error("Error fetching listings:", listingsError);
+        setReviews([]);
+        return;
       }
-      
+
       // Filter to only get listings owned by the current user
-      const userListings = allListings.filter((listing: any) => listing.owner?.id === currentUserId)
-      
+      const userListings = allListings.filter(
+        (listing: any) => listing.owner?.id === currentUserId,
+      );
+
       if (userListings.length === 0) {
-        setReviews([])
-        return
+        setReviews([]);
+        return;
       }
-      
+
       // Collect all reviews from user's listings
-      const allReviews: any[] = []
-      
+      const allReviews: any[] = [];
+
       // Fetch reviews for each listing individually to avoid loading all reviews at once
       for (const listing of userListings) {
         try {
           // Fetch reviews for this specific listing
-          const reviewsResponse = await axiosInstance.get(`${API}/reviews/?listing=${listing.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          
-          const reviews = reviewsResponse.data?.results || reviewsResponse.data || []
-          
+          const reviewsResponse = await axiosInstance.get(
+            `${API}/reviews/?listing=${listing.id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+
+          const reviews =
+            reviewsResponse.data?.results || reviewsResponse.data || [];
+
           // Add listing info to each review
           if (Array.isArray(reviews)) {
             reviews.forEach((review: any) => {
@@ -149,94 +168,115 @@ export default function ProfilePage() {
                 ...review,
                 listing: {
                   id: listing.id,
-                  title: listing.title || 'Untitled Listing',
-                  owner: listing.owner
-                }
-              })
-            })
+                  title: listing.title || "Untitled Listing",
+                  owner: listing.owner,
+                },
+              });
+            });
           }
         } catch (reviewError: any) {
           // Skip listings that cause errors (e.g., if reviews endpoint fails)
-          console.error(`Error fetching reviews for listing ${listing.id}:`, reviewError?.response?.status, reviewError?.message)
-          continue
+          console.error(
+            `Error fetching reviews for listing ${listing.id}:`,
+            reviewError?.response?.status,
+            reviewError?.message,
+          );
+          continue;
         }
       }
-      
-      setReviews(allReviews)
-    } catch (error: any) {
-      console.error('Error in fetchUserReviews:', error?.response?.status, error?.message)
-      // Set empty array on error to prevent UI issues
-      setReviews([])
-    }
-  }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+      setReviews(allReviews);
+    } catch (error: any) {
+      console.error(
+        "Error in fetchUserReviews:",
+        error?.response?.status,
+        error?.message,
+      );
+      // Set empty array on error to prevent UI issues
+      setReviews([]);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setFormData((prev) => ({ ...prev, avatar: file }))
-      const reader = new FileReader()
+      setFormData((prev) => ({ ...prev, avatar: file }));
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setAvatarPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleSave = async () => {
-    setIsSaving(true)
+    setIsSaving(true);
     try {
-      const token = localStorage.getItem('access_token')
-      const formDataToSend = new FormData()
-      formDataToSend.append('username', formData.username)
+      const token = localStorage.getItem("access_token");
+      const formDataToSend = new FormData();
+      formDataToSend.append("username", formData.username);
       if (formData.bio) {
-        formDataToSend.append('bio', formData.bio)
+        formDataToSend.append("bio", formData.bio);
       }
       if (formData.avatar) {
-        formDataToSend.append('avatar', formData.avatar)
+        formDataToSend.append("avatar", formData.avatar);
       }
 
-      const response = await axiosInstance.patch(`${API}/auth/me/`, formDataToSend, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
+      const response = await axiosInstance.patch(
+        `${API}/auth/me/`,
+        formDataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         },
-      })
+      );
 
-      setUser(response.data)
-      localStorage.setItem('user', JSON.stringify(response.data))
-      window.dispatchEvent(new CustomEvent('userLogin', { detail: { user: response.data, token } }))
-      
-      setIsEditing(false)
-      setFormData((prev) => ({ ...prev, avatar: null }))
-      showToast('Profile updated successfully!', 'success')
+      setUser(response.data);
+      localStorage.setItem("user", JSON.stringify(response.data));
+      window.dispatchEvent(
+        new CustomEvent("userLogin", {
+          detail: { user: response.data, token },
+        }),
+      );
+
+      setIsEditing(false);
+      setFormData((prev) => ({ ...prev, avatar: null }));
+      showToast("Profile updated successfully!", "success");
     } catch (error: any) {
-      console.error('Error updating profile:', error)
-      showToast(error?.response?.data?.detail || 'Failed to update profile', 'error')
+      console.error("Error updating profile:", error);
+      showToast(
+        error?.response?.data?.detail || "Failed to update profile",
+        "error",
+      );
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleCancel = () => {
-    setIsEditing(false)
+    setIsEditing(false);
     setFormData({
-      username: user?.username || '',
-      bio: user?.bio || '',
+      username: user?.username || "",
+      bio: user?.bio || "",
       avatar: null,
-    })
-    setAvatarPreview(user?.avatar || null)
-  }
+    });
+    setAvatarPreview(user?.avatar || null);
+  };
 
   const getFullImageUrl = (imgPath: string) => {
-    if (!imgPath) return '/logo.png'
-    if (imgPath.startsWith('http')) return imgPath
-    return `${API?.replace('/api', '')}${imgPath}`
-  }
+    if (!imgPath) return "/logo.png";
+    if (imgPath.startsWith("http")) return imgPath;
+    return `${API?.replace("/api", "")}${imgPath}`;
+  };
 
   if (isLoading) {
     return (
@@ -245,18 +285,20 @@ export default function ProfilePage() {
           <SkeletonLoader />
         </div>
       </div>
-    )
+    );
   }
 
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Please log in to view your profile</p>
-          <Button onClick={() => router.push('/auth/login')}>Log In</Button>
+          <p className="text-gray-600 mb-4">
+            Please log in to view your profile
+          </p>
+          <Button onClick={() => router.push("/auth/login")}>Log In</Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -328,7 +370,7 @@ export default function ProfilePage() {
                       className="flex items-center gap-2"
                     >
                       <Save className="w-4 h-4" />
-                      {isSaving ? 'Saving...' : 'Save'}
+                      {isSaving ? "Saving..." : "Save"}
                     </Button>
                     <Button
                       variant="outline"
@@ -364,7 +406,9 @@ export default function ProfilePage() {
                     <div className="mt-4">
                       <div className="flex items-start gap-2">
                         <FileText className="w-4 h-4 text-gray-400 mt-1" />
-                        <p className="text-gray-700 whitespace-pre-wrap">{user.bio}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">
+                          {user.bio}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -377,18 +421,25 @@ export default function ProfilePage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">{listings.length}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {listings.length}
+            </div>
             <div className="text-sm text-gray-600">Listings</div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">{reviews.length}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {reviews.length}
+            </div>
             <div className="text-sm text-gray-600">Reviews</div>
           </Card>
           <Card className="p-4 text-center col-span-2 md:col-span-1">
             <div className="text-2xl font-bold text-gray-900">
               {reviews.length > 0
-                ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)
-                : '0'}
+                ? (
+                    reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                    reviews.length
+                  ).toFixed(1)
+                : "0"}
             </div>
             <div className="text-sm text-gray-600">Avg Rating</div>
           </Card>
@@ -417,7 +468,7 @@ export default function ProfilePage() {
               <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p>You haven't created any listings yet.</p>
               <Button
-                onClick={() => router.push('/listings/new')}
+                onClick={() => router.push("/listings/new")}
                 className="mt-4"
               >
                 Create Your First Listing
@@ -445,14 +496,14 @@ export default function ProfilePage() {
                               key={i}
                               className={`w-4 h-4 ${
                                 i < (review.rating || 0)
-                                  ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-300'
+                                  ? "text-yellow-400 fill-current"
+                                  : "text-gray-300"
                               }`}
                             />
                           ))}
                         </div>
                         <span className="text-sm text-gray-600">
-                          on{' '}
+                          on{" "}
                           <a
                             href={`/listings/${review.listing?.id}`}
                             className="text-black hover:underline font-medium"
@@ -473,6 +524,5 @@ export default function ProfilePage() {
         )}
       </div>
     </div>
-  )
+  );
 }
-
