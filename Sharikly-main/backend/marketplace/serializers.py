@@ -14,6 +14,26 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "email", "avatar", "bio", "is_email_verified"]
 
 
+class PublicUserSerializer(serializers.ModelSerializer):
+    """Public profile — no email exposed."""
+    listings_count = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "avatar", "bio", "is_email_verified", "date_joined", "listings_count", "average_rating"]
+
+    def get_listings_count(self, obj):
+        return obj.listings.count() if hasattr(obj, "listings") else 0
+
+    def get_average_rating(self, obj):
+        from django.db.models import Avg
+        if not hasattr(obj, "listings"):
+            return 0
+        result = obj.listings.aggregate(avg=Avg("reviews__rating"))
+        return round(result["avg"] or 0, 1)
+
+
 # ==========================
 # LISTING IMAGES
 # ==========================

@@ -328,13 +328,15 @@ export default function ChatPage() {
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                <a href={`/user/${getOtherParticipant(currentRoom).id}`} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:ring-2 hover:ring-gray-300 transition-all">
                   <User className="h-5 w-5 text-gray-400" />
-                </div>
+                </a>
                 <div>
-                  <h2 className="font-semibold text-gray-900">
-                    {getOtherParticipant(currentRoom).username || getOtherParticipant(currentRoom).email}
-                  </h2>
+                  <a href={`/user/${getOtherParticipant(currentRoom).id}`} className="hover:underline">
+                    <h2 className="font-semibold text-gray-900">
+                      {getOtherParticipant(currentRoom).username || getOtherParticipant(currentRoom).email}
+                    </h2>
+                  </a>
                   <p className="text-sm text-gray-500">
                     {getOtherParticipant(currentRoom).email}
                   </p>

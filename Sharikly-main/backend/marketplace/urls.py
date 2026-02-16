@@ -12,6 +12,7 @@ urlpatterns = [
     path("auth/register/", views.RegisterView.as_view(), name="register"),
     path("auth/me/", views.MeView.as_view(), name="me"),
     path("auth/verify-email/", views.VerifyEmailView.as_view(), name="verify_email"),
+    path("users/<int:pk>/", views.PublicUserView.as_view(), name="public_user"),
     path(
         "auth/token/",
         views.CustomTokenObtainPairView.as_view(),
