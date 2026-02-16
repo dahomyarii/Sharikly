@@ -1,53 +1,61 @@
-'use client'
-import React, { useState } from 'react'
-import axiosInstance from '@/lib/axios'
-import { useRouter } from 'next/navigation'
-import { Eye, EyeOff } from 'lucide-react'
-import FloatingModal from '@/components/FloatingModal'
+"use client";
+import React, { useState } from "react";
+import axiosInstance from "@/lib/axios";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
+import FloatingModal from "@/components/FloatingModal";
+import { useLocale } from "@/components/LocaleProvider";
 
-const API = process.env.NEXT_PUBLIC_API_BASE
+const API = process.env.NEXT_PUBLIC_API_BASE;
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [msg, setMsg] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [msg, setMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const { t } = useLocale();
 
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
     try {
-      const res = await axiosInstance.post(`${API}/auth/token/`, { email, password })
-      const token = res.data.access
+      const res = await axiosInstance.post(`${API}/auth/token/`, {
+        email,
+        password,
+      });
+      const token = res.data.access;
 
-      localStorage.setItem('access_token', token)
-      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      localStorage.setItem("access_token", token);
+      axiosInstance.defaults.headers.common["Authorization"] =
+        `Bearer ${token}`;
 
       const me = await axiosInstance.get(`${API}/auth/me/`, {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      localStorage.setItem('user', JSON.stringify(me.data))
+      });
+      localStorage.setItem("user", JSON.stringify(me.data));
 
       // Dispatch custom event to notify components about login
-      window.dispatchEvent(new CustomEvent("userLogin", { detail: { user: me.data, token } }))
+      window.dispatchEvent(
+        new CustomEvent("userLogin", { detail: { user: me.data, token } }),
+      );
 
       // Soft refresh using router
-      router.push('/')
-      router.refresh()
+      router.push("/");
+      router.refresh();
     } catch (err: any) {
-      setMsg(err?.response?.data?.detail || 'Login failed')
+      setMsg(err?.response?.data?.detail || "Login failed");
     }
   }
 
   return (
     <FloatingModal>
-      <h1 className="text-2xl font-semibold text-center mb-6">Login</h1>
+      <h1 className="text-2xl font-semibold text-center mb-6">{t("login")}</h1>
 
       <form onSubmit={handleLogin} className="space-y-5">
         {/* Email */}
         <div className="space-y-1">
-          <label className="text-sm text-gray-700">Email</label>
+          <label className="text-sm text-gray-700">{t("email")}</label>
           <input
             type="email"
             placeholder="example@gmail.com"
@@ -60,11 +68,11 @@ export default function LoginPage() {
 
         {/* Password */}
         <div className="space-y-1">
-          <label className="text-sm text-gray-700">Password</label>
+          <label className="text-sm text-gray-700">{t("password")}</label>
           <div className="relative">
             <input
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Enter your password"
+              type={showPassword ? "text" : "password"}
+              placeholder={t("password")}
               className="w-full h-12 border rounded-lg px-4 pr-10 focus:ring-2 focus:ring-blue-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -88,20 +96,20 @@ export default function LoginPage() {
           type="submit"
           className="w-full h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          Login
+          {t("login")}
         </button>
 
         {/* Switch to signup */}
         <p className="text-center text-sm text-gray-600">
-          Don’t have an account?{' '}
+          {t("dont_have_account")}{" "}
           <span
-            onClick={() => router.push('/auth/signup')}
+            onClick={() => router.push("/auth/signup")}
             className="text-blue-600 font-medium cursor-pointer hover:underline"
           >
-            Sign Up
+            {t("sign_up")}
           </span>
         </p>
       </form>
     </FloatingModal>
-  )
+  );
 }

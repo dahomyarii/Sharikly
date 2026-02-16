@@ -1,11 +1,13 @@
-'use client'
+"use client";
 
-import { ArrowLeft } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useLocale } from "@/components/LocaleProvider";
 
 export default function AboutPage() {
-  const router = useRouter()
+  const router = useRouter();
+  const { t } = useLocale();
 
   return (
     <div className="min-h-screen bg-white">
@@ -20,7 +22,7 @@ export default function AboutPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-bold text-gray-900">About Us</h1>
+          <h1 className="text-lg font-bold text-gray-900">{t("about_us")}</h1>
           <div className="w-8" />
         </div>
       </header>
@@ -28,41 +30,41 @@ export default function AboutPage() {
       {/* Content */}
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
         <div className="space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">About EKRA</h2>
-          <p className="text-lg text-gray-600">
-            EKRA is a peer-to-peer marketplace connecting people who want to share services and items.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+            {t("about_ekra")}
+          </h2>
+          <p className="text-lg text-gray-600">{t("ekra_description")}</p>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-gray-900">Our Mission</h3>
-          <p className="text-gray-700 leading-relaxed">
-            We believe in empowering communities through sharing. Our platform makes it easy for people to rent, share, and earn from their unused items and services.
-          </p>
+          <h3 className="text-2xl font-bold text-gray-900">
+            {t("our_mission")}
+          </h3>
+          <p className="text-gray-700 leading-relaxed">{t("mission_text")}</p>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-gray-900">Why EKRA?</h3>
+          <h3 className="text-2xl font-bold text-gray-900">{t("why_ekra")}</h3>
           <ul className="space-y-3 text-gray-700">
             <li className="flex gap-3">
               <span className="text-blue-600 font-bold">✓</span>
-              <span>Safe and secure transactions</span>
+              <span>{t("safe_transactions")}</span>
             </li>
             <li className="flex gap-3">
               <span className="text-blue-600 font-bold">✓</span>
-              <span>Easy to use platform</span>
+              <span>{t("easy_to_use")}</span>
             </li>
             <li className="flex gap-3">
               <span className="text-blue-600 font-bold">✓</span>
-              <span>Community-driven approach</span>
+              <span>{t("community_driven")}</span>
             </li>
             <li className="flex gap-3">
               <span className="text-blue-600 font-bold">✓</span>
-              <span>Verified sellers and renters</span>
+              <span>{t("verified_sellers")}</span>
             </li>
           </ul>
         </div>
       </div>
     </div>
-  )
+  );
 }
