@@ -18,6 +18,7 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem('user')
         
         // Clear axios default headers
+        delete axiosInstance.defaults.headers.common['Authorization']
         delete axios.defaults.headers.common['Authorization']
         
         // Dispatch logout event to notify components

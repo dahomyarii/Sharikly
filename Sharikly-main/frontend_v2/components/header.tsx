@@ -54,28 +54,70 @@ export default function Header() {
           <span className="text-xl font-bold">EKRA</span>
         </Link>
 
-        <div className="hidden md:flex gap-4 items-center">
-          <LanguageSwitcher />
+        <div className="hidden md:flex gap-2 items-center">
+          <Link
+            href="/listings"
+            className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+          >
+            Browse
+          </Link>
           {user ? (
             <>
-              <Link href="/favorites" className="px-4 py-2 border rounded-full">
+              <Link
+                href="/listings/new"
+                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+              >
+                List Item
+              </Link>
+              <Link
+                href="/chat"
+                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+              >
+                Chat
+              </Link>
+              <Link
+                href="/favorites"
+                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+              >
                 {t("favorites")}
               </Link>
-              <span className="font-semibold">{user.username}</span>
+              <Link
+                href="/profile"
+                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+              >
+                Profile
+              </Link>
+              <Link
+                href="/settings"
+                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+              >
+                Settings
+              </Link>
+              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <LanguageSwitcher />
               <button
                 onClick={() => handleLogout()}
-                className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition"
+                className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all text-sm font-medium"
               >
                 {t("logout")}
               </button>
             </>
           ) : (
-            <button
-              onClick={() => setShowLogin(true)}
-              className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition"
-            >
-              {t("join_us")}
-            </button>
+            <>
+              <LanguageSwitcher />
+              <button
+                onClick={() => setShowLogin(true)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+              >
+                {t("sign_in") || "Log In"}
+              </button>
+              <button
+                onClick={() => setShowSignup(true)}
+                className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all text-sm font-medium"
+              >
+                {t("sign_up") || "Sign Up"}
+              </button>
+            </>
           )}
         </div>
 
@@ -118,6 +160,13 @@ export default function Header() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {t("favorites")}
+              </Link>
+              <Link
+                href="/settings"
+                className="px-4 py-2 border rounded-lg text-center hover:bg-gray-200 transition"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {t("settings") || "Settings"}
               </Link>
               <button
                 onClick={() => {
@@ -162,88 +211,93 @@ export default function Header() {
         />
       )}
 
-       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 z-40">
-        <div className="flex justify-around items-center h-20 px-2">
-          {/* Home */}
-          <Link 
-            href="/" 
-            className="flex flex-col items-center justify-center w-14 h-14 rounded-lg hover:bg-amber-50 transition-colors group"
-            title="Home"
-          >
-            <svg className="w-6 h-6 text-gray-700 group-hover:text-amber-600 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
-            <span className="text-xs text-gray-700 group-hover:text-amber-600 mt-0.5 font-medium">Home</span>
-          </Link>
-
-          {/* Browse */}
-          <Link 
-            href="/listings" 
-            className="flex flex-col items-center justify-center w-14 h-14 rounded-lg hover:bg-amber-50 transition-colors group"
-            title="Browse"
-          >
-            <svg className="w-6 h-6 text-gray-700 group-hover:text-amber-600 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-            </svg>
-            <span className="text-xs text-gray-700 group-hover:text-amber-600 mt-0.5 font-medium">Browse</span>
-          </Link>
-
-          {/* Favorites */}
-          <Link 
-            href="/favorites" 
-            className="flex flex-col items-center justify-center w-14 h-14 rounded-lg hover:bg-amber-50 transition-colors group relative"
-            title="Favorites"
-          >
-            <svg className="w-6 h-6 text-gray-700 group-hover:text-amber-600 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-            <span className="text-xs text-gray-700 group-hover:text-amber-600 mt-0.5 font-medium">Saved</span>
-            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full"></span>
-          </Link>
-
-          {/* Messages */}
-          <Link 
-            href="/messages" 
-            className="flex flex-col items-center justify-center w-14 h-14 rounded-lg hover:bg-amber-50 transition-colors group relative"
-            title="Messages"
-          >
-            <svg className="w-6 h-6 text-gray-700 group-hover:text-amber-600 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-            </svg>
-            <span className="text-xs text-gray-700 group-hover:text-amber-600 mt-0.5 font-medium">Chat</span>
-            <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full"></span>
-          </Link>
-
-          {/* Profile */}
-          {user ? (
+       {/* Mobile Bottom Navigation — Glass Effect */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 animate-[slideUp_0.4s_ease-out]">
+        <div className="mx-3 mb-3 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
+          <div className="flex justify-around items-center h-16 px-1">
+            {/* Home */}
             <Link 
-              href="/profile" 
-              className="flex flex-col items-center justify-center w-14 h-14 rounded-lg hover:bg-amber-50 transition-colors group"
-              title="Profile"
+              href="/" 
+              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group"
+              title="Home"
             >
-              <svg className="w-6 h-6 text-gray-700 group-hover:text-amber-600 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
               </svg>
-              <span className="text-xs text-gray-700 group-hover:text-amber-600 mt-0.5 font-medium">Profile</span>
+              <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Home</span>
             </Link>
-          ) : (
-            <button 
-              onClick={() => setShowLogin(true)}
-              className="flex flex-col items-center justify-center w-14 h-14 rounded-lg hover:bg-amber-50 transition-colors group"
-              title="Login"
+
+            {/* Browse */}
+            <Link 
+              href="/listings" 
+              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group"
+              title="Browse"
             >
-              <svg className="w-6 h-6 text-gray-700 group-hover:text-amber-600 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M11 7L9.6 8.4l2.05 2.05H4v2h7.65L9.6 14.5 11 16l5-5-5-5zm6 6h2V7h-2v6zm0 6h2v-2h-2v2z"/>
+              <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
-              <span className="text-xs text-gray-700 group-hover:text-amber-600 mt-0.5 font-medium">Login</span>
-            </button>
-          )}
+              <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Browse</span>
+            </Link>
+
+            {/* Favorites */}
+            <Link 
+              href="/favorites" 
+              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group relative"
+              title="Favorites"
+            >
+              <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Saved</span>
+            </Link>
+
+            {/* Messages */}
+            <Link 
+              href="/chat" 
+              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group relative"
+              title="Messages"
+            >
+              <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Chat</span>
+            </Link>
+
+            {/* Profile / Login */}
+            {user ? (
+              <Link 
+                href="/profile" 
+                className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group"
+                title="Profile"
+              >
+                <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Profile</span>
+              </Link>
+            ) : (
+              <button 
+                onClick={() => setShowLogin(true)}
+                className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group"
+                title="Login"
+              >
+                <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                  <polyline points="10 17 15 12 10 7"/>
+                  <line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
+                <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Login</span>
+              </button>
+            )}
+          </div>
         </div>
       </nav>
 
       {/* Mobile spacing to prevent content overlap with bottom nav */}
-      <div className="md:hidden h-20"></div>
+      <div className="md:hidden h-24"></div>
     </>
   );
 }

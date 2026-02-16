@@ -12,12 +12,15 @@ urlpatterns = [
     path("auth/register/", views.RegisterView.as_view(), name="register"),
     path("auth/me/", views.MeView.as_view(), name="me"),
     path("auth/verify-email/", views.VerifyEmailView.as_view(), name="verify_email"),
+    path("users/<int:pk>/", views.PublicUserView.as_view(), name="public_user"),
     path(
         "auth/token/",
         views.CustomTokenObtainPairView.as_view(),
         name="token_obtain_pair",
     ),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/change-password/", views.ChangePasswordView.as_view(), name="change_password"),
+    path("auth/delete-account/", views.DeleteAccountView.as_view(), name="delete_account"),
     # Chat
     path("chat/rooms/", views.ChatRoomListCreateView.as_view(), name="chat_rooms"),
     path("chat/messages/", views.SendMessageView.as_view(), name="chat_messages"),
