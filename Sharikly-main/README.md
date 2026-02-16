@@ -1,5 +1,5 @@
 
-# Peer-to-Peer Rental Marketplace (Django + Next.js) — FatLlama-style (MVP)
+# Peer-to-Peer Rental Marketplace (Django + Next.js)
 
 A ready-to-run workspace that mimics the look and flow of a peer-to-peer rental marketplace (inspired by FatLlama) with multilingual support (English, Arabic, Spanish). **This is not an exact clone**—branding and assets are original.
 
