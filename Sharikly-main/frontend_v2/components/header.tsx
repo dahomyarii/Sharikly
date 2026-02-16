@@ -87,6 +87,12 @@ export default function Header() {
               >
                 Profile
               </Link>
+              <Link
+                href="/settings"
+                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+              >
+                Settings
+              </Link>
               <div className="w-px h-6 bg-gray-300 mx-1" />
               <LanguageSwitcher />
               <button
@@ -154,6 +160,13 @@ export default function Header() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {t("favorites")}
+              </Link>
+              <Link
+                href="/settings"
+                className="px-4 py-2 border rounded-lg text-center hover:bg-gray-200 transition"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {t("settings") || "Settings"}
               </Link>
               <button
                 onClick={() => {

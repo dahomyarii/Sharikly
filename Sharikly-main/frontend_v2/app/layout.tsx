@@ -4,7 +4,6 @@ import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { LocaleProvider } from "@/components/LocaleProvider";
-import FloatingChatButton from "@/components/FloatingChatButton";
 import { Providers } from "@/components/Providers";
 
 const geistSans = Geist({
@@ -42,7 +41,6 @@ export default function RootLayout({
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
-            <FloatingChatButton />
           </Providers>
         </LocaleProvider>
         

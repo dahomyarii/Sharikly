@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Header from "@/components/header";
 import { LocaleProvider } from "@/components/LocaleProvider";
-import FloatingChatButton from "@/components/FloatingChatButton";
-
 export const metadata: Metadata = {
   title: "EKRA",
   description: "Rent what you need, when you need it",
@@ -22,7 +20,6 @@ export default function AuthLayout({
     <>
       <Header />
       <main className="flex-1">{children}</main>
-      <FloatingChatButton />
     </>
   );
 }

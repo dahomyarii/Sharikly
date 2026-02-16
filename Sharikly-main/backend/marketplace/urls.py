@@ -19,6 +19,8 @@ urlpatterns = [
         name="token_obtain_pair",
     ),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/change-password/", views.ChangePasswordView.as_view(), name="change_password"),
+    path("auth/delete-account/", views.DeleteAccountView.as_view(), name="delete_account"),
     # Chat
     path("chat/rooms/", views.ChatRoomListCreateView.as_view(), name="chat_rooms"),
     path("chat/messages/", views.SendMessageView.as_view(), name="chat_messages"),
