@@ -610,14 +610,67 @@ export default function ListingDetail() {
                 </p>
               </Card>
 
-              {data.latitude && data.longitude && (
-                <LocationPicker
-                  readOnly={true}
-                  initialLat={data.latitude}
-                  initialLng={data.longitude}
-                  initialRadius={data.pickup_radius_m || 300}
-                />
-              )}
+              <Card className="overflow-hidden">
+                {/* Lender Info */}
+                <div className="p-5 flex items-center gap-4 border-b border-gray-100">
+                  <a href={`/user/${data.owner?.id}`} className="flex-shrink-0">
+                    <img
+                      src={
+                        data.owner?.avatar
+                          ? data.owner.avatar.startsWith("http")
+                            ? data.owner.avatar
+                            : `${API}${data.owner.avatar}`
+                          : DEFAULT_AVATAR
+                      }
+                      alt={data.owner?.username || "Lender"}
+                      className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-100 hover:ring-gray-300 transition-all cursor-pointer"
+                    />
+                  </a>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <a href={`/user/${data.owner?.id}`} className="hover:underline">
+                        <h3 className="font-semibold text-gray-900 truncate">
+                          {data.owner?.username || "Unknown"}
+                        </h3>
+                      </a>
+                      {data.owner?.is_email_verified && (
+                        <Check className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <Star className="h-3.5 w-3.5 fill-orange-500 text-orange-500" />
+                      <span className="text-sm font-medium text-gray-700">
+                        {averageRating > 0 ? averageRating : "New"}
+                      </span>
+                      <span className="text-sm text-gray-400">
+                        &middot; {reviews.length} review{reviews.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  </div>
+                  {!isOwner && user && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push("/chat")}
+                      className="flex-shrink-0 text-xs"
+                    >
+                      Message
+                    </Button>
+                  )}
+                </div>
+
+                {/* Map */}
+                {data.latitude && data.longitude && (
+                  <div className="p-0">
+                    <LocationPicker
+                      readOnly={true}
+                      initialLat={data.latitude}
+                      initialLng={data.longitude}
+                      initialRadius={data.pickup_radius_m || 300}
+                    />
+                  </div>
+                )}
+              </Card>
             </div>
 
             <Card className="p-6">
@@ -722,17 +775,21 @@ export default function ListingDetail() {
                     className="border-b border-gray-200 pb-6 last:border-0"
                   >
                     <div className="flex items-start gap-4">
-                      <img
-                        src={review.user.avatar || DEFAULT_AVATAR}
-                        alt={review.user.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
+                      <a href={`/user/${review.raw?.user?.id}`} className="flex-shrink-0">
+                        <img
+                          src={review.user.avatar || DEFAULT_AVATAR}
+                          alt={review.user.name}
+                          className="w-12 h-12 rounded-full object-cover hover:ring-2 hover:ring-gray-300 transition-all cursor-pointer"
+                        />
+                      </a>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
                           <div>
-                            <h4 className="font-semibold text-gray-800">
-                              {review.user.name}
-                            </h4>
+                            <a href={`/user/${review.raw?.user?.id}`} className="hover:underline">
+                              <h4 className="font-semibold text-gray-800">
+                                {review.user.name}
+                              </h4>
+                            </a>
                             <p className="text-sm text-gray-500">
                               {review.date}
                             </p>
@@ -796,17 +853,19 @@ export default function ListingDetail() {
           </div>
 
           <div className="lg:col-span-1">
-            <Card className="p-6 sticky top-24 space-y-6">
-              <div className="text-center pb-6 border-b border-gray-200">
+            <Card className="p-6 sticky top-24 space-y-5">
+              {/* Price */}
+              <div className="text-center pb-5 border-b border-gray-200">
                 <div className="text-4xl font-bold text-blue-600 mb-1">
                   ${data.price_per_day}
                 </div>
                 <div className="text-gray-500">per day</div>
               </div>
 
+              {/* Calendar */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  Available Dates
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  Select Dates
                 </h3>
                 <div className="calendar-wrapper">
                   <DayPicker
@@ -815,32 +874,55 @@ export default function ListingDetail() {
                     onSelect={setDateRange}
                     numberOfMonths={1}
                     showOutsideDays={true}
+                    disabled={{ before: new Date() }}
                     className="w-full"
                   />
                 </div>
+
+                {/* Date selection summary */}
                 {dateRange?.from && (
-                  <p className="mt-4 text-sm text-gray-600 text-center">
+                  <div className="mt-3 text-sm text-gray-600 text-center">
                     {dateRange.to ? (
-                      <>
-                        Selected:{" "}
-                        <span className="font-semibold">
-                          {dateRange.from.toLocaleDateString()} - {dateRange.to.toLocaleDateString()}
-                        </span>
-                      </>
+                      <span>
+                        {dateRange.from.toLocaleDateString()} &mdash; {dateRange.to.toLocaleDateString()}
+                      </span>
                     ) : (
-                      <>
-                        Selected:{" "}
-                        <span className="font-semibold">
-                          {dateRange.from.toLocaleDateString()}
-                        </span>
-                        {" (select end date)"}
-                      </>
+                      <span>
+                        {dateRange.from.toLocaleDateString()} &mdash; <span className="text-gray-400">select end date</span>
+                      </span>
                     )}
-                  </p>
+                  </div>
                 )}
               </div>
 
-              <div className="pt-4 border-t border-gray-200">
+              {/* Price Breakdown */}
+              {dateRange?.from && dateRange?.to && (() => {
+                const msPerDay = 1000 * 60 * 60 * 24;
+                const nights = Math.max(1, Math.round((dateRange.to!.getTime() - dateRange.from!.getTime()) / msPerDay));
+                const pricePerDay = parseFloat(data.price_per_day) || 0;
+                const subtotal = pricePerDay * nights;
+                const serviceFee = Math.round(subtotal * 0.1 * 100) / 100;
+                const total = Math.round((subtotal + serviceFee) * 100) / 100;
+                return (
+                  <div className="space-y-3 pt-4 border-t border-gray-200">
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>${pricePerDay.toFixed(2)} &times; {nights} day{nights !== 1 ? "s" : ""}</span>
+                      <span>${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Service fee</span>
+                      <span>${serviceFee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-gray-900 text-base pt-3 border-t border-gray-200">
+                      <span>Total</span>
+                      <span>${total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Action Button */}
+              <div className="pt-2">
                 {user && !isOwner && (
                   <Button
                     onClick={handleRequestBooking}
