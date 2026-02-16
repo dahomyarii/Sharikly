@@ -58,7 +58,17 @@ export default function SignupModal({
         router.push("/auth/login")
       }
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.detail || "Signup failed"
+      let errorMsg = "Signup failed"
+      if (err?.response?.data) {
+        const data = err.response.data
+        if (typeof data.detail === "string") {
+          errorMsg = data.detail
+        } else {
+          errorMsg = Object.entries(data)
+            .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(", ") : val}`)
+            .join(" | ")
+        }
+      }
       showToast(errorMsg, "error")
       setMsg(errorMsg)
       setIsLoading(false)

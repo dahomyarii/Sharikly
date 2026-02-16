@@ -7,11 +7,9 @@ import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import FloatingModal from "@/components/FloatingModal"
 import { useToast } from "@/components/ui/toast"
-import { useProfileSetup } from "@/contexts/ProfileSetupContext"
-
 const API = process.env.NEXT_PUBLIC_API_BASE
-console.log("API Base URL:", API)
-export default function SignupModal({ onClose }: { onClose?: () => void }) {
+
+export default function SignupPage({ onClose }: { onClose?: () => void }) {
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
@@ -21,7 +19,6 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { showToast } = useToast()
-  const { showProfileSetup } = useProfileSetup()
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -48,7 +45,18 @@ export default function SignupModal({ onClose }: { onClose?: () => void }) {
       // Redirect to login page
       setTimeout(() => router.push("/auth/login"), 1000)
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.detail || "Signup failed"
+      let errorMsg = "Signup failed"
+      if (err?.response?.data) {
+        const data = err.response.data
+        if (typeof data.detail === "string") {
+          errorMsg = data.detail
+        } else {
+          // Parse field-specific errors like {"email": ["already exists"]}
+          errorMsg = Object.entries(data)
+            .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(", ") : val}`)
+            .join(" | ")
+        }
+      }
       showToast(errorMsg, "error")
       setMsg(errorMsg)
       setIsLoading(false)

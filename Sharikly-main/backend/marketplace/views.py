@@ -55,6 +55,15 @@ class MeView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
+class PublicUserView(generics.RetrieveAPIView):
+    """Public user profile — anyone can view."""
+    from .serializers import PublicUserSerializer
+    queryset = User.objects.all()
+    serializer_class = PublicUserSerializer
+    permission_classes = [permissions.AllowAny]
+    lookup_field = "pk"
+
+
 class VerifyEmailView(generics.GenericAPIView):
     """Verify user email using token from URL"""
     permission_classes = [permissions.AllowAny]
@@ -116,21 +125,20 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        
-        # Get user from email
+        # Check email verification BEFORE issuing a token
         email = request.data.get("email")
         if email:
             try:
                 user = User.objects.get(email=email)
                 if not user.is_email_verified:
-                    raise AuthenticationFailed(
-                        "Please verify your email address before logging in. Check your inbox for the verification email."
+                    return Response(
+                        {"detail": "Please verify your email address before logging in. Check your inbox for the verification email."},
+                        status=status.HTTP_403_FORBIDDEN,
                     )
             except User.DoesNotExist:
-                pass
+                pass  # Let the parent handle "no active account" error
         
-        return response
+        return super().post(request, *args, **kwargs)
 
 
 # --- Listings Views ---
