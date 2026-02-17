@@ -4,28 +4,35 @@ import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import Link from "next/link";
 import FloatingModal from "@/components/FloatingModal";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
-export default function LoginModal({ 
-  onClose, 
-  onSwitchToSignup 
-}: { 
+export default function LoginModal({
+  onClose,
+  onSwitchToSignup,
+}: {
   onClose?: () => void;
   onSwitchToSignup?: () => void;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
+  const [msgSuccess, setMsgSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const router = useRouter();
+
+  const isVerifyEmailError =
+    msg && msg.toLowerCase().includes("verify your email");
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
     setMsg("");
+    setMsgSuccess("");
 
     try {
       const res = await axiosInstance.post(`${API}/auth/token/`, { email, password });
@@ -57,6 +64,22 @@ export default function LoginModal({
     }
   }
 
+  async function handleResendVerification() {
+    if (!email.trim() || resendLoading) return;
+    setResendLoading(true);
+    setMsgSuccess("");
+    try {
+      await axiosInstance.post(`${API}/auth/resend-verification/`, {
+        email: email.trim(),
+      });
+      setMsgSuccess("If your email is not verified, we've sent a new link. Check your inbox.");
+    } catch (_) {
+      setMsgSuccess("If your email is not verified, we've sent a new link. Check your inbox.");
+    } finally {
+      setResendLoading(false);
+    }
+  }
+
   return (
     <FloatingModal onClose={onClose}>
       <h1 className="text-2xl font-semibold text-center mb-6">Login</h1>
@@ -78,7 +101,16 @@ export default function LoginModal({
 
         {/* Password */}
         <div className="space-y-1">
-          <label className="text-sm text-gray-700">Password</label>
+          <div className="flex items-center justify-between">
+            <label className="text-sm text-gray-700">Password</label>
+            <Link
+              href="/auth/forgot-password"
+              onClick={onClose}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -101,6 +133,21 @@ export default function LoginModal({
 
         {/* Message */}
         {msg && <p className="text-center text-sm text-red-600">{msg}</p>}
+        {msgSuccess && (
+          <p className="text-center text-sm text-green-600">{msgSuccess}</p>
+        )}
+
+        {/* Resend verification when login failed due to unverified email */}
+        {isVerifyEmailError && (
+          <button
+            type="button"
+            onClick={handleResendVerification}
+            disabled={resendLoading}
+            className="w-full py-2 text-sm text-blue-600 hover:underline disabled:opacity-50"
+          >
+            {resendLoading ? "Sending…" : "Resend verification email"}
+          </button>
+        )}
 
         {/* Login button */}
         <button
