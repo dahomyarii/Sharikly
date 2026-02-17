@@ -41,6 +41,7 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState<Section>('profile')
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   // Profile form
   const [profileForm, setProfileForm] = useState({ username: '', bio: '' })
@@ -71,6 +72,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const token = localStorage.getItem('access_token')
     if (!token) {
+      setIsLoading(false)
       router.push('/auth/login')
       return
     }
@@ -78,21 +80,45 @@ export default function SettingsPage() {
   }, [router])
 
   const fetchUser = async () => {
+    setFetchError(null)
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
+    if (!API) {
+      setFetchError('App configuration error. Please refresh the page.')
+      setIsLoading(false)
+      return
+    }
     try {
-      const token = localStorage.getItem('access_token')
       const res = await axiosInstance.get(`${API}/auth/me/`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      setUser(res.data)
+      const data = res?.data
+      if (!data) {
+        setFetchError('Invalid response from server.')
+        setIsLoading(false)
+        return
+      }
+      setUser(data)
       setProfileForm({
-        username: res.data.username || '',
-        bio: res.data.bio || '',
+        username: data.username ?? '',
+        bio: data.bio ?? '',
       })
-      if (res.data.avatar) {
-        setAvatarPreview(res.data.avatar)
+      if (data.avatar) {
+        setAvatarPreview(data.avatar)
       }
     } catch (err: any) {
-      if (err.response?.status === 401) router.push('/auth/login')
+      if (err.response?.status === 401) {
+        router.push('/auth/login')
+      } else {
+        setFetchError(
+          err.response?.data?.detail
+            ? String(err.response.data.detail)
+            : 'Could not load your profile. Please try again.'
+        )
+      }
     } finally {
       setIsLoading(false)
     }
@@ -209,11 +235,42 @@ export default function SettingsPage() {
   }
 
   if (!user) {
+    const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('access_token')
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Please log in to access settings</p>
-          <Button onClick={() => router.push('/auth/login')}>Log In</Button>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-sm">
+          {fetchError ? (
+            <>
+              <p className="text-gray-600 mb-2">{fetchError}</p>
+              <p className="text-sm text-gray-500 mb-4">
+                You can try again or log out and log in again.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <Button onClick={() => fetchUser()}>Try again</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    localStorage.removeItem('access_token')
+                    localStorage.removeItem('user')
+                    window.dispatchEvent(new CustomEvent('userLogout'))
+                    router.push('/auth/login')
+                  }}
+                >
+                  Log out and go to login
+                </Button>
+              </div>
+            </>
+          ) : hasToken ? (
+            <>
+              <p className="text-gray-600 mb-4">Loading your profile failed. Please try again.</p>
+              <Button onClick={() => fetchUser()}>Try again</Button>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-600 mb-4">Please log in to access settings</p>
+              <Button onClick={() => router.push('/auth/login')}>Log In</Button>
+            </>
+          )}
         </div>
       </div>
     )
