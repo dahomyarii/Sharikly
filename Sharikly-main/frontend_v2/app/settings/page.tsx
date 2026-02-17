@@ -18,16 +18,18 @@ import {
   EyeOff,
   Globe,
   Check,
+  Ban,
 } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
-type Section = 'profile' | 'account' | 'preferences' | 'danger'
+type Section = 'profile' | 'account' | 'preferences' | 'blocked' | 'danger'
 
 const NAV_ITEMS: { id: Section; icon: typeof User; labelKey: string }[] = [
   { id: 'profile', icon: User, labelKey: 'profile' },
   { id: 'account', icon: Lock, labelKey: 'account' },
   { id: 'preferences', icon: Settings2, labelKey: 'preferences' },
+  { id: 'blocked', icon: Ban, labelKey: 'blocked_users' },
   { id: 'danger', icon: AlertTriangle, labelKey: 'danger_zone' },
 ]
 
@@ -61,6 +63,10 @@ export default function SettingsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // Blocked users
+  const [blockedUsers, setBlockedUsers] = useState<any[]>([])
+  const [blockedLoading, setBlockedLoading] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('access_token')
@@ -423,6 +429,86 @@ export default function SettingsPage() {
     </div>
   )
 
+  const fetchBlockedUsers = async () => {
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+    setBlockedLoading(true)
+    try {
+      const res = await axiosInstance.get(`${API}/users/blocked/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setBlockedUsers(Array.isArray(res.data) ? res.data : [])
+    } catch {
+      setBlockedUsers([])
+    } finally {
+      setBlockedLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeSection === 'blocked') fetchBlockedUsers()
+  }, [activeSection])
+
+  const renderBlocked = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">{t('blocked_users')}</h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Users you have blocked. They cannot see you in chat or message you.
+        </p>
+      </div>
+      {blockedLoading ? (
+        <p className="text-sm text-gray-500">Loading...</p>
+      ) : blockedUsers.length === 0 ? (
+        <p className="text-sm text-gray-500">You have not blocked anyone.</p>
+      ) : (
+        <ul className="space-y-3">
+          {blockedUsers.map((u: any) => (
+            <li
+              key={u.id}
+              className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                  {u.avatar ? (
+                    <img
+                      src={u.avatar.startsWith('http') ? u.avatar : `${API?.replace('/api', '')}${u.avatar}`}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-5 h-5 text-gray-400" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{u.username || u.email}</p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem('access_token')
+                    await axiosInstance.delete(`${API}/users/${u.id}/unblock/`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    })
+                    setBlockedUsers((prev) => prev.filter((x: any) => x.id !== u.id))
+                    showToast(t('unblock_user'), 'success')
+                  } catch (err: any) {
+                    showToast(err?.response?.data?.detail || 'Failed to unblock', 'error')
+                  }
+                }}
+              >
+                {t('unblock_user')}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+
   const renderPreferences = () => (
     <div className="space-y-6">
       <div>
@@ -548,6 +634,7 @@ export default function SettingsPage() {
     profile: renderProfile,
     account: renderAccount,
     preferences: renderPreferences,
+    blocked: renderBlocked,
     danger: renderDangerZone,
   }
 
