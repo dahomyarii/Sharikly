@@ -253,11 +253,12 @@ export default function ChatRoomPage() {
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
       >
-        {messages.length === 0 ? (
-          <div className="text-center text-gray-500 py-12">
-            No messages yet. Start the conversation!
-          </div>
-        ) : (
+              {messages.length === 0 ? (
+                <div className="text-center text-gray-500 py-12 space-y-2">
+                  <p>No messages yet.</p>
+                  <p className="text-sm">Send a message below to start the conversation.</p>
+                </div>
+              ) : (
           messages.map((msg) => {
             const isOwn = msg.sender.id === user.id
             return (

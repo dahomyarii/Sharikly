@@ -266,10 +266,30 @@ export default function ChatPage() {
         {/* Rooms List */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="p-4 text-center text-gray-500">Loading...</div>
+            <div className="p-4 space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-start gap-3 p-3">
+                  <div className="w-12 h-12 rounded-full bg-gray-200 animate-pulse flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-32" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-24" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : filteredRooms.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              {searchQuery ? 'No conversations found' : 'No conversations yet'}
+            <div className="p-6 text-center">
+              <p className="text-gray-500 mb-4">
+                {searchQuery ? 'No conversations found' : 'No conversations yet'}
+              </p>
+              {!searchQuery && (
+                <a
+                  href="/listings"
+                  className="inline-block px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 text-sm font-medium"
+                >
+                  Browse listings to message owners
+                </a>
+              )}
             </div>
           ) : (
             filteredRooms.map(room => {

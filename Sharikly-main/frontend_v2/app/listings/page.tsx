@@ -5,6 +5,7 @@ import axiosInstance from "@/lib/axios";
 import ListingCard from "@/components/ListingCard";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -178,8 +179,22 @@ export default function ListingsPage() {
             <ListingCard key={listing.id} listing={listing} />
           ))
         ) : (
-          <div className="col-span-full text-center py-12 text-gray-500">
-            {t("no_listings_found")}
+          <div className="col-span-full text-center py-16 px-4">
+            <p className="text-gray-500 mb-6">{t("no_listings_found")}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/listings/new"
+                className="inline-flex items-center justify-center px-5 py-3 bg-black text-white rounded-lg hover:bg-gray-800 font-medium"
+              >
+                {t("list_new")}
+              </Link>
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center px-5 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+              >
+                {t("browse")}
+              </Link>
+            </div>
           </div>
         )}
       </div>

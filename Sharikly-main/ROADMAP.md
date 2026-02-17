@@ -146,13 +146,16 @@ Work through these in order. Each item is one "phase"; complete it before moving
 
 ---
 
-## Phase 10: Loading and empty states
+## Phase 10: Loading and empty states ✅
 
 **Goal:** No raw "Loading..." or blank lists; skeletons and friendly empty copy.
 
 **Frontend**
-- [ ] Replace key loading texts with skeletons (listings, profile, chat, bookings).
-- [ ] Empty states: "No listings yet", "No messages", "No bookings", with clear next action (e.g. "List an item", "Browse listings").
+- [x] Listings: skeleton grid already; empty state with "List an item" + "Browse" CTAs.
+- [x] Bookings: skeleton list (4 cards) when loading; empty state with "Browse listings".
+- [x] Chat list: skeleton conversation rows when loading; empty state with "Browse listings to message owners".
+- [x] Favorites: skeleton grid when loading; empty state with "Browse" CTA.
+- [x] Chat room: empty state copy "Send a message below to start the conversation."
 
 **Done when:** Main flows feel polished and guided.
 

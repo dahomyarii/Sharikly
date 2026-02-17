@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axiosInstance from '@/lib/axios'
 import { useLocale } from '@/components/LocaleProvider'
-import { ArrowLeft, Calendar, Check, X, Loader2 } from 'lucide-react'
+import { ArrowLeft, Calendar, Check, X } from 'lucide-react'
 import Link from 'next/link'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
@@ -122,9 +122,24 @@ export default function BookingsPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-          </div>
+          <ul className="space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <li key={i} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="flex gap-4 p-4">
+                  <div className="w-20 h-20 rounded-lg bg-gray-200 animate-pulse flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-1/3" />
+                    <div className="flex gap-2 mt-3">
+                      <div className="h-6 bg-gray-200 rounded animate-pulse w-16" />
+                      <div className="h-6 bg-gray-200 rounded animate-pulse w-14" />
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
         ) : bookings.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
             <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
