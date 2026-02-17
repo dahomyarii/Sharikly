@@ -2,8 +2,10 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import axiosInstance from '@/lib/axios'
-import { ArrowLeft, User, Image as ImageIcon } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowLeft, User, Image as ImageIcon, Ban } from 'lucide-react'
 import Image from 'next/image'
+import { useLocale } from '@/components/LocaleProvider'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -34,6 +36,8 @@ export default function ChatRoomPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
   const previousMessagesLength = useRef(0)
+  const [blockLoading, setBlockLoading] = useState(false)
+  const { t } = useLocale()
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -190,24 +194,57 @@ export default function ChatRoomPage() {
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
       {/* Header */}
       <div className="bg-white border-b p-4 flex-shrink-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => router.push('/chat')}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-            <User className="h-5 w-5 text-gray-400" />
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <button
+              onClick={() => router.push('/chat')}
+              className="p-2 hover:bg-gray-100 rounded-full transition flex-shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <Link
+              href={otherUser ? `/user/${otherUser.id}` : '#'}
+              className="flex items-center gap-4 min-w-0"
+            >
+              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                <User className="h-5 w-5 text-gray-400" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="font-semibold text-gray-900 truncate">
+                  {otherUser?.username || otherUser?.email || 'Chat'}
+                </h1>
+                <p className="text-sm text-gray-500 truncate">
+                  {otherUser?.email}
+                </p>
+              </div>
+            </Link>
           </div>
-          <div>
-            <h1 className="font-semibold text-gray-900">
-              {otherUser?.username || otherUser?.email || 'Chat'}
-            </h1>
-            <p className="text-sm text-gray-500">
-              {otherUser?.email}
-            </p>
-          </div>
+          {otherUser && (
+            <button
+              onClick={async () => {
+                if (!confirm(t('block_user_confirm'))) return
+                setBlockLoading(true)
+                try {
+                  const token = localStorage.getItem('access_token')
+                  await axiosInstance.post(
+                    `${API}/users/${otherUser.id}/block/`,
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                  )
+                  router.push('/chat')
+                } catch (err) {
+                  console.error(err)
+                } finally {
+                  setBlockLoading(false)
+                }
+              }}
+              disabled={blockLoading}
+              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0"
+              title={t('block_user')}
+            >
+              <Ban className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </div>
 
