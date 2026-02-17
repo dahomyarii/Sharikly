@@ -5,6 +5,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Star, User } from "lucide-react";
 import { useLocale } from "./LocaleProvider";
+import { getEnhancedImageUrl } from "@/lib/cloudinary";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -121,7 +122,7 @@ export default function ListingCard({ listing }: { listing: any }) {
     return `${API?.replace("/api", "")}${imageUrl}`;
   };
 
-  const imageUrl = getImageUrl();
+  const imageUrl = getEnhancedImageUrl(getImageUrl());
 
   return (
     <Link
