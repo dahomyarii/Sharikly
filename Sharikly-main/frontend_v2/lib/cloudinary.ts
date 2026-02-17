@@ -13,8 +13,14 @@ export function getEnhancedImageUrl(src: string | null | undefined): string {
   if (src.includes("res.cloudinary.com")) return src;
 
   const encoded = encodeURIComponent(src);
-  // f_auto: auto format, q_auto:good: auto quality with sensible balance,
-  // e_auto_enhance: general image enhancement.
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/f_auto,q_auto:good,e_auto_enhance/${encoded}`;
+  /**
+   * Transformations used:
+   * - f_auto           → automatic format (WebP/AVIF/etc. when supported)
+   * - q_auto:best      → highest reasonable quality (still optimized)
+   * - e_auto_enhance   → general image enhancement
+   * - e_auto_contrast  → improve contrast
+   * - e_auto_color     → improve colors
+   */
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/f_auto,q_auto:best,e_auto_enhance,e_auto_contrast,e_auto_color/${encoded}`;
 }
 
