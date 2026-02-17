@@ -79,6 +79,10 @@ export default function SettingsPage() {
     fetchUser()
   }, [router])
 
+  useEffect(() => {
+    if (user && activeSection === 'blocked') fetchBlockedUsers()
+  }, [user, activeSection])
+
   const fetchUser = async () => {
     setFetchError(null)
     const token = localStorage.getItem('access_token')
@@ -501,10 +505,6 @@ export default function SettingsPage() {
       setBlockedLoading(false)
     }
   }
-
-  useEffect(() => {
-    if (activeSection === 'blocked') fetchBlockedUsers()
-  }, [activeSection])
 
   const renderBlocked = () => (
     <div className="space-y-6">
