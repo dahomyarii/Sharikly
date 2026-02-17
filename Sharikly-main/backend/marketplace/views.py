@@ -78,6 +78,26 @@ def _blocked_user_ids(user):
     return blocked_by_me | blocked_me
 
 
+def _create_notification(user, notification_type, title, body: str = "", link: str = ""):
+    """
+    Small helper to create an in-app notification.
+    Safe to call even if notifications are not critical to the main flow.
+    """
+    if not user:
+        return
+    try:
+        Notification.objects.create(
+            user=user,
+            notification_type=notification_type,
+            title=title,
+            body=body,
+            link=link,
+        )
+    except Exception as e:
+        # Do not break main request flow if notification fails
+        print(f"[notifications] Failed to create notification: {e}")
+
+
 class BlockUserView(APIView):
     """POST: block a user (they won't appear in your chat list; you can't message each other)."""
     permission_classes = [permissions.IsAuthenticated]
@@ -120,6 +140,48 @@ class BlockedUsersListView(generics.ListAPIView):
     def get_queryset(self):
         return User.objects.filter(
             id__in=BlockedUser.objects.filter(blocker=self.request.user).values_list("blocked_id", flat=True)
+        )
+
+
+class NotificationListView(generics.ListAPIView):
+    """List current user's notifications (newest first)."""
+
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by("-created_at")
+
+
+class NotificationMarkReadView(APIView):
+    """
+    Mark notifications as read.
+    PATCH body:
+      { "id": 123 }   -> mark single notification read
+      { "all": true } -> mark all as read
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request):
+        nid = request.data.get("id")
+        mark_all = bool(request.data.get("all"))
+
+        if mark_all:
+            updated = Notification.objects.filter(user=request.user, read=False).update(read=True)
+            return Response({"marked": updated}, status=status.HTTP_200_OK)
+
+        if nid is not None:
+            notif = Notification.objects.filter(user=request.user, id=nid).first()
+            if not notif:
+                return Response({"detail": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)
+            notif.read = True
+            notif.save()
+            return Response(NotificationSerializer(notif).data, status=status.HTTP_200_OK)
+
+        return Response(
+            {"detail": "Provide 'id' or 'all' in request body."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
 

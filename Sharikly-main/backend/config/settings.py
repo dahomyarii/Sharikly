@@ -152,6 +152,16 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
+    # Rate limiting: anonymous and authenticated users
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",   # general anonymous
+        "user": "1000/hour",  # per authenticated user
+        "auth": "30/hour",    # login/register per IP (override on auth views)
+    },
 }
 
 SIMPLE_JWT = {

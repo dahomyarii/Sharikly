@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import Listing, Booking, ListingImage, Category, Review, ReviewVote, ContactMessage, UserAdminMessage, BlogPost, Report, BlockedUser
+from .models import Listing, Booking, ListingImage, Category, Review, ReviewVote, ContactMessage, UserAdminMessage, BlogPost, Report, BlockedUser, Notification
 
 class ListingImageInline(admin.TabularInline):
     model = ListingImage
@@ -44,6 +44,15 @@ class BlockedUserAdmin(admin.ModelAdmin):
     list_filter = ("created_at",)
     search_fields = ("blocker__email", "blocked__email")
     readonly_fields = ("created_at",)
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ("user", "notification_type", "title", "read", "created_at")
+    list_filter = ("notification_type", "read", "created_at")
+    search_fields = ("user__email", "title", "body")
+    readonly_fields = ("created_at",)
+
 
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):

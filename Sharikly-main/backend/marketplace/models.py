@@ -248,6 +248,7 @@ class BlockedUser(models.Model):
         return f"{self.blocker.email} blocks {self.blocked.email}"
 
 
+ 
 # ==========================
 # USER TO ADMIN MESSAGES
 # ==========================
@@ -265,6 +266,34 @@ class UserAdminMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.user.email}: {self.subject}"
+
+
+# ==========================
+# NOTIFICATIONS
+# ==========================
+class Notification(models.Model):
+    class NotificationType(models.TextChoices):
+        BOOKING_ACCEPTED = "BOOKING_ACCEPTED", _("Booking accepted")
+        BOOKING_DECLINED = "BOOKING_DECLINED", _("Booking declined")
+        NEW_MESSAGE = "NEW_MESSAGE", _("New message")
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notifications"
+    )
+    notification_type = models.CharField(
+        max_length=30, choices=NotificationType.choices
+    )
+    title = models.CharField(max_length=200)
+    body = models.TextField(blank=True)
+    link = models.CharField(max_length=500, blank=True)  # e.g. /bookings or /chat/123
+    read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} for {self.user.email}"
 
 
 # ==========================

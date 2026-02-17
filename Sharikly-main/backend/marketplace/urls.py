@@ -17,6 +17,8 @@ urlpatterns = [
     path("users/<int:pk>/block/", views.BlockUserView.as_view(), name="block_user"),
     path("users/<int:pk>/unblock/", views.UnblockUserView.as_view(), name="unblock_user"),
     path("users/blocked/", views.BlockedUsersListView.as_view(), name="blocked_users_list"),
+    path("notifications/", views.NotificationListView.as_view(), name="notification_list"),
+    path("notifications/mark-read/", views.NotificationMarkReadView.as_view(), name="notification_mark_read"),
     path(
         "auth/token/",
         views.CustomTokenObtainPairView.as_view(),

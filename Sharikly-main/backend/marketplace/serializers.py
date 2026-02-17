@@ -425,3 +425,13 @@ class ReportSerializer(serializers.ModelSerializer):
         if not listing and not reported_user:
             raise serializers.ValidationError("Provide either listing or reported_user.")
         return data
+
+
+# ==========================
+# NOTIFICATION SERIALIZER
+# ==========================
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ["id", "notification_type", "title", "body", "link", "read", "created_at"]
+        read_only_fields = ["id", "notification_type", "title", "body", "link", "created_at"]
