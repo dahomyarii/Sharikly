@@ -4,7 +4,7 @@ import type React from "react";
 import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import FloatingModal from "@/components/FloatingModal";
 import { useToast } from "@/components/ui/toast";
 import { useLocale } from "@/components/LocaleProvider";
@@ -73,6 +73,13 @@ export default function SignupPage({ onClose }: { onClose?: () => void }) {
 
   return (
     <FloatingModal onClose={onClose}>
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-1 text-sm text-gray-500 hover:text-black transition-colors mb-4"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Go back
+      </button>
       <h1 className="text-2xl font-semibold text-center mb-6">
         {t("create_account")}
       </h1>
