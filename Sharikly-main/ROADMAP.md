@@ -161,6 +161,25 @@ Work through these in order. Each item is one "phase"; complete it before moving
 
 ---
 
+## Phase 11+: Polish & New Features ✅ (partial)
+
+**Goal:** Notifications, rate limiting, tests; document payments and analytics for later.
+
+**Backend**
+- [x] **Rate limiting:** DRF `AnonRateThrottle` (100/hour) and `UserRateThrottle` (1000/hour). Auth endpoints (login, register) use `ScopedRateThrottle` with `auth` scope (30/hour per IP).
+- [x] **Notifications:** Model `Notification` (user, type, title, body, link, read). Created on booking accepted/declined (for renter) and on new chat message (for other participants). `GET /api/notifications/`, `PATCH /api/notifications/mark-read/` (body: `{ "id": 123 }` or `{ "all": true }`).
+- [x] **Tests:** `marketplace/tests.py` — listings list 200, register 201, token 200 with valid credentials, bookings list 401 when unauthenticated and 200 when authenticated. Run: `python manage.py test marketplace`.
+
+**Frontend**
+- [x] Notifications bell in header (desktop) with dropdown (last 5 + “See all” to `/notifications`). Unread count badge. Mobile menu link to Notifications.
+- [x] `/notifications` page: list all, mark one as read on click, “Mark all as read” button.
+
+**Optional (not implemented — for future)**
+- [ ] **Payments:** e.g. Stripe Checkout for booking total; store payment intent or session ID on booking; webhook to confirm payment and update booking status.
+- [ ] **Analytics:** e.g. listing view counts, admin dashboard with basic stats (users, listings, bookings per period). Could use Django admin or a simple `/api/stats/` endpoint for staff.
+
+---
+
 ## Summary order
 
 | Phase | Feature                    | Priority |
@@ -175,5 +194,6 @@ Work through these in order. Each item is one "phase"; complete it before moving
 | 8     | 404 / error page            | Polish   |
 | 9     | Meta/OG per listing         | Polish   |
 | 10    | Loading & empty states      | Polish   |
+| 11+   | Notifications, rate limit, tests | Polish   |
 
 Start with **Phase 1 (Forgot password)** and implement it fully before moving to Phase 2. Use this file to tick off tasks and track progress.
