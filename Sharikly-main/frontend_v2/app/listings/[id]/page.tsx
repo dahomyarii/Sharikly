@@ -21,7 +21,9 @@ import {
   ThumbsDown,
   Check,
   AlertCircle,
+  Flag,
 } from "lucide-react";
+import ReportModal from "@/components/ReportModal";
 import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
@@ -77,6 +79,7 @@ export default function ListingDetail() {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const [reviews, setReviews] = useState<any[]>([]);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const [newRating, setNewRating] = useState<number>(0);
   const [newComment, setNewComment] = useState<string>("");
@@ -587,18 +590,29 @@ export default function ListingDetail() {
                     </span>
                   </div>
                 </div>
-                <Button
-                  onClick={toggleFavorite}
-                  variant="ghost"
-                  size="icon"
-                  className="hover:bg-gray-100"
-                >
-                  <Heart
-                    className={`h-6 w-6 transition-all ${
-                      isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
-                    }`}
-                  />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    onClick={() => setShowReportModal(true)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  >
+                    <Flag className="h-4 w-4 mr-1" />
+                    Report
+                  </Button>
+                  <Button
+                    onClick={toggleFavorite}
+                    variant="ghost"
+                    size="icon"
+                    className="hover:bg-gray-100"
+                  >
+                    <Heart
+                      className={`h-6 w-6 transition-all ${
+                        isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
+                      }`}
+                    />
+                  </Button>
+                </div>
               </div>
 
               <Card className="p-6">
@@ -987,6 +1001,14 @@ export default function ListingDetail() {
             {fullscreenIndex + 1} / {images.length}
           </div>
         </div>
+      )}
+
+      {showReportModal && (
+        <ReportModal
+          target="listing"
+          targetId={Number(id)}
+          onClose={() => setShowReportModal(false)}
+        />
       )}
     </div>
   );

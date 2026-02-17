@@ -3,11 +3,14 @@
 import { useParams, useRouter } from 'next/navigation'
 import useSWR from 'swr'
 import axiosInstance from '@/lib/axios'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import ListingCard from '@/components/ListingCard'
 import SkeletonLoader from '@/components/SkeletonLoader'
-import { ArrowLeft, Star, Check, Package, User, Calendar, MessageCircle } from 'lucide-react'
+import ReportModal from '@/components/ReportModal'
+import { ArrowLeft, Star, Check, Package, User, Calendar, MessageCircle, Flag } from 'lucide-react'
+import { useLocale } from '@/components/LocaleProvider'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 const DEFAULT_AVATAR = '/logo.png'
@@ -25,6 +28,27 @@ export default function PublicProfilePage() {
   const params = useParams()
   const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : String(params.id || '')
   const router = useRouter()
+  const { t } = useLocale()
+  const [user, setUser] = useState<any>(null)
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [blockedIds, setBlockedIds] = useState<number[]>([])
+  const [blockLoading, setBlockLoading] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('user')
+      if (stored) setUser(JSON.parse(stored))
+    }
+  }, [])
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token')
+    if (!token || !user) return
+    axiosInstance
+      .get(`${API}/users/blocked/`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => setBlockedIds((res.data || []).map((u: any) => u.id)))
+      .catch(() => {})
+  }, [user])
 
   const { data: profile, error: profileError } = useSWR(
     id ? `${API}/users/${id}/` : null,
@@ -134,9 +158,77 @@ export default function PublicProfilePage() {
               {profile.bio && (
                 <p className="text-gray-600 leading-relaxed">{profile.bio}</p>
               )}
+
+              {user && user.id !== profile.id && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowReportModal(true)}
+                    className="text-gray-600 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                  >
+                    <Flag className="w-4 h-4 mr-2" />
+                    {t('report_user')}
+                  </Button>
+                  {blockedIds.includes(profile.id) ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={blockLoading}
+                      onClick={async () => {
+                        setBlockLoading(true)
+                        try {
+                          const token = localStorage.getItem('access_token')
+                          await axiosInstance.delete(`${API}/users/${id}/unblock/`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                          })
+                          setBlockedIds((prev) => prev.filter((x) => x !== Number(id)))
+                        } finally {
+                          setBlockLoading(false)
+                        }
+                      }}
+                      className="text-gray-600 border-gray-300"
+                    >
+                      {blockLoading ? '...' : t('unblock_user')}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={blockLoading}
+                      onClick={async () => {
+                        if (!confirm(t('block_user_confirm'))) return
+                        setBlockLoading(true)
+                        try {
+                          const token = localStorage.getItem('access_token')
+                          await axiosInstance.post(
+                            `${API}/users/${id}/block/`,
+                            {},
+                            { headers: { Authorization: `Bearer ${token}` } }
+                          )
+                          setBlockedIds((prev) => [...prev, Number(id)])
+                        } finally {
+                          setBlockLoading(false)
+                        }
+                      }}
+                      className="text-gray-600 border-gray-300 hover:bg-gray-100"
+                    >
+                      {blockLoading ? '...' : t('block_user')}
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </Card>
+
+        {showReportModal && (
+          <ReportModal
+            target="user"
+            targetId={Number(id)}
+            onClose={() => setShowReportModal(false)}
+          />
+        )}
 
         {/* Listings */}
         <div>
