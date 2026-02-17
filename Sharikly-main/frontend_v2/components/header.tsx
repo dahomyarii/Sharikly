@@ -6,6 +6,10 @@ import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
 import SignupModal from "./SignupModal";
 import LoginModal from "./LoginModal";
+import axiosInstance from "@/lib/axios";
+import { Bell } from "lucide-react";
+
+const API = process.env.NEXT_PUBLIC_API_BASE;
 
 export default function Header() {
   const { t } = useLocale();
@@ -13,6 +17,7 @@ export default function Header() {
   const [showSignup, setShowSignup] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -32,6 +37,8 @@ export default function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMobileMenuOpen]);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   React.useEffect(() => {
     const loadUser = () => {
@@ -89,6 +96,25 @@ export default function Header() {
       window.removeEventListener("focus", handleFocus);
     };
   }, []);
+
+  // Fetch notifications when user is logged in
+  useEffect(() => {
+    if (!user || !API) {
+      setNotifications([]);
+      return;
+    }
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    axiosInstance
+      .get(`${API}/notifications/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        const data = res.data;
+        setNotifications(Array.isArray(data) ? data : data?.results || []);
+      })
+      .catch(() => setNotifications([]));
+  }, [user]);
 
   function handleLogout() {
     localStorage.removeItem("access_token");
@@ -149,6 +175,23 @@ export default function Header() {
                 className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
               >
                 Settings
+              </Link>
+              {/* Notifications bell */}
+              <Link
+                href="/notifications"
+                className="relative p-2 rounded-full transition-all"
+                aria-label="Notifications"
+              >
+                <Bell
+                  className={`w-5 h-5 ${
+                    unreadCount > 0 ? "text-red-600" : "text-gray-500"
+                  }`}
+                />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-semibold">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </Link>
               <div className="w-px h-6 bg-gray-300 mx-1" />
               <LanguageSwitcher />
@@ -233,6 +276,23 @@ export default function Header() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {t("my_bookings")}
+              </Link>
+              <Link
+                href="/notifications"
+                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Bell
+                  className={`w-5 h-5 ${
+                    unreadCount > 0 ? "text-red-600" : "text-gray-400"
+                  }`}
+                />
+                <span>Notifications</span>
+                {unreadCount > 0 && (
+                  <span className="ml-auto bg-red-600 text-white text-xs font-semibold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/profile"
