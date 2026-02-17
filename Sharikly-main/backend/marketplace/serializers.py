@@ -406,3 +406,22 @@ class BlogPostSerializer(serializers.ModelSerializer):
         if obj.tags:
             return [tag.strip() for tag in obj.tags.split(',')]
         return []
+
+
+# ==========================
+# REPORT SERIALIZER
+# ==========================
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = ["id", "listing", "reported_user", "reason", "details", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+    def validate(self, data):
+        listing = data.get("listing")
+        reported_user = data.get("reported_user")
+        if listing and reported_user:
+            raise serializers.ValidationError("Report either a listing or a user, not both.")
+        if not listing and not reported_user:
+            raise serializers.ValidationError("Provide either listing or reported_user.")
+        return data

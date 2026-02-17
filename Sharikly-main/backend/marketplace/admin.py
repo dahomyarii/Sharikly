@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import Listing, Booking, ListingImage, Category, Review, ReviewVote, ContactMessage, UserAdminMessage, BlogPost
+from .models import Listing, Booking, ListingImage, Category, Review, ReviewVote, ContactMessage, UserAdminMessage, BlogPost, Report, BlockedUser
 
 class ListingImageInline(admin.TabularInline):
     model = ListingImage
@@ -37,6 +37,21 @@ class ReviewVoteAdmin(admin.ModelAdmin):
     search_fields = ('user__email', 'user__username', 'review__comment')
     readonly_fields = ('created_at',)
     date_hierarchy = 'created_at'
+
+@admin.register(BlockedUser)
+class BlockedUserAdmin(admin.ModelAdmin):
+    list_display = ("blocker", "blocked", "created_at")
+    list_filter = ("created_at",)
+    search_fields = ("blocker__email", "blocked__email")
+    readonly_fields = ("created_at",)
+
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ("reporter", "listing", "reported_user", "reason", "created_at")
+    list_filter = ("reason", "created_at")
+    search_fields = ("reporter__email", "details")
+    readonly_fields = ("created_at",)
+    date_hierarchy = "created_at"
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):

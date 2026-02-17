@@ -6,5 +6,8 @@ class EmailVerificationTokenGenerator(PasswordResetTokenGenerator):
         return f"{user.pk}{timestamp}{user.is_email_verified}"
 
 
+# Default Django token: invalidates when password or last_login changes.
+password_reset_token = PasswordResetTokenGenerator()
+
 email_verification_token = EmailVerificationTokenGenerator()
 

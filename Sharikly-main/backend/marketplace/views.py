@@ -8,13 +8,14 @@ from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from datetime import datetime as dt
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from .models import *
 from .serializers import *
-from accounts.views import send_verification_email
-from accounts.tokens import email_verification_token
+from accounts.views import send_verification_email, send_password_reset_email
+from accounts.tokens import email_verification_token, password_reset_token
 from rest_framework import viewsets
 
 User = get_user_model()
@@ -65,6 +66,63 @@ class PublicUserView(generics.RetrieveAPIView):
     lookup_field = "pk"
 
 
+def _blocked_user_ids(user):
+    """User IDs that cannot interact in chat with `user` (either direction)."""
+    from .models import BlockedUser
+    blocked_by_me = set(
+        BlockedUser.objects.filter(blocker=user).values_list("blocked_id", flat=True)
+    )
+    blocked_me = set(
+        BlockedUser.objects.filter(blocked=user).values_list("blocker_id", flat=True)
+    )
+    return blocked_by_me | blocked_me
+
+
+class BlockUserView(APIView):
+    """POST: block a user (they won't appear in your chat list; you can't message each other)."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        if request.user.id == pk:
+            return Response(
+                {"detail": "You cannot block yourself."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        target = get_object_or_404(User, pk=pk)
+        BlockedUser.objects.get_or_create(blocker=request.user, blocked=target)
+        return Response(
+            {"detail": "User blocked."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class UnblockUserView(APIView):
+    """DELETE: unblock a user."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, pk):
+        target = get_object_or_404(User, pk=pk)
+        deleted, _ = BlockedUser.objects.filter(
+            blocker=request.user, blocked=target
+        ).delete()
+        return Response(
+            {"detail": "User unblocked."} if deleted else {"detail": "User was not blocked."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class BlockedUsersListView(generics.ListAPIView):
+    """GET: list users I have blocked (for Settings unblock list)."""
+    from .serializers import PublicUserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PublicUserSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(
+            id__in=BlockedUser.objects.filter(blocker=self.request.user).values_list("blocked_id", flat=True)
+        )
+
+
 class VerifyEmailView(generics.GenericAPIView):
     """Verify user email using token from URL"""
     permission_classes = [permissions.AllowAny]
@@ -108,6 +166,73 @@ class VerifyEmailView(generics.GenericAPIView):
 
         return Response(
             {"message": "Email verified successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+
+# --- Password Reset (Forgot Password) ---
+class PasswordResetRequestView(APIView):
+    """POST email -> send reset link. Always return 200 to avoid email enumeration."""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        if not email:
+            return Response(
+                {"detail": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user = User.objects.filter(email__iexact=email).first()
+        if user:
+            try:
+                send_password_reset_email(user)
+            except Exception as e:
+                print(f"Error sending password reset email: {e}")
+        return Response(
+            {"detail": "If an account exists with this email, you will receive a password reset link."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class PasswordResetConfirmView(APIView):
+    """POST uid, token, new_password -> set new password."""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        uid = request.data.get("uid")
+        token = request.data.get("token")
+        new_password = request.data.get("new_password")
+
+        if not uid or not token or not new_password:
+            return Response(
+                {"detail": "uid, token, and new_password are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if len(new_password) < 8:
+            return Response(
+                {"detail": "Password must be at least 8 characters."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_id)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response(
+                {"detail": "Invalid or expired reset link."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not password_reset_token.check_token(user, token):
+            return Response(
+                {"detail": "Invalid or expired reset link."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(new_password)
+        user.save()
+        return Response(
+            {"detail": "Password has been reset. You can now log in."},
             status=status.HTTP_200_OK,
         )
 
@@ -201,9 +326,32 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         return super().post(request, *args, **kwargs)
 
 
+class ResendVerificationView(APIView):
+    """POST email -> resend verification email if user exists and is not verified."""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        if not email:
+            return Response(
+                {"detail": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user = User.objects.filter(email__iexact=email).first()
+        if user and not user.is_email_verified:
+            try:
+                send_verification_email(user)
+            except Exception as e:
+                print(f"Error resending verification email: {e}")
+        # Same message whether we sent or not (avoid email enumeration)
+        return Response(
+            {"detail": "If your email is not verified, we've sent a new verification link. Please check your inbox."},
+            status=status.HTTP_200_OK,
+        )
+
+
 # --- Listings Views ---
 class ListingListCreateView(generics.ListCreateAPIView):
-    queryset = Listing.objects.all().order_by("-created_at")
     serializer_class = ListingSerializer
     parser_classes = [MultiPartParser, FormParser]
 
@@ -211,6 +359,50 @@ class ListingListCreateView(generics.ListCreateAPIView):
         if self.request.method == "POST":
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
+
+    def get_queryset(self):
+        qs = Listing.objects.all()
+        if self.request.method != "GET":
+            return qs.order_by("-created_at")
+        # Filters (GET only)
+        search = (self.request.query_params.get("search") or "").strip()
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(title__icontains=search)
+                | Q(description__icontains=search)
+                | Q(city__icontains=search)
+            )
+        category_id = self.request.query_params.get("category")
+        if category_id:
+            try:
+                qs = qs.filter(category_id=int(category_id))
+            except ValueError:
+                pass
+        city = (self.request.query_params.get("city") or "").strip()
+        if city:
+            qs = qs.filter(city__icontains=city)
+        min_price = self.request.query_params.get("min_price")
+        if min_price is not None and min_price != "":
+            try:
+                qs = qs.filter(price_per_day__gte=float(min_price))
+            except ValueError:
+                pass
+        max_price = self.request.query_params.get("max_price")
+        if max_price is not None and max_price != "":
+            try:
+                qs = qs.filter(price_per_day__lte=float(max_price))
+            except ValueError:
+                pass
+        # Ordering
+        order = self.request.query_params.get("order") or "newest"
+        if order == "price_asc":
+            qs = qs.order_by("price_per_day")
+        elif order == "price_desc":
+            qs = qs.order_by("-price_per_day")
+        else:
+            qs = qs.order_by("-created_at")
+        return qs
 
     def get_serializer_context(self):
         """Ensure the request is passed to the serializer context"""
@@ -244,9 +436,99 @@ class ListingRetrieveUpdateView(generics.RetrieveUpdateAPIView):
 
 
 class BookingListCreateView(generics.ListCreateAPIView):
-    queryset = Booking.objects.all().order_by("-created_at")
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return (
+            Booking.objects.filter(renter=user)
+            | Booking.objects.filter(listing__owner=user)
+        ).order_by("-created_at").distinct()
+
+    def create(self, request, *args, **kwargs):
+        listing_id = request.data.get("listing")
+        start_date = request.data.get("start_date")
+        end_date = request.data.get("end_date")
+        total_price = request.data.get("total_price")
+        if not all([listing_id, start_date, end_date, total_price is not None]):
+            return Response(
+                {"detail": "listing, start_date, end_date and total_price are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        listing = get_object_or_404(Listing, pk=listing_id)
+        if listing.owner_id == request.user.id:
+            return Response(
+                {"detail": "You cannot book your own listing."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            start = dt.strptime(start_date, "%Y-%m-%d").date()
+            end = dt.strptime(end_date, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            return Response(
+                {"detail": "Invalid date format. Use YYYY-MM-DD."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if end < start:
+            return Response(
+                {"detail": "end_date must be on or after start_date."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        booking = Booking.objects.create(
+            listing=listing,
+            renter=request.user,
+            start_date=start,
+            end_date=end,
+            total_price=total_price,
+            status=Booking.Status.PENDING,
+        )
+        return Response(
+            BookingSerializer(booking).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class BookingAcceptView(APIView):
+    """Owner of the listing can accept a pending booking."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+        if booking.listing.owner_id != request.user.id:
+            return Response(
+                {"detail": "Only the listing owner can accept this booking."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if booking.status != Booking.Status.PENDING:
+            return Response(
+                {"detail": "Only pending bookings can be accepted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        booking.status = Booking.Status.CONFIRMED
+        booking.save()
+        return Response(BookingSerializer(booking).data, status=status.HTTP_200_OK)
+
+
+class BookingDeclineView(APIView):
+    """Owner of the listing can decline a pending booking."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+        if booking.listing.owner_id != request.user.id:
+            return Response(
+                {"detail": "Only the listing owner can decline this booking."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if booking.status != Booking.Status.PENDING:
+            return Response(
+                {"detail": "Only pending bookings can be declined."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        booking.status = Booking.Status.DECLINED
+        booking.save()
+        return Response(BookingSerializer(booking).data, status=status.HTTP_200_OK)
 
 
 # --- Category Views ---
@@ -262,8 +544,18 @@ class ChatRoomListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Return only rooms the user participates in
-        return ChatRoom.objects.filter(participants=self.request.user)
+        # Rooms I'm in, excluding rooms where another participant is blocked (either direction)
+        blocked_ids = _blocked_user_ids(self.request.user)
+        if not blocked_ids:
+            return ChatRoom.objects.filter(participants=self.request.user).distinct()
+        room_ids_with_blocked = ChatRoom.objects.filter(
+            participants=self.request.user
+        ).filter(
+            participants__id__in=blocked_ids
+        ).values_list("id", flat=True)
+        return ChatRoom.objects.filter(participants=self.request.user).exclude(
+            id__in=room_ids_with_blocked
+        ).distinct()
 
     def create(self, request, *args, **kwargs):
         participants_ids = request.data.get("participants", [])
@@ -273,6 +565,10 @@ class ChatRoomListCreateView(generics.ListCreateAPIView):
         # Prevent creating room with self only
         if len(participants_ids) == 1 and participants_ids[0] == request.user.id:
             raise ValidationError("You cannot create a chat room with only yourself")
+
+        blocked_ids = _blocked_user_ids(request.user)
+        if any(pid in blocked_ids for pid in participants_ids):
+            raise ValidationError("You cannot start a conversation with this user.")
 
         participants = list(User.objects.filter(id__in=participants_ids))
         if request.user not in participants:
@@ -295,6 +591,11 @@ class MessageListView(generics.ListAPIView):
         room = get_object_or_404(ChatRoom, id=room_id)
         if self.request.user not in room.participants.all():
             raise ValidationError("You are not a participant of this chat room")
+        blocked_ids = _blocked_user_ids(self.request.user)
+        others = room.participants.exclude(pk=self.request.user.pk).values_list("id", flat=True)
+        if any(pid in blocked_ids for pid in others):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You cannot view this conversation.")
         return room.messages.all()
 
 
@@ -310,6 +611,14 @@ class SendMessageView(generics.CreateAPIView):
         if request.user not in room.participants.all():
             raise ValidationError(
                 "You cannot send messages in a room you are not part of"
+            )
+
+        blocked_ids = _blocked_user_ids(request.user)
+        others_in_room = room.participants.exclude(pk=request.user.pk).values_list("id", flat=True)
+        if any(pid in blocked_ids for pid in others_in_room):
+            return Response(
+                {"detail": "You cannot send messages in this conversation."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         # Prevent sending message to yourself if alone
@@ -479,6 +788,16 @@ class ReviewVoteView(generics.CreateAPIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
+
+
+# --- REPORT VIEWS ---
+class ReportCreateView(generics.CreateAPIView):
+    """Authenticated users can report a listing or a user."""
+    serializer_class = ReportSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(reporter=self.request.user)
 
 
 # --- CONTACT MESSAGE VIEWS ---

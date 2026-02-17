@@ -12,13 +12,19 @@ urlpatterns = [
     path("auth/register/", views.RegisterView.as_view(), name="register"),
     path("auth/me/", views.MeView.as_view(), name="me"),
     path("auth/verify-email/", views.VerifyEmailView.as_view(), name="verify_email"),
+    path("auth/resend-verification/", views.ResendVerificationView.as_view(), name="resend_verification"),
     path("users/<int:pk>/", views.PublicUserView.as_view(), name="public_user"),
+    path("users/<int:pk>/block/", views.BlockUserView.as_view(), name="block_user"),
+    path("users/<int:pk>/unblock/", views.UnblockUserView.as_view(), name="unblock_user"),
+    path("users/blocked/", views.BlockedUsersListView.as_view(), name="blocked_users_list"),
     path(
         "auth/token/",
         views.CustomTokenObtainPairView.as_view(),
         name="token_obtain_pair",
     ),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/password-reset/", views.PasswordResetRequestView.as_view(), name="password_reset_request"),
+    path("auth/password-reset/confirm/", views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path("auth/change-password/", views.ChangePasswordView.as_view(), name="change_password"),
     path("auth/delete-account/", views.DeleteAccountView.as_view(), name="delete_account"),
     # Chat
@@ -39,6 +45,8 @@ urlpatterns = [
     ),
     # Bookings
     path("bookings/", views.BookingListCreateView.as_view(), name="bookings"),
+    path("bookings/<int:pk>/accept/", views.BookingAcceptView.as_view(), name="booking_accept"),
+    path("bookings/<int:pk>/decline/", views.BookingDeclineView.as_view(), name="booking_decline"),
     # Favorites
     path("favorites/", views.UserFavoritesListView.as_view(), name="user_favorites"),
     path(
@@ -63,6 +71,8 @@ urlpatterns = [
         views.ReviewVoteView.as_view(),
         name="review_vote",
     ),
+    # Reports
+    path("reports/", views.ReportCreateView.as_view(), name="report_create"),
     # Contact Messages
     path(
         "contact-messages/",

@@ -196,6 +196,59 @@ class ReviewVote(models.Model):
 
 
 # ==========================
+# REPORTS (Listing or User)
+# ==========================
+class Report(models.Model):
+    class Reason(models.TextChoices):
+        SPAM = "SPAM", _("Spam")
+        INAPPROPRIATE = "INAPPROPRIATE", _("Inappropriate content")
+        SCAM = "SCAM", _("Scam or fraud")
+        HARASSMENT = "HARASSMENT", _("Harassment")
+        OTHER = "OTHER", _("Other")
+
+    reporter = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reports_made"
+    )
+    listing = models.ForeignKey(
+        Listing, on_delete=models.CASCADE, null=True, blank=True, related_name="reports"
+    )
+    reported_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, blank=True, related_name="reports_against"
+    )
+    reason = models.CharField(max_length=20, choices=Reason.choices)
+    details = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        if self.listing_id:
+            return f"Report on listing {self.listing_id} by {self.reporter.email}"
+        return f"Report on user {self.reported_user_id} by {self.reporter.email}"
+
+
+# ==========================
+# BLOCKED USERS
+# ==========================
+class BlockedUser(models.Model):
+    blocker = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="blocked_users"
+    )
+    blocked = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="blocked_by"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("blocker", "blocked")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.blocker.email} blocks {self.blocked.email}"
+
+
+# ==========================
 # USER TO ADMIN MESSAGES
 # ==========================
 class UserAdminMessage(models.Model):
