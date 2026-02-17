@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axiosInstance from '@/lib/axios'
 import { useLocale } from '@/components/LocaleProvider'
-import { ArrowLeft, Calendar, Check, X } from 'lucide-react'
+import { ArrowLeft, Calendar, Check, Loader2, X } from 'lucide-react'
 import Link from 'next/link'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
