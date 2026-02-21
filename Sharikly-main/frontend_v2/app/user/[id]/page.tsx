@@ -10,7 +10,6 @@ import ListingCard from '@/components/ListingCard'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import ReportModal from '@/components/ReportModal'
 import { ArrowLeft, Star, Check, Package, User, Calendar, MessageCircle, Flag } from 'lucide-react'
-import { getEnhancedImageUrl } from '@/lib/cloudinary'
 import { useLocale } from '@/components/LocaleProvider'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
@@ -69,9 +68,8 @@ export default function PublicProfilePage() {
 
   const getImageUrl = (imgPath: string | null) => {
     if (!imgPath) return DEFAULT_AVATAR
-    const base =
-      imgPath.startsWith('http') ? imgPath : `${API?.replace('/api', '')}${imgPath}`
-    return getEnhancedImageUrl(base)
+    if (imgPath.startsWith('http')) return imgPath
+    return `${API?.replace('/api', '')}${imgPath}`
   }
 
   if (profileError) {

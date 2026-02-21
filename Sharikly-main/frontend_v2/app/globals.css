@@ -42,6 +42,11 @@
 
 :root {
   --radius: 0.625rem;
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --touch-target-min: 44px;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -113,8 +118,27 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.08);
+  }
   body {
     @apply bg-background text-foreground;
+    padding-top: var(--safe-area-inset-top);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+  }
+}
+
+/* Mobile: ensure minimum touch target size (44px) for interactive elements */
+@media (max-width: 768px) {
+  .touch-target {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+  /* Prevent overscroll bounce on main content where it causes layout jump */
+  body {
+    overscroll-behavior-y: contain;
   }
 }
 
@@ -378,6 +402,25 @@
 
 .calendar-wrapper .rdp-month {
   width: 100%;
+}
+
+/* Main content padding above mobile bottom nav + safe area */
+.main-mobile-pb {
+  padding-bottom: calc(6rem + var(--safe-area-inset-bottom));
+}
+@media (min-width: 768px) {
+  .main-mobile-pb {
+    padding-bottom: 0;
+  }
+}
+
+/* Hide scrollbar for horizontal scroll areas (e.g. tabs, carousels) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Mobile bottom nav slide-up animation */

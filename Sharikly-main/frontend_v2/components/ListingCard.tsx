@@ -5,7 +5,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Star, User } from "lucide-react";
 import { useLocale } from "./LocaleProvider";
-import { getEnhancedImageUrl } from "@/lib/cloudinary";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -122,14 +121,14 @@ export default function ListingCard({ listing }: { listing: any }) {
     return `${API?.replace("/api", "")}${imageUrl}`;
   };
 
-  const imageUrl = getEnhancedImageUrl(getImageUrl());
+  const imageUrl = getImageUrl();
 
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="block border rounded-2xl overflow-hidden hover:shadow-md transition"
+      className="block border rounded-2xl overflow-hidden hover:shadow-md active:opacity-95 transition"
     >
-      <div className="relative h-48 bg-gray-100">
+      <div className="relative h-44 sm:h-48 bg-gray-100">
         <img
           src={imageUrl}
           alt={listing.title}
@@ -137,15 +136,15 @@ export default function ListingCard({ listing }: { listing: any }) {
         />
         <button
           onClick={handleFavoriteClick}
-          className={`absolute top-3 right-3 p-2 rounded-full ${
+          className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full touch-target ${
             isFavorited
               ? "bg-red-500 text-white"
-              : "bg-white text-gray-600 hover:bg-gray-100"
-          } transition`}
+              : "bg-white text-gray-600 hover:bg-gray-100 active:bg-gray-200"
+          } transition shadow-sm`}
           aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
         >
           <svg
-            className="w-5 h-5"
+            className="w-5 h-5 flex-shrink-0"
             fill={isFavorited ? "currentColor" : "none"}
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -159,9 +158,9 @@ export default function ListingCard({ listing }: { listing: any }) {
           </svg>
         </button>
       </div>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-semibold">{listing.title}</h3>
+      <div className="p-3 sm:p-4">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <h3 className="font-semibold text-sm sm:text-base line-clamp-2">{listing.title}</h3>
           <span className="text-sm">
             ${listing.price_per_day} {t("price_per_day")}
           </span>

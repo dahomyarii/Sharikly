@@ -364,7 +364,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header / Hero Section */}
       <section
-        className="relative text-white py-16 md:py-20 bg-cover bg-center"
+        className="relative text-white py-12 sm:py-16 md:py-20 bg-cover bg-center"
         style={{
           backgroundImage: "url(/image.jpeg)",
           backgroundSize: "cover",
@@ -375,29 +375,29 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-black/40"></div>
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Link href="/listings">
-              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-4">
+            <Link href="/listings" className="touch-target min-h-[44px] inline-flex items-center">
+              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm cursor-pointer hover:bg-white/30 active:bg-white/40 transition px-4 py-2">
                 <TrendingUp className="h-3 w-3 mr-1" />
                 {t("browse")}
               </Badge>
             </Link>
-            <Link href="/blog">
-              <Badge className="bg-white/10 text-white/90 border-0 backdrop-blur-sm cursor-pointer hover:bg-white/20 transition">
+            <Link href="/blog" className="touch-target min-h-[44px] inline-flex items-center">
+              <Badge className="bg-white/10 text-white/90 border-0 backdrop-blur-sm cursor-pointer hover:bg-white/20 active:bg-white/30 transition px-4 py-2">
                 <Sparkles className="h-3 w-3 mr-1" />
                 {t("blog")}
               </Badge>
             </Link>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
             {t("hero_title")}
           </h1>
-          <p className="text-lg md:text-xl text-blue-50 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-blue-50 max-w-2xl mx-auto px-1">
             {t("hero_sub")}
           </p>
-          <div className="mt-6 flex justify-center">
-            <Link href="/listings/new">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6">
+          <div className="mt-5 sm:mt-6 flex justify-center">
+            <Link href="/listings/new" className="touch-target">
+              <Button className="min-h-[48px] bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6 text-base">
                 <Plus className="h-4 w-4 mr-2" />
                 {t("list_new")}
               </Button>
@@ -408,16 +408,16 @@ export default function HomePage() {
 
       <div className="min-h-screen bg-white">
         {/* Categories */}
-        <section className="py-6 bg-gray-50">
+        <section className="py-5 sm:py-6 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
               {/* All Categories Button */}
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`flex flex-col items-center p-4 rounded-lg shadow-sm transition ${
+                className={`flex flex-col items-center justify-center min-h-[88px] sm:min-h-0 p-4 rounded-xl shadow-sm transition touch-target ${
                   selectedCategory === null
                     ? "bg-orange-500 text-white shadow-md"
-                    : "bg-white hover:shadow-md"
+                    : "bg-white hover:shadow-md active:bg-gray-50"
                 }`}
               >
                 <div
@@ -443,10 +443,10 @@ export default function HomePage() {
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`flex flex-col items-center p-4 rounded-lg shadow-sm transition ${
+                    className={`flex flex-col items-center justify-center min-h-[88px] sm:min-h-0 p-4 rounded-xl shadow-sm transition touch-target ${
                       isSelected
                         ? "bg-orange-500 text-white shadow-md"
-                        : "bg-white hover:shadow-md"
+                        : "bg-white hover:shadow-md active:bg-gray-50"
                     }`}
                   >
                     <div
@@ -569,7 +569,7 @@ export default function HomePage() {
                         size="icon"
                         variant="ghost"
                         onClick={(e) => handleFavoriteClick(e, service.id)}
-                        className={`absolute bottom-4 right-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
+                        className={`absolute bottom-4 right-4 min-w-[44px] min-h-[44px] rounded-full opacity-0 group-hover:opacity-100 group-active:opacity-100 sm:group-hover:opacity-100 transition-opacity touch-target ${
                           favorites.has(service.id)
                             ? "bg-red-500/90 hover:bg-red-600 text-white"
                             : "bg-white/90 hover:bg-white text-gray-700"
@@ -685,7 +685,7 @@ export default function HomePage() {
                         size="icon"
                         variant="ghost"
                         onClick={(e) => handleFavoriteClick(e, service.id)}
-                        className={`absolute top-3 right-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
+                        className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full opacity-0 group-hover:opacity-100 group-active:opacity-100 sm:group-hover:opacity-100 transition-opacity touch-target ${
                           favorites.has(service.id)
                             ? "bg-red-500/90 hover:bg-red-600 text-white"
                             : "bg-white/90 hover:bg-white text-gray-700"

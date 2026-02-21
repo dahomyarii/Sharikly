@@ -491,48 +491,48 @@ export default function ListingDetail() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      <header className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 text-white p-4 sticky top-0 z-40 shadow-md">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
+      <header className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 text-white px-4 py-3 sticky top-0 z-40 shadow-md" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="text-white hover:bg-white/20"
+            className="text-white hover:bg-white/20 min-w-[44px] min-h-[44px] touch-target rounded-xl"
           >
             <ArrowLeft className="h-6 w-6" />
           </Button>
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="flex-1 relative min-w-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
             <Input
               placeholder="Search..."
-              className="w-full pl-10 bg-white border-0 text-gray-800 placeholder:text-gray-400"
+              className="w-full pl-10 min-h-[44px] bg-white border-0 text-gray-800 placeholder:text-gray-400 rounded-xl"
             />
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto p-4 lg:p-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 py-5 pb-8 sm:px-6 lg:p-8">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-5 lg:space-y-6">
             <Card className="overflow-hidden">
-              <div className="flex gap-4 p-4">
-                <div className="flex flex-col gap-2 overflow-y-auto max-h-[500px]">
+              <div className="flex flex-col sm:flex-row gap-4 p-3 sm:p-4">
+                <div className="flex flex-row sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto sm:max-h-[500px] pb-1 sm:pb-0">
                   {images.map((url: string, idx: number) => (
                     <button
                       key={idx}
                       onClick={() => {
                         setMainImage(url);
                       }}
-                      className={`border-2 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
+                      className={`min-w-[64px] min-h-[64px] sm:w-16 sm:h-16 border-2 rounded-xl overflow-hidden flex-shrink-0 transition-all touch-target ${
                         mainImage === url
                           ? "border-orange-500 ring-2 ring-orange-200"
-                          : "border-gray-200 hover:border-gray-400"
+                          : "border-gray-200 hover:border-gray-400 active:border-gray-500"
                       }`}
                     >
                       <img
                         src={url || "/logo.png"}
                         alt={`thumbnail ${idx}`}
-                        className="w-16 h-16 object-cover"
+                        className="w-full h-full object-cover"
                       />
                     </button>
                   ))}
@@ -553,20 +553,20 @@ export default function ListingDetail() {
                     onClick={() =>
                       openFullscreen(images.indexOf(mainImage || images[0]))
                     }
-                    className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 min-h-[44px] bg-white/90 hover:bg-white text-gray-800 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity touch-target rounded-xl"
                     size="sm"
                   >
                     <ZoomIn className="h-4 w-4 mr-2" />
-                    Zoom
+                    <span className="sm:inline">Zoom</span>
                   </Button>
                 </div>
               </div>
             </Card>
 
             <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
                     {data.title}
                   </h1>
                   <div className="flex items-center gap-2 mb-4">
@@ -590,12 +590,12 @@ export default function ListingDetail() {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 flex-shrink-0">
                   <Button
                     onClick={() => setShowReportModal(true)}
                     variant="ghost"
                     size="sm"
-                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target"
                   >
                     <Flag className="h-4 w-4 mr-1" />
                     Report
@@ -604,7 +604,7 @@ export default function ListingDetail() {
                     onClick={toggleFavorite}
                     variant="ghost"
                     size="icon"
-                    className="hover:bg-gray-100"
+                    className="hover:bg-gray-100 min-w-[44px] min-h-[44px] touch-target"
                   >
                     <Heart
                       className={`h-6 w-6 transition-all ${
@@ -940,7 +940,7 @@ export default function ListingDetail() {
                 {user && !isOwner && (
                   <Button
                     onClick={handleRequestBooking}
-                    className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                    className="w-full min-h-[48px] h-14 bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all touch-target"
                   >
                     Send Request
                   </Button>
@@ -973,21 +973,21 @@ export default function ListingDetail() {
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
           <Button
             onClick={closeFullscreen}
-            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white"
+            className="absolute top-4 right-4 min-w-[44px] min-h-[44px] bg-white/10 hover:bg-white/20 text-white touch-target"
             size="icon"
           >
             <X className="h-6 w-6" />
           </Button>
           <Button
             onClick={prevImage}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 min-w-[48px] min-h-[48px] bg-white/10 hover:bg-white/20 text-white touch-target"
             size="icon"
           >
             <ChevronLeft className="h-8 w-8" />
           </Button>
           <Button
             onClick={nextImage}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 min-w-[48px] min-h-[48px] bg-white/10 hover:bg-white/20 text-white touch-target"
             size="icon"
           >
             <ChevronRight className="h-8 w-8" />

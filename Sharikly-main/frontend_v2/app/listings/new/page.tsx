@@ -199,7 +199,7 @@ export default function NewListing() {
         setCooldownSeconds(COOLDOWN_DURATION)
       }
 
-      showToast('Listing created! Your photos are now being enhanced for better quality.', 'success')
+      showToast('Listing created successfully!', 'success')
       setTimeout(() => router.push('/'), 1000)
     } catch (err: any) {
       console.error(err)

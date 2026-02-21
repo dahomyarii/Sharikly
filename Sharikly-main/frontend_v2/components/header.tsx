@@ -125,10 +125,10 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-gray-100 p-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.png" alt="EKRA" className="h-8 w-8" />
-          <span className="text-xl font-bold">EKRA</span>
+      <header className="bg-gray-100 px-4 py-3 md:p-4 flex justify-between items-center min-h-[var(--touch-target-min)] md:min-h-0" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
+        <Link href="/" className="flex items-center gap-2 touch-target min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 justify-center -m-2 p-2 rounded-lg active:opacity-80">
+          <img src="/logo.png" alt="EKRA" className="h-8 w-8 flex-shrink-0" />
+          <span className="text-lg sm:text-xl font-bold truncate">EKRA</span>
         </Link>
 
         <div className="hidden md:flex gap-2 items-center">
@@ -222,12 +222,12 @@ export default function Header() {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="md:hidden flex gap-2 items-center">
+        <div className="md:hidden flex gap-1 items-center">
           <LanguageSwitcher />
           <button
             ref={menuButtonRef}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 border rounded-lg hover:bg-gray-200 transition"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 border rounded-xl hover:bg-gray-200 active:bg-gray-300 transition touch-target"
             aria-label="Toggle menu"
           >
             <svg
@@ -447,14 +447,14 @@ export default function Header() {
         />
       )}
 
-       {/* Mobile Bottom Navigation — Glass Effect */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 animate-[slideUp_0.4s_ease-out]">
-        <div className="mx-3 mb-3 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
+       {/* Mobile Bottom Navigation — Glass Effect + Safe Area */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 animate-[slideUp_0.4s_ease-out]" style={{ paddingBottom: "var(--safe-area-inset-bottom)" }}>
+        <div className="mx-3 mb-2 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
           <div className="flex justify-around items-center h-16 px-1">
             {/* Home */}
             <Link 
               href="/" 
-              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group"
+              className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group touch-target"
               title="Home"
             >
               <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -467,7 +467,7 @@ export default function Header() {
             {/* Browse */}
             <Link 
               href="/listings" 
-              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group"
+              className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group touch-target"
               title="Browse"
             >
               <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -480,7 +480,7 @@ export default function Header() {
             {/* Favorites */}
             <Link 
               href="/favorites" 
-              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group relative"
+              className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group relative touch-target"
               title="Favorites"
             >
               <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -492,7 +492,7 @@ export default function Header() {
             {/* Messages */}
             <Link 
               href="/chat" 
-              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group relative"
+              className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group relative touch-target"
               title="Messages"
             >
               <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -505,7 +505,7 @@ export default function Header() {
             {user ? (
               <Link 
                 href="/profile" 
-                className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group"
+                className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group touch-target"
                 title="Profile"
               >
                 <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -517,7 +517,7 @@ export default function Header() {
             ) : (
               <button 
                 onClick={() => setShowLogin(true)}
-                className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:scale-90 transition-all duration-200 group"
+                className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group touch-target"
                 title="Login"
               >
                 <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -532,8 +532,8 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* Mobile spacing to prevent content overlap with bottom nav */}
-      <div className="md:hidden h-24"></div>
+      {/* Mobile spacing to prevent content overlap with bottom nav (nav height + safe area) */}
+      <div className="md:hidden h-20" style={{ minHeight: "calc(5rem + var(--safe-area-inset-bottom))" }}></div>
     </>
   );
 }

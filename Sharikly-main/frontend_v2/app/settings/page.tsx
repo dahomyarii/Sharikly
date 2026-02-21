@@ -696,15 +696,15 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 pb-32 md:pb-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('settings')}</h1>
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-8 pb-28 md:pb-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">{t('settings')}</h1>
 
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-5 md:gap-6">
           {/* Sidebar (desktop) / Tabs (mobile) */}
           <nav className="md:w-56 flex-shrink-0">
-            {/* Mobile: horizontal scroll tabs */}
-            <div className="flex md:hidden gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+            {/* Mobile: horizontal scroll tabs — touch-friendly */}
+            <div className="flex md:hidden gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon
                 const isActive = activeSection === item.id
@@ -712,13 +712,13 @@ export default function SettingsPage() {
                   <button
                     key={item.id}
                     onClick={() => setActiveSection(item.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                    className={`flex items-center gap-2 min-h-[44px] px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all touch-target ${
                       isActive
                         ? 'bg-black text-white'
-                        : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 active:bg-gray-50'
                     } ${item.id === 'danger' && !isActive ? 'text-red-500 border-red-200' : ''}`}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-4 h-4 flex-shrink-0" />
                     {t(item.labelKey)}
                   </button>
                 )
@@ -749,7 +749,7 @@ export default function SettingsPage() {
           </nav>
 
           {/* Main content */}
-          <Card className="flex-1 p-6 md:p-8">
+          <Card className="flex-1 p-4 sm:p-6 md:p-8">
             {sectionRenderers[activeSection]()}
           </Card>
         </div>

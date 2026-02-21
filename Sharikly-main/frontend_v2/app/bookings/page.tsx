@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axiosInstance from '@/lib/axios'
-import { getEnhancedImageUrl } from '@/lib/cloudinary'
 import { useLocale } from '@/components/LocaleProvider'
 import { ArrowLeft, Calendar, Check, Loader2, X } from 'lucide-react'
 import Link from 'next/link'
@@ -13,9 +12,8 @@ const API = process.env.NEXT_PUBLIC_API_BASE
 function getImageUrl(listing: any): string | null {
   const img = listing?.images?.[0]?.image
   if (!img) return null
-  const base =
-    img.startsWith('http') ? img : `${API?.replace('/api', '')}${img}`
-  return getEnhancedImageUrl(base)
+  if (img.startsWith('http')) return img
+  return `${API?.replace('/api', '')}${img}`
 }
 
 export default function BookingsPage() {
