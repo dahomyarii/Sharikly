@@ -28,6 +28,33 @@ const nextConfig: NextConfig = {
     ],
   },
   reactStrictMode: false,
+  // Cache static assets for 1 year; improve repeat visits and Speed Index
+  async headers() {
+    return [
+      {
+        source: "/image.jpeg",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/logo.png",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+    ];
+  },
+  // Reduce client JS: enable experimental optimizePackageImports for lucide etc. if available
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
 };
 
 export default nextConfig;

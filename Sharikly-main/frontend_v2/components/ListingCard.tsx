@@ -133,6 +133,9 @@ export default function ListingCard({ listing }: { listing: any }) {
           src={imageUrl}
           alt={listing.title}
           className="w-full h-full object-cover"
+          loading="lazy"
+          decoding="async"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
         <button
           onClick={handleFavoriteClick}

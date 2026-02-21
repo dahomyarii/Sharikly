@@ -533,6 +533,8 @@ export default function ListingDetail() {
                         src={url || "/logo.png"}
                         alt={`thumbnail ${idx}`}
                         className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </button>
                   ))}
@@ -544,6 +546,9 @@ export default function ListingDetail() {
                       src={mainImage || images[0]}
                       alt={data.title}
                       className="w-full h-full object-cover cursor-zoom-in"
+                      fetchPriority="high"
+                      decoding="async"
+                      sizes="(max-width: 768px) 100vw, 66vw"
                       onClick={() =>
                         openFullscreen(images.indexOf(mainImage || images[0]))
                       }

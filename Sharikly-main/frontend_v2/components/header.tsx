@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useLocale } from "./LocaleProvider";
 import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
-import SignupModal from "./SignupModal";
-import LoginModal from "./LoginModal";
 import axiosInstance from "@/lib/axios";
 import { Bell } from "lucide-react";
+
+const SignupModal = dynamic(() => import("./SignupModal"), { ssr: false });
+const LoginModal = dynamic(() => import("./LoginModal"), { ssr: false });
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 

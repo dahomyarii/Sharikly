@@ -362,17 +362,17 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header / Hero Section */}
-      <section
-        className="relative text-white py-12 sm:py-16 md:py-20 bg-cover bg-center"
-        style={{
-          backgroundImage: "url(/image.jpeg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black/40"></div>
+      {/* Header / Hero Section — explicit LCP image with priority for faster paint */}
+      <section className="relative text-white py-12 sm:py-16 md:py-20 overflow-hidden">
+        <img
+          src="/image.jpeg"
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-4">
@@ -494,6 +494,9 @@ export default function HomePage() {
                         }
                         alt={featuredService.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        fetchPriority="high"
+                        decoding="async"
+                        sizes="(max-width: 768px) 100vw, 50vw"
                       />
                     )}
                   </Link>
@@ -563,6 +566,9 @@ export default function HomePage() {
                           }
                           alt={service.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
                       )}
                       <Button
@@ -679,6 +685,9 @@ export default function HomePage() {
                           }
                           alt={service.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="320px"
                         />
                       )}
                       <Button

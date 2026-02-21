@@ -9,11 +9,13 @@ import { Providers } from "@/components/Providers";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -40,6 +42,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Preload LCP image (hero) for faster First Contentful Paint / LCP on mobile */}
+        <link rel="preload" href="/image.jpeg" as="image" />
+        <link rel="preload" href="/logo.png" as="image" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
