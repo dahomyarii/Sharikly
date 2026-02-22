@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Component } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import axiosInstance from '@/lib/axios'
@@ -18,8 +18,61 @@ function ensureNotificationArray(value: unknown): any[] {
   return []
 }
 
-export default function NotificationsPage() {
-  const { t } = useLocale()
+class NotificationsErrorBoundary extends Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null; retryKey: number }
+> {
+  state = { hasError: false, error: null as Error | null, retryKey: 0 }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('Notifications page error:', error, info.componentStack)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-gray-50 py-6 pb-32 md:pb-8">
+          <div className="max-w-2xl mx-auto px-4">
+            <div className="flex items-center gap-3 mb-6">
+              <Link href="/" className="p-2 rounded-full hover:bg-gray-200 transition" aria-label="Back">
+                <ArrowLeft className="w-5 h-5 text-gray-600" />
+              </Link>
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Bell className="w-7 h-7" />
+                Notifications
+              </h1>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 text-center">
+              <p className="text-lg font-medium text-gray-700 mb-2">Couldn&apos;t load notifications</p>
+              <p className="text-sm text-gray-500 mb-6">Something went wrong. Please try again.</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  onClick={() => this.setState((s) => ({ hasError: false, error: null, retryKey: s.retryKey + 1 }))}
+                >
+                  Try again
+                </Button>
+                <Link href="/">
+                  <Button variant="outline">Go home</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    return React.cloneElement(React.Children.only(this.props.children) as React.ReactElement, {
+      key: this.state.retryKey,
+    })
+  }
+}
+
+function NotificationsPageContent() {
+  const locale = useLocale()
+  const t = locale?.t ?? ((k: string) => k)
   const router = useRouter()
   const [list, setList] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -244,5 +297,13 @@ export default function NotificationsPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function NotificationsPage() {
+  return (
+    <NotificationsErrorBoundary>
+      <NotificationsPageContent />
+    </NotificationsErrorBoundary>
   )
 }
