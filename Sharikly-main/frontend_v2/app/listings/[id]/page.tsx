@@ -544,12 +544,12 @@ export default function ListingDetail() {
                   ))}
                 </div>
 
-                <div className="flex-1 relative group">
-                  <div className="aspect-[4/3] overflow-hidden rounded-lg bg-gray-100">
+                <div className="flex-1 relative group min-w-0">
+                  <div className="aspect-[4/3] max-h-[50vh] sm:max-h-none overflow-hidden rounded-lg bg-gray-100">
                     <img
                       src={mainImage || images[0]}
                       alt={data.title}
-                      className="w-full h-full object-cover cursor-zoom-in"
+                      className="w-full h-full object-cover object-center cursor-zoom-in"
                       fetchPriority="high"
                       decoding="async"
                       sizes="(max-width: 768px) 100vw, 66vw"
@@ -993,24 +993,24 @@ export default function ListingDetail() {
       </div>
 
       {isFullscreen && (
-        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4 box-border">
           <Button
             onClick={closeFullscreen}
-            className="absolute top-4 right-4 min-w-[44px] min-h-[44px] bg-white/10 hover:bg-white/20 text-white touch-target"
+            className="absolute top-4 right-4 min-w-[44px] min-h-[44px] bg-white/10 hover:bg-white/20 text-white touch-target z-10"
             size="icon"
           >
             <X className="h-6 w-6" />
           </Button>
           <Button
             onClick={prevImage}
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 min-w-[48px] min-h-[48px] bg-white/10 hover:bg-white/20 text-white touch-target"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 min-w-[48px] min-h-[48px] bg-white/10 hover:bg-white/20 text-white touch-target z-10"
             size="icon"
           >
             <ChevronLeft className="h-8 w-8" />
           </Button>
           <Button
             onClick={nextImage}
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 min-w-[48px] min-h-[48px] bg-white/10 hover:bg-white/20 text-white touch-target"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 min-w-[48px] min-h-[48px] bg-white/10 hover:bg-white/20 text-white touch-target z-10"
             size="icon"
           >
             <ChevronRight className="h-8 w-8" />
@@ -1018,9 +1018,9 @@ export default function ListingDetail() {
           <img
             src={images[fullscreenIndex] || "/placeholder.svg"}
             alt="Fullscreen view"
-            className="max-w-[90vw] max-h-[90vh] object-contain"
+            className="max-w-full max-h-[85vh] sm:max-h-[90vh] w-auto h-auto object-contain"
           />
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-4 py-2 rounded-full">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-4 py-2 rounded-full z-10">
             {fullscreenIndex + 1} / {images.length}
           </div>
         </div>
