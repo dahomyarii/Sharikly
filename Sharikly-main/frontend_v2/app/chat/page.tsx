@@ -232,9 +232,9 @@ export default function ChatPage() {
       {/* Sidebar - Show on mobile when no room selected, always on desktop */}
       <div className={`${!currentRoom || showSidebar ? 'flex' : 'hidden'} md:flex w-full md:w-80 bg-white border-r flex-col min-w-0 absolute md:relative z-10 h-full`}>
         {/* Header */}
-        <div className="p-4 border-b">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-gray-900">Messages</h1>
+        <div className="p-3 sm:p-4 border-b pl-[max(0.75rem,var(--safe-area-inset-left))] pr-[max(0.75rem,var(--safe-area-inset-right))] sm:pl-4 sm:pr-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Messages</h1>
             <div className="flex gap-2">
               {currentRoom && (
                 <button

@@ -31,6 +31,7 @@ import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { useToast } from "@/components/ui/toast";
+import { safeFormatDate } from "@/lib/utils";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -122,7 +123,7 @@ export default function ListingDetail() {
             helpful: r.helpful ?? 0,
             notHelpful: r.not_helpful ?? 0,
             userVote: r.user_vote ?? null,
-            date: r.created_at ? new Date(r.created_at).toLocaleDateString() : "",
+            date: safeFormatDate(r.created_at),
             raw: r,
           }));
           // Preserve stable ordering by review date (newest first).
@@ -430,7 +431,7 @@ export default function ListingDetail() {
       helpful: 0,
       notHelpful: 0,
       userVote: null,
-      date: new Date().toLocaleDateString(),
+      date: safeFormatDate(new Date()),
       raw: {},
     };
 
@@ -472,9 +473,7 @@ export default function ListingDetail() {
                   helpful: res.data.helpful ?? 0,
                   notHelpful: res.data.not_helpful ?? 0,
                   userVote: res.data.user_vote ?? null,
-                  date: res.data.created_at
-                    ? new Date(res.data.created_at).toLocaleDateString()
-                    : optimistic.date,
+                  date: safeFormatDate(res.data.created_at) || optimistic.date,
                   raw: res.data,
                 }
               : r
@@ -518,11 +517,11 @@ export default function ListingDetail() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-5 pb-8 sm:px-6 lg:p-8">
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2 space-y-5 lg:space-y-6">
+      <div className="max-w-7xl mx-auto px-3 py-4 pb-8 sm:px-6 lg:p-8 mobile-content">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             <Card className="overflow-hidden">
-              <div className="flex flex-col sm:flex-row gap-4 p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-2 sm:p-4">
                 <div className="flex flex-row sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto sm:max-h-[500px] pb-1 sm:pb-0">
                   {images.map((url: string, idx: number) => (
                     <button
@@ -530,7 +529,7 @@ export default function ListingDetail() {
                       onClick={() => {
                         setMainImage(url);
                       }}
-                      className={`min-w-[64px] min-h-[64px] sm:w-16 sm:h-16 border-2 rounded-xl overflow-hidden flex-shrink-0 transition-all touch-target ${
+                      className={`min-w-[52px] min-h-[52px] sm:w-16 sm:h-16 border-2 rounded-lg sm:rounded-xl overflow-hidden flex-shrink-0 transition-all touch-target ${
                         mainImage === url
                           ? "border-orange-500 ring-2 ring-orange-200"
                           : "border-gray-200 hover:border-gray-400 active:border-gray-500"
@@ -548,11 +547,11 @@ export default function ListingDetail() {
                 </div>
 
                 <div className="flex-1 relative group min-w-0">
-                  <div className="aspect-[4/3] max-h-[40vh] sm:max-h-[420px] overflow-hidden rounded-lg bg-gray-100">
+                  <div className="aspect-[4/3] max-h-[28vh] sm:max-h-[40vh] md:max-h-[420px] overflow-hidden rounded-lg bg-gray-100">
                     <img
                       src={mainImage || images[0]}
                       alt={data.title}
-                      className="w-full h-full object-cover object-center cursor-zoom-in"
+                      className="w-full h-full object-cover object-center cursor-zoom-in listing-img-mobile"
                       fetchPriority="high"
                       decoding="async"
                       sizes="(max-width: 768px) 100vw, 66vw"
@@ -578,7 +577,7 @@ export default function ListingDetail() {
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-2">
                     {data.title}
                   </h1>
                   <div className="flex items-center gap-2 mb-4">

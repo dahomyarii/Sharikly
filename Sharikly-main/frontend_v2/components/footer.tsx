@@ -6,10 +6,10 @@ import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'luc
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-gray-900 via-gray-800 to-black text-gray-300 py-12 md:py-16 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-gradient-to-b from-gray-900 via-gray-800 to-black text-gray-300 py-8 sm:py-12 md:py-16 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
         {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-12 mb-8 sm:mb-12">
           {/* Brand Column */}
           <div className="lg:col-span-1">
             <div className="mb-6 flex items-center gap-2">

@@ -360,63 +360,25 @@ export default function HomePage() {
     return { icon: Sparkles, color: "from-blue-500 to-cyan-500" };
   };
 
-  // Use listing.average_rating / listing.reviews when present to avoid extra API calls (prevents 429)
+  // Use only listing.average_rating / listing.reviews — never fetch (prevents 429)
   const RatingDisplay = ({
     listing,
   }: {
     listing: { id: number; average_rating?: number; reviews?: any[] };
   }) => {
-    const fromListing =
+    const hasData =
       listing.average_rating != null ||
       (Array.isArray(listing.reviews) && listing.reviews.length > 0);
-    const computedRating =
+    const displayRating =
       listing.average_rating != null
         ? listing.average_rating
-        : Array.isArray(listing.reviews) && listing.reviews.length > 0
+        : hasData && Array.isArray(listing.reviews)
           ? Math.round(
               (listing.reviews.reduce((s: number, r: any) => s + (r.rating ?? 0), 0) /
                 listing.reviews.length) * 10
             ) / 10
           : 0;
-    const computedCount = Array.isArray(listing.reviews) ? listing.reviews.length : 0;
-
-    const [rating, setRating] = useState<number>(fromListing ? computedRating : 0);
-    const [reviewCount, setReviewCount] = useState<number>(fromListing ? computedCount : 0);
-    const [fetched, setFetched] = useState(false);
-
-    useEffect(() => {
-      if (fromListing || fetched) return;
-      const fetchRating = async () => {
-        try {
-          const response = await axiosInstance.get(
-            `${API}/reviews/?listing=${listing.id}`,
-          );
-          setFetched(true);
-          if (Array.isArray(response.data)) {
-            const reviews = response.data;
-            const count = reviews.length;
-            const avg =
-              count > 0
-                ? Math.round(
-                    (reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) /
-                      count) * 10,
-                  ) / 10
-                : 0;
-            setRating(avg);
-            setReviewCount(count);
-          }
-        } catch (error: any) {
-          if (error?.response?.status !== 429) {
-            console.error("Error fetching rating:", error);
-          }
-          setFetched(true);
-        }
-      };
-      fetchRating();
-    }, [listing.id, fromListing, fetched]);
-
-    const displayRating = fromListing ? computedRating : rating;
-    const displayCount = fromListing ? computedCount : reviewCount;
+    const displayCount = Array.isArray(listing.reviews) ? listing.reviews.length : 0;
 
     return (
       <div className="flex items-center gap-2">
@@ -441,8 +403,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Hero — keep image, refined overlay and content */}
-      <section className="relative min-h-[42vh] sm:min-h-[48vh] md:min-h-[52vh] flex flex-col justify-center overflow-hidden">
+      {/* Hero — smaller on mobile for better phone fit */}
+      <section className="relative min-h-[32vh] sm:min-h-[42vh] md:min-h-[48vh] lg:min-h-[52vh] flex flex-col justify-center overflow-hidden">
         <img
           src="/image.jpeg"
           alt=""
@@ -456,11 +418,11 @@ export default function HomePage() {
           aria-hidden="true"
         />
 
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-4 sm:mb-5">
+        <div className="relative z-10 max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-3 sm:mb-5">
             {t("hero_title")}
           </h1>
-          <p className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto mb-8 sm:mb-10 font-medium">
+          <p className="text-sm sm:text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-5 sm:mb-8 font-medium">
             {t("hero_sub")}
           </p>
 
@@ -700,22 +662,22 @@ export default function HomePage() {
                     </div>
                     <div className="p-6 sm:p-8 md:p-10 flex flex-col justify-between">
                       <div>
-                        <span className="inline-block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">
+                        <span className="inline-block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">
                           {featuredService.category?.name || t("listings")}
                         </span>
-                        <h3 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-3 group-hover:text-neutral-700">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900 mb-2 sm:mb-3 group-hover:text-neutral-700">
                           {featuredService.title}
                         </h3>
-                        <p className="text-neutral-600 mb-5 line-clamp-3">
+                        <p className="text-neutral-600 mb-3 sm:mb-5 line-clamp-2 sm:line-clamp-3 text-sm sm:text-base">
                           {featuredService.description}
                         </p>
-                        <div className="mb-6">
+                        <div className="mb-4 sm:mb-6">
                           <RatingDisplay listing={featuredService} />
                         </div>
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-neutral-100">
+                      <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 pt-4 sm:pt-5 border-t border-neutral-100">
                         <div>
-                          <span className="text-3xl font-bold text-neutral-900">
+                          <span className="text-2xl sm:text-3xl font-bold text-neutral-900">
                             ${featuredService.price_per_day}
                           </span>
                           <span className="text-neutral-500 ml-1 text-sm">
@@ -735,15 +697,15 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Popular listings — grid */}
-        <section className="py-12 md:py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+        {/* Popular listings — grid; tighter on mobile */}
+        <section className="py-6 sm:py-10 md:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
                   {t("listings")}
                 </p>
-                <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900">
                   Popular right now
                 </h2>
               </div>
@@ -754,7 +716,7 @@ export default function HomePage() {
                 View all →
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {isListingsLoading
                 ? [...Array(6)].map((_, i) => <SkeletonLoader key={i} />)
                 : hotServices.map((service: any) => (
@@ -763,8 +725,8 @@ export default function HomePage() {
                       href={`/listings/${service.id}`}
                       className="group block"
                     >
-                      <article className="overflow-hidden rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-                        <div className="relative aspect-[4/3] bg-neutral-100 overflow-hidden">
+                      <article className="overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                        <div className="relative aspect-[4/3] max-h-[180px] sm:max-h-none bg-neutral-100 overflow-hidden">
                           {service.images?.[0]?.image && (
                             <img
                               src={
@@ -773,7 +735,7 @@ export default function HomePage() {
                                   : `${API}${service.images[0].image}`
                               }
                               alt={service.title}
-                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300 listing-img-mobile"
                               loading="lazy"
                               decoding="async"
                               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -801,11 +763,11 @@ export default function HomePage() {
                             />
                           </button>
                         </div>
-                        <div className="p-4 sm:p-5 flex flex-col flex-1">
+                        <div className="p-3 sm:p-5 flex flex-col flex-1">
                           <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             {service.category?.name || t("listing")}
                           </span>
-                          <h3 className="text-lg font-semibold text-neutral-900 mt-1 mb-2 line-clamp-2 group-hover:text-neutral-700">
+                          <h3 className="text-base sm:text-lg font-semibold text-neutral-900 mt-1 mb-2 line-clamp-2 group-hover:text-neutral-700">
                             {service.title}
                           </h3>
                           {service.owner && (
@@ -853,15 +815,15 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* More to explore — horizontal scroll */}
-        <section className="py-12 md:py-16 bg-neutral-50 border-t border-neutral-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-end justify-between mb-6">
+        {/* More to explore — horizontal scroll; smaller cards on mobile */}
+        <section className="py-6 sm:py-10 md:py-16 bg-neutral-50 border-t border-neutral-100">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
+            <div className="flex items-end justify-between mb-4 sm:mb-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
                   Explore
                 </p>
-                <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900">
                   More to explore
                 </h2>
               </div>
@@ -873,14 +835,14 @@ export default function HomePage() {
               </Link>
             </div>
             <div
-              className="flex gap-5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 sm:mx-0 sm:px-0"
+              className="flex gap-3 sm:gap-5 overflow-x-auto scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0"
               ref={scrollContainerRef}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
               {isListingsLoading
                 ? [...Array(6)].map((_, i) => (
-                    <div key={i} className="flex-shrink-0 w-[280px]">
+                    <div key={i} className="flex-shrink-0 w-[240px] sm:w-[280px]">
                       <SkeletonLoader />
                     </div>
                   ))
@@ -888,10 +850,10 @@ export default function HomePage() {
                     <Link
                       key={service.id}
                       href={`/listings/${service.id}`}
-                      className="group flex-shrink-0 w-[280px] block"
+                      className="group flex-shrink-0 w-[240px] sm:w-[280px] block"
                     >
-                      <article className="overflow-hidden rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-                        <div className="relative aspect-[4/3] bg-neutral-100 overflow-hidden">
+                      <article className="overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                        <div className="relative aspect-[4/3] max-h-[160px] sm:max-h-none bg-neutral-100 overflow-hidden">
                           {service.images?.[0]?.image && (
                             <img
                               src={
@@ -900,10 +862,10 @@ export default function HomePage() {
                                   : `${API}${service.images[0].image}`
                               }
                               alt={service.title}
-                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300 listing-img-mobile"
                               loading="lazy"
                               decoding="async"
-                              sizes="280px"
+                              sizes="(max-width: 640px) 240px, 280px"
                             />
                           )}
                           <button
@@ -928,18 +890,18 @@ export default function HomePage() {
                             />
                           </button>
                         </div>
-                        <div className="p-4 flex flex-col flex-1">
+                        <div className="p-3 sm:p-4 flex flex-col flex-1">
                           <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             {service.category?.name || t("listing")}
                           </span>
-                          <h3 className="text-base font-semibold text-neutral-900 mt-1 mb-2 line-clamp-2 group-hover:text-neutral-700">
+                          <h3 className="text-sm sm:text-base font-semibold text-neutral-900 mt-1 mb-2 line-clamp-2 group-hover:text-neutral-700">
                             {service.title}
                           </h3>
-                          <div className="mb-3 mt-auto">
+                          <div className="mb-2 sm:mb-3 mt-auto">
                             <RatingDisplay listing={service} />
                           </div>
-                          <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
-                            <span className="text-lg font-bold text-neutral-900">
+                          <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-neutral-100">
+                            <span className="text-base sm:text-lg font-bold text-neutral-900">
                               ${service.price_per_day}
                               <span className="text-xs font-normal text-neutral-500">
                                 /day

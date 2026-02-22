@@ -6,6 +6,7 @@ import axiosInstance from '@/lib/axios'
 import { useLocale } from '@/components/LocaleProvider'
 import { ArrowLeft, Calendar, Check, Receipt } from 'lucide-react'
 import Link from 'next/link'
+import { safeFormatDate } from '@/lib/utils'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -124,20 +125,7 @@ export default function BookingReceiptPage() {
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
             <p className="text-xs text-gray-500 uppercase tracking-wide">Booking #{booking.id}</p>
             <p className="text-sm text-gray-600 mt-0.5">
-              {(() => {
-              const d = new Date(booking.created_at)
-              try {
-                return d.toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              } catch {
-                return d.toISOString().slice(0, 16).replace('T', ' ')
-              }
-            })()}
+              {safeFormatDate(booking.created_at)}
             </p>
           </div>
 
@@ -176,7 +164,7 @@ export default function BookingReceiptPage() {
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Dates</span>
               <span className="text-gray-900 font-medium">
-                {new Date(booking.start_date).toLocaleDateString()} – {new Date(booking.end_date).toLocaleDateString()}
+                {safeFormatDate(booking.start_date)} – {safeFormatDate(booking.end_date)}
               </span>
             </div>
             <div className="flex justify-between text-sm">

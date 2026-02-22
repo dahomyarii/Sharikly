@@ -148,6 +148,7 @@ class ListingSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         category_id = validated_data.pop("category_id", None)
+        validated_data["is_active"] = True  # New listings appear in search by default
         listing = Listing.objects.create(**validated_data)
         if category_id:
             try:

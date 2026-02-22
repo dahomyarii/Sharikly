@@ -65,12 +65,12 @@ export default function FavoritesPage() {
 
   if (!list.length && !loading) {
     return (
-      <div className="mx-auto max-w-5xl p-4 text-center py-16">
-        <h1 className="text-2xl font-bold mb-4">{t("my_favorites")}</h1>
-        <p className="text-gray-500 mb-6">{t("no_favorites")}</p>
+      <div className="mx-auto max-w-5xl px-3 py-4 sm:p-4 mobile-content text-center py-12 sm:py-16 pb-20 md:pb-12">
+        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">{t("my_favorites")}</h1>
+        <p className="text-gray-500 text-sm sm:text-base mb-4 sm:mb-6">{t("no_favorites")}</p>
         <Link
           href="/listings"
-          className="inline-block px-5 py-3 bg-black text-white rounded-lg hover:bg-gray-800 font-medium"
+          className="inline-block px-5 py-3 min-h-[44px] flex items-center justify-center bg-black text-white rounded-lg hover:bg-gray-800 font-medium touch-target"
         >
           {t("browse")}
         </Link>
@@ -79,14 +79,14 @@ export default function FavoritesPage() {
   }
 
   if (error) {
-    return <div className="p-4 text-red-600">{t("failed_to_load")}</div>;
+    return <div className="px-3 py-4 mobile-content text-red-600">{t("failed_to_load")}</div>;
   }
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-5xl p-4">
-        <h1 className="text-3xl font-bold mb-8">{t("my_favorites")}</h1>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="mx-auto max-w-5xl px-3 py-4 sm:p-4 mobile-content pb-20 md:pb-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-8">{t("my_favorites")}</h1>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {[...Array(6)].map((_, i) => (
             <SkeletonLoader key={i} />
           ))}
@@ -96,20 +96,20 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl p-4">
-      <h1 className="text-3xl font-bold mb-8">{t("my_favorites")}</h1>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="mx-auto max-w-5xl px-3 py-4 sm:p-4 mobile-content pb-20 md:pb-8">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-8">{t("my_favorites")}</h1>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {list.map((favorite: any) => (
           <ListingCard key={favorite.id} listing={favorite.listing} />
         ))}
       </div>
       {nextPage && (
-        <div className="mt-8 flex justify-center">
+        <div className="mt-6 sm:mt-8 flex justify-center">
           <Button
             variant="outline"
             onClick={loadMore}
             disabled={loadingMore}
-            className="min-h-[44px] px-6"
+            className="min-h-[44px] px-6 touch-target"
           >
             {loadingMore ? (
               <span className="inline-flex items-center gap-2">

@@ -35,40 +35,7 @@ export default function ListingCard({ listing }: { listing: any }) {
   );
   const { t } = useLocale();
 
-  // Fetch reviews only when listing doesn't already include them (avoids 429 from many cards)
-  useEffect(() => {
-    if (!listing?.id || hasRatingFromListing) return;
-    const fetchReviews = async () => {
-      try {
-        const response = await axios.get(
-          `${API}/reviews/?listing=${listing.id}`,
-        );
-        if (Array.isArray(response.data)) {
-          const reviews = response.data;
-          const count = reviews.length;
-          const avgRating =
-            count > 0
-              ? Math.round(
-                  (reviews.reduce(
-                    (sum: number, r: any) => sum + (r.rating || 0),
-                    0,
-                  ) /
-                    count) *
-                    10,
-                ) / 10
-              : 0;
-          setReviewCount(count);
-          setAverageRating(avgRating);
-        }
-      } catch (error: any) {
-        if (error?.response?.status !== 429) {
-          console.error("Error fetching reviews:", error);
-        }
-      }
-    };
-
-    fetchReviews();
-  }, [listing?.id, hasRatingFromListing]);
+  // Never fetch reviews per card — use only listing data to avoid 429
 
   useEffect(() => {
     const storedToken = localStorage.getItem("access_token");
@@ -148,11 +115,11 @@ export default function ListingCard({ listing }: { listing: any }) {
       href={`/listings/${listing.id}`}
       className="block border rounded-2xl overflow-hidden hover:shadow-md active:opacity-95 transition"
     >
-      <div className="relative h-44 sm:h-48 bg-gray-100">
+      <div className="relative h-36 sm:h-44 md:h-48 bg-gray-100">
         <img
           src={imageUrl}
           alt={listing.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover listing-img-mobile"
           loading="lazy"
           decoding="async"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"

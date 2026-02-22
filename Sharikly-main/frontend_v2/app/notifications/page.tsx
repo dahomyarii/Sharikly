@@ -7,6 +7,7 @@ import axiosInstance from '@/lib/axios'
 import { useLocale } from '@/components/LocaleProvider'
 import { Bell, ArrowLeft, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { safeFormatDate } from '@/lib/utils'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -35,14 +36,14 @@ class NotificationsErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gray-50 py-6 pb-32 md:pb-8">
-          <div className="max-w-2xl mx-auto px-4">
-            <div className="flex items-center gap-3 mb-6">
+        <div className="min-h-screen bg-gray-50 py-4 sm:py-6 pb-32 md:pb-8">
+          <div className="max-w-2xl mx-auto px-3 sm:px-4 mobile-content">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
               <Link href="/" className="p-2 rounded-full hover:bg-gray-200 transition" aria-label="Back">
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Bell className="w-7 h-7" />
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Bell className="w-6 h-6 sm:w-7 sm:h-7" />
                 Notifications
               </h1>
             </div>
@@ -184,9 +185,9 @@ function NotificationsPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 pb-32 md:pb-8">
-      <div className="max-w-2xl mx-auto px-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 pb-32 md:pb-8">
+      <div className="max-w-2xl mx-auto px-3 sm:px-4 mobile-content">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
           <div className="flex items-center gap-3">
             <Link
               href="/"
@@ -195,7 +196,7 @@ function NotificationsPageContent() {
             >
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
               <Bell className="w-7 h-7" />
               {t('notifications')}
               {unreadCount > 0 && (
@@ -224,7 +225,7 @@ function NotificationsPageContent() {
         </div>
 
         {safeList.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 text-center">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-10 text-center">
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
               <Bell className="w-8 h-8 text-gray-400" />
             </div>
@@ -248,7 +249,7 @@ function NotificationsPageContent() {
                 <li key={n.id}>
                   <Link
                     href={n.link || '/notifications'}
-                    className={`block bg-white rounded-xl border p-4 hover:bg-gray-50/80 transition shadow-sm ${
+                    className={`block bg-white rounded-xl border p-3 sm:p-4 hover:bg-gray-50/80 transition shadow-sm touch-target ${
                       !n.read ? 'border-l-4 border-l-black border-gray-200' : 'border-gray-100'
                     }`}
                     onClick={() => !n.read && markRead(n.id)}
@@ -258,22 +259,7 @@ function NotificationsPageContent() {
                         <p className="font-medium text-gray-900">{n.title}</p>
                         {n.body && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{n.body}</p>}
                         <p className="text-xs text-gray-400 mt-2">
-                          {n.created_at
-                            ? (() => {
-                                const d = new Date(n.created_at)
-                                try {
-                                  return d.toLocaleDateString(undefined, {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  })
-                                } catch {
-                                  return d.toISOString().slice(0, 16).replace('T', ' ')
-                                }
-                              })()
-                            : ''}
+                          {safeFormatDate(n.created_at)}
                         </p>
                       </div>
                       {!n.read && (
@@ -290,7 +276,7 @@ function NotificationsPageContent() {
                   variant="outline"
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="min-h-[44px] px-6"
+                  className="min-h-[44px] px-6 touch-target"
                 >
                   {loadingMore ? (
                     <span className="inline-flex items-center gap-2">

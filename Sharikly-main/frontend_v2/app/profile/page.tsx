@@ -176,12 +176,13 @@ export default function ProfilePage() {
             });
           }
         } catch (reviewError: any) {
-          // Skip listings that cause errors (e.g., if reviews endpoint fails)
-          console.error(
-            `Error fetching reviews for listing ${listing.id}:`,
-            reviewError?.response?.status,
-            reviewError?.message,
-          );
+          if (reviewError?.response?.status !== 429) {
+            console.error(
+              `Error fetching reviews for listing ${listing.id}:`,
+              reviewError?.response?.status,
+              reviewError?.message,
+            );
+          }
           continue;
         }
       }
@@ -303,15 +304,15 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 md:py-8 pb-20 md:pb-0">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 mobile-content">
         {/* Profile Header */}
-        <Card className="p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-6">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
             {/* Avatar Section */}
             <div className="flex-shrink-0">
               <div className="relative">
-                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                   {avatarPreview ? (
                     <img
                       src={getFullImageUrl(avatarPreview)}
@@ -386,8 +387,8 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-gray-900">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
                       {user.username || user.email}
                     </h1>
                     <Button
@@ -420,27 +421,27 @@ export default function ProfilePage() {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <Card className="p-3 sm:p-4 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {listings.length}
             </div>
-            <div className="text-sm text-gray-600">Listings</div>
+            <div className="text-xs sm:text-sm text-gray-600">Listings</div>
           </Card>
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">
+          <Card className="p-3 sm:p-4 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {bookingsCount ?? "—"}
             </div>
-            <div className="text-sm text-gray-600">Bookings</div>
+            <div className="text-xs sm:text-sm text-gray-600">Bookings</div>
           </Card>
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">
+          <Card className="p-3 sm:p-4 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {reviews.length}
             </div>
-            <div className="text-sm text-gray-600">Reviews</div>
+            <div className="text-xs sm:text-sm text-gray-600">Reviews</div>
           </Card>
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">
+          <Card className="p-3 sm:p-4 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {reviews.length > 0
                 ? (
                     reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
@@ -448,17 +449,17 @@ export default function ProfilePage() {
                   ).toFixed(1)
                 : "0"}
             </div>
-            <div className="text-sm text-gray-600">Avg Rating</div>
+            <div className="text-xs sm:text-sm text-gray-600">Avg Rating</div>
           </Card>
         </div>
 
         {/* My Bookings — separate section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Calendar className="w-6 h-6" />
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
             My Bookings
           </h2>
-          <Card className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-gray-100">
+          <Card className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-gray-100">
             <div>
               <p className="text-gray-600 mb-1">
                 {bookingsCount !== null
@@ -481,18 +482,18 @@ export default function ProfilePage() {
 
         {/* My Listings — separate section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Package className="w-6 h-6" />
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+            <Package className="w-5 h-5 sm:w-6 sm:h-6" />
             My Listings
           </h2>
           {isLoadingListings ? (
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
               {[...Array(4)].map((_, i) => (
                 <SkeletonLoader key={i} />
               ))}
             </div>
           ) : listings.length > 0 ? (
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
               {listings.map((listing: any) => (
                 <div key={listing.id} className="relative">
                   {listing.is_active === false && (

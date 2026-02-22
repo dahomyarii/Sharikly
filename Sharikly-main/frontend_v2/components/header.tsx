@@ -164,7 +164,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-gray-100 px-4 py-3 md:p-4 flex justify-between items-center min-h-[var(--touch-target-min)] md:min-h-0 gap-2 min-w-0">
+      <header className="bg-gray-100 px-3 py-2.5 sm:px-4 sm:py-3 md:p-4 flex justify-between items-center min-h-[var(--touch-target-min)] md:min-h-0 gap-2 min-w-0">
         <Link href="/" className="flex items-center gap-2 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 justify-center p-2 -ml-2 rounded-lg active:opacity-80 flex-shrink-0 max-w-[50vw] md:max-w-none">
           <img src="/logo.png" alt="EKRA" className="h-8 w-8 flex-shrink-0" />
           <span className="text-lg sm:text-xl font-bold truncate">EKRA</span>
@@ -541,9 +541,13 @@ export default function Header() {
        {/* Mobile Bottom Navigation — glass + orange active state + animations */}
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-bottom-nav-enter"
-        style={{ paddingBottom: "var(--safe-area-inset-bottom)" }}
+        style={{
+          paddingBottom: "var(--safe-area-inset-bottom)",
+          paddingLeft: "max(0.75rem, var(--safe-area-inset-left))",
+          paddingRight: "max(0.75rem, var(--safe-area-inset-right))",
+        }}
       >
-        <div className="mx-3 mb-2 rounded-2xl bg-white/90 backdrop-blur-xl border border-orange-200/30 shadow-[0_8px_32px_rgba(0,0,0,0.08)] ring-1 ring-orange-100/50 transition-colors duration-300">
+        <div className="mb-2 rounded-2xl bg-white/90 backdrop-blur-xl border border-orange-200/30 shadow-[0_8px_32px_rgba(0,0,0,0.08)] ring-1 ring-orange-100/50 transition-colors duration-300">
           <div className="flex justify-around items-center h-16 px-1 gap-0.5">
             {/* Home */}
             <Link
