@@ -22,8 +22,11 @@ export default function Header() {
   const [showLogin, setShowLogin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const notificationsDropdownRef = useRef<HTMLDivElement>(null);
+  const notificationsBellRef = useRef<HTMLButtonElement>(null);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -41,6 +44,23 @@ export default function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMobileMenuOpen]);
+
+  // Close notifications dropdown when clicking outside
+  useEffect(() => {
+    if (!showNotificationsDropdown) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        notificationsDropdownRef.current &&
+        !notificationsDropdownRef.current.contains(e.target as Node) &&
+        notificationsBellRef.current &&
+        !notificationsBellRef.current.contains(e.target as Node)
+      ) {
+        setShowNotificationsDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showNotificationsDropdown]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -180,23 +200,70 @@ export default function Header() {
               >
                 Settings
               </Link>
-              {/* Notifications bell */}
-              <Link
-                href="/notifications"
-                className="relative p-2 rounded-full transition-all"
-                aria-label="Notifications"
-              >
-                <Bell
-                  className={`w-5 h-5 ${
-                    unreadCount > 0 ? "text-red-600" : "text-gray-500"
-                  }`}
-                />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-semibold">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
+              {/* Notifications bell — expandable dropdown */}
+              <div className="relative" ref={notificationsDropdownRef}>
+                <button
+                  ref={notificationsBellRef}
+                  type="button"
+                  onClick={() => setShowNotificationsDropdown((v) => !v)}
+                  className="relative p-2 rounded-full hover:bg-gray-200 transition-all touch-target"
+                  aria-label="Notifications"
+                  aria-expanded={showNotificationsDropdown}
+                >
+                  <Bell
+                    className={`w-5 h-5 ${
+                      unreadCount > 0 ? "text-red-600" : "text-gray-500"
+                    }`}
+                  />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-semibold">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+                {showNotificationsDropdown && (
+                  <div className="absolute right-0 top-full mt-2 w-[320px] max-h-[400px] flex flex-col rounded-xl bg-white border border-gray-200 shadow-xl z-50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                      <span className="font-semibold text-gray-900">Notifications</span>
+                    </div>
+                    <div className="overflow-y-auto flex-1 min-h-0">
+                      {notifications.length === 0 ? (
+                        <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                          No notifications yet
+                        </div>
+                      ) : (
+                        <ul className="py-1">
+                          {notifications.slice(0, 5).map((n) => (
+                            <li key={n.id}>
+                              <Link
+                                href={n.link || "/notifications"}
+                                onClick={() => setShowNotificationsDropdown(false)}
+                                className={`block px-4 py-3 hover:bg-gray-50 text-left border-b border-gray-50 last:border-0 ${
+                                  !n.read ? "bg-blue-50/50" : ""
+                                }`}
+                              >
+                                <p className="font-medium text-gray-900 text-sm">{n.title}</p>
+                                {n.body ? (
+                                  <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{n.body}</p>
+                                ) : null}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <div className="border-t border-gray-100 p-2">
+                      <Link
+                        href="/notifications"
+                        onClick={() => setShowNotificationsDropdown(false)}
+                        className="block w-full text-center py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition"
+                      >
+                        View more
+                      </Link>
+                    </div>
+                  </div>
                 )}
-              </Link>
+              </div>
               <div className="w-px h-6 bg-gray-300 mx-1" />
               <LanguageSwitcher />
               <button

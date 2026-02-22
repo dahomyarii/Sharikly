@@ -85,6 +85,11 @@ class Booking(models.Model):
         DECLINED = "DECLINED", _("Declined")
         CANCELLED = "CANCELLED", _("Cancelled")
 
+    class PaymentStatus(models.TextChoices):
+        PENDING = "PENDING", _("Pending")
+        PAID = "PAID", _("Paid")
+        REFUNDED = "REFUNDED", _("Refunded")
+
     listing = models.ForeignKey(
         Listing, on_delete=models.CASCADE, related_name="bookings"
     )
@@ -95,6 +100,15 @@ class Booking(models.Model):
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.PENDING
     )
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PaymentStatus.choices,
+        default=PaymentStatus.PENDING,
+        blank=True,
+    )
+    stripe_payment_id = models.CharField(
+        max_length=255, blank=True, null=True
+    )  # Stripe PaymentIntent or Session id
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

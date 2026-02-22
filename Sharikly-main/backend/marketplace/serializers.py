@@ -217,6 +217,7 @@ class BookingSerializer(serializers.ModelSerializer):
             "end_date",
             "total_price",
             "status",
+            "payment_status",
             "created_at",
         ]
 

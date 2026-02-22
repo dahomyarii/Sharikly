@@ -16,6 +16,8 @@ import {
   FileText,
   Package,
   Star,
+  Calendar,
+  ArrowRight,
 } from "lucide-react";
 import ListingCard from "@/components/ListingCard";
 import SkeletonLoader from "@/components/SkeletonLoader";
@@ -32,6 +34,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [listings, setListings] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [bookingsCount, setBookingsCount] = useState<number | null>(null);
   const [isLoadingListings, setIsLoadingListings] = useState(true);
 
   // Form state
@@ -53,6 +56,7 @@ export default function ProfilePage() {
     fetchUserProfile();
     fetchUserListings();
     fetchUserReviews();
+    fetchBookingsCount();
   }, [router]);
 
   const fetchUserProfile = async () => {
@@ -102,6 +106,19 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Error fetching listings:", error);
       setIsLoadingListings(false);
+    }
+  };
+
+  const fetchBookingsCount = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) return;
+      const response = await axiosInstance.get(`${API}/bookings/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setBookingsCount(Array.isArray(response.data) ? response.data.length : 0);
+    } catch {
+      setBookingsCount(0);
     }
   };
 
@@ -419,7 +436,7 @@ export default function ProfilePage() {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-gray-900">
               {listings.length}
@@ -428,11 +445,17 @@ export default function ProfilePage() {
           </Card>
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-gray-900">
+              {bookingsCount ?? "—"}
+            </div>
+            <div className="text-sm text-gray-600">Bookings</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-2xl font-bold text-gray-900">
               {reviews.length}
             </div>
             <div className="text-sm text-gray-600">Reviews</div>
           </Card>
-          <Card className="p-4 text-center col-span-2 md:col-span-1">
+          <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-gray-900">
               {reviews.length > 0
                 ? (
@@ -445,7 +468,34 @@ export default function ProfilePage() {
           </Card>
         </div>
 
-        {/* My Listings */}
+        {/* My Bookings — separate section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Calendar className="w-6 h-6" />
+            My Bookings
+          </h2>
+          <Card className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-gray-100">
+            <div>
+              <p className="text-gray-600 mb-1">
+                {bookingsCount !== null
+                  ? `You have ${bookingsCount} booking${bookingsCount !== 1 ? "s" : ""} (as renter or owner).`
+                  : "View and manage your booking requests."}
+              </p>
+              <p className="text-sm text-gray-500">
+                Accept or decline requests on your listings, or pay for confirmed bookings.
+              </p>
+            </div>
+            <Button
+              onClick={() => router.push("/bookings")}
+              className="flex items-center gap-2 shrink-0"
+            >
+              View My Bookings
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Card>
+        </div>
+
+        {/* My Listings — separate section */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
             <Package className="w-6 h-6" />

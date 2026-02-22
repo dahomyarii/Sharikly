@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import axiosInstance from '@/lib/axios'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import Link from 'next/link'
 import { ArrowLeft, Clock, MapPin, User, Check } from 'lucide-react'
 import type { DateRange } from 'react-day-picker'
 
@@ -187,6 +188,27 @@ export default function RequestBookingPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Box: You're requesting to book */}
+        <Card className="p-4 mb-6 border-2 border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-600 font-medium">You're requesting to book</p>
+              <Link
+                href={`/listings/${listing.id}`}
+                className="text-lg font-bold text-gray-900 hover:text-black hover:underline truncate block"
+              >
+                {listing.title}
+              </Link>
+            </div>
+            <Link
+              href={`/listings/${listing.id}`}
+              className="text-sm font-medium text-gray-600 hover:text-black shrink-0"
+            >
+              View listing →
+            </Link>
+          </div>
+        </Card>
+
         <div className="grid md:grid-cols-3 gap-8">
           {/* Left Column - Listing Info */}
           <div className="md:col-span-2 space-y-6">
@@ -252,7 +274,7 @@ export default function RequestBookingPage() {
 
           {/* Right Column - Booking Summary */}
           <div className="md:col-span-1">
-            <Card className="p-6 sticky top-24">
+            <Card className="p-6 sticky top-24 border-2 border-gray-200 shadow-md bg-white">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Booking Summary</h3>
               
               <div className="space-y-4">

@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import axiosInstance from '@/lib/axios'
 import { useLocale } from '@/components/LocaleProvider'
-import { ArrowLeft, Calendar, Check, Loader2, X } from 'lucide-react'
+import { ArrowLeft, Calendar, Check, CreditCard, Loader2, X } from 'lucide-react'
 import Link from 'next/link'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
@@ -18,11 +18,13 @@ function getImageUrl(listing: any): string | null {
 
 export default function BookingsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { t } = useLocale()
   const [user, setUser] = useState<any>(null)
   const [bookings, setBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<number | null>(null)
+  const [payError, setPayError] = useState<string | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -55,6 +57,21 @@ export default function BookingsPage() {
     }
     fetchBookings()
   }, [user])
+
+  // Refetch when returning from Stripe (paid=1 or cancelled=1)
+  useEffect(() => {
+    const paid = searchParams.get('paid')
+    const cancelled = searchParams.get('cancelled')
+    if ((paid === '1' || cancelled === '1') && user) {
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        axiosInstance.get(`${API}/bookings/`, { headers: { Authorization: `Bearer ${token}` } })
+          .then((res) => setBookings(res.data))
+          .catch(() => {})
+      }
+      router.replace('/bookings', { scroll: false })
+    }
+  }, [searchParams, user, router])
 
   const isOwner = (booking: any) =>
     booking.listing?.owner?.id === user?.id
@@ -97,6 +114,29 @@ export default function BookingsPage() {
     }
   }
 
+  const handlePayNow = async (bookingId: number) => {
+    setPayError(null)
+    setActionId(bookingId)
+    const token = localStorage.getItem('access_token')
+    try {
+      const res = await axiosInstance.post<{ url: string }>(
+        `${API}/bookings/${bookingId}/checkout/`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      if (res.data?.url) {
+        window.location.href = res.data.url
+        return
+      }
+      setPayError('Could not start payment.')
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || 'Payment failed.'
+      setPayError(typeof msg === 'string' ? msg : 'Payment failed.')
+    } finally {
+      setActionId(null)
+    }
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -120,6 +160,12 @@ export default function BookingsPage() {
             {t('my_bookings')}
           </h1>
         </div>
+
+        {payError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {payError}
+          </div>
+        )}
 
         {loading ? (
           <ul className="space-y-4">
@@ -204,7 +250,7 @@ export default function BookingsPage() {
                         {new Date(booking.start_date).toLocaleDateString()} –{' '}
                         {new Date(booking.end_date).toLocaleDateString()}
                       </p>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                             pending
@@ -216,6 +262,23 @@ export default function BookingsPage() {
                         >
                           {statusLabel}
                         </span>
+                        {booking.payment_status && (
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              booking.payment_status === 'PAID'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : booking.payment_status === 'REFUNDED'
+                                  ? 'bg-gray-100 text-gray-600'
+                                  : 'bg-orange-100 text-orange-800'
+                            }`}
+                          >
+                            {booking.payment_status === 'PAID'
+                              ? 'Paid'
+                              : booking.payment_status === 'REFUNDED'
+                                ? 'Refunded'
+                                : 'Payment pending'}
+                          </span>
+                        )}
                         <span className="text-sm font-medium text-gray-900">
                           ${Number(booking.total_price).toFixed(2)}
                         </span>
@@ -244,6 +307,24 @@ export default function BookingsPage() {
                           </button>
                         </div>
                       )}
+                      {!ownerView &&
+                        booking.status === 'CONFIRMED' &&
+                        booking.payment_status !== 'PAID' && (
+                          <div className="mt-3">
+                            <button
+                              onClick={() => handlePayNow(booking.id)}
+                              disabled={actionId !== null}
+                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 disabled:opacity-50"
+                            >
+                              {actionId === booking.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <CreditCard className="h-4 w-4" />
+                              )}
+                              Pay now
+                            </button>
+                          </div>
+                        )}
                     </div>
                   </div>
                 </li>

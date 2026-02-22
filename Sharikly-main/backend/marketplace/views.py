@@ -8,6 +8,11 @@ from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.utils.decorators import method_decorator
+from django.core.mail import send_mail
 from datetime import datetime as dt
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
@@ -17,6 +22,7 @@ from .serializers import *
 from accounts.views import send_verification_email, send_password_reset_email
 from accounts.tokens import email_verification_token, password_reset_token
 from rest_framework import viewsets
+import requests
 
 User = get_user_model()
 
@@ -96,6 +102,21 @@ def _create_notification(user, notification_type, title, body: str = "", link: s
     except Exception as e:
         # Do not break main request flow if notification fails
         print(f"[notifications] Failed to create notification: {e}")
+
+
+def _send_notification_email(to_email: str, subject: str, plain_message: str):
+    """Send a simple transactional email. Failures are logged, not raised."""
+    try:
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@sharikly.com")
+        send_mail(
+            subject=subject,
+            message=plain_message,
+            from_email=from_email,
+            recipient_list=[to_email],
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f"[email] Failed to send notification email: {e}")
 
 
 class BlockUserView(APIView):
@@ -497,6 +518,35 @@ class ListingRetrieveUpdateView(generics.RetrieveUpdateAPIView):
         return context
 
 
+class ListingAvailabilityView(APIView):
+    """Return booked date ranges for a listing (PENDING + CONFIRMED) so calendar can disable them."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, pk):
+        listing = get_object_or_404(Listing, pk=pk)
+        booked = (
+            Booking.objects.filter(listing=listing)
+            .filter(status__in=[Booking.Status.PENDING, Booking.Status.CONFIRMED])
+            .values_list("start_date", "end_date")
+        )
+        booked_ranges = [
+            {"start": str(s), "end": str(e)}
+            for s, e in booked
+        ]
+        return Response({"booked_ranges": booked_ranges})
+
+
+def _booking_overlaps(listing, start, end):
+    """True if [start, end] overlaps any PENDING or CONFIRMED booking for listing."""
+    from django.db.models import Q
+    return Booking.objects.filter(
+        listing=listing,
+        status__in=[Booking.Status.PENDING, Booking.Status.CONFIRMED],
+    ).filter(
+        Q(start_date__lte=end, end_date__gte=start)
+    ).exists()
+
+
 class BookingListCreateView(generics.ListCreateAPIView):
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -537,6 +587,11 @@ class BookingListCreateView(generics.ListCreateAPIView):
                 {"detail": "end_date must be on or after start_date."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if _booking_overlaps(listing, start, end):
+            return Response(
+                {"detail": "These dates overlap an existing booking. Please check availability."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         booking = Booking.objects.create(
             listing=listing,
             renter=request.user,
@@ -569,6 +624,20 @@ class BookingAcceptView(APIView):
             )
         booking.status = Booking.Status.CONFIRMED
         booking.save()
+        app_url = getattr(settings, "FRONTEND_APP_URL", "").rstrip("/") or ""
+        link = f"{app_url}/bookings" if app_url else "/bookings"
+        _create_notification(
+            booking.renter,
+            Notification.NotificationType.BOOKING_ACCEPTED,
+            "Booking accepted",
+            body=f"Your request for \"{booking.listing.title}\" was accepted. Dates: {booking.start_date} to {booking.end_date}.",
+            link=link,
+        )
+        _send_notification_email(
+            booking.renter.email,
+            f"Booking accepted: {booking.listing.title}",
+            f"Hi,\n\nYour booking request for \"{booking.listing.title}\" was accepted.\nDates: {booking.start_date} to {booking.end_date}.\n\nView your bookings: {link}\n\n— Sharikly",
+        )
         return Response(BookingSerializer(booking).data, status=status.HTTP_200_OK)
 
 
@@ -590,7 +659,120 @@ class BookingDeclineView(APIView):
             )
         booking.status = Booking.Status.DECLINED
         booking.save()
+        app_url = getattr(settings, "FRONTEND_APP_URL", "").rstrip("/") or ""
+        link = f"{app_url}/bookings" if app_url else "/bookings"
+        _create_notification(
+            booking.renter,
+            Notification.NotificationType.BOOKING_DECLINED,
+            "Booking declined",
+            body=f"Your request for \"{booking.listing.title}\" was declined by the owner.",
+            link=link,
+        )
+        _send_notification_email(
+            booking.renter.email,
+            f"Booking declined: {booking.listing.title}",
+            f"Hi,\n\nYour booking request for \"{booking.listing.title}\" was declined by the owner.\n\nView your bookings: {link}\n\n— Sharikly",
+        )
         return Response(BookingSerializer(booking).data, status=status.HTTP_200_OK)
+
+
+class BookingCreateCheckoutSessionView(APIView):
+    """Create a Moyasar invoice for a confirmed booking (Saudi-friendly). Renter only."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+        if booking.renter_id != request.user.id:
+            return Response(
+                {"detail": "Only the renter can pay for this booking."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if booking.status != Booking.Status.CONFIRMED:
+            return Response(
+                {"detail": "Only confirmed bookings can be paid."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if booking.payment_status == Booking.PaymentStatus.PAID:
+            return Response(
+                {"detail": "This booking is already paid."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        secret = getattr(settings, "MOYASAR_SECRET_KEY", None)
+        if not secret:
+            return Response(
+                {"detail": "Payments are not configured."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        app_url = getattr(settings, "FRONTEND_APP_URL", request.build_absolute_uri("/")[:-1]).rstrip("/")
+        backend_url = request.build_absolute_uri("/").rstrip("/")
+        amount_halals = max(100, int(round(float(booking.total_price) * 100)))
+        payload = {
+            "amount": amount_halals,
+            "currency": "SAR",
+            "description": f"Rental: {booking.listing.title} ({booking.start_date} to {booking.end_date})",
+            "success_url": f"{app_url}/bookings?paid=1",
+            "back_url": f"{app_url}/bookings?cancelled=1",
+            "callback_url": f"{backend_url}/api/moyasar/callback/",
+        }
+        try:
+            resp = requests.post(
+                "https://api.moyasar.com/v1/invoices",
+                json=payload,
+                auth=(secret, ""),
+                timeout=15,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            invoice_url = data.get("url")
+            invoice_id = data.get("id")
+            if not invoice_url:
+                return Response(
+                    {"detail": "Payment gateway did not return a checkout URL."},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
+            booking.stripe_payment_id = invoice_id
+            booking.save(update_fields=["stripe_payment_id"])
+            return Response({"url": invoice_url}, status=status.HTTP_200_OK)
+        except requests.RequestException as e:
+            msg = getattr(e, "response", None)
+            if msg is not None and hasattr(msg, "json"):
+                try:
+                    err = msg.json()
+                    detail = err.get("message") or err.get("detail") or str(e)
+                except Exception:
+                    detail = str(e)
+            else:
+                detail = str(e)
+            return Response(
+                {"detail": detail or "Payment setup failed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class MoyasarPaymentCallbackView(APIView):
+    """Moyasar invoice callback: when invoice is paid, mark booking as PAID."""
+    permission_classes = []
+    authentication_classes = []
+
+    @method_decorator(csrf_exempt)
+    @method_decorator(require_http_methods(["POST"]))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def post(self, request):
+        try:
+            data = request.data
+            invoice_id = data.get("id")
+            invoice_status = data.get("status")
+            if invoice_status != "paid" or not invoice_id:
+                return Response(status=status.HTTP_200_OK)
+            booking = Booking.objects.filter(stripe_payment_id=invoice_id).first()
+            if booking:
+                booking.payment_status = Booking.PaymentStatus.PAID
+                booking.save(update_fields=["payment_status"])
+        except Exception:
+            pass
+        return Response(status=status.HTTP_200_OK)
 
 
 # --- Category Views ---
@@ -689,7 +871,18 @@ class SendMessageView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(room=room, sender=request.user)
+        msg = serializer.save(room=room, sender=request.user)
+        app_url = getattr(settings, "FRONTEND_APP_URL", "").rstrip("/") or ""
+        chat_link = f"{app_url}/chat/{room.id}" if app_url else f"/chat/{room.id}"
+        snippet = (msg.text or "")[:100] + ("..." if len(msg.text or "") > 100 else "")
+        for other in room.participants.exclude(pk=request.user.pk):
+            _create_notification(
+                other,
+                Notification.NotificationType.NEW_MESSAGE,
+                "New message",
+                body=snippet,
+                link=chat_link,
+            )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -720,6 +913,20 @@ class SubmitReviewView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         listing_id = self.kwargs["listing_id"]
         listing = get_object_or_404(Listing, id=listing_id)
+
+        # Only allow review after a completed booking (renter, CONFIRMED, end_date in the past)
+        today = timezone.now().date()
+        has_completed_booking = Booking.objects.filter(
+            listing=listing,
+            renter=request.user,
+            status=Booking.Status.CONFIRMED,
+            end_date__lt=today,
+        ).exists()
+        if not has_completed_booking:
+            return Response(
+                {"error": "You can only review a listing after a completed booking."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Check if user has already reviewed this listing
         existing_review = Review.objects.filter(

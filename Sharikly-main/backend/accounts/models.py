@@ -8,6 +8,8 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     is_email_verified = models.BooleanField(default=False)
+    # Tap Payments marketplace: destination_id for receiving 85% of rental payments (15% platform fee)
+    tap_destination_id = models.CharField(max_length=64, blank=True, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]

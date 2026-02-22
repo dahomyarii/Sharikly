@@ -45,10 +45,17 @@ urlpatterns = [
         views.ListingRetrieveUpdateView.as_view(),
         name="listing_detail",
     ),
+    path(
+        "listings/<int:pk>/availability/",
+        views.ListingAvailabilityView.as_view(),
+        name="listing_availability",
+    ),
     # Bookings
     path("bookings/", views.BookingListCreateView.as_view(), name="bookings"),
     path("bookings/<int:pk>/accept/", views.BookingAcceptView.as_view(), name="booking_accept"),
     path("bookings/<int:pk>/decline/", views.BookingDeclineView.as_view(), name="booking_decline"),
+    path("bookings/<int:pk>/checkout/", views.BookingCreateCheckoutSessionView.as_view(), name="booking_checkout"),
+    path("moyasar/callback/", views.MoyasarPaymentCallbackView.as_view(), name="moyasar_callback"),
     # Favorites
     path("favorites/", views.UserFavoritesListView.as_view(), name="user_favorites"),
     path(

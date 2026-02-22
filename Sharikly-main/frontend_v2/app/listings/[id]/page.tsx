@@ -70,6 +70,10 @@ export default function ListingDetail() {
   }, []);
 
   const { data } = useSWR(id ? `${API}/listings/${id}/` : null, fetcher);
+  const { data: availability } = useSWR<{ booked_ranges: { start: string; end: string }[] }>(
+    id ? `${API}/listings/${id}/availability/` : null,
+    (url: string) => axiosInstance.get(url).then((r) => r.data)
+  );
 
   const [user, setUser] = useState<any>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
@@ -893,7 +897,21 @@ export default function ListingDetail() {
                     onSelect={setDateRange}
                     numberOfMonths={1}
                     showOutsideDays={true}
-                    disabled={{ before: new Date() }}
+                    disabled={(date) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      if (date < today) return true;
+                      if (!availability?.booked_ranges?.length) return false;
+                      const d = new Date(date);
+                      d.setHours(0, 0, 0, 0);
+                      return availability.booked_ranges.some((r) => {
+                        const start = new Date(r.start);
+                        const end = new Date(r.end);
+                        start.setHours(0, 0, 0, 0);
+                        end.setHours(0, 0, 0, 0);
+                        return d >= start && d <= end;
+                      });
+                    }}
                     className="w-full"
                   />
                 </div>

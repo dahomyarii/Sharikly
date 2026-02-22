@@ -413,7 +413,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Hero — keep image, refined overlay and content */}
-      <section className="relative min-h-[70vh] sm:min-h-[75vh] flex flex-col justify-center overflow-hidden">
+      <section className="relative min-h-[42vh] sm:min-h-[48vh] md:min-h-[52vh] flex flex-col justify-center overflow-hidden">
         <img
           src="/image.jpeg"
           alt=""
