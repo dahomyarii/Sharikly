@@ -360,40 +360,63 @@ export default function HomePage() {
     return { icon: Sparkles, color: "from-blue-500 to-cyan-500" };
   };
 
-  // Component to display ratings
-  const RatingDisplay = ({ serviceId }: { serviceId: number }) => {
-    const [rating, setRating] = useState<number>(0);
-    const [reviewCount, setReviewCount] = useState<number>(0);
+  // Use listing.average_rating / listing.reviews when present to avoid extra API calls (prevents 429)
+  const RatingDisplay = ({
+    listing,
+  }: {
+    listing: { id: number; average_rating?: number; reviews?: any[] };
+  }) => {
+    const fromListing =
+      listing.average_rating != null ||
+      (Array.isArray(listing.reviews) && listing.reviews.length > 0);
+    const computedRating =
+      listing.average_rating != null
+        ? listing.average_rating
+        : Array.isArray(listing.reviews) && listing.reviews.length > 0
+          ? Math.round(
+              (listing.reviews.reduce((s: number, r: any) => s + (r.rating ?? 0), 0) /
+                listing.reviews.length) * 10
+            ) / 10
+          : 0;
+    const computedCount = Array.isArray(listing.reviews) ? listing.reviews.length : 0;
+
+    const [rating, setRating] = useState<number>(fromListing ? computedRating : 0);
+    const [reviewCount, setReviewCount] = useState<number>(fromListing ? computedCount : 0);
+    const [fetched, setFetched] = useState(false);
 
     useEffect(() => {
+      if (fromListing || fetched) return;
       const fetchRating = async () => {
         try {
           const response = await axiosInstance.get(
-            `${API}/reviews/?listing=${serviceId}`,
+            `${API}/reviews/?listing=${listing.id}`,
           );
+          setFetched(true);
           if (Array.isArray(response.data)) {
             const reviews = response.data;
             const count = reviews.length;
             const avg =
               count > 0
                 ? Math.round(
-                    (reviews.reduce(
-                      (sum: number, r: any) => sum + (r.rating || 0),
-                      0,
-                    ) /
-                      count) *
-                      10,
+                    (reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) /
+                      count) * 10,
                   ) / 10
                 : 0;
             setRating(avg);
             setReviewCount(count);
           }
-        } catch (error) {
-          console.error("Error fetching rating:", error);
+        } catch (error: any) {
+          if (error?.response?.status !== 429) {
+            console.error("Error fetching rating:", error);
+          }
+          setFetched(true);
         }
       };
       fetchRating();
-    }, [serviceId]);
+    }, [listing.id, fromListing, fetched]);
+
+    const displayRating = fromListing ? computedRating : rating;
+    const displayCount = fromListing ? computedCount : reviewCount;
 
     return (
       <div className="flex items-center gap-2">
@@ -402,7 +425,7 @@ export default function HomePage() {
             <Star
               key={i}
               className={`w-4 h-4 ${
-                i < Math.round(rating)
+                i < Math.round(displayRating)
                   ? "fill-orange-500 text-orange-500"
                   : "text-gray-300"
               }`}
@@ -410,7 +433,7 @@ export default function HomePage() {
           ))}
         </div>
         <span className="text-xs text-gray-500">
-          ({reviewCount} {reviewCount === 1 ? t("review") : t("reviews")})
+          ({displayCount} {displayCount === 1 ? t("review") : t("reviews")})
         </span>
       </div>
     );
@@ -687,7 +710,7 @@ export default function HomePage() {
                           {featuredService.description}
                         </p>
                         <div className="mb-6">
-                          <RatingDisplay serviceId={featuredService.id} />
+                          <RatingDisplay listing={featuredService} />
                         </div>
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-neutral-100">
@@ -808,7 +831,7 @@ export default function HomePage() {
                             </div>
                           )}
                           <div className="mb-4 mt-auto">
-                            <RatingDisplay serviceId={service.id} />
+                            <RatingDisplay listing={service} />
                           </div>
                           <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
                             <span className="text-xl font-bold text-neutral-900">
@@ -913,7 +936,7 @@ export default function HomePage() {
                             {service.title}
                           </h3>
                           <div className="mb-3 mt-auto">
-                            <RatingDisplay serviceId={service.id} />
+                            <RatingDisplay listing={service} />
                           </div>
                           <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
                             <span className="text-lg font-bold text-neutral-900">

@@ -13,14 +13,32 @@ export default function ListingCard({ listing }: { listing: any }) {
     listing?.is_favorited || false,
   );
   const [token, setToken] = useState<string>("");
-  const [averageRating, setAverageRating] = useState<number>(0);
-  const [reviewCount, setReviewCount] = useState<number>(0);
+  const hasRatingFromListing =
+    listing?.average_rating != null ||
+    (Array.isArray(listing?.reviews) && listing.reviews.length > 0);
+  const listingRating =
+    listing?.average_rating != null
+      ? listing.average_rating
+      : Array.isArray(listing?.reviews) && listing.reviews.length > 0
+        ? Math.round(
+            (listing.reviews.reduce((s: number, r: any) => s + (r.rating ?? 0), 0) /
+              listing.reviews.length) * 10
+          ) / 10
+        : 0;
+  const listingReviewCount = Array.isArray(listing?.reviews) ? listing.reviews.length : 0;
+
+  const [averageRating, setAverageRating] = useState<number>(
+    hasRatingFromListing ? listingRating : 0,
+  );
+  const [reviewCount, setReviewCount] = useState<number>(
+    hasRatingFromListing ? listingReviewCount : 0,
+  );
   const { t } = useLocale();
 
-  // Fetch reviews and calculate average rating
+  // Fetch reviews only when listing doesn't already include them (avoids 429 from many cards)
   useEffect(() => {
+    if (!listing?.id || hasRatingFromListing) return;
     const fetchReviews = async () => {
-      if (!listing?.id) return;
       try {
         const response = await axios.get(
           `${API}/reviews/?listing=${listing.id}`,
@@ -42,13 +60,15 @@ export default function ListingCard({ listing }: { listing: any }) {
           setReviewCount(count);
           setAverageRating(avgRating);
         }
-      } catch (error) {
-        console.error("Error fetching reviews:", error);
+      } catch (error: any) {
+        if (error?.response?.status !== 429) {
+          console.error("Error fetching reviews:", error);
+        }
       }
     };
 
     fetchReviews();
-  }, [listing?.id]);
+  }, [listing?.id, hasRatingFromListing]);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("access_token");
@@ -209,7 +229,7 @@ export default function ListingCard({ listing }: { listing: any }) {
               <Star
                 key={i}
                 className={`w-4 h-4 ${
-                  i < Math.round(averageRating)
+                  i < Math.round(hasRatingFromListing ? listingRating : averageRating)
                     ? "fill-orange-500 text-orange-500"
                     : "text-gray-300"
                 }`}
@@ -217,10 +237,13 @@ export default function ListingCard({ listing }: { listing: any }) {
             ))}
           </div>
           <span className="text-sm font-medium text-gray-700">
-            {averageRating > 0 ? `${averageRating}` : t("no_ratings")}
+            {(hasRatingFromListing ? listingReviewCount : reviewCount) > 0
+              ? `${hasRatingFromListing ? listingRating : averageRating}`
+              : t("no_ratings")}
           </span>
           <span className="text-xs text-gray-500">
-            ({reviewCount} {reviewCount === 1 ? t("review") : t("reviews")})
+            ({(hasRatingFromListing ? listingReviewCount : reviewCount)}{" "}
+            {(hasRatingFromListing ? listingReviewCount : reviewCount) === 1 ? t("review") : t("reviews")})
           </span>
         </div>
       </div>

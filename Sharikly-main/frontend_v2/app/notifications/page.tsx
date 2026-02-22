@@ -10,6 +10,14 @@ import { Button } from '@/components/ui/button'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
+function ensureNotificationArray(value: unknown): any[] {
+  if (Array.isArray(value)) return value
+  if (value && typeof value === 'object' && 'results' in value && Array.isArray((value as any).results)) {
+    return (value as any).results
+  }
+  return []
+}
+
 export default function NotificationsPage() {
   const { t } = useLocale()
   const router = useRouter()
@@ -20,6 +28,7 @@ export default function NotificationsPage() {
   const [markAllReadLoading, setMarkAllReadLoading] = useState(false)
 
   const fetchNotifications = (page?: number) => {
+    if (typeof window === 'undefined') return
     const token = localStorage.getItem('access_token')
     if (!token || !API) {
       setLoading(false)
@@ -32,9 +41,9 @@ export default function NotificationsPage() {
       .get(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => {
         const data = res.data
-        const items = Array.isArray(data) ? data : data?.results || []
+        const items = ensureNotificationArray(data)
         if (page != null && page > 1) {
-          setList((prev) => [...prev, ...items])
+          setList((prev) => [...(Array.isArray(prev) ? prev : []), ...items])
         } else {
           setList(items)
         }
@@ -51,6 +60,7 @@ export default function NotificationsPage() {
 
   const loadMore = () => {
     if (!nextPage || loadingMore) return
+    if (typeof window === 'undefined') return
     const token = localStorage.getItem('access_token')
     if (!token || !API) return
     const url = nextPage.startsWith('http') ? nextPage : `${API.replace(/\/api\/?$/, '')}${nextPage.startsWith('/') ? nextPage : `/${nextPage}`}`
@@ -59,16 +69,18 @@ export default function NotificationsPage() {
       .get(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => {
         const data = res.data
-        const items = Array.isArray(data) ? data : data?.results || []
-        setList((prev) => [...prev, ...items])
+        const items = ensureNotificationArray(data)
+        setList((prev) => [...(Array.isArray(prev) ? prev : []), ...items])
         setNextPage(data?.next ?? null)
       })
       .finally(() => setLoadingMore(false))
   }
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const token = localStorage.getItem('access_token')
     if (!token) {
+      setLoading(false)
       router.push('/auth/login')
       return
     }
@@ -86,7 +98,7 @@ export default function NotificationsPage() {
       )
       .then(() => {
         setList((prev) =>
-          prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+          (Array.isArray(prev) ? prev : []).map((n) => (n && n.id === id ? { ...n, read: true } : n))
         )
       })
   }
@@ -102,12 +114,13 @@ export default function NotificationsPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
       .then(() => {
-        setList((prev) => prev.map((n) => ({ ...n, read: true })))
+        setList((prev) => (Array.isArray(prev) ? prev : []).map((n) => (n ? { ...n, read: true } : n)))
       })
       .finally(() => setMarkAllReadLoading(false))
   }
 
-  const unreadCount = list.filter((n) => !n.read).length
+  const safeList = Array.isArray(list) ? list.filter((n) => n && typeof n === 'object' && n.id != null) : []
+  const unreadCount = safeList.filter((n) => !n.read).length
 
   if (loading) {
     return (
@@ -139,7 +152,7 @@ export default function NotificationsPage() {
               )}
             </h1>
           </div>
-          {list.length > 0 && unreadCount > 0 && (
+          {safeList.length > 0 && unreadCount > 0 && (
             <Button
               variant="outline"
               size="sm"
@@ -157,7 +170,7 @@ export default function NotificationsPage() {
           )}
         </div>
 
-        {list.length === 0 ? (
+        {safeList.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 text-center">
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
               <Bell className="w-8 h-8 text-gray-400" />
@@ -178,7 +191,7 @@ export default function NotificationsPage() {
         ) : (
           <>
             <ul className="space-y-2">
-              {list.map((n) => (
+              {safeList.map((n) => (
                 <li key={n.id}>
                   <Link
                     href={n.link || '/notifications'}
