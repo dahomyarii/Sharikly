@@ -2,15 +2,12 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import useSWR, { mutate } from "swr";
+import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import {
   Search,
   Heart,
-  TrendingUp,
   Sparkles,
   Briefcase,
   Music,
@@ -20,6 +17,8 @@ import {
   Plus,
   Star,
   User,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import SkeletonLoader from "@/components/SkeletonLoader";
@@ -27,16 +26,47 @@ import { useLocale } from "@/components/LocaleProvider";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
+function buildListingsQuery(params: {
+  search: string;
+  category: string;
+  city: string;
+  min_price: string;
+  max_price: string;
+  order: string;
+}): string {
+  const sp = new URLSearchParams();
+  if (params.search.trim()) sp.set("search", params.search.trim());
+  if (params.category) sp.set("category", params.category);
+  if (params.city.trim()) sp.set("city", params.city.trim());
+  if (params.min_price) sp.set("min_price", params.min_price);
+  if (params.max_price) sp.set("max_price", params.max_price);
+  if (params.order && params.order !== "newest") sp.set("order", params.order);
+  const qs = sp.toString();
+  return qs ? `?${qs}` : "";
+}
+
 export default function HomePage() {
   const { t } = useLocale();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const heroSearchInputRef = useRef<HTMLInputElement>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [token, setToken] = useState<string>("");
   const [tokenLoaded, setTokenLoaded] = useState(false);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+
+  // Hero expandable search
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [showHeroFilters, setShowHeroFilters] = useState(false);
+  const [heroSearch, setHeroSearch] = useState("");
+  const [heroCategory, setHeroCategory] = useState("");
+  const [heroCity, setHeroCity] = useState("");
+  const [heroMinPrice, setHeroMinPrice] = useState("");
+  const [heroMaxPrice, setHeroMaxPrice] = useState("");
+  const [heroSort, setHeroSort] = useState("newest");
 
   // Initialize token from localStorage
   useEffect(() => {
@@ -280,6 +310,26 @@ export default function HomePage() {
       });
   }, []);
 
+  // Focus search input when hero search expands
+  useEffect(() => {
+    if (searchExpanded) {
+      const id = setTimeout(() => heroSearchInputRef.current?.focus(), 150);
+      return () => clearTimeout(id);
+    }
+  }, [searchExpanded]);
+
+  const handleHeroSearchSubmit = () => {
+    const query = buildListingsQuery({
+      search: heroSearch,
+      category: heroCategory,
+      city: heroCity,
+      min_price: heroMinPrice,
+      max_price: heroMaxPrice,
+      order: heroSort,
+    });
+    router.push(`/listings${query}`);
+  };
+
   // Map category names to icons and colors for display
   const getCategoryIcon = (categoryName: string) => {
     const iconMap: { [key: string]: { icon: any; color: string } } = {
@@ -361,106 +411,227 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header / Hero Section — explicit LCP image with priority for faster paint */}
-      <section className="relative text-white py-12 sm:py-16 md:py-20 overflow-hidden">
+    <div className="min-h-screen bg-neutral-50">
+      {/* Hero — keep image, refined overlay and content */}
+      <section className="relative min-h-[70vh] sm:min-h-[75vh] flex flex-col justify-center overflow-hidden">
         <img
           src="/image.jpeg"
           alt=""
           fetchPriority="high"
           decoding="async"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-center"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-black/40" aria-hidden="true" />
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70"
+          aria-hidden="true"
+        />
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-4">
-            <Link href="/listings" className="touch-target min-h-[44px] inline-flex items-center">
-              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm cursor-pointer hover:bg-white/30 active:bg-white/40 transition px-4 py-2">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                {t("browse")}
-              </Badge>
-            </Link>
-            <Link href="/blog" className="touch-target min-h-[44px] inline-flex items-center">
-              <Badge className="bg-white/10 text-white/90 border-0 backdrop-blur-sm cursor-pointer hover:bg-white/20 active:bg-white/30 transition px-4 py-2">
-                <Sparkles className="h-3 w-3 mr-1" />
-                {t("blog")}
-              </Badge>
-            </Link>
-          </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-4 sm:mb-5">
             {t("hero_title")}
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-blue-50 max-w-2xl mx-auto px-1">
+          <p className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto mb-8 sm:mb-10 font-medium">
             {t("hero_sub")}
           </p>
-          <div className="mt-5 sm:mt-6 flex justify-center">
-            <Link href="/listings/new" className="touch-target">
-              <Button className="min-h-[48px] bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6 text-base">
-                <Plus className="h-4 w-4 mr-2" />
-                {t("list_new")}
-              </Button>
-            </Link>
+
+          {/* Expandable search: Browse button → search bar + filters */}
+          <div className="w-full max-w-2xl mx-auto">
+            {!searchExpanded ? (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                <Button
+                  size="lg"
+                  onClick={() => setSearchExpanded(true)}
+                  className="w-full sm:w-auto min-h-[48px] bg-white text-neutral-900 hover:bg-neutral-100 rounded-full px-8 text-base font-semibold shadow-lg transition-all duration-300"
+                >
+                  <Search className="h-5 w-5 mr-2" />
+                  {t("browse")}
+                </Button>
+                <Link href="/listings/new" className="w-full sm:w-auto touch-target">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto min-h-[48px] border-2 border-white text-white hover:bg-white/10 rounded-full px-8 text-base font-semibold bg-transparent"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    {t("list_new")}
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div
+                className="rounded-2xl bg-white/95 backdrop-blur-sm shadow-xl border border-white/20 overflow-hidden transition-all duration-300 ease-out hero-search-expand"
+              >
+                <div className="flex flex-col sm:flex-row gap-0">
+                  <div className="relative flex-1 flex items-center">
+                    <Search className="absolute left-4 h-5 w-5 text-neutral-400 pointer-events-none" />
+                    <input
+                      ref={heroSearchInputRef}
+                      type="search"
+                      value={heroSearch}
+                      onChange={(e) => setHeroSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleHeroSearchSubmit();
+                        if (e.key === "Escape") setSearchExpanded(false);
+                      }}
+                      placeholder={t("search_listings")}
+                      className="w-full pl-12 pr-4 py-3.5 sm:py-4 text-neutral-900 placeholder:text-neutral-400 bg-transparent border-0 focus:outline-none focus:ring-0 text-base"
+                      aria-label={t("search_listings")}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setSearchExpanded(false)}
+                      className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-full transition-colors touch-target"
+                      aria-label="Close search"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="flex border-t sm:border-t-0 sm:border-l border-neutral-200/60">
+                    <button
+                      type="button"
+                      onClick={() => setShowHeroFilters(!showHeroFilters)}
+                      className={`flex items-center gap-2 px-4 py-3.5 sm:py-4 text-sm font-medium transition-colors touch-target ${showHeroFilters ? "text-neutral-900 bg-neutral-100" : "text-neutral-600 hover:bg-neutral-50"}`}
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                      Filters
+                    </button>
+                    <Button
+                      size="lg"
+                      onClick={handleHeroSearchSubmit}
+                      className="rounded-none min-h-[52px] px-6 bg-neutral-900 hover:bg-neutral-800 text-white font-semibold"
+                    >
+                      Search
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Filters panel — smooth height + content fade */}
+                <div
+                  className={`hero-filters-grid grid ${
+                    showHeroFilters ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                  }`}
+                >
+                  <div className="min-h-0 overflow-hidden">
+                    <div
+                      className={`border-t border-neutral-200/60 p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-neutral-50/80 ${
+                        showHeroFilters ? "hero-filters-enter" : ""
+                      }`}
+                    >
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-500 mb-1.5">
+                          {t("category")}
+                        </label>
+                        <select
+                          value={heroCategory}
+                          onChange={(e) => setHeroCategory(e.target.value)}
+                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent"
+                        >
+                          <option value="">{t("all_categories")}</option>
+                          {(categories || []).map((cat: any) => (
+                            <option key={cat.id} value={String(cat.id)}>
+                              {cat.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-500 mb-1.5">
+                          {t("city")}
+                        </label>
+                        <input
+                          type="text"
+                          value={heroCity}
+                          onChange={(e) => setHeroCity(e.target.value)}
+                          placeholder={t("city")}
+                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-500 mb-1.5">
+                          {t("min_price")}
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={0.01}
+                          value={heroMinPrice}
+                          onChange={(e) => setHeroMinPrice(e.target.value)}
+                          placeholder="0"
+                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-500 mb-1.5">
+                          {t("max_price")}
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={0.01}
+                          value={heroMaxPrice}
+                          onChange={(e) => setHeroMaxPrice(e.target.value)}
+                          placeholder="—"
+                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                    <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 flex flex-wrap items-center gap-3 bg-neutral-50/80">
+                      <span className="text-xs font-medium text-neutral-500">
+                        Sort:
+                      </span>
+                      <select
+                        value={heroSort}
+                        onChange={(e) => setHeroSort(e.target.value)}
+                        className="px-3 py-2 rounded-lg border border-neutral-200 bg-white text-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-400"
+                      >
+                        <option value="newest">{t("sort_newest")}</option>
+                        <option value="price_asc">{t("sort_price_low")}</option>
+                        <option value="price_desc">{t("sort_price_high")}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      <div className="min-h-screen bg-white">
-        {/* Categories */}
-        <section className="py-5 sm:py-6 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-              {/* All Categories Button */}
+      <div className="bg-white">
+        {/* Categories — clean horizontal scroll / grid */}
+        <section className="border-b border-neutral-100 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-4">
+              {t("category")}
+            </p>
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`flex flex-col items-center justify-center min-h-[88px] sm:min-h-0 p-4 rounded-xl shadow-sm transition touch-target ${
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target ${
                   selectedCategory === null
-                    ? "bg-orange-500 text-white shadow-md"
-                    : "bg-white hover:shadow-md active:bg-gray-50"
+                    ? "bg-neutral-900 text-white"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                 }`}
               >
-                <div
-                  className={`p-3 rounded-full mb-2 ${selectedCategory === null ? "bg-orange-600" : "bg-gray-200"}`}
-                >
-                  <Sparkles
-                    className={`h-6 w-6 ${selectedCategory === null ? "text-white" : "text-gray-600"}`}
-                  />
-                </div>
-                <span
-                  className={`text-sm font-medium ${selectedCategory === null ? "text-white" : "text-gray-700"}`}
-                >
-                  {t("all_categories")}
-                </span>
+                <Sparkles className="h-4 w-4" />
+                {t("all_categories")}
               </button>
-
               {categories.map((cat) => {
-                const { icon: IconComponent, color } = getCategoryIcon(
-                  cat.name,
-                );
+                const { icon: IconComponent, color } = getCategoryIcon(cat.name);
                 const isSelected = selectedCategory === cat.id;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`flex flex-col items-center justify-center min-h-[88px] sm:min-h-0 p-4 rounded-xl shadow-sm transition touch-target ${
+                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target ${
                       isSelected
-                        ? "bg-orange-500 text-white shadow-md"
-                        : "bg-white hover:shadow-md active:bg-gray-50"
+                        ? "bg-neutral-900 text-white"
+                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                     }`}
                   >
-                    <div
-                      className={`p-3 rounded-full mb-2 ${isSelected ? "bg-orange-600" : `bg-gradient-to-br ${color}`}`}
-                    >
-                      <IconComponent
-                        className={`h-6 w-6 ${isSelected ? "text-white" : "text-white"}`}
-                      />
-                    </div>
-                    <span
-                      className={`text-sm font-medium ${isSelected ? "text-white" : "text-gray-700"}`}
-                    >
-                      {cat.name}
-                    </span>
+                    <IconComponent className="h-4 w-4" />
+                    {cat.name}
                   </button>
                 );
               })}
@@ -468,271 +639,292 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Featured Service */}
+        {/* Featured — one hero-style card */}
         {featuredService && (
-          <section className="py-12 md:py-16 bg-white">
+          <section className="py-12 md:py-16 bg-neutral-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <Badge className="bg-orange-500 text-white border-0 mb-3 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" /> {t("featured")}
-              </Badge>
-              <h2 className="text-3xl font-bold text-gray-800 mb-6">
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">
+                {t("featured")}
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-8">
                 {t("hero_title")}
               </h2>
 
-              <Card className="overflow-hidden border-0 shadow-2xl hover:shadow-3xl transition-all duration-300">
-                <div className="grid md:grid-cols-2 gap-0">
-                  <Link
-                    href={`/listings/${featuredService.id}`}
-                    className="relative h-64 md:h-full md:min-h-[400px] block cursor-pointer group bg-black overflow-hidden"
-                  >
-                    {featuredService.images?.[0]?.image && (
-                      <img
-                        src={
-                          featuredService.images[0].image.startsWith("http")
-                            ? featuredService.images[0].image
-                            : `${API}${featuredService.images[0].image}`
-                        }
-                        alt={featuredService.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        fetchPriority="high"
-                        decoding="async"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
-                    )}
-                  </Link>
-                  <div className="p-8 md:p-10 flex flex-col justify-between bg-gradient-to-br from-white to-blue-50">
-                    <div>
-                      <Badge variant="secondary" className="mb-4">
-                        {featuredService.category?.name || t("listings")}
-                      </Badge>
-                      <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                        {featuredService.title}
-                      </h3>
-                      <p className="text-gray-600 mb-6 text-lg">
-                        {featuredService.description}
-                      </p>
-                      <div className="mb-6">
-                        <RatingDisplay serviceId={featuredService.id} />
-                      </div>
+              <Link href={`/listings/${featuredService.id}`} className="block group">
+                <article className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/80 hover:shadow-xl hover:ring-neutral-300/80 transition-all duration-300">
+                  <div className="grid md:grid-cols-2 gap-0">
+                    <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[380px] bg-neutral-100 overflow-hidden">
+                      {featuredService.images?.[0]?.image && (
+                        <img
+                          src={
+                            featuredService.images[0].image.startsWith("http")
+                              ? featuredService.images[0].image
+                              : `${API}${featuredService.images[0].image}`
+                          }
+                          alt={featuredService.title}
+                          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                          fetchPriority="high"
+                          decoding="async"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                      )}
                     </div>
-                    <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+                    <div className="p-6 sm:p-8 md:p-10 flex flex-col justify-between">
                       <div>
-                        <span className="text-4xl font-bold text-gray-800">
-                          ${featuredService.price_per_day}
+                        <span className="inline-block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">
+                          {featuredService.category?.name || t("listings")}
                         </span>
-                        <span className="text-gray-500 ml-1">
-                          {t("price_per_day")}
+                        <h3 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-3 group-hover:text-neutral-700">
+                          {featuredService.title}
+                        </h3>
+                        <p className="text-neutral-600 mb-5 line-clamp-3">
+                          {featuredService.description}
+                        </p>
+                        <div className="mb-6">
+                          <RatingDisplay serviceId={featuredService.id} />
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-neutral-100">
+                        <div>
+                          <span className="text-3xl font-bold text-neutral-900">
+                            ${featuredService.price_per_day}
+                          </span>
+                          <span className="text-neutral-500 ml-1 text-sm">
+                            {t("price_per_day")}
+                          </span>
+                        </div>
+                        <span className="inline-flex items-center text-sm font-semibold text-neutral-900 group-hover:underline">
+                          {t("request_book")}
+                          <span className="ml-1">→</span>
                         </span>
                       </div>
-                      <Link href={`/listings/${featuredService.id}`}>
-                        <Button
-                          size="lg"
-                          className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-8"
-                        >
-                          {t("request_book")}
-                        </Button>
-                      </Link>
                     </div>
                   </div>
-                </div>
-              </Card>
+                </article>
+              </Link>
             </div>
           </section>
         )}
 
-        {/* Hot Services */}
-        <section className="py-12 md:py-16 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {isListingsLoading
-              ? // Show skeleton loaders while loading
-                [...Array(3)].map((_, i) => <SkeletonLoader key={i} />)
-              : // Show actual listings
-                hotServices.map((service: any) => (
-                  <Card
-                    key={service.id}
-                    className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white"
-                  >
+        {/* Popular listings — grid */}
+        <section className="py-12 md:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+                  {t("listings")}
+                </p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900">
+                  Popular right now
+                </h2>
+              </div>
+              <Link
+                href="/listings"
+                className="text-sm font-semibold text-neutral-900 hover:underline"
+              >
+                View all →
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {isListingsLoading
+                ? [...Array(6)].map((_, i) => <SkeletonLoader key={i} />)
+                : hotServices.map((service: any) => (
                     <Link
+                      key={service.id}
                       href={`/listings/${service.id}`}
-                      className="relative w-full block cursor-pointer bg-black overflow-hidden"
-                      style={{ aspectRatio: "16 / 9" }}
+                      className="group block"
                     >
-                      {service.images?.[0]?.image && (
-                        <img
-                          src={
-                            service.images[0].image.startsWith("http")
-                              ? service.images[0].image
-                              : `${API}${service.images[0].image}`
-                          }
-                          alt={service.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                          decoding="async"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        />
-                      )}
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={(e) => handleFavoriteClick(e, service.id)}
-                        className={`absolute bottom-4 right-4 min-w-[44px] min-h-[44px] rounded-full opacity-0 group-hover:opacity-100 group-active:opacity-100 sm:group-hover:opacity-100 transition-opacity touch-target ${
-                          favorites.has(service.id)
-                            ? "bg-red-500/90 hover:bg-red-600 text-white"
-                            : "bg-white/90 hover:bg-white text-gray-700"
-                        }`}
-                      >
-                        <Heart
-                          className="h-5 w-5"
-                          fill={
-                            favorites.has(service.id) ? "currentColor" : "none"
-                          }
-                        />
-                      </Button>
-                    </Link>
-                    <div className="p-5">
-                      <Badge variant="secondary" className="mb-3 text-xs">
-                        {service.category?.name || t("listing")}
-                      </Badge>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">
-                        {service.title}
-                      </h3>
-
-                      {/* Lender/Owner Info */}
-                      {service.owner && (
-                        <div className="flex items-center gap-2 mb-3 pb-3 border-b">
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                            {service.owner.avatar ? (
-                              <img
-                                src={
-                                  service.owner.avatar.startsWith("http")
-                                    ? service.owner.avatar
-                                    : `${API?.replace("/api", "")}${service.owner.avatar}`
-                                }
-                                alt={
-                                  service.owner.username || service.owner.email
-                                }
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <User className="w-5 h-5 text-gray-400" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs text-gray-500">
-                              {t("lender")}
+                      <article className="overflow-hidden rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                        <div className="relative aspect-[4/3] bg-neutral-100 overflow-hidden">
+                          {service.images?.[0]?.image && (
+                            <img
+                              src={
+                                service.images[0].image.startsWith("http")
+                                  ? service.images[0].image
+                                  : `${API}${service.images[0].image}`
+                              }
+                              alt={service.title}
+                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                              loading="lazy"
+                              decoding="async"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            />
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleFavoriteClick(e, service.id);
+                            }}
+                            className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center shadow-sm transition-opacity touch-target ${
+                              favorites.has(service.id)
+                                ? "bg-red-500 text-white"
+                                : "bg-white/95 text-neutral-600 hover:bg-white"
+                            }`}
+                          >
+                            <Heart
+                              className="h-5 w-5"
+                              fill={
+                                favorites.has(service.id)
+                                  ? "currentColor"
+                                  : "none"
+                              }
+                            />
+                          </button>
+                        </div>
+                        <div className="p-4 sm:p-5 flex flex-col flex-1">
+                          <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                            {service.category?.name || t("listing")}
+                          </span>
+                          <h3 className="text-lg font-semibold text-neutral-900 mt-1 mb-2 line-clamp-2 group-hover:text-neutral-700">
+                            {service.title}
+                          </h3>
+                          {service.owner && (
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-6 h-6 rounded-full bg-neutral-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                {service.owner.avatar ? (
+                                  <img
+                                    src={
+                                      service.owner.avatar.startsWith("http")
+                                        ? service.owner.avatar
+                                        : `${API?.replace("/api", "")}${service.owner.avatar}`
+                                    }
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <User className="w-3.5 h-3.5 text-neutral-400" />
+                                )}
+                              </div>
+                              <span className="text-xs text-neutral-500 truncate">
+                                {service.owner.username || service.owner.email}
+                              </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-700 truncate block">
-                              {service.owner.username || service.owner.email}
+                          )}
+                          <div className="mb-4 mt-auto">
+                            <RatingDisplay serviceId={service.id} />
+                          </div>
+                          <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
+                            <span className="text-xl font-bold text-neutral-900">
+                              ${service.price_per_day}
+                              <span className="text-sm font-normal text-neutral-500">
+                                {" "}
+                                {t("price_per_day")}
+                              </span>
+                            </span>
+                            <span className="text-sm font-semibold text-neutral-900 group-hover:underline">
+                              {t("book_now")} →
                             </span>
                           </div>
                         </div>
-                      )}
-
-                      <div className="mb-3">
-                        <RatingDisplay serviceId={service.id} />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-bold text-gray-800">
-                          ${service.price_per_day}
-                        </span>
-                        <Link href={`/listings/${service.id}`}>
-                          <Button
-                            size="sm"
-                            className="bg-orange-500 hover:bg-orange-600 text-white rounded-full"
-                          >
-                            {t("book_now")}
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+                      </article>
+                    </Link>
+                  ))}
+            </div>
           </div>
         </section>
 
-        {/* Recommendations */}
-        <section className="py-12 md:py-16 bg-white">
-          <div
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-6 overflow-x-auto scrollbar-hide"
-            ref={scrollContainerRef}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            {isListingsLoading
-              ? // Show skeleton loaders while loading
-                [...Array(6)].map((_, i) => (
-                  <div key={i} className="flex-shrink-0 w-80">
-                    <SkeletonLoader />
-                  </div>
-                ))
-              : // Show actual listings
-                recommendations.map((service: any) => (
-                  <Card
-                    key={service.id}
-                    className="group flex-shrink-0 w-80 overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white"
-                  >
-                    <Link
-                      href={`/listings/${service.id}`}
-                      className="relative w-full block cursor-pointer bg-black overflow-hidden"
-                      style={{ aspectRatio: "16 / 9" }}
-                    >
-                      {service.images?.[0]?.image && (
-                        <img
-                          src={
-                            service.images[0].image.startsWith("http")
-                              ? service.images[0].image
-                              : `${API}${service.images[0].image}`
-                          }
-                          alt={service.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                          decoding="async"
-                          sizes="320px"
-                        />
-                      )}
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={(e) => handleFavoriteClick(e, service.id)}
-                        className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full opacity-0 group-hover:opacity-100 group-active:opacity-100 sm:group-hover:opacity-100 transition-opacity touch-target ${
-                          favorites.has(service.id)
-                            ? "bg-red-500/90 hover:bg-red-600 text-white"
-                            : "bg-white/90 hover:bg-white text-gray-700"
-                        }`}
-                      >
-                        <Heart
-                          className="h-4 w-4"
-                          fill={
-                            favorites.has(service.id) ? "currentColor" : "none"
-                          }
-                        />
-                      </Button>
-                    </Link>
-                    <div className="p-4">
-                      <Badge variant="secondary" className="mb-2 text-xs">
-                        {service.category?.name || t("listing")}
-                      </Badge>
-                      <h3 className="text-base font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">
-                        {service.title}
-                      </h3>
-                      <div className="mb-3">
-                        <RatingDisplay serviceId={service.id} />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xl font-bold text-gray-800">
-                          ${service.price_per_day}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="rounded-full text-blue-600 border-blue-600 hover:bg-blue-50"
-                        >
-                          {t("view")}
-                        </Button>
-                      </div>
+        {/* More to explore — horizontal scroll */}
+        <section className="py-12 md:py-16 bg-neutral-50 border-t border-neutral-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+                  Explore
+                </p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900">
+                  More to explore
+                </h2>
+              </div>
+              <Link
+                href="/listings"
+                className="hidden sm:block text-sm font-semibold text-neutral-900 hover:underline"
+              >
+                View all
+              </Link>
+            </div>
+            <div
+              className="flex gap-5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 sm:mx-0 sm:px-0"
+              ref={scrollContainerRef}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              {isListingsLoading
+                ? [...Array(6)].map((_, i) => (
+                    <div key={i} className="flex-shrink-0 w-[280px]">
+                      <SkeletonLoader />
                     </div>
-                  </Card>
-                ))}
+                  ))
+                : recommendations.map((service: any) => (
+                    <Link
+                      key={service.id}
+                      href={`/listings/${service.id}`}
+                      className="group flex-shrink-0 w-[280px] block"
+                    >
+                      <article className="overflow-hidden rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                        <div className="relative aspect-[4/3] bg-neutral-100 overflow-hidden">
+                          {service.images?.[0]?.image && (
+                            <img
+                              src={
+                                service.images[0].image.startsWith("http")
+                                  ? service.images[0].image
+                                  : `${API}${service.images[0].image}`
+                              }
+                              alt={service.title}
+                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                              loading="lazy"
+                              decoding="async"
+                              sizes="280px"
+                            />
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleFavoriteClick(e, service.id);
+                            }}
+                            className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center shadow-sm touch-target ${
+                              favorites.has(service.id)
+                                ? "bg-red-500 text-white"
+                                : "bg-white/95 text-neutral-600 hover:bg-white"
+                            }`}
+                          >
+                            <Heart
+                              className="h-5 w-5"
+                              fill={
+                                favorites.has(service.id)
+                                  ? "currentColor"
+                                  : "none"
+                              }
+                            />
+                          </button>
+                        </div>
+                        <div className="p-4 flex flex-col flex-1">
+                          <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                            {service.category?.name || t("listing")}
+                          </span>
+                          <h3 className="text-base font-semibold text-neutral-900 mt-1 mb-2 line-clamp-2 group-hover:text-neutral-700">
+                            {service.title}
+                          </h3>
+                          <div className="mb-3 mt-auto">
+                            <RatingDisplay serviceId={service.id} />
+                          </div>
+                          <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
+                            <span className="text-lg font-bold text-neutral-900">
+                              ${service.price_per_day}
+                              <span className="text-xs font-normal text-neutral-500">
+                                /day
+                              </span>
+                            </span>
+                            <span className="text-sm font-semibold text-neutral-900 group-hover:underline">
+                              {t("view")} →
+                            </span>
+                          </div>
+                        </div>
+                      </article>
+                    </Link>
+                  ))}
+            </div>
           </div>
         </section>
       </div>

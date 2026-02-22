@@ -426,7 +426,54 @@
   display: none;
 }
 
-/* Mobile bottom nav slide-up animation */
+/* Hero expandable search — smooth expand animation */
+.hero-search-expand {
+  animation: heroSearchExpand 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: center top;
+}
+@keyframes heroSearchExpand {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Filters panel — smooth height transition */
+.hero-filters-grid {
+  transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Filters panel content — fade in when expanded */
+.hero-filters-enter {
+  animation: heroFiltersEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.06s forwards;
+  opacity: 0;
+}
+@keyframes heroFiltersEnter {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mobile bottom nav — smooth enter animation */
+.mobile-bottom-nav-enter {
+  animation: mobileNavEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes mobileNavEnter {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Mobile bottom nav slide-up (legacy) */
 @keyframes slideUp {
   from {
     transform: translateY(100%);

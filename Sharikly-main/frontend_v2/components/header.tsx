@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { useLocale } from "./LocaleProvider";
 import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -15,6 +16,7 @@ const API = process.env.NEXT_PUBLIC_API_BASE;
 
 export default function Header() {
   const { t } = useLocale();
+  const pathname = usePathname();
   const [user, setUser] = React.useState<any>(null);
   const [showSignup, setShowSignup] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
@@ -449,85 +451,109 @@ export default function Header() {
         />
       )}
 
-       {/* Mobile Bottom Navigation — Glass Effect + Safe Area */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 animate-[slideUp_0.4s_ease-out]" style={{ paddingBottom: "var(--safe-area-inset-bottom)" }}>
-        <div className="mx-3 mb-2 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
-          <div className="flex justify-around items-center h-16 px-1">
+       {/* Mobile Bottom Navigation — glass + orange active state + animations */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-bottom-nav-enter"
+        style={{ paddingBottom: "var(--safe-area-inset-bottom)" }}
+      >
+        <div className="mx-3 mb-2 rounded-2xl bg-white/90 backdrop-blur-xl border border-orange-200/30 shadow-[0_8px_32px_rgba(0,0,0,0.08)] ring-1 ring-orange-100/50 transition-colors duration-300">
+          <div className="flex justify-around items-center h-16 px-1 gap-0.5">
             {/* Home */}
-            <Link 
-              href="/" 
-              className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group touch-target"
+            <Link
+              href="/"
+              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl touch-target transition-all duration-300 ease-out active:scale-90 ${
+                pathname === "/"
+                  ? "bg-orange-50 text-orange-600"
+                  : "text-neutral-500 active:bg-neutral-100"
+              }`}
               title="Home"
             >
-              <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
               </svg>
-              <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Home</span>
+              <span className="text-[10px] mt-0.5 font-medium">Home</span>
             </Link>
 
             {/* Browse */}
-            <Link 
-              href="/listings" 
-              className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group touch-target"
+            <Link
+              href="/listings"
+              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl touch-target transition-all duration-300 ease-out active:scale-90 ${
+                pathname === "/listings" || (pathname.startsWith("/listings/") && pathname !== "/listings/new" && !pathname.includes("/request_booking"))
+                  ? "bg-orange-50 text-orange-600"
+                  : "text-neutral-500 active:bg-neutral-100"
+              }`}
               title="Browse"
             >
-              <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8"/>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
-              <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Browse</span>
+              <span className="text-[10px] mt-0.5 font-medium">Browse</span>
             </Link>
 
             {/* Favorites */}
-            <Link 
-              href="/favorites" 
-              className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group relative touch-target"
+            <Link
+              href="/favorites"
+              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl touch-target transition-all duration-300 ease-out active:scale-90 relative ${
+                pathname === "/favorites"
+                  ? "bg-orange-50 text-orange-600"
+                  : "text-neutral-500 active:bg-neutral-100"
+              }`}
               title="Favorites"
             >
-              <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
-              <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Saved</span>
+              <span className="text-[10px] mt-0.5 font-medium">Saved</span>
             </Link>
 
-            {/* Messages */}
-            <Link 
-              href="/chat" 
-              className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group relative touch-target"
+            {/* Chat */}
+            <Link
+              href="/chat"
+              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl touch-target transition-all duration-300 ease-out active:scale-90 relative ${
+                pathname === "/chat" || pathname.startsWith("/chat/")
+                  ? "bg-orange-50 text-orange-600"
+                  : "text-neutral-500 active:bg-neutral-100"
+              }`}
               title="Messages"
             >
-              <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
-              <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Chat</span>
+              <span className="text-[10px] mt-0.5 font-medium">Chat</span>
             </Link>
 
             {/* Profile / Login */}
             {user ? (
-              <Link 
-                href="/profile" 
-                className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group touch-target"
+              <Link
+                href="/profile"
+                className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl touch-target transition-all duration-300 ease-out active:scale-90 ${
+                  pathname === "/profile"
+                    ? "bg-orange-50 text-orange-600"
+                    : "text-neutral-500 active:bg-neutral-100"
+                }`}
                 title="Profile"
               >
-                <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
-                <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Profile</span>
+                <span className="text-[10px] mt-0.5 font-medium">Profile</span>
               </Link>
             ) : (
-              <button 
+              <button
+                type="button"
                 onClick={() => setShowLogin(true)}
-                className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all duration-200 group touch-target"
+                className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl text-neutral-500 active:scale-90 active:bg-neutral-100 touch-target transition-all duration-300 ease-out"
                 title="Login"
               >
-                <svg className="w-[22px] h-[22px] text-neutral-500 group-active:text-black transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                   <polyline points="10 17 15 12 10 7"/>
                   <line x1="15" y1="12" x2="3" y2="12"/>
                 </svg>
-                <span className="text-[10px] text-neutral-500 group-active:text-black mt-0.5 font-medium transition-colors duration-200">Login</span>
+                <span className="text-[10px] mt-0.5 font-medium">Login</span>
               </button>
             )}
           </div>
