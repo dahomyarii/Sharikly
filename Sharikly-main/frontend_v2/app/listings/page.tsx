@@ -10,6 +10,17 @@ import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
+const DEBOUNCE_MS = 400;
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debouncedValue;
+}
+
 const API = process.env.NEXT_PUBLIC_API_BASE;
 const fetcher = (url: string) => axiosInstance.get(url).then((res) => res.data);
 
@@ -47,6 +58,12 @@ function ListingsPageContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [urlReady, setUrlReady] = useState(false);
   const hasSyncedFromUrl = useRef(false);
+  const lastGoodData = useRef<{ listings: unknown[]; totalCount: number; hasNext: boolean; hasPrevious: boolean } | null>(null);
+
+  const debouncedSearch = useDebounce(search, DEBOUNCE_MS);
+  const debouncedCity = useDebounce(city, DEBOUNCE_MS);
+  const debouncedMinPrice = useDebounce(minPrice, DEBOUNCE_MS);
+  const debouncedMaxPrice = useDebounce(maxPrice, DEBOUNCE_MS);
 
   // Read initial state from URL once on mount (shareable links / refresh)
   useEffect(() => {
@@ -88,18 +105,24 @@ function ListingsPageContent() {
   const listingsUrl = useMemo(
     () =>
       buildListingsUrl({
-        search,
+        search: debouncedSearch,
         category,
-        city,
-        min_price: minPrice,
-        max_price: maxPrice,
+        city: debouncedCity,
+        min_price: debouncedMinPrice,
+        max_price: debouncedMaxPrice,
         order,
         page,
       }),
-    [search, category, city, minPrice, maxPrice, order, page]
+    [debouncedSearch, category, debouncedCity, debouncedMinPrice, debouncedMaxPrice, order, page]
   );
 
-  const { data: rawData, error, isLoading } = useSWR(urlReady ? listingsUrl : null, fetcher);
+  const { data: rawData, error, isLoading } = useSWR(urlReady ? listingsUrl : null, fetcher, {
+    onErrorRetry: (err: any, _key, _config, revalidate, { retryCount }) => {
+      if (err?.response?.status === 429) return; // don't retry rate limit
+      if (retryCount >= 3) return;
+      setTimeout(() => revalidate({ retryCount: retryCount + 1 }), 2000);
+    },
+  });
   const { data: categories } = useSWR(`${API}/categories/`, fetcher);
 
   // Support both paginated ({ results, count, next, previous }) and plain array
@@ -110,17 +133,30 @@ function ListingsPageContent() {
   const currentPage = typeof rawData?.count === "number" ? page : 1;
   const totalPages = totalCount > 0 ? Math.ceil(totalCount / 12) : 1;
 
-  if (error)
-    return (
-      <div className="mx-auto max-w-6xl p-4 md:p-8">
-        <div className="text-red-600 text-center py-12">
-          {t("failed_load_listings")}
-        </div>
-      </div>
-    );
+  // Keep last successful data so listings don't disappear on error (e.g. 429)
+  if (!error && (listings.length > 0 || totalCount === 0)) {
+    lastGoodData.current = { listings, totalCount, hasNext, hasPrevious };
+  }
+  const display =
+    error && lastGoodData.current
+      ? lastGoodData.current
+      : { listings, totalCount, hasNext, hasPrevious };
+  const displayListings = display.listings as unknown[];
+  const displayTotalCount = display.totalCount;
+  const displayHasNext = display.hasNext;
+  const displayHasPrevious = display.hasPrevious;
+  const displayTotalPages = displayTotalCount > 0 ? Math.ceil(displayTotalCount / 12) : 1;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-5 pb-6 sm:px-6 md:p-8">
+      {error && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 text-sm">
+          {t("failed_load_listings")}
+          {lastGoodData.current && (
+            <span className="ml-1"> Showing previous results.</span>
+          )}
+        </div>
+      )}
       <div className="mb-6 md:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold mb-1">{t("listings")}</h1>
         <p className="text-sm text-gray-600">{t("browse_and_find")}</p>
@@ -227,8 +263,8 @@ function ListingsPageContent() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         {isLoading ? (
           [...Array(8)].map((_, i) => <SkeletonLoader key={i} />)
-        ) : listings?.length > 0 ? (
-          listings.map((listing: any) => (
+        ) : displayListings?.length > 0 ? (
+          displayListings.map((listing: any) => (
             <ListingCard key={listing.id} listing={listing} />
           ))
         ) : (
@@ -252,26 +288,26 @@ function ListingsPageContent() {
         )}
       </div>
 
-      {!isLoading && (hasNext || hasPrevious || totalPages > 1) && (
+      {!isLoading && (displayHasNext || displayHasPrevious || displayTotalPages > 1) && (
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <button
             type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={!hasPrevious}
+            disabled={!displayHasPrevious}
             className="inline-flex items-center gap-1 min-h-[44px] px-4 py-2 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
           >
             <ChevronLeft className="h-5 w-5" /> Previous
           </button>
           <span className="text-sm text-gray-600">
-            Page {currentPage} of {totalPages}
-            {typeof rawData?.count === "number" && (
-              <span className="ml-1">({rawData.count} results)</span>
+            Page {currentPage} of {displayTotalPages}
+            {displayTotalCount > 0 && (
+              <span className="ml-1">({displayTotalCount} results)</span>
             )}
           </span>
           <button
             type="button"
             onClick={() => setPage((p) => p + 1)}
-            disabled={!hasNext}
+            disabled={!displayHasNext}
             className="inline-flex items-center gap-1 min-h-[44px] px-4 py-2 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
           >
             Next <ChevronRight className="h-5 w-5" />
