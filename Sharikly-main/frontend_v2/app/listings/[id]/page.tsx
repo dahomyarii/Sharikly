@@ -521,15 +521,17 @@ export default function ListingDetail() {
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             <Card className="overflow-hidden">
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-2 sm:p-4">
-                <div className="flex flex-row sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto sm:max-h-[500px] pb-1 sm:pb-0">
+              {/* Mobile: fixed-height Amazon-style slideshow. Desktop: normal flexible layout. */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 p-2 sm:p-4 md:min-h-0">
+                {/* Thumbnails: horizontal strip on mobile (small), vertical on desktop */}
+                <div className="flex flex-row sm:flex-col gap-1.5 sm:gap-2 overflow-x-auto sm:overflow-y-auto sm:max-h-[500px] pb-1 sm:pb-0 shrink-0 md:shrink-0 scrollbar-hide">
                   {images.map((url: string, idx: number) => (
                     <button
                       key={idx}
                       onClick={() => {
                         setMainImage(url);
                       }}
-                      className={`min-w-[52px] min-h-[52px] sm:w-16 sm:h-16 border-2 rounded-lg sm:rounded-xl overflow-hidden flex-shrink-0 transition-all touch-target ${
+                      className={`min-w-[56px] w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-lg sm:rounded-xl overflow-hidden flex-shrink-0 transition-all touch-target ${
                         mainImage === url
                           ? "border-orange-500 ring-2 ring-orange-200"
                           : "border-gray-200 hover:border-gray-400 active:border-gray-500"
@@ -546,15 +548,16 @@ export default function ListingDetail() {
                   ))}
                 </div>
 
-                <div className="flex-1 relative group min-w-0">
-                  <div className="aspect-[4/3] max-h-[22vh] sm:max-h-[40vh] md:max-h-[420px] overflow-hidden rounded-lg bg-gray-100">
+                {/* Main image: forced small box on mobile, flexible on desktop */}
+                <div className="flex-1 relative group min-w-0 min-h-0">
+                  <div className="h-[200px] sm:h-auto sm:aspect-[4/3] sm:max-h-[40vh] md:max-h-[420px] overflow-hidden rounded-lg bg-gray-100">
                     <img
                       src={mainImage || images[0]}
                       alt={data.title}
-                      className="w-full h-full object-cover object-center cursor-zoom-in listing-img-mobile"
+                      className="w-full h-full object-cover object-center cursor-zoom-in"
                       fetchPriority="high"
                       decoding="async"
-                      sizes="(max-width: 768px) 100vw, 66vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, 66vw"
                       onClick={() =>
                         openFullscreen(images.indexOf(mainImage || images[0]))
                       }
@@ -564,11 +567,11 @@ export default function ListingDetail() {
                     onClick={() =>
                       openFullscreen(images.indexOf(mainImage || images[0]))
                     }
-                    className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 min-h-[44px] bg-white/90 hover:bg-white text-gray-800 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity touch-target rounded-xl"
+                    className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 min-h-[40px] sm:min-h-[44px] px-2 sm:px-3 bg-white/90 hover:bg-white text-gray-800 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity touch-target rounded-lg sm:rounded-xl text-sm"
                     size="sm"
                   >
-                    <ZoomIn className="h-4 w-4 mr-2" />
-                    <span className="sm:inline">Zoom</span>
+                    <ZoomIn className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Zoom</span>
                   </Button>
                 </div>
               </div>

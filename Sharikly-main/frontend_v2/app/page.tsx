@@ -644,7 +644,7 @@ export default function HomePage() {
               <Link href={`/listings/${featuredService.id}`} className="block group">
                 <article className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/80 hover:shadow-xl hover:ring-neutral-300/80 transition-all duration-300">
                   <div className="grid md:grid-cols-2 gap-0">
-                    <div className="relative aspect-[4/3] max-h-[120px] md:max-h-none md:aspect-auto md:min-h-[380px] bg-neutral-100 overflow-hidden">
+                    <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[380px] bg-neutral-100 overflow-hidden">
                       {featuredService.images?.[0]?.image && (
                         <img
                           src={
@@ -653,7 +653,7 @@ export default function HomePage() {
                               : `${API}${featuredService.images[0].image}`
                           }
                           alt={featuredService.title}
-                          className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500 listing-img-mobile"
+                          className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500"
                           fetchPriority="high"
                           decoding="async"
                           sizes="(max-width: 768px) 100vw, 50vw"
@@ -726,7 +726,7 @@ export default function HomePage() {
                       className="group block"
                     >
                       <article className="overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-                        <div className="relative aspect-[4/3] max-h-[120px] sm:max-h-none bg-neutral-100 overflow-hidden">
+                        <div className="relative aspect-[4/3] max-h-[180px] sm:max-h-none bg-neutral-100 overflow-hidden">
                           {service.images?.[0]?.image && (
                             <img
                               src={
@@ -735,7 +735,7 @@ export default function HomePage() {
                                   : `${API}${service.images[0].image}`
                               }
                               alt={service.title}
-                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300 listing-img-mobile"
+                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
                               loading="lazy"
                               decoding="async"
                               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -853,7 +853,7 @@ export default function HomePage() {
                       className="group flex-shrink-0 w-[240px] sm:w-[280px] block"
                     >
                       <article className="overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-                        <div className="relative aspect-[4/3] max-h-[112px] sm:max-h-none bg-neutral-100 overflow-hidden">
+                        <div className="relative aspect-[4/3] max-h-[160px] sm:max-h-none bg-neutral-100 overflow-hidden">
                           {service.images?.[0]?.image && (
                             <img
                               src={
@@ -862,7 +862,7 @@ export default function HomePage() {
                                   : `${API}${service.images[0].image}`
                               }
                               alt={service.title}
-                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300 listing-img-mobile"
+                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
                               loading="lazy"
                               decoding="async"
                               sizes="(max-width: 640px) 240px, 280px"
