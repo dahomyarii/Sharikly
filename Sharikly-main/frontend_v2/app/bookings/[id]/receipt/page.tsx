@@ -124,10 +124,20 @@ export default function BookingReceiptPage() {
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
             <p className="text-xs text-gray-500 uppercase tracking-wide">Booking #{booking.id}</p>
             <p className="text-sm text-gray-600 mt-0.5">
-              {new Date(booking.created_at).toLocaleDateString(undefined, {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-              })}
+              {(() => {
+              const d = new Date(booking.created_at)
+              try {
+                return d.toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              } catch {
+                return d.toISOString().slice(0, 16).replace('T', ' ')
+              }
+            })()}
             </p>
           </div>
 

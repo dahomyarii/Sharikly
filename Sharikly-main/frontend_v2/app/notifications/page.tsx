@@ -259,10 +259,20 @@ function NotificationsPageContent() {
                         {n.body && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{n.body}</p>}
                         <p className="text-xs text-gray-400 mt-2">
                           {n.created_at
-                            ? new Date(n.created_at).toLocaleDateString(undefined, {
-                                dateStyle: 'short',
-                                timeStyle: 'short',
-                              })
+                            ? (() => {
+                                const d = new Date(n.created_at)
+                                try {
+                                  return d.toLocaleDateString(undefined, {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })
+                                } catch {
+                                  return d.toISOString().slice(0, 16).replace('T', ' ')
+                                }
+                              })()
                             : ''}
                         </p>
                       </div>
