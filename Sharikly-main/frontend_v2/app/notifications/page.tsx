@@ -176,56 +176,58 @@ export default function NotificationsPage() {
             </div>
           </div>
         ) : (
-          <ul className="space-y-2">
-            {list.map((n) => (
-              <li key={n.id}>
-                <Link
-                  href={n.link || '/notifications'}
-                  className={`block bg-white rounded-xl border p-4 hover:bg-gray-50/80 transition shadow-sm ${
-                    !n.read ? 'border-l-4 border-l-black border-gray-200' : 'border-gray-100'
-                  }`}
-                  onClick={() => !n.read && markRead(n.id)}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900">{n.title}</p>
-                      {n.body && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{n.body}</p>}
-                      <p className="text-xs text-gray-400 mt-2">
-                        {n.created_at
-                          ? new Date(n.created_at).toLocaleDateString(undefined, {
-                              dateStyle: 'short',
-                              timeStyle: 'short',
-                            })
-                          : ''}
-                      </p>
+          <>
+            <ul className="space-y-2">
+              {list.map((n) => (
+                <li key={n.id}>
+                  <Link
+                    href={n.link || '/notifications'}
+                    className={`block bg-white rounded-xl border p-4 hover:bg-gray-50/80 transition shadow-sm ${
+                      !n.read ? 'border-l-4 border-l-black border-gray-200' : 'border-gray-100'
+                    }`}
+                    onClick={() => !n.read && markRead(n.id)}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900">{n.title}</p>
+                        {n.body && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{n.body}</p>}
+                        <p className="text-xs text-gray-400 mt-2">
+                          {n.created_at
+                            ? new Date(n.created_at).toLocaleDateString(undefined, {
+                                dateStyle: 'short',
+                                timeStyle: 'short',
+                              })
+                            : ''}
+                        </p>
+                      </div>
+                      {!n.read && (
+                        <span className="shrink-0 w-2 h-2 rounded-full bg-black mt-2" aria-hidden />
+                      )}
                     </div>
-                    {!n.read && (
-                      <span className="shrink-0 w-2 h-2 rounded-full bg-black mt-2" aria-hidden />
-                    )}
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {nextPage && (
-            <div className="mt-6 flex justify-center">
-              <Button
-                variant="outline"
-                onClick={loadMore}
-                disabled={loadingMore}
-                className="min-h-[44px] px-6"
-              >
-                {loadingMore ? (
-                  <span className="inline-flex items-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-black" />
-                    Loading…
-                  </span>
-                ) : (
-                  'Load more'
-                )}
-              </Button>
-            </div>
-          )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            {nextPage && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  variant="outline"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="min-h-[44px] px-6"
+                >
+                  {loadingMore ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-black" />
+                      Loading…
+                    </span>
+                  ) : (
+                    'Load more'
+                  )}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
