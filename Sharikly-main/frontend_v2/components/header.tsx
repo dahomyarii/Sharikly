@@ -127,8 +127,8 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-gray-100 px-4 py-3 md:p-4 flex justify-between items-center min-h-[var(--touch-target-min)] md:min-h-0" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
-        <Link href="/" className="flex items-center gap-2 touch-target min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 justify-center -m-2 p-2 rounded-lg active:opacity-80">
+      <header className="bg-gray-100 px-4 py-3 md:p-4 flex justify-between items-center min-h-[var(--touch-target-min)] md:min-h-0 gap-2 min-w-0">
+        <Link href="/" className="flex items-center gap-2 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 justify-center p-2 -ml-2 rounded-lg active:opacity-80 flex-shrink-0 max-w-[50vw] md:max-w-none">
           <img src="/logo.png" alt="EKRA" className="h-8 w-8 flex-shrink-0" />
           <span className="text-lg sm:text-xl font-bold truncate">EKRA</span>
         </Link>
@@ -224,7 +224,7 @@ export default function Header() {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="md:hidden flex gap-1 items-center">
+        <div className="md:hidden flex gap-1 items-center flex-shrink-0 min-w-0">
           <LanguageSwitcher />
           <button
             ref={menuButtonRef}
@@ -533,9 +533,6 @@ export default function Header() {
           </div>
         </div>
       </nav>
-
-      {/* Mobile spacing to prevent content overlap with bottom nav (nav height + safe area) */}
-      <div className="md:hidden h-20" style={{ minHeight: "calc(5rem + var(--safe-area-inset-bottom))" }}></div>
     </>
   );
 }

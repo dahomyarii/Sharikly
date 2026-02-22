@@ -18,13 +18,63 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ekra.com";
+
 export const metadata: Metadata = {
-  title: "EKRA",
-  description: "Rent what you need, when you need it",
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: "EKRA — Rent What You Need, When You Need It",
+    template: "%s | EKRA",
+  },
+  description:
+    "Rent cameras, lenses, gear, and more near you. Save money and reduce waste. Browse listings, book items by the day, and list your own. The modern rental marketplace.",
+  keywords: [
+    "rent",
+    "rental",
+    "marketplace",
+    "rent equipment",
+    "rent camera",
+    "rent gear",
+    "rent near me",
+    "daily rental",
+    "EKRA",
+  ],
+  authors: [{ name: "EKRA", url: APP_URL }],
+  creator: "EKRA",
+  publisher: "EKRA",
+  formatDetection: { email: false, address: false, telephone: false },
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
     apple: "/logo.png",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: APP_URL,
+    siteName: "EKRA",
+    title: "EKRA — Rent What You Need, When You Need It",
+    description:
+      "Rent cameras, lenses, gear, and more near you. Save money and reduce waste. Browse listings and book by the day.",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "EKRA",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EKRA — Rent What You Need, When You Need It",
+    description:
+      "Rent cameras, lenses, gear, and more near you. Save money and reduce waste.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
   },
   viewport: {
     width: "device-width",
@@ -33,6 +83,7 @@ export const metadata: Metadata = {
     userScalable: true,
     viewportFit: "cover",
   },
+  alternates: { canonical: APP_URL },
 };
 
 export default function RootLayout({
@@ -46,9 +97,44 @@ export default function RootLayout({
         {/* Preload LCP image (hero) for faster First Contentful Paint / LCP on mobile */}
         <link rel="preload" href="/image.jpeg" as="image" />
         <link rel="preload" href="/logo.png" as="image" />
+        {/* Structured data for search engines */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": `${APP_URL}/#organization`,
+                  name: "EKRA",
+                  url: APP_URL,
+                  logo: { "@type": "ImageObject", url: `${APP_URL}/logo.png` },
+                  description:
+                    "Rent what you need, when you need it. A modern rental marketplace.",
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": `${APP_URL}/#website`,
+                  url: APP_URL,
+                  name: "EKRA",
+                  description:
+                    "Rent cameras, lenses, gear, and more near you. Save money and reduce waste.",
+                  publisher: { "@id": `${APP_URL}/#organization` },
+                  inLanguage: "en-US",
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: { "@type": "EntryPoint", urlTemplate: `${APP_URL}/listings?search={search_term_string}` },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+              ],
+            }),
+          }}
+        />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
         <LocaleProvider>
           <Providers>

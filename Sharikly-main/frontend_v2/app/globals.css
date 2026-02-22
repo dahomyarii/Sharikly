@@ -121,12 +121,15 @@
   html {
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0.08);
+    overflow-x: hidden;
   }
   body {
     @apply bg-background text-foreground;
     padding-top: var(--safe-area-inset-top);
     padding-left: var(--safe-area-inset-left);
     padding-right: var(--safe-area-inset-right);
+    overflow-x: hidden;
+    min-width: 0;
   }
 }
 
