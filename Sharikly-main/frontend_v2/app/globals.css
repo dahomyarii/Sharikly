@@ -134,14 +134,14 @@
   }
 }
 
-/* Mobile-first: constrain listing/card images on small screens */
+/* Mobile-first: keep listing/card images small on phones so they fit the screen */
 @media (max-width: 640px) {
   .listing-img-mobile {
-    max-height: 200px;
+    max-height: 120px;
     object-fit: cover;
   }
   .listing-card-img-mobile {
-    max-height: 160px;
+    max-height: 112px;
   }
 }
 

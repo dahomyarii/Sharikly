@@ -547,7 +547,7 @@ export default function ListingDetail() {
                 </div>
 
                 <div className="flex-1 relative group min-w-0">
-                  <div className="aspect-[4/3] max-h-[28vh] sm:max-h-[40vh] md:max-h-[420px] overflow-hidden rounded-lg bg-gray-100">
+                  <div className="aspect-[4/3] max-h-[22vh] sm:max-h-[40vh] md:max-h-[420px] overflow-hidden rounded-lg bg-gray-100">
                     <img
                       src={mainImage || images[0]}
                       alt={data.title}

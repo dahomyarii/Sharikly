@@ -115,11 +115,11 @@ export default function ListingCard({ listing }: { listing: any }) {
       href={`/listings/${listing.id}`}
       className="block border rounded-2xl overflow-hidden hover:shadow-md active:opacity-95 transition"
     >
-      <div className="relative h-36 sm:h-44 md:h-48 bg-gray-100">
+      <div className="relative h-28 sm:h-44 md:h-48 bg-gray-100">
         <img
           src={imageUrl}
           alt={listing.title}
-          className="w-full h-full object-cover listing-img-mobile"
+          className="w-full h-full object-cover listing-img-mobile listing-card-img-mobile"
           loading="lazy"
           decoding="async"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
