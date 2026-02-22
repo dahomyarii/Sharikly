@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import axiosInstance from "@/lib/axios";
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -548,7 +548,7 @@ export default function ListingDetail() {
                 </div>
 
                 <div className="flex-1 relative group min-w-0">
-                  <div className="aspect-[4/3] max-h-[50vh] sm:max-h-none overflow-hidden rounded-lg bg-gray-100">
+                  <div className="aspect-[4/3] max-h-[40vh] sm:max-h-[420px] overflow-hidden rounded-lg bg-gray-100">
                     <img
                       src={mainImage || images[0]}
                       alt={data.title}
@@ -1009,6 +1009,10 @@ export default function ListingDetail() {
                             headers: { Authorization: `Bearer ${token}` },
                           });
                           showToast("Listing deleted", "success");
+                          if (API) {
+                            mutate(`${API}/listings/`);
+                            mutate((k) => typeof k === "string" && k.includes("/listings/"), undefined, { revalidate: true });
+                          }
                           router.push("/profile");
                         } catch (e) {
                           showToast("Could not delete listing", "error");

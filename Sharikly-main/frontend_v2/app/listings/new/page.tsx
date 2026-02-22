@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
+import { mutate } from 'swr'
 import LocationPicker from '@/components/LocationPicker'
 import { useToast } from '@/components/ui/toast'
 import { ImagePlus, X, GripVertical, Loader2, ChevronLeft } from 'lucide-react'
@@ -186,6 +187,10 @@ export default function NewListing() {
       showToast('At least one image is required', 'warning')
       return
     }
+    if (!categoryId || !String(categoryId).trim()) {
+      showToast('Please select a category', 'warning')
+      return
+    }
     if (latitude === null || longitude === null) {
       showToast('Please select a location on the map', 'warning')
       return
@@ -202,9 +207,7 @@ export default function NewListing() {
       formData.append('latitude', String(latitude))
       formData.append('longitude', String(longitude))
       formData.append('pickup_radius_m', String(radius))
-      if (categoryId) {
-        formData.append('category_id', categoryId)
-      }
+      formData.append('category_id', String(categoryId).trim())
       images.forEach(img => {
         formData.append('images', img.file)
       })
@@ -222,6 +225,10 @@ export default function NewListing() {
       }
 
       showToast('Listing created successfully!', 'success')
+      if (API) {
+        mutate(`${API}/listings/`)
+        mutate((k) => typeof k === 'string' && k.includes('/listings/'), undefined, { revalidate: true })
+      }
       setTimeout(() => router.push('/'), 1000)
     } catch (err: any) {
       console.error(err)
@@ -397,14 +404,15 @@ export default function NewListing() {
         {/* ── Category ── */}
         <section>
           <label className="block text-xs font-medium uppercase tracking-widest text-neutral-400 mb-2">
-            Category
+            Category <span className="text-red-500">*</span>
           </label>
           <select
+            required
             className="w-full bg-transparent border-b-2 border-neutral-200 focus:border-black outline-none text-lg py-2 transition-colors text-neutral-800 appearance-none cursor-pointer"
             value={categoryId}
             onChange={e => setCategoryId(e.target.value)}
           >
-            <option value="">Select a category</option>
+            <option value="">Select a category (required)</option>
             {categories.map(category => (
               <option key={category.id} value={category.id}>
                 {category.name}
