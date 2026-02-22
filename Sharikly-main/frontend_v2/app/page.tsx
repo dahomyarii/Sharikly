@@ -166,22 +166,28 @@ export default function HomePage() {
       shouldRetryOnError: false,
     },
   );
+  // Normalize: API may return paginated { results } or plain array
+  const listingsArray = Array.isArray(listings)
+    ? listings
+    : (listings?.results ?? []);
+
   // Filter listings based on selected category
   const filteredListings = selectedCategory
-    ? listings?.filter(
+    ? listingsArray.filter(
         (listing: any) => listing.category?.id === selectedCategory,
       )
-    : listings;
+    : listingsArray;
 
   const featuredService = filteredListings?.[0];
-  const hotServices = filteredListings?.slice(1, 4) || [];
-  const recommendations = filteredListings?.slice(4, 10) || [];
+  const hotServices = filteredListings?.slice(1, 4) ?? [];
+  const recommendations = filteredListings?.slice(4, 10) ?? [];
 
   // Set initial favorite state from listings data
   useEffect(() => {
-    if (listings) {
+    const arr = Array.isArray(listings) ? listings : (listings?.results ?? []);
+    if (arr.length > 0) {
       const favoriteIds = new Set<number>();
-      listings.forEach((listing: any) => {
+      arr.forEach((listing: any) => {
         if (listing.is_favorited) {
           favoriteIds.add(listing.id);
         }
