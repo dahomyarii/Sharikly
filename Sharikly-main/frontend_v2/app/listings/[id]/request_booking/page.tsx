@@ -91,13 +91,35 @@ export default function RequestBookingPage() {
   }
 
   const handleSendRequest = async () => {
-    if (!message.trim()) {
+    setError('')
+    const trimmedMessage = message.trim()
+    if (!trimmedMessage) {
       setError('Please write a message to the owner.')
+      return
+    }
+    if (trimmedMessage.length > 1000) {
+      setError('Message must be 1000 characters or less.')
       return
     }
 
     if (!dateRange?.from || !dateRange?.to) {
       setError('Please select your booking dates.')
+      return
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    if (dateRange.from < today) {
+      setError('Start date cannot be in the past.')
+      return
+    }
+    if (dateRange.from > dateRange.to) {
+      setError('End date must be on or after the start date.')
+      return
+    }
+    const days = calculateDays()
+    if (days > 90) {
+      setError('Booking period cannot exceed 90 days.')
       return
     }
 
@@ -262,7 +284,8 @@ export default function RequestBookingPage() {
                 placeholder="Tell the owner about your booking request, any special requirements, or questions..."
                 rows={6}
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                maxLength={1000}
+                onChange={(e) => { setMessage(e.target.value); setError(''); }}
               />
               {error && (
                 <div className="text-red-600 text-sm mb-4 bg-red-50 p-3 rounded-lg">

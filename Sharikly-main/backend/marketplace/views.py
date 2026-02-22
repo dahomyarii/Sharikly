@@ -1,10 +1,11 @@
 from rest_framework import generics, permissions, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework.exceptions import ValidationError, AuthenticationFailed
+from rest_framework.exceptions import ValidationError, AuthenticationFailed, PermissionDenied
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -164,11 +165,18 @@ class BlockedUsersListView(generics.ListAPIView):
         )
 
 
+class NotificationListPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 50
+
+
 class NotificationListView(generics.ListAPIView):
     """List current user's notifications (newest first)."""
 
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = NotificationSerializer
+    pagination_class = NotificationListPagination
 
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user).order_by("-created_at")
@@ -434,9 +442,16 @@ class ResendVerificationView(APIView):
 
 
 # --- Listings Views ---
+class ListingListPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = "page_size"
+    max_page_size = 48
+
+
 class ListingListCreateView(generics.ListCreateAPIView):
     serializer_class = ListingSerializer
     parser_classes = [MultiPartParser, FormParser]
+    pagination_class = ListingListPagination
 
     def get_permissions(self):
         if self.request.method == "POST":
@@ -444,13 +459,20 @@ class ListingListCreateView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     def get_queryset(self):
+        from django.db.models import Q
+
         qs = Listing.objects.all()
         if self.request.method != "GET":
             return qs.order_by("-created_at")
+        # "My listings" for profile: only owner's listings (include inactive)
+        if self.request.user.is_authenticated and self.request.query_params.get("mine") == "1":
+            qs = qs.filter(owner=self.request.user).order_by("-created_at")
+            return qs
+        # Public list: only active
+        qs = qs.filter(is_active=True)
         # Filters (GET only)
         search = (self.request.query_params.get("search") or "").strip()
         if search:
-            from django.db.models import Q
             qs = qs.filter(
                 Q(title__icontains=search)
                 | Q(description__icontains=search)
@@ -487,6 +509,12 @@ class ListingListCreateView(generics.ListCreateAPIView):
             qs = qs.order_by("-created_at")
         return qs
 
+    def paginate_queryset(self, queryset):
+        # Don't paginate "my listings" (profile needs all)
+        if self.request.query_params.get("mine") == "1":
+            return None
+        return super().paginate_queryset(queryset)
+
     def get_serializer_context(self):
         """Ensure the request is passed to the serializer context"""
         context = super().get_serializer_context()
@@ -502,12 +530,20 @@ class ListingListCreateView(generics.ListCreateAPIView):
             ListingImage.objects.create(listing=listing, image=img)
 
 
-class ListingRetrieveUpdateView(generics.RetrieveUpdateAPIView):
-    queryset = Listing.objects.all()
+class ListingRetrieveUpdateView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ListingSerializer
 
+    def get_queryset(self):
+        from django.db.models import Q
+
+        # Public: only active; owner: can see their own (active or inactive)
+        qs = Listing.objects.filter(Q(is_active=True))
+        if self.request.user.is_authenticated:
+            qs = (qs | Listing.objects.filter(owner=self.request.user)).distinct()
+        return qs
+
     def get_permissions(self):
-        if self.request.method in ["PUT", "PATCH"]:
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
@@ -516,6 +552,17 @@ class ListingRetrieveUpdateView(generics.RetrieveUpdateAPIView):
         context = super().get_serializer_context()
         context["request"] = self.request
         return context
+
+    def perform_update(self, serializer):
+        listing = self.get_object()
+        if listing.owner_id != self.request.user.id:
+            raise PermissionDenied("Only the owner can edit this listing.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.owner_id != self.request.user.id:
+            raise PermissionDenied("Only the owner can delete this listing.")
+        instance.delete()
 
 
 class ListingAvailabilityView(APIView):
@@ -547,9 +594,16 @@ def _booking_overlaps(listing, start, end):
     ).exists()
 
 
+class BookingListPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 50
+
+
 class BookingListCreateView(generics.ListCreateAPIView):
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = BookingListPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -604,6 +658,19 @@ class BookingListCreateView(generics.ListCreateAPIView):
             BookingSerializer(booking).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+class BookingRetrieveView(generics.RetrieveAPIView):
+    """Get a single booking (renter or listing owner only). Used for receipt / confirmation view."""
+    serializer_class = BookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return (
+            Booking.objects.filter(renter=user)
+            | Booking.objects.filter(listing__owner=user)
+        ).distinct()
 
 
 class BookingAcceptView(APIView):
@@ -676,6 +743,81 @@ class BookingDeclineView(APIView):
         return Response(BookingSerializer(booking).data, status=status.HTTP_200_OK)
 
 
+class BookingCancelView(APIView):
+    """Renter can cancel PENDING or CONFIRMED (if not paid). Owner can cancel CONFIRMED."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+        is_owner = booking.listing.owner_id == request.user.id
+        is_renter = booking.renter_id == request.user.id
+        if not is_owner and not is_renter:
+            return Response(
+                {"detail": "Only the renter or listing owner can cancel this booking."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if booking.status == Booking.Status.CANCELLED:
+            return Response(
+                {"detail": "This booking is already cancelled."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if booking.status == Booking.Status.DECLINED:
+            return Response(
+                {"detail": "Cannot cancel a declined booking."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # Renter: can cancel PENDING or CONFIRMED only if not paid
+        if is_renter:
+            if booking.status == Booking.Status.CONFIRMED and booking.payment_status == Booking.PaymentStatus.PAID:
+                return Response(
+                    {"detail": "Paid bookings cannot be cancelled here. Contact support for refunds."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        # Owner: can cancel PENDING or CONFIRMED (e.g. force majeure)
+        booking.status = Booking.Status.CANCELLED
+        booking.save(update_fields=["status"])
+        app_url = getattr(settings, "FRONTEND_APP_URL", "").rstrip("/") or ""
+        link = f"{app_url}/bookings" if app_url else "/bookings"
+        # Notify the other party
+        other = booking.renter if is_owner else booking.listing.owner
+        _create_notification(
+            other,
+            Notification.NotificationType.BOOKING_CANCELLED,
+            "Booking cancelled",
+            body=f'Booking for "{booking.listing.title}" ({booking.start_date} to {booking.end_date}) was cancelled.'
+            if is_owner
+            else f'Your booking for "{booking.listing.title}" was cancelled by the owner.',
+            link=link,
+        )
+        _send_notification_email(
+            other.email,
+            f"Booking cancelled: {booking.listing.title}",
+            f"Hi,\n\nA booking for \"{booking.listing.title}\" was cancelled.\n\nView bookings: {link}\n\n— Sharikly",
+        )
+        return Response(BookingSerializer(booking).data, status=status.HTTP_200_OK)
+
+
+class BookingRefundView(APIView):
+    """Listing owner can mark a PAID booking as refunded (e.g. after processing refund in Moyasar dashboard)."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+        if booking.listing.owner_id != request.user.id:
+            return Response(
+                {"detail": "Only the listing owner can mark this booking as refunded."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if booking.payment_status != Booking.PaymentStatus.PAID:
+            return Response(
+                {"detail": "Only paid bookings can be marked as refunded."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        booking.payment_status = Booking.PaymentStatus.REFUNDED
+        booking.save(update_fields=["payment_status"])
+        return Response(BookingSerializer(booking).data, status=status.HTTP_200_OK)
+
+
 class BookingCreateCheckoutSessionView(APIView):
     """Create a Moyasar invoice for a confirmed booking (Saudi-friendly). Renter only."""
     permission_classes = [permissions.IsAuthenticated]
@@ -710,7 +852,7 @@ class BookingCreateCheckoutSessionView(APIView):
             "amount": amount_halals,
             "currency": "SAR",
             "description": f"Rental: {booking.listing.title} ({booking.start_date} to {booking.end_date})",
-            "success_url": f"{app_url}/bookings?paid=1",
+            "success_url": f"{app_url}/bookings?paid=1&booking_id={booking.id}",
             "back_url": f"{app_url}/bookings?cancelled=1",
             "callback_url": f"{backend_url}/api/moyasar/callback/",
         }
@@ -841,6 +983,48 @@ class MessageListView(generics.ListAPIView):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("You cannot view this conversation.")
         return room.messages.all()
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        # Mark this room as read for the current user
+        room_id = self.kwargs.get("room_id")
+        if room_id:
+            room = get_object_or_404(ChatRoom, id=room_id)
+            if request.user in room.participants.all():
+                ParticipantLastRead.objects.update_or_create(
+                    user=request.user,
+                    room=room,
+                    defaults={"last_read_at": timezone.now()},
+                )
+        return response
+
+
+class ChatUnreadCountView(APIView):
+    """GET: return { count: N } of unread chat messages for the current user."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from datetime import timedelta
+
+        user = request.user
+        blocked_ids = _blocked_user_ids(user)
+        rooms = ChatRoom.objects.filter(participants=user).distinct()
+        if blocked_ids:
+            room_ids_with_blocked = ChatRoom.objects.filter(
+                participants=user
+            ).filter(
+                participants__id__in=blocked_ids
+            ).values_list("id", flat=True)
+            rooms = rooms.exclude(id__in=room_ids_with_blocked)
+        total = 0
+        old_cutoff = timezone.now() - timedelta(days=365 * 10)
+        for room in rooms:
+            last = ParticipantLastRead.objects.filter(user=user, room=room).first()
+            since = last.last_read_at if last else old_cutoff
+            total += Message.objects.filter(room=room).exclude(sender=user).filter(
+                created_at__gt=since
+            ).count()
+        return Response({"count": total})
 
 
 class SendMessageView(generics.CreateAPIView):
@@ -983,11 +1167,18 @@ class RemoveFavoriteView(generics.DestroyAPIView):
         )
 
 
+class FavoritesListPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = "page_size"
+    max_page_size = 48
+
+
 class UserFavoritesListView(generics.ListAPIView):
     """Get all favorite listings for the authenticated user"""
 
     serializer_class = FavoriteSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = FavoritesListPagination
 
     def get_queryset(self):
         return Favorite.objects.filter(user=self.request.user).order_by("-created_at")

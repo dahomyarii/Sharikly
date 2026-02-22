@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import axiosInstance from '@/lib/axios'
 import { useLocale } from '@/components/LocaleProvider'
-import { ArrowLeft, Calendar, Check, CreditCard, Loader2, X } from 'lucide-react'
+import { ArrowLeft, Calendar, Check, ChevronLeft, ChevronRight, CreditCard, Loader2, Receipt, X } from 'lucide-react'
 import Link from 'next/link'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
@@ -16,12 +16,16 @@ function getImageUrl(listing: any): string | null {
   return `${API?.replace('/api', '')}${img}`
 }
 
-export default function BookingsPage() {
+function BookingsPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { t } = useLocale()
   const [user, setUser] = useState<any>(null)
   const [bookings, setBookings] = useState<any[]>([])
+  const [page, setPage] = useState(1)
+  const [urlReady, setUrlReady] = useState(false)
+  const hasSyncedFromUrl = useRef(false)
+  const [paginationMeta, setPaginationMeta] = useState<{ count: number; next: string | null; previous: string | null } | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<number | null>(null)
   const [payError, setPayError] = useState<string | null>(null)
@@ -39,16 +43,45 @@ export default function BookingsPage() {
     }
   }, [router])
 
+  // Read page from URL once on mount (shareable links)
   useEffect(() => {
-    if (!user) return
+    if (hasSyncedFromUrl.current) return
+    hasSyncedFromUrl.current = true
+    const p = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1)
+    setPage(p)
+    setUrlReady(true)
+  }, [searchParams])
+
+  // Persist page to URL when it changes
+  useEffect(() => {
+    if (!urlReady || typeof window === 'undefined') return
+    const url = page > 1 ? `/bookings?page=${page}` : '/bookings'
+    window.history.replaceState(null, '', url)
+  }, [urlReady, page])
+
+  useEffect(() => {
+    if (!user || !urlReady) return
     const token = localStorage.getItem('access_token')
     if (!token) return
+    setLoading(true)
     const fetchBookings = async () => {
       try {
         const res = await axiosInstance.get(`${API}/bookings/`, {
           headers: { Authorization: `Bearer ${token}` },
+          params: { page },
         })
-        setBookings(res.data)
+        const data = res.data
+        const list = Array.isArray(data) ? data : data?.results ?? []
+        setBookings(list)
+        if (data && !Array.isArray(data) && ('count' in data || 'next' in data)) {
+          setPaginationMeta({
+            count: typeof data.count === 'number' ? data.count : list.length,
+            next: data.next ?? null,
+            previous: data.previous ?? null,
+          })
+        } else {
+          setPaginationMeta(null)
+        }
       } catch (err) {
         console.error(err)
       } finally {
@@ -56,20 +89,31 @@ export default function BookingsPage() {
       }
     }
     fetchBookings()
-  }, [user])
+  }, [user, urlReady, page])
 
-  // Refetch when returning from Stripe (paid=1 or cancelled=1)
+  // Refetch when returning from payment (paid=1 or cancelled=1); redirect to receipt when paid
   useEffect(() => {
     const paid = searchParams.get('paid')
     const cancelled = searchParams.get('cancelled')
+    const bookingId = searchParams.get('booking_id')
     if ((paid === '1' || cancelled === '1') && user) {
+      setPage(1)
       const token = localStorage.getItem('access_token')
       if (token) {
-        axiosInstance.get(`${API}/bookings/`, { headers: { Authorization: `Bearer ${token}` } })
-          .then((res) => setBookings(res.data))
+        axiosInstance.get(`${API}/bookings/`, { headers: { Authorization: `Bearer ${token}` }, params: { page: 1 } })
+          .then((res) => {
+            const data = res.data
+            const list = Array.isArray(data) ? data : data?.results ?? []
+            setBookings(list)
+            if (data && !Array.isArray(data)) setPaginationMeta({ count: data.count ?? list.length, next: data.next ?? null, previous: data.previous ?? null })
+          })
           .catch(() => {})
       }
-      router.replace('/bookings', { scroll: false })
+      if (paid === '1' && bookingId) {
+        router.replace(`/bookings/${bookingId}/receipt`, { scroll: false })
+      } else {
+        router.replace('/bookings', { scroll: false })
+      }
     }
   }, [searchParams, user, router])
 
@@ -132,6 +176,46 @@ export default function BookingsPage() {
     } catch (err: any) {
       const msg = err?.response?.data?.detail || 'Payment failed.'
       setPayError(typeof msg === 'string' ? msg : 'Payment failed.')
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const handleCancel = async (bookingId: number) => {
+    if (!confirm('Cancel this booking? This cannot be undone.')) return
+    setActionId(bookingId)
+    const token = localStorage.getItem('access_token')
+    try {
+      const res = await axiosInstance.post(
+        `${API}/bookings/${bookingId}/cancel/`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? res.data : b))
+      )
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const handleRefund = async (bookingId: number) => {
+    if (!confirm('Mark this booking as refunded? (Use after processing refund in your payment dashboard.)')) return
+    setActionId(bookingId)
+    const token = localStorage.getItem('access_token')
+    try {
+      const res = await axiosInstance.post(
+        `${API}/bookings/${bookingId}/refund/`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? res.data : b))
+      )
+    } catch (err) {
+      console.error(err)
     } finally {
       setActionId(null)
     }
@@ -213,7 +297,15 @@ export default function BookingsPage() {
                     ? 'Accepted'
                     : booking.status === 'DECLINED'
                       ? 'Declined'
-                      : booking.status
+                      : booking.status === 'CANCELLED'
+                        ? 'Cancelled'
+                        : booking.status
+              const canCancel =
+                booking.status !== 'CANCELLED' &&
+                booking.status !== 'DECLINED' &&
+                (ownerView
+                  ? (booking.status === 'PENDING' || booking.status === 'CONFIRMED')
+                  : booking.status === 'PENDING' || (booking.status === 'CONFIRMED' && booking.payment_status !== 'PAID'))
 
               return (
                 <li
@@ -251,13 +343,23 @@ export default function BookingsPage() {
                         {new Date(booking.end_date).toLocaleDateString()}
                       </p>
                       <div className="flex flex-wrap items-center gap-2 mt-2">
+                        <Link
+                          href={`/bookings/${booking.id}/receipt`}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-black"
+                        >
+                          <Receipt className="h-3.5 w-3.5" /> View receipt
+                        </Link>
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                             pending
                               ? 'bg-amber-100 text-amber-800'
                               : booking.status === 'CONFIRMED'
                                 ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-700'
+                                : booking.status === 'CANCELLED'
+                                  ? 'bg-gray-100 text-gray-600'
+                                  : booking.status === 'DECLINED'
+                                    ? 'bg-red-50 text-red-700'
+                                    : 'bg-gray-100 text-gray-700'
                           }`}
                         >
                           {statusLabel}
@@ -307,6 +409,20 @@ export default function BookingsPage() {
                           </button>
                         </div>
                       )}
+                      {ownerView && booking.status === 'CONFIRMED' && booking.payment_status === 'PAID' && (
+                        <div className="mt-3">
+                          <button
+                            onClick={() => handleRefund(booking.id)}
+                            disabled={actionId !== null}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            {actionId === booking.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : null}
+                            Mark as refunded
+                          </button>
+                        </div>
+                      )}
                       {!ownerView &&
                         booking.status === 'CONFIRMED' &&
                         booking.payment_status !== 'PAID' && (
@@ -325,6 +441,22 @@ export default function BookingsPage() {
                             </button>
                           </div>
                         )}
+                      {canCancel && (
+                        <div className="mt-3">
+                          <button
+                            onClick={() => handleCancel(booking.id)}
+                            disabled={actionId !== null}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            {actionId === booking.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <X className="h-4 w-4" />
+                            )}
+                            Cancel booking
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </li>
@@ -332,7 +464,46 @@ export default function BookingsPage() {
             })}
           </ul>
         )}
+        {!loading && paginationMeta && paginationMeta.count > 10 && (
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={!paginationMeta.previous}
+              className="inline-flex items-center gap-1 min-h-[44px] px-4 py-2 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <ChevronLeft className="h-5 w-5" /> Previous
+            </button>
+            <span className="text-sm text-gray-600">
+              Page {page} of {Math.ceil(paginationMeta.count / 10) || 1} ({paginationMeta.count} bookings)
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={!paginationMeta.next}
+              className="inline-flex items-center gap-1 min-h-[44px] px-4 py-2 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              Next <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
+  )
+}
+
+function BookingsFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="animate-pulse text-gray-500">Loading bookings…</div>
+    </div>
+  )
+}
+
+export default function BookingsPage() {
+  return (
+    <Suspense fallback={<BookingsFallback />}>
+      <BookingsPageContent />
+    </Suspense>
   )
 }

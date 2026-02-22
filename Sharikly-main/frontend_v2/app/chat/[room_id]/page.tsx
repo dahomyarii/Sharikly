@@ -37,6 +37,7 @@ export default function ChatRoomPage() {
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
   const previousMessagesLength = useRef(0)
   const [blockLoading, setBlockLoading] = useState(false)
+  const [sending, setSending] = useState(false)
   const { t } = useLocale()
 
   useEffect(() => {
@@ -127,6 +128,7 @@ export default function ChatRoomPage() {
 
   const handleSend = async () => {
     if (!text && !fileInputRef.current?.files?.length) return
+    if (sending) return
 
     const token = localStorage.getItem('access_token')
     if (!token) return
@@ -138,6 +140,7 @@ export default function ChatRoomPage() {
       formData.append('image', fileInputRef.current.files[0])
     }
 
+    setSending(true)
     try {
       await axiosInstance.post(`${API}/chat/messages/`, formData, {
         headers: {
@@ -151,6 +154,8 @@ export default function ChatRoomPage() {
       fetchMessages()
     } catch (err) {
       console.error('Error sending message:', err)
+    } finally {
+      setSending(false)
     }
   }
 
@@ -328,14 +333,22 @@ export default function ChatRoomPage() {
             onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             rows={1}
-            className="flex-1 min-w-0 px-4 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black resize-none max-h-32"
+            disabled={sending}
+            className="flex-1 min-w-0 px-4 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black resize-none max-h-32 disabled:opacity-70"
           />
         <button
           onClick={handleSend}
-            disabled={!text.trim() && !fileInputRef.current?.files?.length}
-            className="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            disabled={sending || (!text.trim() && !fileInputRef.current?.files?.length)}
+            className="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex items-center justify-center gap-1.5 min-w-[80px]"
         >
-          Send
+          {sending ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Sending…
+            </>
+          ) : (
+            'Send'
+          )}
         </button>
         </div>
       </div>

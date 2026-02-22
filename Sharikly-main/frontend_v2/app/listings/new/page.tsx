@@ -152,12 +152,34 @@ export default function NewListing() {
       showToast('You are not logged in', 'error')
       return
     }
-    if (!title.trim()) {
+    const titleTrimmed = title.trim()
+    if (!titleTrimmed) {
       showToast('Title is required', 'warning')
+      return
+    }
+    if (titleTrimmed.length > 200) {
+      showToast('Title must be 200 characters or less', 'warning')
+      return
+    }
+    if (!description.trim()) {
+      showToast('Description is required', 'warning')
       return
     }
     if (!price.trim()) {
       showToast('Price is required', 'warning')
+      return
+    }
+    const priceNum = parseFloat(price)
+    if (isNaN(priceNum) || priceNum < 0) {
+      showToast('Please enter a valid price (0 or greater)', 'warning')
+      return
+    }
+    if (priceNum > 99999.99) {
+      showToast('Price must be 99,999.99 or less', 'warning')
+      return
+    }
+    if (city.trim().length > 100) {
+      showToast('City must be 100 characters or less', 'warning')
       return
     }
     if (images.length === 0) {
@@ -173,10 +195,10 @@ export default function NewListing() {
 
     try {
       const formData = new FormData()
-      formData.append('title', title.trim())
+      formData.append('title', titleTrimmed)
       formData.append('description', description.trim())
-      formData.append('price_per_day', price)
-      formData.append('city', city.trim())
+      formData.append('price_per_day', String(priceNum))
+      formData.append('city', city.trim().slice(0, 100))
       formData.append('latitude', String(latitude))
       formData.append('longitude', String(longitude))
       formData.append('pickup_radius_m', String(radius))
@@ -334,6 +356,7 @@ export default function NewListing() {
             className="w-full bg-transparent border-b-2 border-neutral-200 focus:border-black outline-none text-lg font-medium py-2 transition-colors placeholder:text-neutral-300"
             placeholder="What are you listing?"
             value={title}
+            maxLength={200}
             onChange={e => setTitle(e.target.value)}
           />
         </section>
@@ -365,6 +388,7 @@ export default function NewListing() {
               className="w-full bg-transparent border-b-2 border-neutral-200 focus:border-black outline-none text-lg font-medium py-2 transition-colors placeholder:text-neutral-300"
               placeholder="e.g. Riyadh"
               value={city}
+              maxLength={100}
               onChange={e => setCity(e.target.value)}
             />
           </div>

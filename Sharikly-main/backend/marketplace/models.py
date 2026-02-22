@@ -37,6 +37,7 @@ class Listing(models.Model):
     description = models.TextField()
     price_per_day = models.DecimalField(max_digits=8, decimal_places=2)
     city = models.CharField(max_length=100, blank=True, null=True)
+    is_active = models.BooleanField(default=True, help_text="Inactive listings are hidden from search and public detail; owner can still see and reactivate.")
     
     # Location picker fields
     latitude = models.FloatField(null=True, blank=True)
@@ -143,6 +144,19 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.sender.username} in Room {self.room.id}"
+
+
+class ParticipantLastRead(models.Model):
+    """Tracks when a user last read messages in a chat room (for unread count)."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_last_read")
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name="last_read_by")
+    last_read_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "room")
+
+    def __str__(self):
+        return f"{self.user_id} read room {self.room_id} at {self.last_read_at}"
 
 
 # ==========================
@@ -289,6 +303,7 @@ class Notification(models.Model):
     class NotificationType(models.TextChoices):
         BOOKING_ACCEPTED = "BOOKING_ACCEPTED", _("Booking accepted")
         BOOKING_DECLINED = "BOOKING_DECLINED", _("Booking declined")
+        BOOKING_CANCELLED = "BOOKING_CANCELLED", _("Booking cancelled")
         NEW_MESSAGE = "NEW_MESSAGE", _("New message")
 
     user = models.ForeignKey(

@@ -4,9 +4,10 @@ import useSWR from "swr";
 import axiosInstance from "@/lib/axios";
 import ListingCard from "@/components/ListingCard";
 import SkeletonLoader from "@/components/SkeletonLoader";
-import { useState, useMemo } from "react";
+import { Suspense, useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
@@ -19,6 +20,7 @@ function buildListingsUrl(params: {
   min_price: string;
   max_price: string;
   order: string;
+  page: number;
 }): string {
   const sp = new URLSearchParams();
   if (params.search) sp.set("search", params.search);
@@ -27,19 +29,61 @@ function buildListingsUrl(params: {
   if (params.min_price) sp.set("min_price", params.min_price);
   if (params.max_price) sp.set("max_price", params.max_price);
   if (params.order && params.order !== "newest") sp.set("order", params.order);
+  if (params.page > 1) sp.set("page", String(params.page));
   const qs = sp.toString();
   return `${API}/listings/${qs ? `?${qs}` : ""}`;
 }
 
-export default function ListingsPage() {
+function ListingsPageContent() {
   const { t } = useLocale();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [city, setCity] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [order, setOrder] = useState("newest");
+  const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [urlReady, setUrlReady] = useState(false);
+  const hasSyncedFromUrl = useRef(false);
+
+  // Read initial state from URL once on mount (shareable links / refresh)
+  useEffect(() => {
+    if (hasSyncedFromUrl.current) return;
+    hasSyncedFromUrl.current = true;
+    const q = searchParams.get("search") ?? "";
+    const cat = searchParams.get("category") ?? "";
+    const c = searchParams.get("city") ?? "";
+    const min = searchParams.get("min_price") ?? "";
+    const max = searchParams.get("max_price") ?? "";
+    const ord = searchParams.get("order") ?? "newest";
+    const p = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
+    setSearch(q);
+    setCategory(cat);
+    setCity(c);
+    setMinPrice(min);
+    setMaxPrice(max);
+    setOrder(ord);
+    setPage(p);
+    setUrlReady(true);
+  }, [searchParams]);
+
+  // Persist filters to URL when they change (so share/refresh keeps state)
+  useEffect(() => {
+    if (!urlReady || typeof window === "undefined") return;
+    const sp = new URLSearchParams();
+    if (search) sp.set("search", search);
+    if (category) sp.set("category", category);
+    if (city) sp.set("city", city);
+    if (minPrice) sp.set("min_price", minPrice);
+    if (maxPrice) sp.set("max_price", maxPrice);
+    if (order && order !== "newest") sp.set("order", order);
+    if (page > 1) sp.set("page", String(page));
+    const qs = sp.toString();
+    const url = qs ? `/listings?${qs}` : "/listings";
+    window.history.replaceState(null, "", url);
+  }, [urlReady, search, category, city, minPrice, maxPrice, order, page]);
 
   const listingsUrl = useMemo(
     () =>
@@ -50,12 +94,21 @@ export default function ListingsPage() {
         min_price: minPrice,
         max_price: maxPrice,
         order,
+        page,
       }),
-    [search, category, city, minPrice, maxPrice, order]
+    [search, category, city, minPrice, maxPrice, order, page]
   );
 
-  const { data: listings, error, isLoading } = useSWR(listingsUrl, fetcher);
+  const { data: rawData, error, isLoading } = useSWR(urlReady ? listingsUrl : null, fetcher);
   const { data: categories } = useSWR(`${API}/categories/`, fetcher);
+
+  // Support both paginated ({ results, count, next, previous }) and plain array
+  const listings = Array.isArray(rawData) ? rawData : rawData?.results ?? [];
+  const totalCount = typeof rawData?.count === "number" ? rawData.count : listings.length;
+  const hasNext = !!rawData?.next;
+  const hasPrevious = !!rawData?.previous;
+  const currentPage = typeof rawData?.count === "number" ? page : 1;
+  const totalPages = totalCount > 0 ? Math.ceil(totalCount / 12) : 1;
 
   if (error)
     return (
@@ -82,7 +135,7 @@ export default function ListingsPage() {
               aria-label={t("search_listings")}
               type="search"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder={t("search_listings")}
               className="w-full pl-11 pr-4 py-3.5 min-h-[44px] sm:min-h-0 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-base"
             />
@@ -90,7 +143,7 @@ export default function ListingsPage() {
           <div className="flex gap-2">
             <select
               value={order}
-              onChange={(e) => setOrder(e.target.value)}
+              onChange={(e) => { setOrder(e.target.value); setPage(1); }}
               className="flex-1 sm:flex-none min-h-[44px] px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm touch-target"
             >
               <option value="newest">{t("sort_newest")}</option>
@@ -116,7 +169,7 @@ export default function ListingsPage() {
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => { setCategory(e.target.value); setPage(1); }}
                 className="w-full min-h-[44px] px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm"
               >
                 <option value="">{t("all_categories")}</option>
@@ -134,7 +187,7 @@ export default function ListingsPage() {
               <input
                 type="text"
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e) => { setCity(e.target.value); setPage(1); }}
                 placeholder={t("city")}
                 className="w-full min-h-[44px] px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm"
               />
@@ -148,7 +201,7 @@ export default function ListingsPage() {
                 min="0"
                 step="0.01"
                 value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
+                onChange={(e) => { setMinPrice(e.target.value); setPage(1); }}
                 placeholder="0"
                 className="w-full min-h-[44px] px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm"
               />
@@ -162,7 +215,7 @@ export default function ListingsPage() {
                 min="0"
                 step="0.01"
                 value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
+                onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }}
                 placeholder="—"
                 className="w-full min-h-[44px] px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm"
               />
@@ -198,6 +251,57 @@ export default function ListingsPage() {
           </div>
         )}
       </div>
+
+      {!isLoading && (hasNext || hasPrevious || totalPages > 1) && (
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={!hasPrevious}
+            className="inline-flex items-center gap-1 min-h-[44px] px-4 py-2 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+          >
+            <ChevronLeft className="h-5 w-5" /> Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+            {typeof rawData?.count === "number" && (
+              <span className="ml-1">({rawData.count} results)</span>
+            )}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={!hasNext}
+            className="inline-flex items-center gap-1 min-h-[44px] px-4 py-2 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+          >
+            Next <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      )}
     </div>
+  );
+}
+
+function ListingsFallback() {
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-5 pb-6 sm:px-6 md:p-8">
+      <div className="mb-6 md:mb-8">
+        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+        <div className="h-4 w-64 mt-2 bg-gray-100 rounded animate-pulse" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        {[...Array(8)].map((_, i) => (
+          <SkeletonLoader key={i} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function ListingsPage() {
+  return (
+    <Suspense fallback={<ListingsFallback />}>
+      <ListingsPageContent />
+    </Suspense>
   );
 }

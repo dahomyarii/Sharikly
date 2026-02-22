@@ -37,6 +37,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => prev.filter((toast) => toast.id !== id))
   }, [])
 
+  // Allow showing toast from outside React (e.g. axios interceptor) via custom event
+  useEffect(() => {
+    const handler = (e: CustomEvent<{ message: string; type?: ToastType }>) => {
+      showToast(e.detail?.message ?? 'Something went wrong', e.detail?.type ?? 'warning', 5000)
+    }
+    window.addEventListener('globalShowToast', handler as EventListener)
+    return () => window.removeEventListener('globalShowToast', handler as EventListener)
+  }, [showToast])
+
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}

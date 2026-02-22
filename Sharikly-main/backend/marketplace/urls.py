@@ -31,6 +31,7 @@ urlpatterns = [
     path("auth/delete-account/", views.DeleteAccountView.as_view(), name="delete_account"),
     # Chat
     path("chat/rooms/", views.ChatRoomListCreateView.as_view(), name="chat_rooms"),
+    path("chat/unread-count/", views.ChatUnreadCountView.as_view(), name="chat_unread_count"),
     path("chat/messages/", views.SendMessageView.as_view(), name="chat_messages"),
     path(
         "chat/messages/<int:room_id>/",
@@ -52,8 +53,11 @@ urlpatterns = [
     ),
     # Bookings
     path("bookings/", views.BookingListCreateView.as_view(), name="bookings"),
+    path("bookings/<int:pk>/", views.BookingRetrieveView.as_view(), name="booking_detail"),
     path("bookings/<int:pk>/accept/", views.BookingAcceptView.as_view(), name="booking_accept"),
     path("bookings/<int:pk>/decline/", views.BookingDeclineView.as_view(), name="booking_decline"),
+    path("bookings/<int:pk>/cancel/", views.BookingCancelView.as_view(), name="booking_cancel"),
+    path("bookings/<int:pk>/refund/", views.BookingRefundView.as_view(), name="booking_refund"),
     path("bookings/<int:pk>/checkout/", views.BookingCreateCheckoutSessionView.as_view(), name="booking_checkout"),
     path("moyasar/callback/", views.MoyasarPaymentCallbackView.as_view(), name="moyasar_callback"),
     # Favorites

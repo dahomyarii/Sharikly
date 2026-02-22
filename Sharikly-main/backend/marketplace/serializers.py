@@ -131,6 +131,7 @@ class ListingSerializer(serializers.ModelSerializer):
             "description",
             "price_per_day",
             "city",
+            "is_active",
             "latitude",
             "longitude",
             "pickup_radius_m",

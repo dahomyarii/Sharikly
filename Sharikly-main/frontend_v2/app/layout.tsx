@@ -5,6 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { Providers } from "@/components/Providers";
+import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -136,10 +137,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-gray-900 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 focus:w-auto focus:h-auto focus:m-0 focus:overflow-visible focus:[clip:auto] focus:whitespace-normal"
+        >
+          Skip to main content
+        </a>
         <LocaleProvider>
           <Providers>
             <Header />
-            <main className="flex-1 min-h-[50vh] main-mobile-pb">{children}</main>
+            <EmailVerificationBanner />
+            <main id="main-content" className="flex-1 min-h-[50vh] main-mobile-pb" tabIndex={-1}>{children}</main>
             <Footer />
           </Providers>
         </LocaleProvider>

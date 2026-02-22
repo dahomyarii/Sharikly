@@ -88,20 +88,16 @@ export default function ProfilePage() {
   const fetchUserListings = async () => {
     try {
       const token = localStorage.getItem("access_token");
-      const response = await axiosInstance.get(`${API}/listings/`, {
+      if (!token) {
+        setIsLoadingListings(false);
+        return;
+      }
+      // Backend returns only current user's listings (including inactive) when mine=1
+      const response = await axiosInstance.get(`${API}/listings/?mine=1`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Filter listings by current user
-      const allListings = response.data;
-      const token2 = localStorage.getItem("access_token");
-      const userResponse = await axiosInstance.get(`${API}/auth/me/`, {
-        headers: { Authorization: `Bearer ${token2}` },
-      });
-      const currentUserId = userResponse.data.id;
-      const userListings = allListings.filter(
-        (listing: any) => listing.owner?.id === currentUserId,
-      );
-      setListings(userListings);
+      const list = response.data?.results ?? response.data ?? [];
+      setListings(Array.isArray(list) ? list : []);
       setIsLoadingListings(false);
     } catch (error) {
       console.error("Error fetching listings:", error);
@@ -130,31 +126,19 @@ export default function ProfilePage() {
         return;
       }
 
-      // Get current user
-      const userResponse = await axiosInstance.get(`${API}/auth/me/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const currentUserId = userResponse.data.id;
-
-      // Fetch all listings (without reviews to avoid large payload)
-      let allListings: any[] = [];
+      // Fetch current user's listings (including inactive) for review aggregation
+      let userListings: any[] = [];
       try {
-        const listingsResponse = await axiosInstance.get(`${API}/listings/`, {
+        const listingsResponse = await axiosInstance.get(`${API}/listings/?mine=1`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        // Handle paginated response (results field) or direct array
-        allListings =
-          listingsResponse.data?.results || listingsResponse.data || [];
+        const list = listingsResponse.data?.results ?? listingsResponse.data ?? [];
+        userListings = Array.isArray(list) ? list : [];
       } catch (listingsError: any) {
         console.error("Error fetching listings:", listingsError);
         setReviews([]);
         return;
       }
-
-      // Filter to only get listings owned by the current user
-      const userListings = allListings.filter(
-        (listing: any) => listing.owner?.id === currentUserId,
-      );
 
       if (userListings.length === 0) {
         setReviews([]);
@@ -510,7 +494,14 @@ export default function ProfilePage() {
           ) : listings.length > 0 ? (
             <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
               {listings.map((listing: any) => (
-                <ListingCard key={listing.id} listing={listing} />
+                <div key={listing.id} className="relative">
+                  {listing.is_active === false && (
+                    <span className="absolute top-2 left-2 z-10 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded">
+                      Hidden from search
+                    </span>
+                  )}
+                  <ListingCard listing={listing} />
+                </div>
               ))}
             </div>
           ) : (

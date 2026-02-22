@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import LocationPicker from "@/components/LocationPicker";
+import Link from "next/link";
 import {
   ArrowLeft,
   Search,
@@ -22,6 +23,8 @@ import {
   Check,
   AlertCircle,
   Flag,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import ReportModal from "@/components/ReportModal";
 import { DayPicker } from "react-day-picker";
@@ -981,10 +984,41 @@ export default function ListingDetail() {
                     </Button>
                   </div>
                 )}
-                {isOwner && (
-                  <p className="text-sm text-gray-500 text-center">
-                    This is your listing
+                {isOwner && data.is_active === false && (
+                  <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-center">
+                    This listing is hidden from search. Only you can see it. <Link href={`/listings/${id}/edit`} className="font-medium underline">Edit</Link> to show it again.
                   </p>
+                )}
+                {isOwner && (
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <Link href={`/listings/${id}/edit`} className="inline-flex justify-center">
+                      <Button variant="outline" className="w-full sm:w-auto gap-2">
+                        <Pencil className="h-4 w-4" />
+                        Edit listing
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      className="w-full sm:w-auto gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                      onClick={async () => {
+                        if (!confirm("Delete this listing? This cannot be undone.")) return;
+                        const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+                        if (!token) return;
+                        try {
+                          await axiosInstance.delete(`${API}/listings/${id}/`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          showToast("Listing deleted", "success");
+                          router.push("/profile");
+                        } catch (e) {
+                          showToast("Could not delete listing", "error");
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete listing
+                    </Button>
+                  </div>
                 )}
               </div>
             </Card>

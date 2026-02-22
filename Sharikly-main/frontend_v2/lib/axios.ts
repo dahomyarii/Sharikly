@@ -1,18 +1,20 @@
 import axios from 'axios'
 
-// Create axios instance with default config
-const axiosInstance = axios.create()
+const DEFAULT_TIMEOUT_MS = 30_000
 
-// Response interceptor to handle token expiration
+// Create axios instance with default config
+const axiosInstance = axios.create({
+  timeout: DEFAULT_TIMEOUT_MS,
+})
+
+// Response interceptor: token expiration, 429, timeout, and optional retry
 axiosInstance.interceptors.response.use(
-  (response) => {
-    // If the request was successful, just return the response
-    return response
-  },
-  (error) => {
+  (response) => response,
+  async (error) => {
+    const config = error.config
+
     if (error.response?.status === 401) {
-      const url = error.config?.url || ''
-      // Don't clear tokens on login/register attempts — 401 there means wrong credentials, not expired token
+      const url = config?.url || ''
       const isAuthEndpoint = url.includes('/auth/token') || url.includes('/auth/register')
       if (!isAuthEndpoint && typeof window !== 'undefined') {
         localStorage.removeItem('access_token')
@@ -22,6 +24,37 @@ axiosInstance.interceptors.response.use(
         window.dispatchEvent(new CustomEvent('userLogout'))
       }
     }
+
+    if (error.response?.status === 429 && typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('globalShowToast', {
+          detail: {
+            message: 'Too many requests. Please wait a moment and try again.',
+            type: 'warning',
+          },
+        })
+      )
+    }
+
+    const isTimeout = error.code === 'ECONNABORTED' || (error.message && error.message.toLowerCase().includes('timeout'))
+    const isNetworkError = !error.response && error.request
+    if ((isTimeout || isNetworkError) && typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('globalShowToast', {
+          detail: {
+            message: isTimeout ? 'Request took too long. Please try again.' : 'Network error. Please check your connection and try again.',
+            type: 'error',
+          },
+        })
+      )
+    }
+
+    // Retry once for GET requests on timeout or network failure (no response)
+    if (!error.response && config && !config.__retried && (config.method === 'get' || config.method === 'GET')) {
+      config.__retried = true
+      return axiosInstance.request(config)
+    }
+
     return Promise.reject(error)
   }
 )

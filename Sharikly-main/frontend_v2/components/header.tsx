@@ -23,6 +23,7 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const notificationsDropdownRef = useRef<HTMLDivElement>(null);
@@ -121,6 +122,20 @@ export default function Header() {
     };
   }, []);
 
+  // Fetch chat unread count when user is logged in
+  useEffect(() => {
+    if (!user || !API) {
+      setChatUnreadCount(0);
+      return;
+    }
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    axiosInstance
+      .get(`${API}/chat/unread-count/`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => setChatUnreadCount(typeof res.data?.count === "number" ? res.data.count : 0))
+      .catch(() => setChatUnreadCount(0));
+  }, [user, pathname]);
+
   // Fetch notifications when user is logged in
   useEffect(() => {
     if (!user || !API) {
@@ -172,9 +187,14 @@ export default function Header() {
               </Link>
               <Link
                 href="/chat"
-                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+                className="relative px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
               >
                 Chat
+                {chatUnreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-orange-500 text-white text-xs font-medium">
+                    {chatUnreadCount > 99 ? "99+" : chatUnreadCount}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/favorites"
@@ -588,6 +608,11 @@ export default function Header() {
               <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
+              {chatUnreadCount > 0 && (
+                <span className="absolute top-1 right-2 min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-orange-500 text-white text-[10px] font-medium">
+                  {chatUnreadCount > 99 ? "99+" : chatUnreadCount}
+                </span>
+              )}
               <span className="text-[10px] mt-0.5 font-medium">Chat</span>
             </Link>
 
