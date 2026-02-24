@@ -31,7 +31,7 @@ export default function ReportModal({ target, targetId, onClose, title }: Report
   const [reason, setReason] = useState<string>('')
   const [details, setDetails] = useState('')
   const [submitting, setSubmitting] = useState(false)
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!reason) return

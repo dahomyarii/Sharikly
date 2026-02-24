@@ -307,7 +307,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50 py-4 sm:py-6 md:py-8 pb-20 md:pb-0">
       <div className="max-w-4xl mx-auto px-3 sm:px-4 mobile-content">
         {/* Profile Header */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-6 rounded-2xl border-gray-200/80 shadow-sm">
           <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
             {/* Avatar Section */}
             <div className="flex-shrink-0">
@@ -422,25 +422,25 @@ export default function ProfilePage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <Card className="p-3 sm:p-4 text-center">
+          <Card className="p-3 sm:p-4 text-center rounded-2xl border-gray-200/80 shadow-sm">
             <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {listings.length}
             </div>
             <div className="text-xs sm:text-sm text-gray-600">Listings</div>
           </Card>
-          <Card className="p-3 sm:p-4 text-center">
+          <Card className="p-3 sm:p-4 text-center rounded-2xl border-gray-200/80 shadow-sm">
             <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {bookingsCount ?? "—"}
             </div>
             <div className="text-xs sm:text-sm text-gray-600">Bookings</div>
           </Card>
-          <Card className="p-3 sm:p-4 text-center">
+          <Card className="p-3 sm:p-4 text-center rounded-2xl border-gray-200/80 shadow-sm">
             <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {reviews.length}
             </div>
             <div className="text-xs sm:text-sm text-gray-600">Reviews</div>
           </Card>
-          <Card className="p-3 sm:p-4 text-center">
+          <Card className="p-3 sm:p-4 text-center rounded-2xl border-gray-200/80 shadow-sm">
             <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {reviews.length > 0
                 ? (
@@ -459,7 +459,7 @@ export default function ProfilePage() {
             <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
             My Bookings
           </h2>
-          <Card className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-gray-100">
+          <Card className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-gray-100 rounded-2xl shadow-sm">
             <div>
               <p className="text-gray-600 mb-1">
                 {bookingsCount !== null

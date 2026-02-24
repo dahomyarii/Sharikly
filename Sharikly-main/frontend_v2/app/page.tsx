@@ -26,6 +26,22 @@ import { useLocale } from "@/components/LocaleProvider";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
+/** Always returns a real Array (safe for .filter, .map, etc.). Handles null, undefined, non-arrays, and paginated { results }. */
+function toListingsArray(value: unknown): any[] {
+  if (value == null) return [];
+  if (Array.isArray(value)) return [...value];
+  const results = (value as { results?: unknown })?.results;
+  if (Array.isArray(results)) return [...results];
+  if (results != null && typeof (results as any).length === "number") return Array.from(results as ArrayLike<any>);
+  return [];
+}
+
+/** Safe .slice: returns a subarray only if the value is a real array; otherwise []. Avoids "slice is not a function". */
+function sliceListings(arr: unknown, start: number, end: number): any[] {
+  if (!Array.isArray(arr)) return [];
+  return arr.slice(start, end);
+}
+
 function buildListingsQuery(params: {
   search: string;
   category: string;
@@ -122,7 +138,11 @@ export default function HomePage() {
     // If token is expired, sending it causes 401 errors
     return axiosInstance
       .get(url)
-      .then((res) => res.data)
+      .then((res) => {
+        const data = res.data;
+        // Normalize: always return a plain array so component never sees paginated/non-array shape
+        return toListingsArray(data);
+      })
       .catch((error) => {
         // If 401 occurs, the interceptor will clear the token
         // Retry once without token for public endpoints
@@ -130,7 +150,7 @@ export default function HomePage() {
           // Token was cleared by interceptor, retry without token
           return axiosInstance
             .get(url)
-            .then((res) => res.data)
+            .then((res) => toListingsArray(res.data))
             .catch(() => []);
         }
 
@@ -166,25 +186,25 @@ export default function HomePage() {
       shouldRetryOnError: false,
     },
   );
-  // Normalize: API may return paginated { results } or plain array
-  const listingsArray = Array.isArray(listings)
-    ? listings
-    : (listings?.results ?? []);
+  // Single source of truth: always a real array (fetcher normalizes, but guard for SWR cache/undefined)
+  const listingsArray: any[] = toListingsArray(listings);
 
-  // Filter listings based on selected category
-  const filteredListings = selectedCategory
+  // Filter by category; still an array
+  const filteredListings: any[] = selectedCategory
     ? listingsArray.filter(
         (listing: any) => listing.category?.id === selectedCategory,
       )
     : listingsArray;
 
-  const featuredService = filteredListings?.[0];
-  const hotServices = filteredListings?.slice(1, 4) ?? [];
-  const recommendations = filteredListings?.slice(4, 10) ?? [];
+  // Only ever call .slice on a value we know is an array
+  const safeList: any[] = toListingsArray(filteredListings);
+  const featuredService = safeList[0];
+  const hotServices = sliceListings(safeList, 1, 4);
+  const recommendations = sliceListings(safeList, 4, 10);
 
   // Set initial favorite state from listings data
   useEffect(() => {
-    const arr = Array.isArray(listings) ? listings : (listings?.results ?? []);
+    const arr = toListingsArray(listings);
     if (arr.length > 0) {
       const favoriteIds = new Set<number>();
       arr.forEach((listing: any) => {
@@ -418,8 +438,8 @@ export default function HomePage() {
           aria-hidden="true"
         />
 
-        <div className="relative z-10 max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-3 sm:mb-5">
+        <div className="relative z-10 max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 text-center mobile-content">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-3 sm:mb-5 drop-shadow-sm">
             {t("hero_title")}
           </h1>
           <p className="text-sm sm:text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-5 sm:mb-8 font-medium">
@@ -433,7 +453,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   onClick={() => setSearchExpanded(true)}
-                  className="w-full sm:w-auto min-h-[48px] bg-white text-neutral-900 hover:bg-neutral-100 rounded-full px-8 text-base font-semibold shadow-lg transition-all duration-300"
+                  className="w-full sm:w-auto min-h-[48px] bg-white text-neutral-900 hover:bg-neutral-100 rounded-full px-8 text-base font-semibold shadow-lg active:scale-[0.98] transition-all duration-200"
                 >
                   <Search className="h-5 w-5 mr-2" />
                   {t("browse")}

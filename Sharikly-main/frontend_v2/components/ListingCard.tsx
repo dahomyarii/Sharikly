@@ -113,7 +113,7 @@ export default function ListingCard({ listing }: { listing: any }) {
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="block border rounded-2xl overflow-hidden hover:shadow-md active:opacity-95 transition"
+      className="block border border-gray-200/80 rounded-2xl overflow-hidden hover:shadow-lg hover:border-gray-300/80 transition-all duration-200 mobile-card"
     >
       <div className="relative h-28 sm:h-44 md:h-48 bg-gray-100">
         <img
@@ -126,11 +126,11 @@ export default function ListingCard({ listing }: { listing: any }) {
         />
         <button
           onClick={handleFavoriteClick}
-          className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full touch-target ${
+          className={`absolute top-2 right-2 sm:top-3 sm:right-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full touch-target shadow-sm ${
             isFavorited
               ? "bg-red-500 text-white"
-              : "bg-white text-gray-600 hover:bg-gray-100 active:bg-gray-200"
-          } transition shadow-sm`}
+              : "bg-white/95 text-gray-600 hover:bg-white hover:text-gray-800 active:scale-95"
+          } transition-all duration-200`}
           aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
         >
           <svg

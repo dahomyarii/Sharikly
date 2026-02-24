@@ -517,10 +517,10 @@ export default function ListingDetail() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-3 py-4 pb-8 sm:px-6 lg:p-8 mobile-content">
+      <div className="max-w-7xl mx-auto px-3 py-4 pb-24 sm:pb-8 sm:px-6 lg:p-8 mobile-content">
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden rounded-2xl border-gray-200/80 shadow-sm">
               {/* Mobile: fixed-height Amazon-style slideshow. Desktop: normal flexible layout. */}
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 p-2 sm:p-4 md:min-h-0">
                 {/* Thumbnails: horizontal strip on mobile (small), vertical on desktop */}
@@ -531,10 +531,10 @@ export default function ListingDetail() {
                       onClick={() => {
                         setMainImage(url);
                       }}
-                      className={`min-w-[56px] w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-lg sm:rounded-xl overflow-hidden flex-shrink-0 transition-all touch-target ${
+                      className={`min-w-[56px] w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-xl overflow-hidden flex-shrink-0 transition-all duration-200 touch-target active:scale-95 ${
                         mainImage === url
                           ? "border-orange-500 ring-2 ring-orange-200"
-                          : "border-gray-200 hover:border-gray-400 active:border-gray-500"
+                          : "border-gray-200 hover:border-gray-300 active:border-gray-400"
                       }`}
                     >
                       <img
@@ -550,7 +550,7 @@ export default function ListingDetail() {
 
                 {/* Main image: forced small box on mobile, flexible on desktop */}
                 <div className="flex-1 relative group min-w-0 min-h-0">
-                  <div className="h-[200px] sm:h-auto sm:aspect-[4/3] sm:max-h-[40vh] md:max-h-[420px] overflow-hidden rounded-lg bg-gray-100">
+                  <div className="h-[320px] sm:h-auto sm:aspect-[4/3] sm:max-h-[40vh] md:max-h-[420px] overflow-hidden rounded-lg bg-gray-100">
                     <img
                       src={mainImage || images[0]}
                       alt={data.title}
@@ -968,7 +968,7 @@ export default function ListingDetail() {
                 {user && !isOwner && (
                   <Button
                     onClick={handleRequestBooking}
-                    className="w-full min-h-[48px] h-14 bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all touch-target"
+                    className="w-full min-h-[52px] h-14 bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl active:scale-[0.99] transition-all duration-200 touch-target"
                   >
                     Send Request
                   </Button>

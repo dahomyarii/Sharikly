@@ -164,7 +164,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-gray-100 px-3 py-2.5 sm:px-4 sm:py-3 md:p-4 flex justify-between items-center min-h-[var(--touch-target-min)] md:min-h-0 gap-2 min-w-0">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200/80 px-3 py-3 sm:px-4 sm:py-3 md:p-4 flex justify-between items-center min-h-[52px] md:min-h-0 gap-2 min-w-0">
         <Link href="/" className="flex items-center gap-2 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 justify-center p-2 -ml-2 rounded-lg active:opacity-80 flex-shrink-0 max-w-[50vw] md:max-w-none">
           <img src="/logo.png" alt="EKRA" className="h-8 w-8 flex-shrink-0" />
           <span className="text-lg sm:text-xl font-bold truncate">EKRA</span>
@@ -547,12 +547,12 @@ export default function Header() {
           paddingRight: "max(0.75rem, var(--safe-area-inset-right))",
         }}
       >
-        <div className="mb-2 rounded-2xl bg-white/90 backdrop-blur-xl border border-orange-200/30 shadow-[0_8px_32px_rgba(0,0,0,0.08)] ring-1 ring-orange-100/50 transition-colors duration-300">
-          <div className="flex justify-around items-center h-16 px-1 gap-0.5">
+        <div className="mb-2 mx-0 rounded-2xl bg-white/95 backdrop-blur-xl border border-gray-200/60 shadow-[0_-4px 24px rgba(0,0,0,0.06)] transition-all duration-300">
+          <div className="flex justify-around items-center h-14 px-0.5 gap-0">
             {/* Home */}
             <Link
               href="/"
-              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl touch-target transition-all duration-300 ease-out active:scale-90 ${
+              className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
                 pathname === "/"
                   ? "bg-orange-50 text-orange-600"
                   : "text-neutral-500 active:bg-neutral-100"
@@ -569,7 +569,7 @@ export default function Header() {
             {/* Browse */}
             <Link
               href="/listings"
-              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl touch-target transition-all duration-300 ease-out active:scale-90 ${
+              className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
                 pathname === "/listings" || (pathname.startsWith("/listings/") && pathname !== "/listings/new" && !pathname.includes("/request_booking"))
                   ? "bg-orange-50 text-orange-600"
                   : "text-neutral-500 active:bg-neutral-100"
@@ -586,7 +586,7 @@ export default function Header() {
             {/* Favorites */}
             <Link
               href="/favorites"
-              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl touch-target transition-all duration-300 ease-out active:scale-90 relative ${
+              className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 relative ${
                 pathname === "/favorites"
                   ? "bg-orange-50 text-orange-600"
                   : "text-neutral-500 active:bg-neutral-100"
@@ -602,7 +602,7 @@ export default function Header() {
             {/* Chat */}
             <Link
               href="/chat"
-              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl touch-target transition-all duration-300 ease-out active:scale-90 relative ${
+              className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 relative ${
                 pathname === "/chat" || pathname.startsWith("/chat/")
                   ? "bg-orange-50 text-orange-600"
                   : "text-neutral-500 active:bg-neutral-100"
@@ -624,11 +624,11 @@ export default function Header() {
             {user ? (
               <Link
                 href="/profile"
-                className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl touch-target transition-all duration-300 ease-out active:scale-90 ${
-                  pathname === "/profile"
-                    ? "bg-orange-50 text-orange-600"
-                    : "text-neutral-500 active:bg-neutral-100"
-                }`}
+className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
+                    pathname === "/profile"
+                      ? "bg-orange-50 text-orange-600"
+                      : "text-neutral-500 active:bg-neutral-100"
+                  }`}
                 title="Profile"
               >
                 <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -641,7 +641,7 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => setShowLogin(true)}
-                className="flex flex-col items-center justify-center min-w-[56px] min-h-[56px] rounded-xl text-neutral-500 active:scale-90 active:bg-neutral-100 touch-target transition-all duration-300 ease-out"
+                className="flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl text-neutral-500 active:scale-95 active:bg-neutral-100 touch-target transition-all duration-200 ease-out"
                 title="Login"
               >
                 <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
