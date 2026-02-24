@@ -434,15 +434,15 @@ export default function HomePage() {
           sizes="100vw"
         />
         <div
-          className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70"
+          className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/55 to-black/75"
           aria-hidden="true"
         />
 
         <div className="relative z-10 max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 text-center mobile-content">
-          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-3 sm:mb-5 drop-shadow-sm">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-3 sm:mb-5 drop-shadow-md [text-shadow:0_2px_8px_rgba(0,0,0,0.3)]">
             {t("hero_title")}
           </h1>
-          <p className="text-sm sm:text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-5 sm:mb-8 font-medium">
+          <p className="text-sm sm:text-lg md:text-xl text-white max-w-2xl mx-auto mb-5 sm:mb-8 font-medium tracking-tight [text-shadow:0_1px_4px_rgba(0,0,0,0.4)]">
             {t("hero_sub")}
           </p>
 
@@ -453,7 +453,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   onClick={() => setSearchExpanded(true)}
-                  className="w-full sm:w-auto min-h-[48px] bg-white text-neutral-900 hover:bg-neutral-100 rounded-full px-8 text-base font-semibold shadow-lg active:scale-[0.98] transition-all duration-200"
+                  className="w-full sm:w-auto min-h-[48px] bg-white text-neutral-900 hover:bg-neutral-50 rounded-full px-8 text-base font-semibold shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                 >
                   <Search className="h-5 w-5 mr-2" />
                   {t("browse")}
@@ -462,7 +462,7 @@ export default function HomePage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full sm:w-auto min-h-[48px] border-2 border-white text-white hover:bg-white/10 rounded-full px-8 text-base font-semibold bg-transparent"
+                    className="w-full sm:w-auto min-h-[48px] border-2 border-white text-white hover:bg-white/15 hover:border-white/90 rounded-full px-8 text-base font-semibold bg-transparent transition-all duration-200 active:scale-[0.98]"
                   >
                     <Plus className="h-5 w-5 mr-2" />
                     {t("list_new")}
@@ -471,7 +471,7 @@ export default function HomePage() {
               </div>
             ) : (
               <div
-                className="rounded-2xl bg-white/95 backdrop-blur-sm shadow-xl border border-white/20 overflow-hidden transition-all duration-300 ease-out hero-search-expand"
+                className="rounded-2xl bg-white/95 backdrop-blur-md shadow-2xl shadow-black/10 border border-white/30 overflow-hidden transition-all duration-300 ease-out hero-search-expand"
               >
                 <div className="flex flex-col sm:flex-row gap-0">
                   <div className="relative flex-1 flex items-center">
@@ -536,7 +536,7 @@ export default function HomePage() {
                         <select
                           value={heroCategory}
                           onChange={(e) => setHeroCategory(e.target.value)}
-                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent"
+                          className="input-focus-ring w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm focus:outline-none focus:border-neutral-400"
                         >
                           <option value="">{t("all_categories")}</option>
                           {(categories || []).map((cat: any) => (
@@ -555,7 +555,7 @@ export default function HomePage() {
                           value={heroCity}
                           onChange={(e) => setHeroCity(e.target.value)}
                           placeholder={t("city")}
-                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent"
+                          className="input-focus-ring w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400"
                         />
                       </div>
                       <div>
@@ -569,7 +569,7 @@ export default function HomePage() {
                           value={heroMinPrice}
                           onChange={(e) => setHeroMinPrice(e.target.value)}
                           placeholder="0"
-                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent"
+                          className="input-focus-ring w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400"
                         />
                       </div>
                       <div>
@@ -583,7 +583,7 @@ export default function HomePage() {
                           value={heroMaxPrice}
                           onChange={(e) => setHeroMaxPrice(e.target.value)}
                           placeholder="—"
-                          className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent"
+                          className="input-focus-ring w-full px-3 py-2.5 rounded-xl border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400"
                         />
                       </div>
                     </div>
@@ -594,7 +594,7 @@ export default function HomePage() {
                       <select
                         value={heroSort}
                         onChange={(e) => setHeroSort(e.target.value)}
-                        className="px-3 py-2 rounded-lg border border-neutral-200 bg-white text-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-400"
+                        className="input-focus-ring px-3 py-2 rounded-lg border border-neutral-200 bg-white text-neutral-900 text-sm focus:outline-none focus:border-neutral-400"
                       >
                         <option value="newest">{t("sort_newest")}</option>
                         <option value="price_asc">{t("sort_price_low")}</option>
@@ -613,7 +613,7 @@ export default function HomePage() {
         {/* Categories — clean horizontal scroll / grid */}
         <section className="border-b border-neutral-100 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-4">
+            <p className="section-label text-xs uppercase tracking-wider text-neutral-400 mb-4">
               {t("category")}
             </p>
             <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
@@ -621,7 +621,7 @@ export default function HomePage() {
                 onClick={() => setSelectedCategory(null)}
                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target ${
                   selectedCategory === null
-                    ? "bg-neutral-900 text-white"
+                    ? "bg-neutral-900 text-white pill-active"
                     : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                 }`}
               >
@@ -637,7 +637,7 @@ export default function HomePage() {
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target ${
                       isSelected
-                        ? "bg-neutral-900 text-white"
+                        ? "bg-neutral-900 text-white pill-active"
                         : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                     }`}
                   >
@@ -652,9 +652,9 @@ export default function HomePage() {
 
         {/* Featured — one hero-style card */}
         {featuredService && (
-          <section className="py-12 md:py-16 bg-neutral-50">
+          <section className="py-12 md:py-16 bg-neutral-50/80">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">
+              <p className="section-label text-xs uppercase tracking-wider text-neutral-400 mb-2">
                 {t("featured")}
               </p>
               <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-8">
@@ -662,7 +662,7 @@ export default function HomePage() {
               </h2>
 
               <Link href={`/listings/${featuredService.id}`} className="block group">
-                <article className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/80 hover:shadow-xl hover:ring-neutral-300/80 transition-all duration-300">
+                <article className="card-hover overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-neutral-200/80 hover:shadow-2xl hover:ring-neutral-300 transition-all duration-300">
                   <div className="grid md:grid-cols-2 gap-0">
                     <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[380px] bg-neutral-100 overflow-hidden">
                       {featuredService.images?.[0]?.image && (
@@ -722,7 +722,7 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+                <p className="section-label text-xs uppercase tracking-wider text-neutral-400 mb-1">
                   {t("listings")}
                 </p>
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900">
@@ -731,12 +731,13 @@ export default function HomePage() {
               </div>
               <Link
                 href="/listings"
-                className="text-sm font-semibold text-neutral-900 hover:underline"
+                className="link-arrow inline-flex items-center gap-1 text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-colors"
               >
-                View all →
+                View all
+                <span className="arrow">→</span>
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {isListingsLoading
                 ? [...Array(6)].map((_, i) => <SkeletonLoader key={i} />)
                 : hotServices.map((service: any) => (
@@ -745,7 +746,7 @@ export default function HomePage() {
                       href={`/listings/${service.id}`}
                       className="group block"
                     >
-                      <article className="overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                      <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
                         <div className="relative aspect-[4/3] max-h-[180px] sm:max-h-none bg-neutral-100 overflow-hidden">
                           {service.images?.[0]?.image && (
                             <img
@@ -755,7 +756,7 @@ export default function HomePage() {
                                   : `${API}${service.images[0].image}`
                               }
                               alt={service.title}
-                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                              className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out"
                               loading="lazy"
                               decoding="async"
                               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -767,10 +768,10 @@ export default function HomePage() {
                               e.preventDefault();
                               handleFavoriteClick(e, service.id);
                             }}
-                            className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center shadow-sm transition-opacity touch-target ${
+                            className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all touch-target ${
                               favorites.has(service.id)
                                 ? "bg-red-500 text-white"
-                                : "bg-white/95 text-neutral-600 hover:bg-white"
+                                : "bg-white/90 text-neutral-600 hover:bg-white hover:scale-105"
                             }`}
                           >
                             <Heart
@@ -835,12 +836,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* More to explore — horizontal scroll; smaller cards on mobile */}
-        <section className="py-6 sm:py-10 md:py-16 bg-neutral-50 border-t border-neutral-100">
+        {/* More to explore — 2-col grid on mobile for better phone layout */}
+        <section className="py-6 sm:py-10 md:py-16 bg-neutral-50/80 border-t border-neutral-100">
           <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
             <div className="flex items-end justify-between mb-4 sm:mb-6">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+                <p className="section-label text-xs uppercase tracking-wider text-neutral-400 mb-1">
                   Explore
                 </p>
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900">
@@ -849,20 +850,16 @@ export default function HomePage() {
               </div>
               <Link
                 href="/listings"
-                className="hidden sm:block text-sm font-semibold text-neutral-900 hover:underline"
+                className="link-arrow hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-colors"
               >
                 View all
+                <span className="arrow">→</span>
               </Link>
             </div>
-            <div
-              className="flex gap-3 sm:gap-5 overflow-x-auto scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0"
-              ref={scrollContainerRef}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
               {isListingsLoading
                 ? [...Array(6)].map((_, i) => (
-                    <div key={i} className="flex-shrink-0 w-[240px] sm:w-[280px]">
+                    <div key={i}>
                       <SkeletonLoader />
                     </div>
                   ))
@@ -870,9 +867,9 @@ export default function HomePage() {
                     <Link
                       key={service.id}
                       href={`/listings/${service.id}`}
-                      className="group flex-shrink-0 w-[240px] sm:w-[280px] block"
+                      className="group block"
                     >
-                      <article className="overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                      <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
                         <div className="relative aspect-[4/3] max-h-[160px] sm:max-h-none bg-neutral-100 overflow-hidden">
                           {service.images?.[0]?.image && (
                             <img
@@ -882,7 +879,7 @@ export default function HomePage() {
                                   : `${API}${service.images[0].image}`
                               }
                               alt={service.title}
-                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                              className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out"
                               loading="lazy"
                               decoding="async"
                               sizes="(max-width: 640px) 240px, 280px"
@@ -894,10 +891,10 @@ export default function HomePage() {
                               e.preventDefault();
                               handleFavoriteClick(e, service.id);
                             }}
-                            className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center shadow-sm touch-target ${
+                            className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all touch-target ${
                               favorites.has(service.id)
                                 ? "bg-red-500 text-white"
-                                : "bg-white/95 text-neutral-600 hover:bg-white"
+                                : "bg-white/90 text-neutral-600 hover:bg-white hover:scale-105"
                             }`}
                           >
                             <Heart

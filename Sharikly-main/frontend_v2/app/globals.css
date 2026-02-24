@@ -136,6 +136,49 @@
   button, a, [role="button"] {
     -webkit-tap-highlight-color: transparent;
   }
+  /* Refined text selection */
+  ::selection {
+    background: oklch(0.205 0 0 / 0.12);
+    color: inherit;
+  }
+}
+
+/* UI enhancement utilities */
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+}
+.section-label {
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.link-arrow {
+  transition: gap 0.2s ease, transform 0.2s ease;
+}
+.link-arrow:hover {
+  gap: 0.5rem;
+}
+.link-arrow .arrow {
+  transition: transform 0.2s ease;
+}
+.link-arrow:hover .arrow {
+  transform: translateX(2px);
+}
+.pill-active {
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.pill-active:active {
+  transform: scale(0.98);
+}
+.input-focus-ring {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.input-focus-ring:focus {
+  box-shadow: 0 0 0 3px oklch(0.205 0 0 / 0.08);
 }
 
 /* Mobile-first: keep listing/card images small on phones so they fit the screen */

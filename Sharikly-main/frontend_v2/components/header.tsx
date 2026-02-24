@@ -164,7 +164,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200/80 px-3 py-3 sm:px-4 sm:py-3 md:p-4 flex justify-between items-center min-h-[52px] md:min-h-0 gap-2 min-w-0">
+      <header className="bg-white/95 backdrop-blur-md border-b border-neutral-200/80 shadow-sm px-3 py-3 sm:px-4 sm:py-3 md:p-4 flex justify-between items-center min-h-[52px] md:min-h-0 gap-2 min-w-0">
         <Link href="/" className="flex items-center gap-2 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 justify-center p-2 -ml-2 rounded-lg active:opacity-80 flex-shrink-0 max-w-[50vw] md:max-w-none">
           <img src="/logo.png" alt="EKRA" className="h-8 w-8 flex-shrink-0" />
           <span className="text-lg sm:text-xl font-bold truncate">EKRA</span>
