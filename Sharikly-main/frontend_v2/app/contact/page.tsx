@@ -1,21 +1,47 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Mail, Phone, Send, CheckCircle, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, Send, CheckCircle, AlertCircle, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import axiosInstance from '@/lib/axios'
+
+const API = process.env.NEXT_PUBLIC_API_BASE
 
 export default function ContactPage() {
   const router = useRouter()
+  const [user, setUser] = useState<{ email?: string; username?: string } | null>(null)
+  const [authChecked, setAuthChecked] = useState(false)
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: ''
+    message: '',
+    phone: ''
   })
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+    const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null
+    if (!token || !storedUser) {
+      setAuthChecked(true)
+      setUser(null)
+      return
+    }
+    try {
+      setUser(JSON.parse(storedUser))
+    } catch {
+      setUser(null)
+    }
+    setAuthChecked(true)
+  }, [])
+
+  useEffect(() => {
+    if (authChecked && !user) {
+      router.replace('/auth/login')
+    }
+  }, [authChecked, user, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -27,27 +53,53 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!formData.name || !formData.email || !formData.message) {
-      setError('Please fill in all fields')
+    if (!formData.message.trim()) {
+      setError('Please enter your message')
+      return
+    }
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+    if (!token || !API) {
+      setError('You must be logged in to send a message.')
+      router.push('/auth/login')
       return
     }
 
     setLoading(true)
-    
+    setError('')
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await axiosInstance.post(
+        `${API}/contact-messages/`,
+        { message: formData.message.trim(), ...(formData.phone.trim() ? { phone: formData.phone.trim() } : {}) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
       setSubmitted(true)
-      setFormData({ name: '', email: '', message: '' })
-      
-      setTimeout(() => {
-        setSubmitted(false)
-      }, 5000)
-    } catch (err) {
-      setError('Failed to send message. Please try again.')
+      setFormData({ message: '', phone: '' })
+      setTimeout(() => setSubmitted(false), 5000)
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        router.push('/auth/login')
+        return
+      }
+      setError(err.response?.data?.detail || err.response?.data?.message || 'Failed to send message. Please try again.')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    )
+  }
+
+  if (authChecked && !user) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-500">Redirecting to login...</p>
+      </div>
+    )
   }
 
   return (
@@ -73,7 +125,7 @@ export default function ContactPage() {
         {/* Title */}
         <div className="text-center space-y-2">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Get in Touch</h2>
-          <p className="text-gray-600">We'd love to hear from you. Send us a message.</p>
+          <p className="text-gray-600">We'll get back to you. Your message is sent from your account email.</p>
         </div>
 
         {/* Contact Info */}
@@ -81,7 +133,7 @@ export default function ContactPage() {
           <a href="mailto:support@ekra.com" className="space-y-2">
             <Mail className="w-6 h-6 text-blue-600 mx-auto" />
             <div>
-              <p className="text-sm text-gray-600">Email</p>
+              <p className="text-sm text-gray-600">Support Email</p>
               <p className="font-semibold text-gray-900">support@ekra.com</p>
             </div>
           </a>
@@ -94,8 +146,20 @@ export default function ContactPage() {
           </a>
         </div>
 
-        {/* Form */}
+        {/* Form — logged in: email sent by default, no payment */}
         <div className="bg-gray-50 rounded-xl p-8 border border-gray-200 space-y-6">
+          <div className="flex items-center gap-2 text-sm text-gray-600 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+            <Lock className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <span>Your message will be sent from your account. No payment required.</span>
+          </div>
+
+          {user?.email && (
+            <div className="text-sm">
+              <span className="text-gray-500">Sending as: </span>
+              <span className="font-medium text-gray-900">{user.email}</span>
+            </div>
+          )}
+
           {submitted && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -115,30 +179,6 @@ export default function ContactPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Name</label>
-              <Input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Your name"
-                className="w-full border-gray-300"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
-              <Input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="your@email.com"
-                className="w-full border-gray-300"
-              />
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Message</label>
               <textarea
                 name="message"
@@ -147,6 +187,19 @@ export default function ContactPage() {
                 placeholder="Tell us how we can help..."
                 rows={5}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">Phone (optional)</label>
+              <Input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="+966 5xxxxxxxx"
+                className="w-full border-gray-300"
               />
             </div>
 

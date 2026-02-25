@@ -51,6 +51,11 @@ urlpatterns = [
         views.ListingAvailabilityView.as_view(),
         name="listing_availability",
     ),
+    path(
+        "listings/<int:pk>/similar/",
+        views.SimilarListingsView.as_view(),
+        name="listing_similar",
+    ),
     # Bookings
     path("bookings/", views.BookingListCreateView.as_view(), name="bookings"),
     path("bookings/<int:pk>/", views.BookingRetrieveView.as_view(), name="booking_detail"),

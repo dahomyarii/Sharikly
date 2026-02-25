@@ -269,8 +269,19 @@ function ListingsPageContent() {
           ))
         ) : (
           <div className="col-span-full text-center py-12 sm:py-16 px-4">
-            <p className="text-gray-500 mb-6">{t("no_listings_found")}</p>
+            <p className="text-gray-600 font-medium mb-1">{t("no_listings_found")}</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Try adjusting your filters or browse all listings.
+            </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              {(debouncedSearch || category || debouncedCity || debouncedMinPrice || debouncedMaxPrice) && (
+                <a
+                  href="/listings"
+                  className="inline-flex items-center justify-center min-h-[44px] px-6 py-3 border border-orange-500 text-orange-600 rounded-xl hover:bg-orange-50 font-medium touch-target"
+                >
+                  Clear filters
+                </a>
+              )}
               <Link
                 href="/listings/new"
                 className="inline-flex items-center justify-center min-h-[44px] px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 font-medium touch-target"

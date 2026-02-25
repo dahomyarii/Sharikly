@@ -74,6 +74,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/how-it-works" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                  How it works
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
                   Contact Us
                 </Link>
@@ -96,23 +101,23 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-6 text-sm uppercase tracking-wider">Legal</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="#" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/privacy" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/terms" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/privacy#cookies" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
                   Cookie Policy
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
-                  Disclaimer
+                <Link href="/contact" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                  Contact Us
                 </Link>
               </li>
             </ul>
@@ -153,11 +158,11 @@ export default function Footer() {
             &copy; 2026 EKRA. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="#" className="text-sm text-gray-500 hover:text-gray-300 transition-colors duration-200">
+            <Link href="/sitemap.xml" className="text-sm text-gray-500 hover:text-gray-300 transition-colors duration-200">
               Sitemap
             </Link>
-            <Link href="#" className="text-sm text-gray-500 hover:text-gray-300 transition-colors duration-200">
-              Status
+            <Link href="/contact" className="text-sm text-gray-500 hover:text-gray-300 transition-colors duration-200">
+              Contact
             </Link>
           </div>
         </div>

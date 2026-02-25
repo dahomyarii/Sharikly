@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import useSWR, { mutate } from "swr";
 import axiosInstance from "@/lib/axios";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -25,6 +25,9 @@ import {
   Flag,
   Pencil,
   Trash2,
+  Share2,
+  MessageCircle,
+  List,
 } from "lucide-react";
 import ReportModal from "@/components/ReportModal";
 import { DayPicker } from "react-day-picker";
@@ -73,10 +76,15 @@ export default function ListingDetail() {
       });
   }, []);
 
-  const { data } = useSWR(id ? `${API}/listings/${id}/` : null, fetcher);
+  const { data, error: listingError } = useSWR(id ? `${API}/listings/${id}/` : null, fetcher);
   const { data: availability } = useSWR<{ booked_ranges: { start: string; end: string }[] }>(
     id ? `${API}/listings/${id}/availability/` : null,
     (url: string) => axiosInstance.get(url).then((r) => r.data)
+  );
+
+  const { data: similarListings = [], isLoading: similarLoading } = useSWR<any[]>(
+    id && API && data ? `${API}/listings/${id}/similar/` : null,
+    (url: string) => axiosInstance.get(url).then((r) => (Array.isArray(r.data) ? r.data : []))
   );
 
   const [user, setUser] = useState<any>(null);
@@ -88,6 +96,8 @@ export default function ListingDetail() {
 
   const [reviews, setReviews] = useState<any[]>([]);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [headerSearch, setHeaderSearch] = useState("");
+  const similarSectionRef = useRef<HTMLDivElement>(null);
 
   const [newRating, setNewRating] = useState<number>(0);
   const [newComment, setNewComment] = useState<string>("");
@@ -145,6 +155,17 @@ export default function ListingDetail() {
   }, [id]);
 
   useEffect(() => {
+    if (!data?.id) return;
+    try {
+      const key = "recently_viewed_listing_ids";
+      const raw = typeof window !== "undefined" ? localStorage.getItem(key) : null;
+      const prev = raw ? (JSON.parse(raw) as number[]) : [];
+      const next = [data.id, ...prev.filter((id) => id !== data.id)].slice(0, 6);
+      localStorage.setItem(key, JSON.stringify(next));
+    } catch (_) {}
+  }, [data?.id]);
+
+  useEffect(() => {
     if (!data) return;
 
     if (data.images?.length) {
@@ -160,6 +181,31 @@ export default function ListingDetail() {
       setIsFavorite(Boolean(data.is_favorited));
     }
   }, [data]);
+
+  const is404 = listingError?.response?.status === 404;
+  if (listingError && is404) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Listing not found</h1>
+          <p className="text-gray-600 mb-6">
+            This listing may have been removed or the link is incorrect.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              onClick={() => router.push("/listings")}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Browse listings
+            </Button>
+            <Button variant="outline" onClick={() => router.back()}>
+              Go back
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!data) {
     return (
@@ -402,6 +448,46 @@ export default function ListingDetail() {
     setNewRating(n);
   };
 
+  const handleShare = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: data?.title || "Listing",
+          text: data?.description?.slice(0, 100) || "",
+          url,
+        });
+        showToast("Link shared", "success");
+      } else {
+        await navigator.clipboard.writeText(url);
+        showToast("Link copied to clipboard", "success");
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") {
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast("Link copied to clipboard", "success");
+        } catch {
+          showToast("Could not share", "error");
+        }
+      }
+    }
+  };
+
+  const scrollToSimilar = () => {
+    similarSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleHeaderSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = headerSearch.trim();
+    if (q) {
+      router.push(`/listings?search=${encodeURIComponent(q)}`);
+    } else {
+      router.push("/listings");
+    }
+  };
+
   const submitReview = async () => {
     if (!user) {
       router.push("/auth/login");
@@ -498,8 +584,9 @@ export default function ListingDetail() {
     <div className="min-h-screen bg-gray-50">
 
       <header className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 text-white px-4 py-3 sticky top-0 z-40 shadow-md" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
-        <div className="max-w-7xl mx-auto flex items-center gap-3">
+        <form onSubmit={handleHeaderSearchSubmit} className="max-w-7xl mx-auto flex items-center gap-3">
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
@@ -510,14 +597,37 @@ export default function ListingDetail() {
           <div className="flex-1 relative min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
             <Input
-              placeholder="Search..."
+              type="search"
+              placeholder="Search listings..."
+              value={headerSearch}
+              onChange={(e) => setHeaderSearch(e.target.value)}
               className="w-full pl-10 min-h-[44px] bg-white border-0 text-gray-800 placeholder:text-gray-400 rounded-xl"
+              aria-label="Search listings"
             />
           </div>
-        </div>
+        </form>
       </header>
 
       <div className="max-w-7xl mx-auto px-3 py-4 pb-24 sm:pb-8 sm:px-6 lg:p-8 mobile-content">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-4" aria-label="Breadcrumb">
+          <Link href="/" className="hover:text-gray-800 transition-colors">Home</Link>
+          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <Link href="/listings" className="hover:text-gray-800 transition-colors">Listings</Link>
+          {data.category?.name && (
+            <>
+              <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <Link href={`/listings?category=${data.category.id}`} className="hover:text-gray-800 transition-colors truncate max-w-[120px] sm:max-w-[200px]">
+                {data.category.name}
+              </Link>
+            </>
+          )}
+          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <span className="text-gray-800 font-medium truncate max-w-[140px] sm:max-w-[280px]" title={data.title}>
+            {data.title}
+          </span>
+        </nav>
+
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             <Card className="overflow-hidden rounded-2xl border-gray-200/80 shadow-sm">
@@ -604,21 +714,52 @@ export default function ListingDetail() {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-1 sm:gap-2 flex-shrink-0">
+                  <Button
+                    onClick={handleShare}
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target rounded-lg"
+                  >
+                    <Share2 className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Share</span>
+                  </Button>
+                  {!isOwner && user && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => router.push("/chat")}
+                      className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target rounded-lg"
+                    >
+                      <MessageCircle className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Message</span>
+                    </Button>
+                  )}
+                  {similarListings.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={scrollToSimilar}
+                      className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target rounded-lg"
+                    >
+                      <List className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Similar</span>
+                    </Button>
+                  )}
                   <Button
                     onClick={() => setShowReportModal(true)}
                     variant="ghost"
                     size="sm"
-                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target"
+                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target rounded-lg"
                   >
-                    <Flag className="h-4 w-4 mr-1" />
-                    Report
+                    <Flag className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Report</span>
                   </Button>
                   <Button
                     onClick={toggleFavorite}
                     variant="ghost"
                     size="icon"
-                    className="hover:bg-gray-100 min-w-[44px] min-h-[44px] touch-target"
+                    className="hover:bg-gray-100 min-w-[44px] min-h-[44px] touch-target rounded-lg"
                   >
                     <Heart
                       className={`h-6 w-6 transition-all ${
@@ -636,6 +777,26 @@ export default function ListingDetail() {
                 <p className="text-gray-600 leading-relaxed whitespace-pre-line">
                   {data.description}
                 </p>
+              </Card>
+
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold text-gray-800 mb-3">
+                  Good to know
+                </h2>
+                <ul className="space-y-3 text-gray-600 text-sm">
+                  <li className="flex gap-2">
+                    <span className="text-gray-400 font-medium shrink-0">Cancellation:</span>
+                    <span>Contact the owner for cancellation policy. You can cancel from My Bookings before payment.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-gray-400 font-medium shrink-0">What to bring:</span>
+                    <span>Only yourself—pick up and return at the agreed location. Return the item in the same condition.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-gray-400 font-medium shrink-0">Questions?</span>
+                    <span>Use the Message button to ask the owner before requesting to book.</span>
+                  </li>
+                </ul>
               </Card>
 
               <Card className="overflow-hidden">
@@ -674,6 +835,11 @@ export default function ListingDetail() {
                         &middot; {reviews.length} review{reviews.length !== 1 ? "s" : ""}
                       </span>
                     </div>
+                    {data.owner?.date_joined && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Member since {new Date(data.owner.date_joined).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                      </p>
+                    )}
                   </div>
                   {!isOwner && user && (
                     <Button
@@ -991,6 +1157,16 @@ export default function ListingDetail() {
                     This listing is hidden from search. Only you can see it. <Link href={`/listings/${id}/edit`} className="font-medium underline">Edit</Link> to show it again.
                   </p>
                 )}
+                {similarListings.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={scrollToSimilar}
+                    className="w-full gap-2 rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    <List className="h-4 w-4" />
+                    View similar listings
+                  </Button>
+                )}
                 {isOwner && (
                   <div className="flex flex-col sm:flex-row gap-2 justify-center">
                     <Link href={`/listings/${id}/edit`} className="inline-flex justify-center">
@@ -1030,6 +1206,86 @@ export default function ListingDetail() {
             </Card>
           </div>
         </div>
+
+        {/* Similar / Recommended listings — real algorithm (same category + price similarity) */}
+        <section
+          ref={similarSectionRef}
+          className="mt-8 sm:mt-12 pt-8 sm:pt-12 border-t border-gray-200"
+        >
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
+            Similar listings
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            More like this — same category, similar price
+          </p>
+
+          {similarLoading && (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="rounded-xl overflow-hidden bg-gray-100 border border-gray-200 animate-pulse">
+                  <div className="aspect-[4/3] bg-gray-200" />
+                  <div className="p-3 space-y-2">
+                    <div className="h-3 bg-gray-200 rounded w-1/3" />
+                    <div className="h-4 bg-gray-200 rounded w-full" />
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!similarLoading && similarListings.length === 0 && (
+            <div className="text-center py-8 rounded-xl bg-gray-50 border border-gray-100">
+              <p className="text-gray-500 mb-2">No similar listings right now.</p>
+              <Link href="/listings" className="text-blue-600 hover:underline font-medium">
+                Browse all listings →
+              </Link>
+            </div>
+          )}
+
+          {!similarLoading && similarListings.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {similarListings.map((item: any) => {
+                const imgUrl =
+                  item.images?.[0]?.image?.startsWith("http")
+                    ? item.images[0].image
+                    : item.images?.[0]?.image
+                      ? `${API}${item.images[0].image}`
+                      : "/hero.jpg";
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/listings/${item.id}`}
+                    className="group block rounded-xl overflow-hidden bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200"
+                  >
+                    <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
+                      <img
+                        src={imgUrl}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="p-3">
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider line-clamp-1">
+                        {item.category?.name || "Listing"}
+                      </span>
+                      <h3 className="font-semibold text-gray-900 mt-0.5 line-clamp-2 group-hover:text-gray-700">
+                        {item.title}
+                      </h3>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-lg font-bold text-blue-600">
+                          ${item.price_per_day}
+                        </span>
+                        <span className="text-xs text-gray-500">/day</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </div>
 
       {isFullscreen && (

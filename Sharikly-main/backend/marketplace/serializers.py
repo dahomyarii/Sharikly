@@ -323,6 +323,8 @@ class ContactMessageSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "name",
+            "email",
             "created_at",
             "admin_response",
             "admin_response_date",

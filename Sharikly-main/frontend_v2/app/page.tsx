@@ -73,6 +73,7 @@ export default function HomePage() {
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [recentlyViewedIds, setRecentlyViewedIds] = useState<number[]>([]);
 
   // Hero expandable search
   const [searchExpanded, setSearchExpanded] = useState(false);
@@ -215,6 +216,23 @@ export default function HomePage() {
       setFavorites(favoriteIds);
     }
   }, [listings]);
+
+  // Recently viewed: read from localStorage (client-only)
+  useEffect(() => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("recently_viewed_listing_ids") : null;
+      if (raw) {
+        const ids = JSON.parse(raw) as number[];
+        if (Array.isArray(ids)) setRecentlyViewedIds(ids);
+      }
+    } catch (_) {}
+  }, []);
+
+  // Recently viewed listings: from current listings, ordered by recent ids (max 4)
+  const recentlyViewedListings = recentlyViewedIds
+    .map((rid) => listingsArray.find((l: any) => l.id === rid))
+    .filter(Boolean)
+    .slice(0, 4) as any[];
 
   const handleFavoriteClick = useCallback(
     async (e: React.MouseEvent, listingId: number) => {
@@ -649,6 +667,61 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Recently viewed — from localStorage, only listings in current feed */}
+        {recentlyViewedListings.length > 0 && !isListingsLoading && (
+          <section className="py-6 sm:py-8 border-b border-neutral-100 bg-white">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
+              <p className="section-label text-xs uppercase tracking-wider text-neutral-400 mb-1">
+                {t("listings")}
+              </p>
+              <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-4 sm:mb-6">
+                Recently viewed
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                {recentlyViewedListings.map((service: any) => (
+                  <Link
+                    key={service.id}
+                    href={`/listings/${service.id}`}
+                    className="group block"
+                  >
+                    <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                      <div className="relative aspect-[4/3] max-h-[140px] sm:max-h-none bg-neutral-100 overflow-hidden">
+                        {service.images?.[0]?.image && (
+                          <img
+                            src={
+                              service.images[0].image.startsWith("http")
+                                ? service.images[0].image
+                                : `${API}${service.images[0].image}`
+                            }
+                            alt={service.title}
+                            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out"
+                            loading="lazy"
+                            sizes="(max-width: 768px) 50vw, 25vw"
+                          />
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider line-clamp-1">
+                          {service.category?.name || t("listing")}
+                        </span>
+                        <h3 className="text-sm font-semibold text-neutral-900 mt-0.5 line-clamp-2 group-hover:text-neutral-700">
+                          {service.title}
+                        </h3>
+                        <div className="mt-2 flex items-baseline gap-1">
+                          <span className="text-base font-bold text-neutral-900">
+                            ${service.price_per_day}
+                          </span>
+                          <span className="text-xs text-neutral-500">/day</span>
+                        </div>
+                      </div>
+                    </article>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Featured — one hero-style card */}
         {featuredService && (

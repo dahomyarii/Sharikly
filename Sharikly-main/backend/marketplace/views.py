@@ -583,6 +583,25 @@ class ListingAvailabilityView(APIView):
         return Response({"booked_ranges": booked_ranges})
 
 
+class SimilarListingsView(APIView):
+    """Return listings similar to the given one: same category, then by price similarity, then newest. No auth required."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, pk):
+        from django.db.models import F, Value, DecimalField
+        from django.db.models.functions import Abs
+
+        current = get_object_or_404(Listing, pk=pk)
+        qs = Listing.objects.filter(is_active=True).exclude(pk=pk)
+        if current.category_id:
+            qs = qs.filter(category_id=current.category_id)
+        qs = qs.annotate(
+            price_diff=Abs(F("price_per_day") - Value(current.price_per_day, output_field=DecimalField(max_digits=10, decimal_places=2)))
+        ).order_by("price_diff", "-created_at")[:8]
+        serializer = ListingSerializer(qs, many=True, context={"request": request})
+        return Response(serializer.data)
+
+
 def _booking_overlaps(listing, start, end):
     """True if [start, end] overlaps any PENDING or CONFIRMED booking for listing."""
     from django.db.models import Q
@@ -1262,7 +1281,7 @@ class ReportCreateView(generics.CreateAPIView):
 
 # --- CONTACT MESSAGE VIEWS ---
 class ContactMessageListCreateView(generics.ListCreateAPIView):
-    """Create contact messages (public) and list them (admin only)"""
+    """Create contact messages (login required; name/email from user). List is admin only."""
     queryset = ContactMessage.objects.all()
     serializer_class = ContactMessageSerializer
     permission_classes = [permissions.AllowAny]
@@ -1274,17 +1293,23 @@ class ContactMessageListCreateView(generics.ListCreateAPIView):
         return ContactMessage.objects.none()
 
     def get_permissions(self):
-        """Allow anyone to create, but only admins to list"""
+        """POST requires login; only admins can list"""
         if self.request.method == "POST":
-            return [permissions.AllowAny()]
+            return [permissions.IsAuthenticated()]
         return [permissions.IsAdminUser()]
 
     def create(self, request, *args, **kwargs):
-        """Create a new contact message"""
+        """Create a new contact message; name and email are set from the logged-in user."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        name = getattr(user, "username", None) or getattr(user, "get_full_name", lambda: "")() or user.email or "User"
+        email = user.email
+        serializer.save(name=name, email=email)
 
 
 class ContactMessageDetailView(generics.RetrieveUpdateDestroyAPIView):

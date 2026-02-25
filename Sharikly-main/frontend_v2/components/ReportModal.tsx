@@ -1,10 +1,17 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import axiosInstance from '@/lib/axios'
 import { useLocale } from '@/components/LocaleProvider'
 import { useToast } from '@/components/ui/toast'
 import { X, AlertCircle } from 'lucide-react'
+
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  return Array.from(container.querySelectorAll<HTMLElement>(selector)).filter(
+    (el) => !el.hasAttribute('disabled') && el.offsetParent !== null
+  )
+}
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -31,7 +38,41 @@ export default function ReportModal({ target, targetId, onClose, title }: Report
   const [reason, setReason] = useState<string>('')
   const [details, setDetails] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  // Focus trap and Escape to close
+  useEffect(() => {
+    const el = modalRef.current
+    if (!el) return
+    const focusable = getFocusableElements(el)
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    first?.focus()
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      if (e.key !== 'Tab') return
+      const current = document.activeElement as HTMLElement
+      if (!current || !el.contains(current)) return
+      if (e.shiftKey) {
+        if (current === first) {
+          e.preventDefault()
+          last?.focus()
+        }
+      } else {
+        if (current === last) {
+          e.preventDefault()
+          first?.focus()
+        }
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!reason) return
@@ -66,14 +107,14 @@ export default function ReportModal({ target, targetId, onClose, title }: Report
   const displayTitle = title ?? (target === 'listing' ? t('report_listing') : t('report_user'))
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+      <div ref={modalRef} className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
               <AlertCircle className="w-4 h-4 text-red-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900">{displayTitle}</h2>
+            <h2 id="report-modal-title" className="text-lg font-semibold text-gray-900">{displayTitle}</h2>
           </div>
           <button
             type="button"

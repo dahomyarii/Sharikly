@@ -300,6 +300,11 @@ function BookingsPageContent() {
                       : booking.status === 'CANCELLED'
                         ? 'Cancelled'
                         : booking.status
+              const paid = booking.payment_status === 'PAID'
+              const declinedOrCancelled = booking.status === 'DECLINED' || booking.status === 'CANCELLED'
+              const step1 = true
+              const step2 = booking.status !== 'PENDING' || declinedOrCancelled
+              const step3 = paid
               const canCancel =
                 booking.status !== 'CANCELLED' &&
                 booking.status !== 'DECLINED' &&
@@ -342,6 +347,39 @@ function BookingsPageContent() {
                         {new Date(booking.start_date).toLocaleDateString()} –{' '}
                         {new Date(booking.end_date).toLocaleDateString()}
                       </p>
+                      {/* Status timeline: Requested → Accepted → Paid */}
+                      {!declinedOrCancelled && (
+                        <div className="flex items-center gap-0 mt-3 py-2">
+                          {[
+                            { label: 'Requested', done: step1 },
+                            { label: 'Accepted', done: step2 },
+                            { label: 'Paid', done: step3 },
+                          ].map((s, i) => (
+                            <div key={i} className="flex flex-1 items-center">
+                              <div className="flex flex-col items-center flex-1">
+                                <div
+                                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-medium ${
+                                    s.done
+                                      ? 'bg-green-600 border-green-600 text-white'
+                                      : 'border-gray-200 bg-white text-gray-400'
+                                  }`}
+                                >
+                                  {s.done ? <Check className="h-3 w-3" /> : i + 1}
+                                </div>
+                                <span className="text-[10px] sm:text-xs text-gray-500 mt-1 truncate w-full text-center">{s.label}</span>
+                              </div>
+                              {i < 2 && (
+                                <div className={`flex-1 h-0.5 mx-0.5 ${s.done ? 'bg-green-600' : 'bg-gray-200'}`} />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {declinedOrCancelled && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-xs text-gray-500">Requested → {booking.status === 'DECLINED' ? 'Declined' : 'Cancelled'}</span>
+                        </div>
+                      )}
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <Link
                           href={`/bookings/${booking.id}/receipt`}
