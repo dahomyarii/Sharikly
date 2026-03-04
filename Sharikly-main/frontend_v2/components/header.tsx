@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useLocale } from "./LocaleProvider";
 import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
-import ThemeToggle from "./ThemeToggle";
+import { ThemeToggle } from "./ThemeToggle";
 import axiosInstance from "@/lib/axios";
 import { Bell } from "lucide-react";
 
