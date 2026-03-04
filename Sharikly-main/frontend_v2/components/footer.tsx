@@ -6,7 +6,7 @@ import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'luc
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-gray-900 via-gray-800 to-black text-gray-300 py-8 sm:py-12 md:py-16 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-16">
+    <footer className="bg-card border-t border-border text-muted-foreground py-8 sm:py-12 md:py-16 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-16">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
         {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-12 mb-8 sm:mb-12">
@@ -14,24 +14,24 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <div className="mb-6 flex items-center gap-2">
               <img src="/logo.png" alt="EKRA" className="h-8 w-8" />
-              <h2 className="text-white font-bold text-2xl bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+              <h2 className="text-foreground font-bold text-2xl bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                 EKRA
               </h2>
             </div>
-            <p className="text-sm text-gray-400 leading-relaxed mb-6">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
               A modern marketplace platform connecting buyers and sellers in your community.
             </p>
             <div className="flex gap-3">
-              <Link href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-blue-600 transition-colors duration-200">
+              <Link href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
                 <Facebook className="w-4 h-4" />
               </Link>
-              <Link href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-blue-600 transition-colors duration-200">
+              <Link href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
                 <Twitter className="w-4 h-4" />
               </Link>
-              <Link href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-blue-600 transition-colors duration-200">
+              <Link href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
                 <Instagram className="w-4 h-4" />
               </Link>
-              <Link href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-blue-600 transition-colors duration-200">
+              <Link href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
                 <Linkedin className="w-4 h-4" />
               </Link>
             </div>
@@ -39,25 +39,25 @@ export default function Footer() {
 
           {/* Services Column */}
           <div>
-            <h3 className="text-white font-semibold mb-6 text-sm uppercase tracking-wider">Services</h3>
+            <h3 className="text-foreground font-semibold mb-6 text-sm uppercase tracking-wider">Services</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/listings" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/listings" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   Browse Listings
                 </Link>
               </li>
               <li>
-                <Link href="/listings?filter=new" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/listings?filter=new" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   New Items
                 </Link>
               </li>
               <li>
-                <Link href="/listings?filter=featured" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/listings?filter=featured" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   Featured Items
                 </Link>
               </li>
               <li>
-                <Link href="/favorites" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/favorites" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   My Favorites
                 </Link>
               </li>
@@ -66,30 +66,30 @@ export default function Footer() {
 
           {/* Company Column */}
           <div>
-            <h3 className="text-white font-semibold mb-6 text-sm uppercase tracking-wider">Company</h3>
+            <h3 className="text-foreground font-semibold mb-6 text-sm uppercase tracking-wider">Company</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/about" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   How it works
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link href="/careers" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/careers" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   Careers
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   Blog & News
                 </Link>
               </li>
@@ -98,25 +98,25 @@ export default function Footer() {
 
           {/* Legal Column */}
           <div>
-            <h3 className="text-white font-semibold mb-6 text-sm uppercase tracking-wider">Legal</h3>
+            <h3 className="text-foreground font-semibold mb-6 text-sm uppercase tracking-wider">Legal</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/privacy" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/privacy#cookies" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/privacy#cookies" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   Cookie Policy
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   Contact Us
                 </Link>
               </li>
@@ -125,23 +125,23 @@ export default function Footer() {
 
           {/* Contact Column */}
           <div>
-            <h3 className="text-white font-semibold mb-6 text-sm uppercase tracking-wider">Get in Touch</h3>
+            <h3 className="text-foreground font-semibold mb-6 text-sm uppercase tracking-wider">Get in Touch</h3>
             <ul className="space-y-3">
               <li className="flex gap-3 items-start">
-                <Mail className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                <a href="mailto:support@ekra.com" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Mail className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                <a href="mailto:support@ekra.com" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   support@ekra.com
                 </a>
               </li>
               <li className="flex gap-3 items-start">
-                <Phone className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                <a href="tel:+966112345678" className="text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Phone className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                <a href="tel:+966112345678" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                     +966 54 292 1670
                 </a>
               </li>
               <li className="flex gap-3 items-start">
-                <MapPin className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-400 text-sm">
+                <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                <span className="text-muted-foreground text-sm">
                   Riyadh, Saudi Arabia
                 </span>
               </li>
@@ -150,18 +150,18 @@ export default function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-700 my-8"></div>
+        <div className="border-t border-border my-8"></div>
 
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             &copy; 2026 EKRA. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="/sitemap.xml" className="text-sm text-gray-500 hover:text-gray-300 transition-colors duration-200">
+            <Link href="/sitemap.xml" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
               Sitemap
             </Link>
-            <Link href="/contact" className="text-sm text-gray-500 hover:text-gray-300 transition-colors duration-200">
+            <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
               Contact
             </Link>
           </div>

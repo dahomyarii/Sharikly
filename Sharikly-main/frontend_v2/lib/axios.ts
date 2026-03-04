@@ -50,6 +50,7 @@ axiosInstance.interceptors.response.use(
     }
 
     // Retry once for GET requests on timeout or network failure (no response)
+    // __retried is a one-time guard on the request config to prevent infinite retry
     if (!error.response && config && !config.__retried && (config.method === 'get' || config.method === 'GET')) {
       config.__retried = true
       return axiosInstance.request(config)

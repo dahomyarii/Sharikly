@@ -5,7 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-/** Safe date format (no dateStyle/timeStyle) for browsers that reject those options */
+/** Safe date format (no dateStyle/timeStyle) for browsers that reject those options.
+ * Returns empty string for null/undefined/NaN; invalid or unsupported dates fall back to ISO slice (YYYY-MM-DD HH:mm). */
 export function safeFormatDate(date: Date | string | number | null | undefined): string {
   if (date == null) return ""
   const d = new Date(date)

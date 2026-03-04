@@ -1,17 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.core.mail import EmailMultiAlternatives
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
-import os
 
 from .tokens import email_verification_token, password_reset_token
 
 User = get_user_model()
 
 
-def _build_verification_html(username, verify_url):
+def _build_verification_html(username: str, verify_url: str) -> str:
     """Build a modern black & white HTML verification email."""
     display_name = username or "there"
     return f"""\
@@ -116,12 +115,12 @@ def _build_verification_html(username, verify_url):
 </html>"""
 
 
-def send_verification_email(user):
+def send_verification_email(user: User) -> None:
     """Send a verification email with a beautiful HTML template."""
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = email_verification_token.make_token(user)
 
-    frontend_url = os.getenv("FRONTEND_URL", "https://ekra.app")
+    frontend_url = settings.FRONTEND_URL
     verify_url = f"{frontend_url}/verify-email?uid={uid}&token={token}"
 
     subject = "Verify your email — Ekra"
@@ -147,7 +146,7 @@ def send_verification_email(user):
     email.send()
 
 
-def verify_email(request):
+def verify_email(request: HttpRequest) -> JsonResponse:
     uid = request.GET.get("uid")
     token = request.GET.get("token")
 
@@ -165,7 +164,7 @@ def verify_email(request):
     return JsonResponse({"error": "Token expired or invalid"}, status=400)
 
 
-def _build_reset_html(username, reset_url):
+def _build_reset_html(username: str, reset_url: str) -> str:
     """Build Ekra-style HTML for password reset email."""
     display_name = username or "there"
     return f"""\
@@ -224,11 +223,11 @@ def _build_reset_html(username, reset_url):
 </html>"""
 
 
-def send_password_reset_email(user):
+def send_password_reset_email(user: User) -> None:
     """Send password reset email with uid and token link."""
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = password_reset_token.make_token(user)
-    frontend_url = os.getenv("FRONTEND_URL", "https://ekra.app")
+    frontend_url = settings.FRONTEND_URL
     reset_url = f"{frontend_url}/auth/reset-password?uid={uid}&token={token}"
     subject = "Reset your password — Ekra"
     plain_text = (

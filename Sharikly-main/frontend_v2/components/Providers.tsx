@@ -1,5 +1,6 @@
 'use client'
 
+import { ThemeProvider } from "next-themes"
 import { SWRConfig } from "swr"
 import { ToastProvider } from "@/components/ui/toast"
 import { ProfileSetupProvider } from "@/contexts/ProfileSetupContext"
@@ -17,14 +18,16 @@ const swrConfig = {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SWRConfig value={swrConfig}>
-      <ToastProvider>
-        <ProfileSetupProvider>
-          {children}
-          <GlobalProfileSetupModal />
-        </ProfileSetupProvider>
-      </ToastProvider>
-    </SWRConfig>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
+      <SWRConfig value={swrConfig}>
+        <ToastProvider>
+          <ProfileSetupProvider>
+            {children}
+            <GlobalProfileSetupModal />
+          </ProfileSetupProvider>
+        </ToastProvider>
+      </SWRConfig>
+    </ThemeProvider>
   )
 }
 

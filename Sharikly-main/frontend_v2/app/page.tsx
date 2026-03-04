@@ -23,43 +23,25 @@ import {
 import Link from "next/link";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import { useLocale } from "@/components/LocaleProvider";
+import { toListingsArray, sliceListings, buildListingsQuery } from "@/lib/listingsUtils";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
-/** Always returns a real Array (safe for .filter, .map, etc.). Handles null, undefined, non-arrays, and paginated { results }. */
-function toListingsArray(value: unknown): any[] {
-  if (value == null) return [];
-  if (Array.isArray(value)) return [...value];
-  const results = (value as { results?: unknown })?.results;
-  if (Array.isArray(results)) return [...results];
-  if (results != null && typeof (results as any).length === "number") return Array.from(results as ArrayLike<any>);
-  return [];
-}
+const CATEGORY_COLORS = [
+  "from-pink-500 to-rose-500",
+  "from-blue-500 to-cyan-500",
+  "from-purple-500 to-violet-500",
+  "from-orange-500 to-amber-500",
+  "from-green-500 to-emerald-500",
+  "from-red-500 to-pink-500",
+];
 
-/** Safe .slice: returns a subarray only if the value is a real array; otherwise []. Avoids "slice is not a function". */
-function sliceListings(arr: unknown, start: number, end: number): any[] {
-  if (!Array.isArray(arr)) return [];
-  return arr.slice(start, end);
-}
-
-function buildListingsQuery(params: {
-  search: string;
-  category: string;
-  city: string;
-  min_price: string;
-  max_price: string;
-  order: string;
-}): string {
-  const sp = new URLSearchParams();
-  if (params.search.trim()) sp.set("search", params.search.trim());
-  if (params.category) sp.set("category", params.category);
-  if (params.city.trim()) sp.set("city", params.city.trim());
-  if (params.min_price) sp.set("min_price", params.min_price);
-  if (params.max_price) sp.set("max_price", params.max_price);
-  if (params.order && params.order !== "newest") sp.set("order", params.order);
-  const qs = sp.toString();
-  return qs ? `?${qs}` : "";
-}
+const getCategoryColorById = (id: number) => {
+  if (!CATEGORY_COLORS.length) return "from-blue-500 to-cyan-500";
+  const safeId = Number.isFinite(id) ? Math.abs(id) : 0;
+  const index = safeId % CATEGORY_COLORS.length;
+  return CATEGORY_COLORS[index];
+};
 
 export default function HomePage() {
   const { t } = useLocale();
@@ -376,13 +358,13 @@ export default function HomePage() {
 
   // Map category names to icons and colors for display
   const getCategoryIcon = (categoryName: string) => {
-    const iconMap: { [key: string]: { icon: any; color: string } } = {
-      Weddings: { icon: Sparkles, color: "from-pink-500 to-rose-500" },
-      Corporate: { icon: Briefcase, color: "from-blue-500 to-cyan-500" },
-      Music: { icon: Music, color: "from-purple-500 to-violet-500" },
-      Photography: { icon: Camera, color: "from-orange-500 to-amber-500" },
-      Catering: { icon: Utensils, color: "from-green-500 to-emerald-500" },
-      Audio: { icon: Mic, color: "from-red-500 to-pink-500" },
+    const iconMap: { [key: string]: { icon: any } } = {
+      Weddings: { icon: Sparkles },
+      Corporate: { icon: Briefcase },
+      Music: { icon: Music },
+      Photography: { icon: Camera },
+      Catering: { icon: Utensils },
+      Audio: { icon: Mic },
     };
 
     // Try exact match first, then partial match
@@ -395,7 +377,7 @@ export default function HomePage() {
     }
 
     // Default icon
-    return { icon: Sparkles, color: "from-blue-500 to-cyan-500" };
+    return { icon: Sparkles };
   };
 
   // Use only listing.average_rating / listing.reviews — never fetch (prevents 429)
@@ -448,11 +430,11 @@ export default function HomePage() {
           alt=""
           fetchPriority="high"
           decoding="async"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center brightness-110"
           sizes="100vw"
         />
         <div
-          className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/55 to-black/75"
+          className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60"
           aria-hidden="true"
         />
 
@@ -647,16 +629,18 @@ export default function HomePage() {
                 {t("all_categories")}
               </button>
               {categories.map((cat) => {
-                const { icon: IconComponent, color } = getCategoryIcon(cat.name);
+                const { icon: IconComponent } = getCategoryIcon(cat.name);
                 const isSelected = selectedCategory === cat.id;
+                const gradientColors = getCategoryColorById(cat.id);
+                const gradientBackground = `bg-gradient-to-r ${gradientColors}`;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target ${
+                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target ${gradientBackground} ${
                       isSelected
-                        ? "bg-neutral-900 text-white pill-active"
-                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                        ? "text-white shadow-md scale-[1.02] pill-active"
+                        : "text-white/90 opacity-90 hover:opacity-100"
                     }`}
                   >
                     <IconComponent className="h-4 w-4" />

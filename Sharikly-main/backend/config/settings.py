@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     "anymail",  # Email backend for Amazon SES
     "accounts",
     "marketplace",
-
+    "drf_spectacular",
 ]
 
 # Middleware
@@ -152,6 +152,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     # Rate limiting: anonymous and authenticated users
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
@@ -200,3 +201,13 @@ ANYMAIL = {
 }
 
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# API schema (drf-spectacular)
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Sharikly API",
+    "DESCRIPTION": "API for Sharikly marketplace",
+    "VERSION": "1.0.0",
+}
+
+# Frontend base URL for verification/reset links (no hardcoded URL in views)
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://ekra.app")

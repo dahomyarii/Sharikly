@@ -703,8 +703,8 @@ export default function SettingsPage() {
         <div className="flex flex-col md:flex-row gap-5 md:gap-6">
           {/* Sidebar (desktop) / Tabs (mobile) */}
           <nav className="md:w-56 flex-shrink-0">
-            {/* Mobile: horizontal scroll tabs — touch-friendly */}
-            <div className="flex md:hidden gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+            {/* Mobile: tabs wrap to fit screen */}
+            <div className="flex md:hidden flex-wrap gap-2 pb-2">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon
                 const isActive = activeSection === item.id

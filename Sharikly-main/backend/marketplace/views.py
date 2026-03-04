@@ -24,8 +24,10 @@ from accounts.views import send_verification_email, send_password_reset_email
 from accounts.tokens import email_verification_token, password_reset_token
 from rest_framework import viewsets
 import requests
+import logging
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 # --- Auth Views ---
@@ -49,9 +51,8 @@ class RegisterView(generics.CreateAPIView):
         # Send verification email
         try:
             send_verification_email(user)
-        except Exception as e:
-            # Log error but don't fail registration
-            print(f"Error sending verification email: {e}")
+        except Exception:
+            logger.error("Verification email delivery failed")
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
@@ -100,9 +101,8 @@ def _create_notification(user, notification_type, title, body: str = "", link: s
             body=body,
             link=link,
         )
-    except Exception as e:
-        # Do not break main request flow if notification fails
-        print(f"[notifications] Failed to create notification: {e}")
+    except Exception:
+        logger.error("Failed to create notification")
 
 
 def _send_notification_email(to_email: str, subject: str, plain_message: str):
@@ -116,8 +116,8 @@ def _send_notification_email(to_email: str, subject: str, plain_message: str):
             recipient_list=[to_email],
             fail_silently=True,
         )
-    except Exception as e:
-        print(f"[email] Failed to send notification email: {e}")
+    except Exception:
+        logger.error("Notification email delivery failed")
 
 
 class BlockUserView(APIView):
@@ -277,8 +277,8 @@ class PasswordResetRequestView(APIView):
         if user:
             try:
                 send_password_reset_email(user)
-            except Exception as e:
-                print(f"Error sending password reset email: {e}")
+            except Exception:
+                logger.error("Email delivery failed for reset flow")
         return Response(
             {"detail": "If an account exists with this email, you will receive a password reset link."},
             status=status.HTTP_200_OK,
@@ -412,7 +412,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                         status=status.HTTP_403_FORBIDDEN,
                     )
             except User.DoesNotExist:
-                pass  # Let the parent handle "no active account" error
+                logger.debug("No user for email, parent will return 401")
         
         return super().post(request, *args, **kwargs)
 
@@ -432,8 +432,8 @@ class ResendVerificationView(APIView):
         if user and not user.is_email_verified:
             try:
                 send_verification_email(user)
-            except Exception as e:
-                print(f"Error resending verification email: {e}")
+            except Exception:
+                logger.error("Resend verification email delivery failed")
         # Same message whether we sent or not (avoid email enumeration)
         return Response(
             {"detail": "If your email is not verified, we've sent a new verification link. Please check your inbox."},
@@ -483,7 +483,7 @@ class ListingListCreateView(generics.ListCreateAPIView):
             try:
                 qs = qs.filter(category_id=int(category_id))
             except ValueError:
-                pass
+                logger.debug("Invalid category filter value")
         city = (self.request.query_params.get("city") or "").strip()
         if city:
             qs = qs.filter(city__icontains=city)
@@ -492,13 +492,13 @@ class ListingListCreateView(generics.ListCreateAPIView):
             try:
                 qs = qs.filter(price_per_day__gte=float(min_price))
             except ValueError:
-                pass
+                logger.debug("Invalid min_price filter value")
         max_price = self.request.query_params.get("max_price")
         if max_price is not None and max_price != "":
             try:
                 qs = qs.filter(price_per_day__lte=float(max_price))
             except ValueError:
-                pass
+                logger.debug("Invalid max_price filter value")
         # Ordering
         order = self.request.query_params.get("order") or "newest"
         if order == "price_asc":
@@ -901,6 +901,7 @@ class BookingCreateCheckoutSessionView(APIView):
                     err = msg.json()
                     detail = err.get("message") or err.get("detail") or str(e)
                 except Exception:
+                    logger.debug("Could not parse error response JSON")
                     detail = str(e)
             else:
                 detail = str(e)
@@ -932,7 +933,7 @@ class MoyasarPaymentCallbackView(APIView):
                 booking.payment_status = Booking.PaymentStatus.PAID
                 booking.save(update_fields=["payment_status"])
         except Exception:
-            pass
+            logger.warning("Webhook: failed to update booking payment status")
         return Response(status=status.HTTP_200_OK)
 
 

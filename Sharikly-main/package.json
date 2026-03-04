@@ -14,7 +14,13 @@
   "description": "A website with the look and flow of a peer-to-peer rental marketplace (inspired by FatLlama) with multilingual support (English, Arabic, Spanish). **This is not an exact clone**—branding and assets are original.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "help": "node scripts/help.js",
+    "backend": "node scripts/run.js backend",
+    "frontend": "node scripts/run.js frontend",
+    "dahomify": "node scripts/run.js dahomify",
+    "docker": "node scripts/run.js docker",
+    "cursor-task": "node scripts/cursor_task.js"
   },
   "repository": {
     "type": "git",

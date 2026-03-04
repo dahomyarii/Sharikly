@@ -49,6 +49,11 @@ local_settings.py
 *.swp
 *.swo
 
+# Cursor / Desloppify workspace
+.cursor/
+.desloppify/
+desloppify-workspace/
+
 # OS
 Thumbs.db
 .DS_Store

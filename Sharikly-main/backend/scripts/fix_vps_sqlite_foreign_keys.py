@@ -5,8 +5,12 @@ Run this on VPS to update foreign key references in SQLite database.
 """
 
 import os
+import logging
 import django
 from django.db import connection
+
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+logger = logging.getLogger(__name__)
 
 # Setup Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
@@ -26,7 +30,7 @@ def fix_foreign_keys():
         
         tables = [row[0] for row in cursor.fetchall()]
         
-        print(f"Found {len(tables)} marketplace tables")
+        logger.info("Found %s marketplace tables", len(tables))
         
         # Check which tables reference marketplace_user
         problematic_tables = []
@@ -39,26 +43,24 @@ def fix_foreign_keys():
             for col in columns:
                 if 'user' in col[1].lower() and 'id' in col[1].lower():
                     problematic_tables.append(table)
-                    print(f"  - {table} has user foreign key")
+                    logger.info("  - %s has user foreign key", table)
                     break
         
         if not problematic_tables:
-            print("✓ No foreign key issues found")
+            logger.info("✓ No foreign key issues found")
             return
         
-        print(f"\n⚠ Found {len(problematic_tables)} tables with user foreign keys")
-        print("Note: SQLite foreign keys are handled by Django's ORM.")
-        print("The migration should work if accounts.0001_initial is applied first.")
-        print("\nTry running:")
-        print("  python manage.py migrate accounts 0001_initial --fake")
-        print("  python manage.py migrate marketplace 0018_delete_user --fake")
-        print("  python manage.py migrate")
+        logger.warning("⚠ Found %s tables with user foreign keys", len(problematic_tables))
+        logger.info("Note: SQLite foreign keys are handled by Django's ORM.")
+        logger.info("The migration should work if accounts.0001_initial is applied first.")
+        logger.info("Try running:")
+        logger.info("  python manage.py migrate accounts 0001_initial --fake")
+        logger.info("  python manage.py migrate marketplace 0018_delete_user --fake")
+        logger.info("  python manage.py migrate")
 
 if __name__ == '__main__':
     try:
         fix_foreign_keys()
-    except Exception as e:
-        print(f"✗ Error: {e}")
-        import traceback
-        traceback.print_exc()
+    except Exception:
+        logger.exception("✗ Error")
 

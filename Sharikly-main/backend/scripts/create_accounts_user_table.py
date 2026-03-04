@@ -5,7 +5,11 @@ Run this on VPS to fix the missing accounts_user table issue.
 """
 
 import os
+import logging
 import django
+
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+logger = logging.getLogger(__name__)
 
 # Setup Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
@@ -23,17 +27,17 @@ def create_accounts_user_table():
             WHERE type='table' AND (name LIKE '%user%' OR name LIKE '%User%')
         """)
         tables = [row[0] for row in cursor.fetchall()]
-        print(f"Found user-related tables: {tables}")
+        logger.info("Found user-related tables: %s", tables)
         
         # Check if accounts_user exists
         if 'accounts_user' in tables:
-            print("✓ accounts_user table already exists")
+            logger.info("✓ accounts_user table already exists")
             return
         
         # Check if marketplace_user exists
         if 'marketplace_user' in tables:
-            print("⚠ Found marketplace_user table")
-            print("Creating accounts_user table by copying structure...")
+            logger.info("⚠ Found marketplace_user table")
+            logger.info("Creating accounts_user table by copying structure...")
             
             # Get the structure of marketplace_user
             cursor.execute("PRAGMA table_info(marketplace_user)")
@@ -72,12 +76,12 @@ def create_accounts_user_table():
             count = cursor.fetchone()[0]
             
             if count > 0:
-                print(f"Copying {count} users from marketplace_user to accounts_user...")
+                logger.info("Copying %s users from marketplace_user to accounts_user...", count)
                 cursor.execute("""
                     INSERT INTO accounts_user 
                     SELECT * FROM marketplace_user
                 """)
-                print(f"✓ Copied {count} users")
+                logger.info("✓ Copied %s users", count)
             
             # Copy indexes
             cursor.execute("""
@@ -91,21 +95,19 @@ def create_accounts_user_table():
                     idx_sql = idx[0].replace('marketplace_user', 'accounts_user')
                     try:
                         cursor.execute(idx_sql)
-                    except:
-                        pass  # Index might already exist
+                    except Exception:
+                        logger.debug("Index might already exist")
             
-            print("✓ accounts_user table created successfully")
+            logger.info("✓ accounts_user table created successfully")
         else:
-            print("✗ No existing user table found")
-            print("You need to run: python manage.py migrate accounts")
+            logger.error("✗ No existing user table found")
+            logger.info("You need to run: python manage.py migrate accounts")
 
 if __name__ == '__main__':
     try:
         create_accounts_user_table()
-        print("\n✓ Table creation complete!")
-        print("Now run: python manage.py migrate")
-    except Exception as e:
-        print(f"✗ Error: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.info("\n✓ Table creation complete!")
+        logger.info("Now run: python manage.py migrate")
+    except Exception:
+        logger.exception("✗ Error")
 

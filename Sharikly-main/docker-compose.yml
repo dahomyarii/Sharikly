@@ -29,14 +29,14 @@ services:
              python manage.py runserver 0.0.0.0:8000"
 
   frontend:
-    build: ./frontend
+    build: ./frontend_v2
     restart: unless-stopped
     env_file:
-      - ./frontend/.env.local
+      - ./frontend_v2/.env.local
     depends_on:
       - backend
     volumes:
-      - ./frontend:/app
+      - ./frontend_v2:/app
       - /app/node_modules
     ports:
       - "3000:3000"

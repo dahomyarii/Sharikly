@@ -134,55 +134,67 @@ export default function RequestBookingPage() {
     const headers = { Authorization: `Bearer ${token}` }
 
     try {
-      // Create booking (so it appears in My Bookings and owner can accept/decline)
+      // 1) Create booking (primary action)
       const startStr = dateRange.from!.toISOString().slice(0, 10)
       const endStr = dateRange.to!.toISOString().slice(0, 10)
+      const total = calculateTotal()
+
       await axiosInstance.post(
         `${API}/bookings/`,
         {
           listing: listing.id,
           start_date: startStr,
           end_date: endStr,
-          total_price: calculateTotal().toFixed(2),
+          total_price: total.toFixed(2),
         },
         { headers }
       )
 
-      // Find or create chat room and send message
-      const chatRoomsRes = await axiosInstance.get(`${API}/chat/rooms/`, { headers })
-      let existingRoom = chatRoomsRes.data.find((room: any) =>
-        room.participants.some((p: any) => p.id === listing.owner.id)
-      )
+      // 2) Best-effort: create/find chat room + send message.
+      // If this fails, the booking should still succeed.
+      try {
+        const chatRoomsRes = await axiosInstance.get(`${API}/chat/rooms/`, { headers })
+        let existingRoom = Array.isArray(chatRoomsRes.data)
+          ? chatRoomsRes.data.find((room: any) =>
+              room.participants?.some((p: any) => p.id === listing.owner.id)
+            )
+          : null
 
-      let roomId
-      if (existingRoom) {
-        roomId = existingRoom.id
-      } else {
-        const newRoomRes = await axiosInstance.post(
-          `${API}/chat/rooms/`,
-          { participants: [listing.owner.id] },
+        let roomId
+        if (existingRoom) {
+          roomId = existingRoom.id
+        } else {
+          const newRoomRes = await axiosInstance.post(
+            `${API}/chat/rooms/`,
+            { participants: [listing.owner.id] },
+            { headers }
+          )
+          roomId = newRoomRes.data.id
+        }
+
+        const bookingMessage =
+          `Hi! I'd like to book this item.\n\n` +
+          `📅 Dates: ${dateRange.from!.toLocaleDateString()} - ${dateRange.to!.toLocaleDateString()}\n` +
+          `📆 Duration: ${calculateDays()} day${calculateDays() !== 1 ? 's' : ''}\n` +
+          `💰 Total: $${total.toFixed(2)}\n\n` +
+          message
+
+        await axiosInstance.post(
+          `${API}/chat/messages/`,
+          { room: roomId, text: bookingMessage },
           { headers }
         )
-        roomId = newRoomRes.data.id
+      } catch (chatErr) {
+        // Log chat errors but don't block successful booking creation
+        console.error('Error sending booking message:', (chatErr as any)?.response || chatErr)
       }
-
-      const bookingMessage = `Hi! I'd like to book this item.\n\n` +
-        `📅 Dates: ${dateRange.from!.toLocaleDateString()} - ${dateRange.to!.toLocaleDateString()}\n` +
-        `📆 Duration: ${calculateDays()} day${calculateDays() !== 1 ? 's' : ''}\n` +
-        `💰 Total: $${calculateTotal().toFixed(2)}\n\n` +
-        message
-
-      await axiosInstance.post(
-        `${API}/chat/messages/`,
-        { room: roomId, text: bookingMessage },
-        { headers }
-      )
 
       // Go to My Bookings so user sees their request
       router.push('/bookings')
     } catch (err: any) {
       console.error(err.response || err)
-      setError(err.response?.data?.detail || 'Failed to send request. Please try again.')
+      const detail = err.response?.data?.detail
+      setError(typeof detail === 'string' ? detail : 'Failed to send request. Please try again.')
     } finally {
       setLoading(false)
     }

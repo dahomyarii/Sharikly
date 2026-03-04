@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useLocale } from "./LocaleProvider";
 import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
+import ThemeToggle from "./ThemeToggle";
 import axiosInstance from "@/lib/axios";
 import { Bell } from "lucide-react";
 
@@ -164,16 +165,16 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white/95 backdrop-blur-md border-b border-neutral-200/80 shadow-sm px-3 py-3 sm:px-4 sm:py-3 md:p-4 flex justify-between items-center min-h-[52px] md:min-h-0 gap-2 min-w-0">
+      <header className="bg-background/95 backdrop-blur-md border-b border-border shadow-sm px-3 py-3 sm:px-4 sm:py-3 md:p-4 flex justify-between items-center min-h-[52px] md:min-h-0 gap-2 min-w-0">
         <Link href="/" className="flex items-center gap-2 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 justify-center p-2 -ml-2 rounded-lg active:opacity-80 flex-shrink-0 max-w-[50vw] md:max-w-none">
           <img src="/logo.png" alt="EKRA" className="h-8 w-8 flex-shrink-0" />
-          <span className="text-lg sm:text-xl font-bold truncate">EKRA</span>
+          <span className="text-lg sm:text-xl font-bold truncate text-foreground">EKRA</span>
         </Link>
 
         <div className="hidden md:flex gap-2 items-center">
           <Link
             href="/listings"
-            className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+            className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
           >
             Browse
           </Link>
@@ -181,42 +182,42 @@ export default function Header() {
             <>
               <Link
                 href="/listings/new"
-                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
               >
                 List Item
               </Link>
               <Link
                 href="/chat"
-                className="relative px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+                className="relative px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
               >
                 Chat
                 {chatUnreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-orange-500 text-white text-xs font-medium">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-purple-700 text-white text-xs font-medium">
                     {chatUnreadCount > 99 ? "99+" : chatUnreadCount}
                   </span>
                 )}
               </Link>
               <Link
                 href="/favorites"
-                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
               >
                 {t("favorites")}
               </Link>
               <Link
                 href="/bookings"
-                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
               >
                 {t("my_bookings")}
               </Link>
               <Link
                 href="/profile"
-                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
               >
                 Profile
               </Link>
               <Link
                 href="/settings"
-                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
               >
                 Settings
               </Link>
@@ -226,13 +227,13 @@ export default function Header() {
                   ref={notificationsBellRef}
                   type="button"
                   onClick={() => setShowNotificationsDropdown((v) => !v)}
-                  className="relative p-2 rounded-full hover:bg-gray-200 transition-all touch-target"
+                  className="relative p-2 rounded-full hover:bg-accent transition-all touch-target text-muted-foreground"
                   aria-label="Notifications"
                   aria-expanded={showNotificationsDropdown}
                 >
                   <Bell
                     className={`w-5 h-5 ${
-                      unreadCount > 0 ? "text-red-600" : "text-gray-500"
+                      unreadCount > 0 ? "text-red-600 dark:text-red-400" : "currentColor"
                     }`}
                   />
                   {unreadCount > 0 && (
@@ -242,13 +243,13 @@ export default function Header() {
                   )}
                 </button>
                 {showNotificationsDropdown && (
-                  <div className="absolute right-0 top-full mt-2 w-[320px] max-h-[400px] flex flex-col rounded-xl bg-white border border-gray-200 shadow-xl z-50 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                      <span className="font-semibold text-gray-900">Notifications</span>
+                  <div className="absolute right-0 top-full mt-2 w-[320px] max-h-[400px] flex flex-col rounded-xl bg-popover border border-border shadow-xl z-50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                      <span className="font-semibold text-foreground">Notifications</span>
                     </div>
                     <div className="overflow-y-auto flex-1 min-h-0">
                       {notifications.length === 0 ? (
-                        <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                        <div className="px-4 py-8 text-center text-muted-foreground text-sm">
                           No notifications yet
                         </div>
                       ) : (
@@ -258,13 +259,13 @@ export default function Header() {
                               <Link
                                 href={n.link || "/notifications"}
                                 onClick={() => setShowNotificationsDropdown(false)}
-                                className={`block px-4 py-3 hover:bg-gray-50 text-left border-b border-gray-50 last:border-0 ${
-                                  !n.read ? "bg-blue-50/50" : ""
+                                className={`block px-4 py-3 hover:bg-accent text-left border-b border-border last:border-0 ${
+                                  !n.read ? "bg-primary/5 dark:bg-primary/10" : ""
                                 }`}
                               >
-                                <p className="font-medium text-gray-900 text-sm">{n.title}</p>
+                                <p className="font-medium text-foreground text-sm">{n.title}</p>
                                 {n.body ? (
-                                  <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{n.body}</p>
+                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
                                 ) : null}
                               </Link>
                             </li>
@@ -272,11 +273,11 @@ export default function Header() {
                         </ul>
                       )}
                     </div>
-                    <div className="border-t border-gray-100 p-2">
+                    <div className="border-t border-border p-2">
                       <Link
                         href="/notifications"
                         onClick={() => setShowNotificationsDropdown(false)}
-                        className="block w-full text-center py-2 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-50 rounded-lg transition"
+                        className="block w-full text-center py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition"
                       >
                         View more
                       </Link>
@@ -284,27 +285,29 @@ export default function Header() {
                   </div>
                 )}
               </div>
-              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <div className="w-px h-6 bg-border mx-1" />
+              <ThemeToggle />
               <LanguageSwitcher />
               <button
                 onClick={() => handleLogout()}
-                className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all text-sm font-medium"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all text-sm font-medium"
               >
                 {t("logout")}
               </button>
             </>
           ) : (
             <>
+              <ThemeToggle />
               <LanguageSwitcher />
               <button
                 onClick={() => setShowLogin(true)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-200 rounded-full transition-all text-sm font-medium"
+                className="px-4 py-2 border border-border text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
               >
                 {t("sign_in") || "Log In"}
               </button>
               <button
                 onClick={() => setShowSignup(true)}
-                className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all text-sm font-medium"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all text-sm font-medium"
               >
                 {t("sign_up") || "Sign Up"}
               </button>
@@ -314,11 +317,12 @@ export default function Header() {
 
         {/* Mobile Menu Button */}
         <div className="md:hidden flex gap-1 items-center flex-shrink-0 min-w-0">
+          <ThemeToggle />
           <LanguageSwitcher />
           <button
             ref={menuButtonRef}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 border rounded-xl hover:bg-gray-200 active:bg-gray-300 transition touch-target"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 border border-border rounded-xl hover:bg-accent active:bg-accent/80 transition touch-target"
             aria-label="Toggle menu"
           >
             <svg
@@ -340,42 +344,42 @@ export default function Header() {
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div ref={mobileMenuRef} className="md:hidden bg-white border-t border-gray-100 shadow-lg">
+        <div ref={mobileMenuRef} className="md:hidden bg-background border-t border-border shadow-lg">
           {user ? (
             <div className="py-2">
               {/* User info */}
-              <div className="px-5 py-3 flex items-center gap-3 border-b border-gray-100 mb-1">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+              <div className="px-5 py-3 flex items-center gap-3 border-b border-border mb-1">
+                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                   {user.avatar ? (
                     <img src={user.avatar.startsWith('http') ? user.avatar : `/api${user.avatar}`} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                     </svg>
                   )}
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900 text-sm">{user.username}</div>
-                  <div className="text-xs text-gray-500">{user.email}</div>
+                  <div className="font-semibold text-foreground text-sm">{user.username}</div>
+                  <div className="text-xs text-muted-foreground">{user.email}</div>
                 </div>
               </div>
 
               {/* Menu links */}
               <Link
                 href="/bookings"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {t("my_bookings")}
               </Link>
               <Link
                 href="/notifications"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Bell
                   className={`w-5 h-5 ${
-                    unreadCount > 0 ? "text-red-600" : "text-gray-400"
+                    unreadCount > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
                   }`}
                 />
                 <span>Notifications</span>
@@ -387,73 +391,73 @@ export default function Header() {
               </Link>
               <Link
                 href="/profile"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                 </svg>
                 Profile
               </Link>
               <Link
                 href="/listings/new"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
                 </svg>
                 List an Item
               </Link>
               <Link
                 href="/about"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
                 </svg>
                 About
               </Link>
               <Link
                 href="/contact"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
                 </svg>
                 Contact
               </Link>
               <Link
                 href="/blog"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
                 </svg>
                 Blog
               </Link>
               <Link
                 href="/settings"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                 </svg>
                 {t("settings")}
               </Link>
 
               {/* Divider + Logout */}
-              <div className="border-t border-gray-100 mt-1 pt-1">
+              <div className="border-t border-border mt-1 pt-1">
                 <button
                   onClick={() => {
                     handleLogout();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 transition text-sm w-full"
+                  className="flex items-center gap-3 px-5 py-3 text-destructive hover:bg-destructive/10 transition text-sm w-full"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -466,41 +470,41 @@ export default function Header() {
             <div className="py-2">
               <Link
                 href="/about"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
                 </svg>
                 About
               </Link>
               <Link
                 href="/contact"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
                 </svg>
                 Contact
               </Link>
               <Link
                 href="/blog"
-                className="flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
                 </svg>
                 Blog
               </Link>
-              <div className="border-t border-gray-100 mt-1 pt-1 px-5 py-3 flex gap-2">
+              <div className="border-t border-border mt-1 pt-1 px-5 py-3 flex gap-2">
                 <button
                   onClick={() => {
                     setShowLogin(true);
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+                  className="flex-1 py-2.5 border border-border text-foreground rounded-lg hover:bg-accent transition text-sm font-medium"
                 >
                   Log In
                 </button>
@@ -509,7 +513,7 @@ export default function Header() {
                     setShowSignup(true);
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex-1 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition text-sm font-medium"
+                  className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition text-sm font-medium"
                 >
                   Sign Up
                 </button>
@@ -547,15 +551,15 @@ export default function Header() {
           paddingRight: "max(0.75rem, var(--safe-area-inset-right))",
         }}
       >
-        <div className="mb-2 mx-0 rounded-2xl bg-white/95 backdrop-blur-xl border border-gray-200/60 shadow-[0_-4px 24px rgba(0,0,0,0.06)] transition-all duration-300">
+        <div className="mb-2 mx-0 rounded-2xl bg-background/95 backdrop-blur-xl border border-border shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.2)] transition-all duration-300">
           <div className="flex justify-around items-center h-14 px-0.5 gap-0">
             {/* Home */}
             <Link
               href="/"
               className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
                 pathname === "/"
-                  ? "bg-orange-50 text-orange-600"
-                  : "text-neutral-500 active:bg-neutral-100"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground active:bg-accent"
               }`}
               title="Home"
             >
@@ -571,8 +575,8 @@ export default function Header() {
               href="/listings"
               className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
                 pathname === "/listings" || (pathname.startsWith("/listings/") && pathname !== "/listings/new" && !pathname.includes("/request_booking"))
-                  ? "bg-orange-50 text-orange-600"
-                  : "text-neutral-500 active:bg-neutral-100"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground active:bg-accent"
               }`}
               title="Browse"
             >
@@ -588,8 +592,8 @@ export default function Header() {
               href="/favorites"
               className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 relative ${
                 pathname === "/favorites"
-                  ? "bg-orange-50 text-orange-600"
-                  : "text-neutral-500 active:bg-neutral-100"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground active:bg-accent"
               }`}
               title="Favorites"
             >
@@ -604,8 +608,8 @@ export default function Header() {
               href="/chat"
               className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 relative ${
                 pathname === "/chat" || pathname.startsWith("/chat/")
-                  ? "bg-orange-50 text-orange-600"
-                  : "text-neutral-500 active:bg-neutral-100"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground active:bg-accent"
               }`}
               title="Messages"
             >
@@ -613,7 +617,7 @@ export default function Header() {
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
               {chatUnreadCount > 0 && (
-                <span className="absolute top-1 right-2 min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-orange-500 text-white text-[10px] font-medium">
+                <span className="absolute top-1 right-2 min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-purple-700 text-white text-[10px] font-medium">
                   {chatUnreadCount > 99 ? "99+" : chatUnreadCount}
                 </span>
               )}
@@ -624,11 +628,11 @@ export default function Header() {
             {user ? (
               <Link
                 href="/profile"
-className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
-                    pathname === "/profile"
-                      ? "bg-orange-50 text-orange-600"
-                      : "text-neutral-500 active:bg-neutral-100"
-                  }`}
+                className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
+                  pathname === "/profile"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground active:bg-accent"
+                }`}
                 title="Profile"
               >
                 <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -641,7 +645,7 @@ className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] 
               <button
                 type="button"
                 onClick={() => setShowLogin(true)}
-                className="flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl text-neutral-500 active:scale-95 active:bg-neutral-100 touch-target transition-all duration-200 ease-out"
+                className="flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl text-muted-foreground active:scale-95 active:bg-accent touch-target transition-all duration-200 ease-out"
                 title="Login"
               >
                 <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
