@@ -215,8 +215,8 @@ export default function ChatPage() {
   const filteredRooms = rooms.filter(room => {
     if (!searchQuery) return true
     const other = getOtherParticipant(room)
-    return other.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           other.email.toLowerCase().includes(searchQuery.toLowerCase())
+    const name = (other?.username || '').toLowerCase()
+    return name.includes(searchQuery.toLowerCase())
   })
 
   if (!user) {
@@ -318,7 +318,7 @@ export default function ChatPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <h3 className="font-semibold text-gray-900 truncate">
-                          {other.username || other.email}
+                          {other.username || 'User'}
                         </h3>
                         {room.last_message && (
                           <span className="text-xs text-gray-500 ml-2">
@@ -359,12 +359,9 @@ export default function ChatPage() {
                 <div>
                   <a href={`/user/${getOtherParticipant(currentRoom).id}`} className="hover:underline">
                     <h2 className="font-semibold text-gray-900">
-                      {getOtherParticipant(currentRoom).username || getOtherParticipant(currentRoom).email}
+                      {getOtherParticipant(currentRoom).username || 'User'}
                     </h2>
                   </a>
-                  <p className="text-sm text-gray-500">
-                    {getOtherParticipant(currentRoom).email}
-                  </p>
                 </div>
               </div>
             </div>

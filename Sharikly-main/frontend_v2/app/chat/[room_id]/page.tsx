@@ -216,11 +216,8 @@ export default function ChatRoomPage() {
               </div>
               <div className="min-w-0">
                 <h1 className="font-semibold text-gray-900 truncate">
-                  {otherUser?.username || otherUser?.email || 'Chat'}
+                  {otherUser?.username || 'Chat'}
                 </h1>
-                <p className="text-sm text-gray-500 truncate">
-                  {otherUser?.email}
-                </p>
               </div>
             </Link>
           </div>
