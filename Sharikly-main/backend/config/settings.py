@@ -186,11 +186,11 @@ if _email_mode == "gmail":
 elif _email_mode == "ses":
     # Amazon SES — for production
     EMAIL_BACKEND = "anymail.backends.amazon_ses.EmailBackend"
-    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@ekra.app")
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@ekra.app")
 else:
     # Console — just prints email in terminal (default for local dev)
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@ekra.app")
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@ekra.app")
 
 ANYMAIL = {
     "AMAZON_SES_CLIENT_PARAMS": {
