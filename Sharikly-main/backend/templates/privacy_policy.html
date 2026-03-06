@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ekra – Privacy Policy</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --bg: #0f172a;
+            --bg-soft: #020617;
+            --card: #020617;
+            --border: rgba(148, 163, 184, 0.3);
+            --accent: #22c55e;
+            --accent-soft: rgba(34, 197, 94, 0.15);
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #1e293b 0, #020617 45%, #000 100%);
+            color: var(--text);
+        }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .page-shell {
+            min-height: 100vh;
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            padding: 32px 16px;
+        }
+        .container {
+            width: 100%;
+            max-width: 960px;
+        }
+        .card {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow:
+                0 40px 120px rgba(15, 23, 42, 0.9),
+                0 0 0 1px rgba(15, 23, 42, 0.8);
+            padding: 32px;
+            backdrop-filter: blur(26px);
+        }
+        @media (min-width: 768px) {
+            .card {
+                padding: 40px 48px;
+            }
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.2), rgba(15, 23, 42, 0.9));
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: var(--accent);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-weight: 600;
+        }
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+        }
+        .heading-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 16px;
+            margin-bottom: 24px;
+        }
+        .title {
+            font-size: clamp(24px, 3vw, 32px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            max-width: 700px;
+        }
+        .meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 32px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .meta-label {
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 600;
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .meta-value {
+            color: var(--text);
+            font-weight: 500;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+            gap: 32px;
+        }
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .content-column {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        h2 {
+            font-size: 16px;
+            margin: 18px 0 6px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        p {
+            margin: 0 0 6px;
+        }
+        ul {
+            padding-left: 18px;
+            margin: 4px 0 10px;
+        }
+        li {
+            margin-bottom: 4px;
+        }
+        .aside {
+            border-radius: 20px;
+            padding: 18px 18px 20px;
+            background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.18), rgba(15, 23, 42, 0.7));
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            box-shadow:
+                0 20px 60px rgba(15, 23, 42, 0.9),
+                inset 0 0 0 1px rgba(15, 23, 42, 0.6);
+        }
+        .aside-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .aside-text {
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .pill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0 0;
+        }
+        .pill {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            color: #e5e7eb;
+        }
+        .footer-note {
+            margin-top: 22px;
+            padding-top: 14px;
+            border-top: 1px dashed rgba(148, 163, 184, 0.4);
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .strong {
+            font-weight: 600;
+            color: #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <main class="container">
+        <section class="card" aria-labelledby="ekra-privacy-title">
+            <span class="badge">
+                <span class="badge-dot" aria-hidden="true"></span>
+                Privacy & Data Protection
+            </span>
+
+            <header class="heading-row">
+                <h1 id="ekra-privacy-title" class="title">Ekra Privacy Policy</h1>
+                <p class="subtitle">
+                    This Privacy Policy explains how Ekra (“we”, “us”, or “our”) collects, uses,
+                    discloses, and protects your information when you use the Ekra platform,
+                    including our website, mobile applications, and related services for listing,
+                    discovering, and booking spaces and experiences.
+                </p>
+            </header>
+
+            <div class="meta-row">
+                <div class="meta-item">
+                    <span class="meta-label">Status</span>
+                    <span class="meta-value">Effective</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Scope</span>
+                    <span>Visitors, users, hosts, and guests of Ekra</span>
+                </div>
+            </div>
+
+            <div class="layout">
+                <div class="content-column">
+                    <section>
+                        <h2>1. Who this policy applies to</h2>
+                        <p>
+                            This Privacy Policy applies to:
+                        </p>
+                        <ul>
+                            <li>Individuals who browse our website or apps;</li>
+                            <li>Users who create an Ekra account (hosts and guests);</li>
+                            <li>Individuals who communicate with us, for example via contact forms or support;</li>
+                            <li>Any person whose information we process in connection with the platform.</li>
+                        </ul>
+                        <p>
+                            By using Ekra, you acknowledge that you have read and understood this
+                            Privacy Policy. If you do not agree, you should not use the platform.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>2. Information we collect</h2>
+                        <p>We collect information in the following categories:</p>
+                        <ul>
+                            <li>
+                                <span class="strong">Account & contact information</span>:
+                                name, email address, phone number, password hash, and profile details you choose
+                                to provide (such as profile photo, biography, language preferences).
+                            </li>
+                            <li>
+                                <span class="strong">Listing & booking information</span>:
+                                details about listings you create (title, description, photos, availability,
+                                pricing, location details as provided by you) and information about bookings
+                                and reservations (dates, number of guests, messages between hosts and guests,
+                                booking status).
+                            </li>
+                            <li>
+                                <span class="strong">Payment & transaction information</span>:
+                                limited payment-related data in connection with charges and payouts,
+                                such as transaction identifiers, amounts, currency, and status. Sensitive card or
+                                banking details are processed by our payment providers (for example, Moyasar or
+                                other payment gateways) and are not stored in plain form by Ekra.
+                            </li>
+                            <li>
+                                <span class="strong">Communications & support</span>:
+                                content of messages you send via our messaging features, contact forms, reviews,
+                                feedback, and any support correspondence.
+                            </li>
+                            <li>
+                                <span class="strong">Technical & usage data</span>:
+                                log data, IP address, device identifiers, browser type, operating system,
+                                access times, and pages viewed, which help us secure the platform and improve
+                                performance.
+                            </li>
+                            <li>
+                                <span class="strong">Cookies and similar technologies</span>:
+                                information collected through cookies, pixels, and similar tools to remember
+                                your preferences, keep you signed in, and analyze how the service is used.
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>3. How we use your information</h2>
+                        <p>We use the information we collect for the following purposes:</p>
+                        <ul>
+                            <li>To create, maintain, and secure your Ekra account;</li>
+                            <li>To enable you to list, discover, and book spaces or experiences;</li>
+                            <li>To process and manage payments, refunds, and payouts through our payment partners;</li>
+                            <li>To send transactional communications, such as booking confirmations, updates, and support messages;</li>
+                            <li>To personalize your experience, including recommended listings or content;</li>
+                            <li>To monitor and improve the safety, security, and performance of the platform;</li>
+                            <li>To comply with legal obligations and enforce our Terms of Service;</li>
+                            <li>To respond to your inquiries, requests, or complaints.</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>4. Legal bases for processing</h2>
+                        <p>
+                            Where applicable data protection laws require a legal basis
+                            (for example, under the GDPR), we rely on one or more of the following:
+                        </p>
+                        <ul>
+                            <li><span class="strong">Performance of a contract</span> – to provide the Ekra service you request, including managing your account, listings, and bookings.</li>
+                            <li><span class="strong">Legitimate interests</span> – to secure our platform, prevent fraud or abuse, improve our services, and communicate with you about features you use (balanced against your rights and interests).</li>
+                            <li><span class="strong">Consent</span> – for certain cookies, marketing communications, or optional data you choose to provide. You can withdraw consent at any time where applicable.</li>
+                            <li><span class="strong">Legal obligations</span> – to comply with applicable laws, regulations, and lawful requests from authorities.</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>5. How we share information</h2>
+                        <p>We do not sell your personal information. We may share information as follows:</p>
+                        <ul>
+                            <li>
+                                <span class="strong">Between users</span>:
+                                certain information is shared between hosts and guests when necessary for a
+                                booking or communication (for example, name, profile details, listing
+                                information, and booking details).
+                            </li>
+                            <li>
+                                <span class="strong">Service providers</span>:
+                                with trusted third parties who perform services on our behalf, such as payment
+                                processing (e.g., Moyasar or other gateways), cloud hosting and storage, email
+                                delivery, analytics, or customer support. These providers are bound by
+                                contractual confidentiality and data protection obligations.
+                            </li>
+                            <li>
+                                <span class="strong">Compliance and protection</span>:
+                                with law enforcement, regulators, or other parties when we believe disclosure
+                                is reasonably necessary to comply with legal obligations, protect the rights,
+                                property, or safety of Ekra, our users, or others, or to detect, prevent, or
+                                address fraud, security, or technical issues.
+                            </li>
+                            <li>
+                                <span class="strong">Business transfers</span>:
+                                in connection with a merger, acquisition, restructuring, sale of assets, or
+                                similar corporate transaction, your information may be transferred as part of
+                                that transaction, subject to continued protection consistent with this policy.
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>6. International transfers</h2>
+                        <p>
+                            Depending on your location and on where our infrastructure and service providers
+                            operate, your information may be transferred to and processed in countries that
+                            may have different data protection laws than your country of residence.
+                        </p>
+                        <p>
+                            Where required by law, we take appropriate safeguards to protect your information
+                            in connection with such transfers, such as using standard contractual clauses or
+                            equivalent protections approved by competent authorities.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>7. Data retention</h2>
+                        <p>
+                            We retain personal information for as long as necessary to fulfill the purposes
+                            described in this policy, including:
+                        </p>
+                        <ul>
+                            <li>Providing the services you request and maintaining your account;</li>
+                            <li>Maintaining a record of transactions, bookings, and communications as required for accounting, dispute resolution, or legal obligations;</li>
+                            <li>Complying with applicable laws and regulations.</li>
+                        </ul>
+                        <p>
+                            When information is no longer needed, we will delete it or anonymize it, unless we
+                            are required by law to retain it for a longer period.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>8. Your rights and choices</h2>
+                        <p>Subject to applicable law, you may have the right to:</p>
+                        <ul>
+                            <li>Access the personal information we hold about you;</li>
+                            <li>Request correction of inaccurate or incomplete information;</li>
+                            <li>Request deletion of your personal information, where allowed by law;</li>
+                            <li>Object to or request restriction of certain processing activities;</li>
+                            <li>Withdraw consent where processing is based on your consent;</li>
+                            <li>Request a copy of your data in a portable format, where technically feasible.</li>
+                        </ul>
+                        <p>
+                            You can exercise many of these rights directly through your account settings.
+                            For additional requests, please contact us using the details provided in the
+                            “How to contact us” section below. We may need to verify your identity before
+                            responding.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>9. Cookies and similar technologies</h2>
+                        <p>
+                            We use cookies and similar technologies to operate and improve Ekra, including to:
+                        </p>
+                        <ul>
+                            <li>Keep you signed in and remember your preferences;</li>
+                            <li>Secure your session and protect against fraud;</li>
+                            <li>Measure and analyze how the platform is used.</li>
+                        </ul>
+                        <p>
+                            Depending on your location, you may see a cookie notice or banner when you first
+                            visit Ekra. You can typically control cookies through your browser settings. If
+                            you disable certain cookies, some features of the platform may not function
+                            properly.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>10. Security</h2>
+                        <p>
+                            We use reasonable technical and organizational measures to protect your
+                            information against unauthorized access, loss, misuse, or alteration. This
+                            includes industry-standard security practices at the application and
+                            infrastructure level.
+                        </p>
+                        <p>
+                            However, no online service can be completely secure. You are responsible for
+                            keeping your account credentials confidential and for notifying us promptly if
+                            you suspect any unauthorized access to your account.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>11. Children’s privacy</h2>
+                        <p>
+                            Ekra is not directed to children, and we do not knowingly collect personal
+                            information from children without appropriate consent as required by law. If you
+                            believe that a child has provided us with personal information without such
+                            consent, please contact us and we will take appropriate steps to delete the
+                            information.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>12. Changes to this policy</h2>
+                        <p>
+                            We may update this Privacy Policy from time to time, for example to reflect
+                            changes to our services or legal requirements. When we make material changes, we
+                            will take reasonable steps to notify you, such as by posting an updated policy
+                            on this page and updating the “effective” date.
+                        </p>
+                        <p>
+                            Your continued use of Ekra after the updated policy becomes effective means that
+                            you accept the changes.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>13. How to contact us</h2>
+                        <p>
+                            If you have any questions, concerns, or requests regarding this Privacy Policy
+                            or our handling of your personal information, you can contact us using the
+                            support or contact options provided within the Ekra platform, or by using the
+                            contact details published on our official website.
+                        </p>
+                    </section>
+
+                    <p class="footer-note">
+                        This Privacy Policy is provided for general informational purposes regarding how Ekra
+                        handles personal data in connection with the platform. It is not intended to create
+                        or replace legal rights or obligations beyond those required under applicable law.
+                        You should review this page periodically for the most current version.
+                    </p>
+                </div>
+
+                <aside class="aside" aria-label="Summary of key practices">
+                    <div class="aside-title">Key data protection principles</div>
+                    <p class="aside-text">
+                        Ekra is designed as a trusted marketplace. We collect only what we need to run the
+                        platform, use it for clear purposes, and apply safeguards consistent with modern
+                        privacy and security standards.
+                    </p>
+
+                    <div class="pill-list" aria-hidden="true">
+                        <div class="pill">No data selling</div>
+                        <div class="pill">Secure payments</div>
+                        <div class="pill">User rights respected</div>
+                        <div class="pill">Account control</div>
+                        <div class="pill">Contract & legal basis</div>
+                    </div>
+
+                    <div style="margin-top: 18px; font-size: 12px; color: var(--muted);">
+                        This template is written to be broadly aligned with common privacy standards
+                        (including principles reflected in the GDPR and similar frameworks), but your
+                        specific legal obligations may vary depending on your jurisdiction, business
+                        model, and data flows. For binding legal advice, you should consult qualified
+                        counsel.
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+

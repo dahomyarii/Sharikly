@@ -172,11 +172,23 @@ export default function RequestBookingPage() {
           roomId = newRoomRes.data.id
         }
 
+        const dateLabel = `${dateRange.from!.toLocaleDateString()} - ${dateRange.to!.toLocaleDateString()}`
+        const durationLabel = `${calculateDays()} day${calculateDays() !== 1 ? 's' : ''}`
+        const pricePerDayLabel = `$${listing.price_per_day || '0.00'}`
+        const totalLabel = `$${total.toFixed(2)}`
+
         const bookingMessage =
           `Hi! I'd like to book this item.\n\n` +
-          `📅 Dates: ${dateRange.from!.toLocaleDateString()} - ${dateRange.to!.toLocaleDateString()}\n` +
-          `📆 Duration: ${calculateDays()} day${calculateDays() !== 1 ? 's' : ''}\n` +
-          `💰 Total: $${total.toFixed(2)}\n\n` +
+          `Booking details:\n` +
+          `+----------------------+---------------------------+\n` +
+          `| Field                | Value                     |\n` +
+          `+----------------------+---------------------------+\n` +
+          `| Dates                | ${dateLabel}             |\n` +
+          `| Duration             | ${durationLabel}         |\n` +
+          `| Price per day        | ${pricePerDayLabel}      |\n` +
+          `| Total                | ${totalLabel}            |\n` +
+          `+----------------------+---------------------------+\n\n` +
+          `Message from guest:\n` +
           message
 
         await axiosInstance.post(
@@ -250,13 +262,16 @@ export default function RequestBookingPage() {
             <Card className="p-6">
               <div className="flex gap-4 mb-4">
                 {listing.images?.[0] && (
-                  <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                  <Link
+                    href={`/listings/${listing.id}`}
+                    className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 block"
+                  >
                     <img
                       src={getFullImageUrl(listing.images[0].image)}
                       alt={listing.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-150 hover:scale-105"
                     />
-                  </div>
+                  </Link>
                 )}
                 <div className="flex-1">
                   <h2 className="text-xl font-bold text-gray-900 mb-1">{listing.title}</h2>
@@ -312,49 +327,52 @@ export default function RequestBookingPage() {
             <Card className="p-6 sticky top-24 border-2 border-gray-200 shadow-md bg-white">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Booking Summary</h3>
               
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Price per day</span>
-                  <span className="font-semibold">${listing.price_per_day || '0.00'}</span>
-                </div>
-                
-                {dateRange?.from && dateRange?.to && (
-                  <>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Duration</span>
-                      <span className="font-semibold">
-                        {calculateDays()} day{calculateDays() !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                    <div className="border-t pt-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-semibold text-gray-900">Total</span>
-                        <span className="text-2xl font-bold text-gray-900">
+              {dateRange?.from && dateRange?.to ? (
+                <div className="mt-2 overflow-hidden rounded-lg border border-gray-200">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr className="bg-gray-50">
+                        <th className="px-3 py-2 text-left text-gray-500">Dates</th>
+                        <td className="px-3 py-2 font-medium text-gray-900">
+                          {dateRange.from.toLocaleDateString()} - {dateRange.to.toLocaleDateString()}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="px-3 py-2 text-left text-gray-500">Duration</th>
+                        <td className="px-3 py-2 font-medium text-gray-900">
+                          {calculateDays()} day{calculateDays() !== 1 ? 's' : ''}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="px-3 py-2 text-left text-gray-500">Price / day</th>
+                        <td className="px-3 py-2 font-medium text-gray-900">
+                          ${listing.price_per_day || '0.00'}
+                        </td>
+                      </tr>
+                      <tr className="bg-gray-50">
+                        <th className="px-3 py-2 text-left text-gray-500">Total</th>
+                        <td className="px-3 py-2 font-semibold text-gray-900 text-lg">
                           ${calculateTotal().toFixed(2)}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500">
-                        {calculateDays()} × ${listing.price_per_day || '0.00'}
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                {(!dateRange?.from || !dateRange?.to) && (
-                  <div className="text-sm text-gray-500 text-center py-4">
-                    Select dates on the listing page to see total
-                  </div>
-                )}
-                
-                {dateRange?.from && dateRange?.to && (
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-600 mb-1">Selected dates:</p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {dateRange.from.toLocaleDateString()} - {dateRange.to.toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-              </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="px-3 py-2 text-left text-gray-500 align-top">Message</th>
+                        <td className="px-3 py-2 text-gray-900 whitespace-pre-wrap">
+                          {message.trim() ? (
+                            message
+                          ) : (
+                            <span className="text-gray-400">No message yet</span>
+                          )}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="mt-2 text-sm text-gray-500 text-center py-4">
+                  Select dates on the listing page to see your full price breakdown.
+                </div>
+              )}
 
               <Button
                 onClick={handleSendRequest}
