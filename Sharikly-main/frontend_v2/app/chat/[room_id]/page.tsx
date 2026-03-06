@@ -277,7 +277,7 @@ export default function ChatRoomPage() {
                   <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
                     {msg.text && (
                       <div
-                        className={`px-4 py-2 rounded-2xl ${
+                        className={`px-4 py-2 rounded-2xl whitespace-pre-wrap break-words ${
                           isOwn
                             ? 'bg-black text-white rounded-tr-sm'
                             : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'

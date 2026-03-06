@@ -90,6 +90,37 @@ export default function RequestBookingPage() {
     return days * parseFloat(listing.price_per_day)
   }
 
+  const wrapMessageForChat = (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed) return ''
+
+    const words = trimmed.split(/\s+/)
+    const lines: string[] = []
+    let currentLine: string[] = []
+    let currentLength = 0
+
+    for (const word of words) {
+      const extraLength = word.length + (currentLine.length > 0 ? 1 : 0) // +1 for space
+      const wouldExceedChars = currentLength + extraLength > 100
+      const wouldExceedWords = currentLine.length >= 10
+
+      if (wouldExceedChars || wouldExceedWords) {
+        lines.push(currentLine.join(' '))
+        currentLine = [word]
+        currentLength = word.length
+      } else {
+        currentLine.push(word)
+        currentLength += extraLength
+      }
+    }
+
+    if (currentLine.length) {
+      lines.push(currentLine.join(' '))
+    }
+
+    return lines.join('\n')
+  }
+
   const handleSendRequest = async () => {
     setError('')
     const trimmedMessage = message.trim()
@@ -176,20 +207,17 @@ export default function RequestBookingPage() {
         const durationLabel = `${calculateDays()} day${calculateDays() !== 1 ? 's' : ''}`
         const pricePerDayLabel = `$${listing.price_per_day || '0.00'}`
         const totalLabel = `$${total.toFixed(2)}`
+        const wrappedMessage = wrapMessageForChat(message)
 
         const bookingMessage =
           `Hi! I'd like to book this item.\n\n` +
           `Booking details:\n` +
-          `+----------------------+---------------------------+\n` +
-          `| Field                | Value                     |\n` +
-          `+----------------------+---------------------------+\n` +
-          `| Dates                | ${dateLabel}             |\n` +
-          `| Duration             | ${durationLabel}         |\n` +
-          `| Price per day        | ${pricePerDayLabel}      |\n` +
-          `| Total                | ${totalLabel}            |\n` +
-          `+----------------------+---------------------------+\n\n` +
+          `• Dates: ${dateLabel}\n` +
+          `• Duration: ${durationLabel}\n` +
+          `• Price per day: ${pricePerDayLabel}\n` +
+          `• Total: ${totalLabel}\n\n` +
           `Message from guest:\n` +
-          message
+          (wrappedMessage || '(no additional message)')
 
         await axiosInstance.post(
           `${API}/chat/messages/`,
