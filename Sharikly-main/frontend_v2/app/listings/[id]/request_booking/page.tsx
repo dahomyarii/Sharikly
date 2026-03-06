@@ -335,7 +335,7 @@ export default function RequestBookingPage() {
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Message to Owner</h3>
               <textarea
-                className="w-full border border-gray-200 rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500/80 resize-none"
                 placeholder="Tell the owner about your booking request, any special requirements, or questions..."
                 rows={6}
                 value={message}
@@ -352,11 +352,11 @@ export default function RequestBookingPage() {
 
           {/* Right Column - Booking Summary */}
           <div className="md:col-span-1">
-            <Card className="p-6 sticky top-24 border-2 border-gray-200 shadow-md bg-white">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Booking Summary</h3>
+            <Card className="p-6 sticky top-24 border border-purple-100 shadow-[0_18px_45px_rgba(147,51,234,0.25)] bg-white/95 rounded-2xl">
+              <h3 className="text-lg font-semibold text-purple-700 mb-6">Booking Summary</h3>
               
               {dateRange?.from && dateRange?.to ? (
-                <div className="mt-2 overflow-hidden rounded-lg border border-gray-200">
+                <div className="mt-2 overflow-hidden rounded-2xl border border-purple-100/80 shadow-sm shadow-purple-200/80">
                   <table className="w-full text-sm">
                     <tbody>
                       <tr className="bg-gray-50">
@@ -379,8 +379,15 @@ export default function RequestBookingPage() {
                       </tr>
                       <tr className="bg-gray-50">
                         <th className="px-3 py-2 text-left text-gray-500">Total</th>
-                        <td className="px-3 py-2 font-semibold text-gray-900 text-lg">
-                          ${calculateTotal().toFixed(2)}
+                        <td className="px-3 py-2">
+                          <div className="inline-flex items-baseline justify-end w-full rounded-full bg-gradient-to-r from-purple-600 via-purple-500 to-fuchsia-500 text-white px-3 py-1.5 shadow-[0_12px_30px_rgba(147,51,234,0.6)]">
+                            <span className="text-xs font-medium uppercase tracking-wide mr-2 text-purple-100/90">
+                              Total
+                            </span>
+                            <span className="text-lg font-semibold">
+                              ${calculateTotal().toFixed(2)}
+                            </span>
+                          </div>
                         </td>
                       </tr>
                       <tr>
@@ -405,7 +412,7 @@ export default function RequestBookingPage() {
               <Button
                 onClick={handleSendRequest}
                 disabled={loading || !message.trim() || !dateRange?.from || !dateRange?.to}
-                className="w-full mt-6 bg-black hover:bg-gray-800 text-white rounded-lg py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:hover:bg-gray-300"
+                className="w-full mt-6 bg-gradient-to-r from-purple-600 via-purple-500 to-fuchsia-500 hover:from-purple-700 hover:via-purple-600 hover:to-fuchsia-600 text-white rounded-xl py-6 text-lg font-semibold shadow-[0_18px_40px_rgba(147,51,234,0.55)] disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:hover:bg-gray-300"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
