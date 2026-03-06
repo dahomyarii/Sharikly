@@ -211,12 +211,12 @@ export default function RequestBookingPage() {
 
         const bookingMessage =
           `BOOKING_REQUEST\n` +
-          `GREETING=Hi! I'd like to book this item.\n` +
-          `DATES=${dateLabel}\n` +
-          `DURATION=${durationLabel}\n` +
-          `PRICE_PER_DAY=${pricePerDayLabel}\n` +
-          `TOTAL=${totalLabel}\n` +
-          `MESSAGE:\n` +
+          `Hi! I'd like to book this item.\n\n` +
+          `Dates: ${dateLabel}\n` +
+          `Duration: ${durationLabel}\n` +
+          `Price per day: ${pricePerDayLabel}\n` +
+          `Total: ${totalLabel}\n\n` +
+          `Message from guest:\n` +
           (wrappedMessage || '(no additional message)')
 
         await axiosInstance.post(

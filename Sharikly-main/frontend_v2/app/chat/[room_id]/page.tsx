@@ -34,7 +34,9 @@ const parseBookingRequest = (text?: string): BookingRequestPayload | null => {
   if (!text) return null
   if (!text.startsWith('BOOKING_REQUEST')) return null
 
-  const lines = text.split('\n')
+  const body = text.replace(/^BOOKING_REQUEST\s*/u, '')
+  const lines = body.split('\n').map((l) => l.trim())
+
   let greeting = ''
   let dates = ''
   let duration = ''
@@ -43,24 +45,27 @@ const parseBookingRequest = (text?: string): BookingRequestPayload | null => {
   const messageLines: string[] = []
   let inMessage = false
 
-  for (const rawLine of lines.slice(1)) {
-    const line = rawLine.trim()
+  for (const line of lines) {
     if (!line) continue
 
-    if (line.startsWith('GREETING=')) {
-      greeting = line.replace('GREETING=', '').trim()
-    } else if (line.startsWith('DATES=')) {
-      dates = line.replace('DATES=', '').trim()
-    } else if (line.startsWith('DURATION=')) {
-      duration = line.replace('DURATION=', '').trim()
-    } else if (line.startsWith('PRICE_PER_DAY=')) {
-      pricePerDay = line.replace('PRICE_PER_DAY=', '').trim()
-    } else if (line.startsWith('TOTAL=')) {
-      total = line.replace('TOTAL=', '').trim()
-    } else if (line === 'MESSAGE:') {
+    if (!greeting) {
+      // First non-empty line after prefix is the greeting sentence
+      greeting = line
+      continue
+    }
+
+    if (line.toLowerCase().startsWith('dates:')) {
+      dates = line.slice('dates:'.length).trim()
+    } else if (line.toLowerCase().startsWith('duration:')) {
+      duration = line.slice('duration:'.length).trim()
+    } else if (line.toLowerCase().startsWith('price per day:')) {
+      pricePerDay = line.slice('price per day:'.length).trim()
+    } else if (line.toLowerCase().startsWith('total:')) {
+      total = line.slice('total:'.length).trim()
+    } else if (line.toLowerCase().startsWith('message from guest:')) {
       inMessage = true
     } else if (inMessage) {
-      messageLines.push(rawLine)
+      messageLines.push(line)
     }
   }
 
@@ -325,63 +330,63 @@ export default function ChatRoomPage() {
             if (booking) {
               return (
                 <div key={msg.id} className="flex justify-center">
-                  <div className="max-w-md w-full">
-                    <div className="mx-auto bg-white/95 border border-gray-200 rounded-3xl shadow-md p-4 sm:p-5 mb-1">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                  <div className="max-w-sm w-full">
+                    <div className="mx-auto rounded-3xl bg-white/95 dark:bg-slate-950/95 border border-purple-100/80 dark:border-purple-900/50 shadow-[0_14px_40px_rgba(15,23,42,0.45)] p-4 sm:p-5 mb-1">
+                      <p className="text-[11px] font-semibold text-purple-600 dark:text-purple-300 uppercase tracking-[0.18em] mb-2 text-center">
                         Booking request
                       </p>
-                      <p className="text-sm text-gray-800 mb-4">
+                      <p className="text-sm text-gray-800 dark:text-gray-100 mb-4 text-center">
                         {booking.greeting}
                       </p>
-                      <div className="overflow-hidden rounded-2xl border border-gray-200 mb-3">
-                        <table className="w-full text-xs sm:text-sm">
+                      <div className="overflow-hidden rounded-2xl border border-gray-200/80 dark:border-slate-700 mb-3 bg-white/80 dark:bg-slate-950/60">
+                        <table className="w-full text-xs sm:text-[13px]">
                           <tbody>
-                            <tr className="bg-gray-50">
-                              <th className="px-3 py-2 text-left text-gray-500 w-32 sm:w-36">
+                            <tr className="bg-gray-50/90 dark:bg-slate-900/70">
+                              <th className="px-3 py-2 text-left text-gray-500 dark:text-gray-400 w-28 sm:w-32">
                                 Dates
                               </th>
-                              <td className="px-3 py-2 text-gray-900">
+                              <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
                                 {booking.dates}
                               </td>
                             </tr>
                             <tr>
-                              <th className="px-3 py-2 text-left text-gray-500">
+                              <th className="px-3 py-2 text-left text-gray-500 dark:text-gray-400">
                                 Duration
                               </th>
-                              <td className="px-3 py-2 text-gray-900">
+                              <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
                                 {booking.duration}
                               </td>
                             </tr>
                             <tr>
-                              <th className="px-3 py-2 text-left text-gray-500">
+                              <th className="px-3 py-2 text-left text-gray-500 dark:text-gray-400">
                                 Price / day
                               </th>
-                              <td className="px-3 py-2 text-gray-900">
+                              <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
                                 {booking.pricePerDay}
                               </td>
                             </tr>
-                            <tr className="bg-gray-50">
-                              <th className="px-3 py-2 text-left text-gray-500">
+                            <tr className="bg-gray-50/90 dark:bg-slate-900/70">
+                              <th className="px-3 py-2 text-left text-gray-500 dark:text-gray-400">
                                 Total
                               </th>
-                              <td className="px-3 py-2 font-semibold text-gray-900">
+                              <td className="px-3 py-2 font-semibold text-gray-900 dark:text-gray-50">
                                 {booking.total}
                               </td>
                             </tr>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      <div className="px-1">
+                        <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-[0.18em] mb-1">
                           Message from guest
                         </p>
-                        <p className="text-sm text-gray-900 whitespace-pre-wrap break-words">
+                        <p className="text-sm text-gray-900 dark:text-gray-50 whitespace-pre-wrap break-words">
                           {booking.message || '(no additional message)'}
                         </p>
                       </div>
                     </div>
                     <div className="flex justify-center mt-1">
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400">
                         {formatTime(msg.created_at)}
                       </span>
                     </div>
