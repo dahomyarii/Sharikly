@@ -35,51 +35,42 @@ const parseBookingRequest = (text?: string): BookingRequestPayload | null => {
   if (!text.startsWith('BOOKING_REQUEST')) return null
 
   const body = text.replace(/^BOOKING_REQUEST\s*/u, '')
-  const lines = body.split('\n').map((l) => l.trim())
 
-  let greeting = ''
-  let dates = ''
-  let duration = ''
-  let pricePerDay = ''
-  let total = ''
-  const messageLines: string[] = []
-  let inMessage = false
+  // Helper to safely extract a field regardless of newlines or extra spaces
+  const makeFieldRegex = (label: string) =>
+    new RegExp(
+      `${label}:\\s*([\\s\\S]*?)(?=\\s*(?:Dates|Duration|Price per day|Total|Message from guest):|$)`,
+      'i'
+    )
 
-  for (const line of lines) {
-    if (!line) continue
+  const greetingMatch = body.match(
+    /^(.*?)(?=Dates:|Duration:|Price per day:|Total:|Message from guest:|$)/i
+  )
+  const greeting = greetingMatch ? greetingMatch[1].trim() : ''
 
-    if (!greeting) {
-      // First non-empty line after prefix is the greeting sentence
-      greeting = line
-      continue
-    }
+  const datesMatch = body.match(makeFieldRegex('Dates'))
+  const durationMatch = body.match(makeFieldRegex('Duration'))
+  const pricePerDayMatch = body.match(makeFieldRegex('Price per day'))
+  const totalMatch = body.match(makeFieldRegex('Total'))
+  const messageMatch = body.match(makeFieldRegex('Message from guest'))
 
-    if (line.toLowerCase().startsWith('dates:')) {
-      dates = line.slice('dates:'.length).trim()
-    } else if (line.toLowerCase().startsWith('duration:')) {
-      duration = line.slice('duration:'.length).trim()
-    } else if (line.toLowerCase().startsWith('price per day:')) {
-      pricePerDay = line.slice('price per day:'.length).trim()
-    } else if (line.toLowerCase().startsWith('total:')) {
-      total = line.slice('total:'.length).trim()
-    } else if (line.toLowerCase().startsWith('message from guest:')) {
-      inMessage = true
-    } else if (inMessage) {
-      messageLines.push(line)
-    }
-  }
+  const dates = datesMatch?.[1].trim() || ''
+  const duration = durationMatch?.[1].trim() || ''
+  const pricePerDay = pricePerDayMatch?.[1].trim() || ''
+  const total = totalMatch?.[1].trim() || ''
+  const message = (messageMatch?.[1] || '').trim()
 
   if (!dates || !duration || !pricePerDay || !total) {
     return null
   }
 
   return {
-    greeting: greeting || "I'd like to book this item.",
+    greeting: greeting || "Hi! I'd like to book this item.",
     dates,
     duration,
     pricePerDay,
     total,
-    message: messageLines.join('\n').trim(),
+    message,
   }
 }
 
