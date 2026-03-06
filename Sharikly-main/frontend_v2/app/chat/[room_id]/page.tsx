@@ -326,14 +326,14 @@ export default function ChatRoomPage() {
               return (
                 <div key={msg.id} className="flex justify-center">
                   <div className="max-w-md w-full">
-                    <div className="mx-auto bg-white border border-gray-200 rounded-2xl shadow-md p-4 sm:p-5 mb-1">
+                    <div className="mx-auto bg-white/95 border border-gray-200 rounded-3xl shadow-md p-4 sm:p-5 mb-1">
                       <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                         Booking request
                       </p>
                       <p className="text-sm text-gray-800 mb-4">
                         {booking.greeting}
                       </p>
-                      <div className="overflow-hidden rounded-lg border border-gray-200 mb-3">
+                      <div className="overflow-hidden rounded-2xl border border-gray-200 mb-3">
                         <table className="w-full text-xs sm:text-sm">
                           <tbody>
                             <tr className="bg-gray-50">
@@ -380,7 +380,7 @@ export default function ChatRoomPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex justify-end pr-2">
+                    <div className="flex justify-center mt-1">
                       <span className="text-[10px] text-gray-500">
                         {formatTime(msg.created_at)}
                       </span>
