@@ -21,6 +21,63 @@ interface Message {
   created_at: string
 }
 
+interface BookingRequestPayload {
+  greeting: string
+  dates: string
+  duration: string
+  pricePerDay: string
+  total: string
+  message: string
+}
+
+const parseBookingRequest = (text?: string): BookingRequestPayload | null => {
+  if (!text) return null
+  if (!text.startsWith('BOOKING_REQUEST')) return null
+
+  const lines = text.split('\n')
+  let greeting = ''
+  let dates = ''
+  let duration = ''
+  let pricePerDay = ''
+  let total = ''
+  const messageLines: string[] = []
+  let inMessage = false
+
+  for (const rawLine of lines.slice(1)) {
+    const line = rawLine.trim()
+    if (!line) continue
+
+    if (line.startsWith('GREETING=')) {
+      greeting = line.replace('GREETING=', '').trim()
+    } else if (line.startsWith('DATES=')) {
+      dates = line.replace('DATES=', '').trim()
+    } else if (line.startsWith('DURATION=')) {
+      duration = line.replace('DURATION=', '').trim()
+    } else if (line.startsWith('PRICE_PER_DAY=')) {
+      pricePerDay = line.replace('PRICE_PER_DAY=', '').trim()
+    } else if (line.startsWith('TOTAL=')) {
+      total = line.replace('TOTAL=', '').trim()
+    } else if (line === 'MESSAGE:') {
+      inMessage = true
+    } else if (inMessage) {
+      messageLines.push(rawLine)
+    }
+  }
+
+  if (!dates || !duration || !pricePerDay || !total) {
+    return null
+  }
+
+  return {
+    greeting: greeting || "I'd like to book this item.",
+    dates,
+    duration,
+    pricePerDay,
+    total,
+    message: messageLines.join('\n').trim(),
+  }
+}
+
 export default function ChatRoomPage() {
   const params = useParams()
   const router = useRouter()
@@ -263,6 +320,76 @@ export default function ChatRoomPage() {
               ) : (
           messages.map((msg) => {
             const isOwn = msg.sender.id === user.id
+            const booking = parseBookingRequest(msg.text)
+
+            if (booking) {
+              return (
+                <div key={msg.id} className="flex justify-center">
+                  <div className="max-w-md w-full">
+                    <div className="mx-auto bg-white border border-gray-200 rounded-2xl shadow-md p-4 sm:p-5 mb-1">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Booking request
+                      </p>
+                      <p className="text-sm text-gray-800 mb-4">
+                        {booking.greeting}
+                      </p>
+                      <div className="overflow-hidden rounded-lg border border-gray-200 mb-3">
+                        <table className="w-full text-xs sm:text-sm">
+                          <tbody>
+                            <tr className="bg-gray-50">
+                              <th className="px-3 py-2 text-left text-gray-500 w-32 sm:w-36">
+                                Dates
+                              </th>
+                              <td className="px-3 py-2 text-gray-900">
+                                {booking.dates}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th className="px-3 py-2 text-left text-gray-500">
+                                Duration
+                              </th>
+                              <td className="px-3 py-2 text-gray-900">
+                                {booking.duration}
+                              </td>
+                            </tr>
+                            <tr>
+                              <th className="px-3 py-2 text-left text-gray-500">
+                                Price / day
+                              </th>
+                              <td className="px-3 py-2 text-gray-900">
+                                {booking.pricePerDay}
+                              </td>
+                            </tr>
+                            <tr className="bg-gray-50">
+                              <th className="px-3 py-2 text-left text-gray-500">
+                                Total
+                              </th>
+                              <td className="px-3 py-2 font-semibold text-gray-900">
+                                {booking.total}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                          Message from guest
+                        </p>
+                        <p className="text-sm text-gray-900 whitespace-pre-wrap break-words">
+                          {booking.message || '(no additional message)'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end pr-2">
+                      <span className="text-[10px] text-gray-500">
+                        {formatTime(msg.created_at)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
             return (
               <div
                 key={msg.id}

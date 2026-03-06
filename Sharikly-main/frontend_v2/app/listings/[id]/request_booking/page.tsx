@@ -210,13 +210,13 @@ export default function RequestBookingPage() {
         const wrappedMessage = wrapMessageForChat(message)
 
         const bookingMessage =
-          `Hi! I'd like to book this item.\n\n` +
-          `Booking details:\n` +
-          `• Dates: ${dateLabel}\n` +
-          `• Duration: ${durationLabel}\n` +
-          `• Price per day: ${pricePerDayLabel}\n` +
-          `• Total: ${totalLabel}\n\n` +
-          `Message from guest:\n` +
+          `BOOKING_REQUEST\n` +
+          `GREETING=Hi! I'd like to book this item.\n` +
+          `DATES=${dateLabel}\n` +
+          `DURATION=${durationLabel}\n` +
+          `PRICE_PER_DAY=${pricePerDayLabel}\n` +
+          `TOTAL=${totalLabel}\n` +
+          `MESSAGE:\n` +
           (wrappedMessage || '(no additional message)')
 
         await axiosInstance.post(
