@@ -551,15 +551,15 @@ export default function Header() {
           paddingRight: "max(0.75rem, var(--safe-area-inset-right))",
         }}
       >
-        <div className="mb-2 mx-0 rounded-2xl bg-background/95 backdrop-blur-xl border border-border shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.2)] transition-all duration-300">
+        <div className="mb-2 mx-0 rounded-2xl bg-background/95 backdrop-blur-xl border border-purple-500/30 shadow-[0_-6px_28px_rgba(147,51,234,0.35)] dark:shadow-[0_-6px_28px_rgba(88,28,135,0.55)] transition-all duration-300">
           <div className="flex justify-around items-center h-14 px-0.5 gap-0">
             {/* Home */}
             <Link
               href="/"
               className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
                 pathname === "/"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground active:bg-accent"
+                  ? "bg-purple-500/10 text-purple-500 ring-1 ring-purple-400/70"
+                  : "text-muted-foreground hover:text-purple-400 active:bg-purple-500/10"
               }`}
               title="Home"
             >
@@ -575,8 +575,8 @@ export default function Header() {
               href="/listings"
               className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
                 pathname === "/listings" || (pathname.startsWith("/listings/") && pathname !== "/listings/new" && !pathname.includes("/request_booking"))
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground active:bg-accent"
+                  ? "bg-purple-500/10 text-purple-500 ring-1 ring-purple-400/70"
+                  : "text-muted-foreground hover:text-purple-400 active:bg-purple-500/10"
               }`}
               title="Browse"
             >
@@ -592,8 +592,8 @@ export default function Header() {
               href="/favorites"
               className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 relative ${
                 pathname === "/favorites"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground active:bg-accent"
+                  ? "bg-purple-500/10 text-purple-500 ring-1 ring-purple-400/70"
+                  : "text-muted-foreground hover:text-purple-400 active:bg-purple-500/10"
               }`}
               title="Favorites"
             >
@@ -608,8 +608,8 @@ export default function Header() {
               href="/chat"
               className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 relative ${
                 pathname === "/chat" || pathname.startsWith("/chat/")
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground active:bg-accent"
+                  ? "bg-purple-500/10 text-purple-500 ring-1 ring-purple-400/70"
+                  : "text-muted-foreground hover:text-purple-400 active:bg-purple-500/10"
               }`}
               title="Messages"
             >
@@ -630,8 +630,8 @@ export default function Header() {
                 href="/profile"
                 className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
                   pathname === "/profile"
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground active:bg-accent"
+                    ? "bg-purple-500/10 text-purple-500 ring-1 ring-purple-400/70"
+                    : "text-muted-foreground hover:text-purple-400 active:bg-purple-500/10"
                 }`}
                 title="Profile"
               >
@@ -645,7 +645,7 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => setShowLogin(true)}
-                className="flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl text-muted-foreground active:scale-95 active:bg-accent touch-target transition-all duration-200 ease-out"
+                className="flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl text-muted-foreground hover:text-purple-400 active:scale-95 active:bg-purple-500/10 touch-target transition-all duration-200 ease-out"
                 title="Login"
               >
                 <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
