@@ -149,7 +149,7 @@ export default function LoginPage() {
         {/* Login button */}
         <button
           type="submit"
-          className="w-full h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="w-full h-12 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
         >
           {t("login")}
         </button>

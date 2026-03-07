@@ -185,7 +185,7 @@ export default function ListingDetail() {
   const is404 = listingError?.response?.status === 404;
   if (listingError && is404) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Listing not found</h1>
           <p className="text-gray-600 mb-6">
@@ -581,7 +581,7 @@ export default function ListingDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
 
       <header className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 text-white px-4 py-3 sticky top-0 z-40 shadow-md" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
         <form onSubmit={handleHeaderSearchSubmit} className="max-w-7xl mx-auto flex items-center gap-3">
@@ -888,7 +888,7 @@ export default function ListingDetail() {
                   </p>
                   <Button
                     onClick={() => router.push("/auth/login")}
-                    className="mt-3 bg-blue-600 hover:bg-blue-700 text-white"
+                    className="mt-3 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     Log In
                   </Button>
@@ -933,7 +933,7 @@ export default function ListingDetail() {
                   <div className="mt-4 flex gap-2">
                     <Button
                       onClick={submitReview}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
                       disabled={submittingReview}
                     >
                       {submittingReview ? "Submitting..." : "Submit Review"}
@@ -1134,7 +1134,7 @@ export default function ListingDetail() {
                 {user && !isOwner && (
                   <Button
                     onClick={handleRequestBooking}
-                    className="w-full min-h-[52px] h-14 bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl active:scale-[0.99] transition-all duration-200 touch-target"
+                    className="w-full min-h-[52px] h-14 bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl active:scale-[0.99] transition-all duration-200 touch-target"
                   >
                     Send Request
                   </Button>
@@ -1146,7 +1146,7 @@ export default function ListingDetail() {
                     </p>
                     <Button
                       onClick={() => router.push("/auth/login")}
-                      className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl"
+                      className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-xl"
                     >
                       Log In
                     </Button>

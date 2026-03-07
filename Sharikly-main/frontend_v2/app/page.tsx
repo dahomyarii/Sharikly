@@ -27,20 +27,21 @@ import { toListingsArray, sliceListings, buildListingsQuery } from "@/lib/listin
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
-const CATEGORY_COLORS = [
-  "from-pink-500 to-rose-500",
-  "from-blue-500 to-cyan-500",
-  "from-purple-500 to-violet-500",
-  "from-orange-500 to-amber-500",
-  "from-green-500 to-emerald-500",
-  "from-red-500 to-pink-500",
+// Softer outline colors for category pills (border + text, less bright)
+const CATEGORY_OUTLINE_COLORS = [
+  "border-pink-300/80 text-pink-700 bg-pink-50/80 dark:border-pink-500/50 dark:text-pink-300 dark:bg-pink-950/30",
+  "border-sky-300/80 text-sky-700 bg-sky-50/80 dark:border-sky-500/50 dark:text-sky-300 dark:bg-sky-950/30",
+  "border-violet-300/80 text-violet-700 bg-violet-50/80 dark:border-violet-500/50 dark:text-violet-300 dark:bg-violet-950/30",
+  "border-amber-300/80 text-amber-700 bg-amber-50/80 dark:border-amber-500/50 dark:text-amber-300 dark:bg-amber-950/30",
+  "border-emerald-300/80 text-emerald-700 bg-emerald-50/80 dark:border-emerald-500/50 dark:text-emerald-300 dark:bg-emerald-950/30",
+  "border-rose-300/80 text-rose-700 bg-rose-50/80 dark:border-rose-500/50 dark:text-rose-300 dark:bg-rose-950/30",
 ];
 
-const getCategoryColorById = (id: number) => {
-  if (!CATEGORY_COLORS.length) return "from-blue-500 to-cyan-500";
+const getCategoryOutlineById = (id: number) => {
+  if (!CATEGORY_OUTLINE_COLORS.length) return CATEGORY_OUTLINE_COLORS[0];
   const safeId = Number.isFinite(id) ? Math.abs(id) : 0;
-  const index = safeId % CATEGORY_COLORS.length;
-  return CATEGORY_COLORS[index];
+  const index = safeId % CATEGORY_OUTLINE_COLORS.length;
+  return CATEGORY_OUTLINE_COLORS[index];
 };
 
 export default function HomePage() {
@@ -422,7 +423,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-background">
       {/* Hero — smaller on mobile for better phone fit */}
       <section className="relative min-h-[32vh] sm:min-h-[42vh] md:min-h-[48vh] lg:min-h-[52vh] flex flex-col justify-center overflow-hidden">
         <img
@@ -609,20 +610,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="bg-white">
-        {/* Categories — clean horizontal scroll / grid */}
-        <section className="border-b border-neutral-100 bg-white">
+      <div className="bg-card">
+        {/* Categories — outlined pills, softer colors */}
+        <section className="border-b border-border bg-card">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <p className="section-label text-xs uppercase tracking-wider text-neutral-400 mb-4">
+            <p className="section-label text-xs uppercase tracking-wider text-muted-foreground mb-4">
               {t("category")}
             </p>
             <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target ${
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target border-2 ${
                   selectedCategory === null
-                    ? "bg-neutral-900 text-white pill-active"
-                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                    ? "bg-primary border-primary text-primary-foreground pill-active"
+                    : "border-border bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 }`}
               >
                 <Sparkles className="h-4 w-4" />
@@ -631,16 +632,15 @@ export default function HomePage() {
               {categories.map((cat) => {
                 const { icon: IconComponent } = getCategoryIcon(cat.name);
                 const isSelected = selectedCategory === cat.id;
-                const gradientColors = getCategoryColorById(cat.id);
-                const gradientBackground = `bg-gradient-to-r ${gradientColors}`;
+                const outlineClasses = getCategoryOutlineById(cat.id);
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target ${gradientBackground} ${
+                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target border-2 ${outlineClasses} ${
                       isSelected
-                        ? "text-white shadow-md scale-[1.02] pill-active"
-                        : "text-white/90 opacity-90 hover:opacity-100"
+                        ? "ring-2 ring-primary/40 ring-offset-2 ring-offset-background scale-[1.02] pill-active"
+                        : "hover:opacity-90"
                     }`}
                   >
                     <IconComponent className="h-4 w-4" />
@@ -654,7 +654,7 @@ export default function HomePage() {
 
         {/* Recently viewed — from localStorage, only listings in current feed */}
         {recentlyViewedListings.length > 0 && !isListingsLoading && (
-          <section className="py-6 sm:py-8 border-b border-neutral-100 bg-white">
+          <section className="py-6 sm:py-8 border-b border-border bg-card">
             <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
               <p className="section-label text-xs uppercase tracking-wider text-neutral-400 mb-1">
                 {t("listings")}
@@ -669,8 +669,8 @@ export default function HomePage() {
                     href={`/listings/${service.id}`}
                     className="group block"
                   >
-                    <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                      <div className="relative aspect-[4/3] max-h-[140px] sm:max-h-none bg-neutral-100 overflow-hidden">
+                    <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border hover:border-border shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                      <div className="relative aspect-[4/3] max-h-[140px] sm:max-h-none bg-muted overflow-hidden">
                         {service.images?.[0]?.image && (
                           <img
                             src={
@@ -686,17 +686,17 @@ export default function HomePage() {
                         )}
                       </div>
                       <div className="p-3">
-                        <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider line-clamp-1">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider line-clamp-1">
                           {service.category?.name || t("listing")}
                         </span>
-                        <h3 className="text-sm font-semibold text-neutral-900 mt-0.5 line-clamp-2 group-hover:text-neutral-700">
+                        <h3 className="text-sm font-semibold text-foreground mt-0.5 line-clamp-2 group-hover:text-muted-foreground">
                           {service.title}
                         </h3>
                         <div className="mt-2 flex items-baseline gap-1">
-                          <span className="text-base font-bold text-neutral-900">
+                          <span className="text-base font-bold text-foreground">
                             ${service.price_per_day}
                           </span>
-                          <span className="text-xs text-neutral-500">/day</span>
+                          <span className="text-xs text-muted-foreground">/day</span>
                         </div>
                       </div>
                     </article>
@@ -709,7 +709,7 @@ export default function HomePage() {
 
         {/* Featured — one hero-style card */}
         {featuredService && (
-          <section className="py-12 md:py-16 bg-neutral-50/80">
+          <section className="py-12 md:py-16 bg-muted/50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <p className="section-label text-xs uppercase tracking-wider text-neutral-400 mb-2">
                 {t("featured")}
@@ -719,9 +719,9 @@ export default function HomePage() {
               </h2>
 
               <Link href={`/listings/${featuredService.id}`} className="block group">
-                <article className="card-hover overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-neutral-200/80 hover:shadow-2xl hover:ring-neutral-300 transition-all duration-300">
+                <article className="card-hover overflow-hidden rounded-2xl bg-card shadow-md ring-1 ring-border hover:shadow-2xl hover:ring-border transition-all duration-300">
                   <div className="grid md:grid-cols-2 gap-0">
-                    <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[380px] bg-neutral-100 overflow-hidden">
+                    <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[380px] bg-muted overflow-hidden">
                       {featuredService.images?.[0]?.image && (
                         <img
                           src={
@@ -739,29 +739,29 @@ export default function HomePage() {
                     </div>
                     <div className="p-6 sm:p-8 md:p-10 flex flex-col justify-between">
                       <div>
-                        <span className="inline-block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">
+                        <span className="inline-block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
                           {featuredService.category?.name || t("listings")}
                         </span>
-                        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900 mb-2 sm:mb-3 group-hover:text-neutral-700">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2 sm:mb-3 group-hover:text-muted-foreground">
                           {featuredService.title}
                         </h3>
-                        <p className="text-neutral-600 mb-3 sm:mb-5 line-clamp-2 sm:line-clamp-3 text-sm sm:text-base">
+                        <p className="text-muted-foreground mb-3 sm:mb-5 line-clamp-2 sm:line-clamp-3 text-sm sm:text-base">
                           {featuredService.description}
                         </p>
                         <div className="mb-4 sm:mb-6">
                           <RatingDisplay listing={featuredService} />
                         </div>
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 pt-4 sm:pt-5 border-t border-neutral-100">
+                      <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 pt-4 sm:pt-5 border-t border-border">
                         <div>
-                          <span className="text-2xl sm:text-3xl font-bold text-neutral-900">
+                          <span className="text-2xl sm:text-3xl font-bold text-foreground">
                             ${featuredService.price_per_day}
                           </span>
-                          <span className="text-neutral-500 ml-1 text-sm">
+                          <span className="text-muted-foreground ml-1 text-sm">
                             {t("price_per_day")}
                           </span>
                         </div>
-                        <span className="inline-flex items-center text-sm font-semibold text-neutral-900 group-hover:underline">
+                        <span className="inline-flex items-center text-sm font-semibold text-foreground group-hover:underline">
                           {t("request_book")}
                           <span className="ml-1">→</span>
                         </span>
@@ -775,20 +775,20 @@ export default function HomePage() {
         )}
 
         {/* Popular listings — grid; tighter on mobile */}
-        <section className="py-6 sm:py-10 md:py-16 bg-white">
+        <section className="py-6 sm:py-10 md:py-16 bg-card">
           <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
               <div>
-                <p className="section-label text-xs uppercase tracking-wider text-neutral-400 mb-1">
+                <p className="section-label text-xs uppercase tracking-wider text-muted-foreground mb-1">
                   {t("listings")}
                 </p>
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
                   Popular right now
                 </h2>
               </div>
               <Link
                 href="/listings"
-                className="link-arrow inline-flex items-center gap-1 text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-colors"
+                className="link-arrow inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
               >
                 View all
                 <span className="arrow">→</span>
@@ -803,8 +803,8 @@ export default function HomePage() {
                       href={`/listings/${service.id}`}
                       className="group block"
                     >
-                      <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                        <div className="relative aspect-[4/3] max-h-[180px] sm:max-h-none bg-neutral-100 overflow-hidden">
+                      <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border hover:border-border shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                        <div className="relative aspect-[4/3] max-h-[180px] sm:max-h-none bg-muted overflow-hidden">
                           {service.images?.[0]?.image && (
                             <img
                               src={
@@ -828,7 +828,7 @@ export default function HomePage() {
                             className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all touch-target ${
                               favorites.has(service.id)
                                 ? "bg-red-500 text-white"
-                                : "bg-white/90 text-neutral-600 hover:bg-white hover:scale-105"
+                                : "bg-card/90 text-muted-foreground hover:bg-card hover:scale-105"
                             }`}
                           >
                             <Heart
@@ -842,15 +842,15 @@ export default function HomePage() {
                           </button>
                         </div>
                         <div className="p-3 sm:p-5 flex flex-col flex-1">
-                          <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             {service.category?.name || t("listing")}
                           </span>
-                          <h3 className="text-base sm:text-lg font-semibold text-neutral-900 mt-1 mb-2 line-clamp-2 group-hover:text-neutral-700">
+                          <h3 className="text-base sm:text-lg font-semibold text-foreground mt-1 mb-2 line-clamp-2 group-hover:text-muted-foreground">
                             {service.title}
                           </h3>
                           {service.owner && (
                             <div className="flex items-center gap-2 mb-3">
-                              <div className="w-6 h-6 rounded-full bg-neutral-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                              <div className="w-6 h-6 rounded-full bg-muted overflow-hidden flex-shrink-0 flex items-center justify-center">
                                 {service.owner.avatar ? (
                                   <img
                                     src={
@@ -862,10 +862,10 @@ export default function HomePage() {
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (
-                                  <User className="w-3.5 h-3.5 text-neutral-400" />
+                                  <User className="w-3.5 h-3.5 text-muted-foreground" />
                                 )}
                               </div>
-                              <span className="text-xs text-neutral-500 truncate">
+                              <span className="text-xs text-muted-foreground truncate">
                                 {service.owner.username || service.owner.email}
                               </span>
                             </div>
@@ -873,15 +873,15 @@ export default function HomePage() {
                           <div className="mb-4 mt-auto">
                             <RatingDisplay listing={service} />
                           </div>
-                          <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
-                            <span className="text-xl font-bold text-neutral-900">
+                          <div className="flex items-center justify-between pt-3 border-t border-border">
+                            <span className="text-xl font-bold text-foreground">
                               ${service.price_per_day}
-                              <span className="text-sm font-normal text-neutral-500">
+                              <span className="text-sm font-normal text-muted-foreground">
                                 {" "}
                                 {t("price_per_day")}
                               </span>
                             </span>
-                            <span className="text-sm font-semibold text-neutral-900 group-hover:underline">
+                            <span className="text-sm font-semibold text-foreground group-hover:underline">
                               {t("book_now")} →
                             </span>
                           </div>
@@ -894,20 +894,20 @@ export default function HomePage() {
         </section>
 
         {/* More to explore — 2-col grid on mobile for better phone layout */}
-        <section className="py-6 sm:py-10 md:py-16 bg-neutral-50/80 border-t border-neutral-100">
+        <section className="py-6 sm:py-10 md:py-16 bg-muted/50 border-t border-border">
           <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
             <div className="flex items-end justify-between mb-4 sm:mb-6">
               <div>
-                <p className="section-label text-xs uppercase tracking-wider text-neutral-400 mb-1">
+                <p className="section-label text-xs uppercase tracking-wider text-muted-foreground mb-1">
                   Explore
                 </p>
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
                   More to explore
                 </h2>
               </div>
               <Link
                 href="/listings"
-                className="link-arrow hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-colors"
+                className="link-arrow hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
               >
                 View all
                 <span className="arrow">→</span>
@@ -926,8 +926,8 @@ export default function HomePage() {
                       href={`/listings/${service.id}`}
                       className="group block"
                     >
-                      <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-300 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                        <div className="relative aspect-[4/3] max-h-[160px] sm:max-h-none bg-neutral-100 overflow-hidden">
+                      <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border hover:border-border shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                        <div className="relative aspect-[4/3] max-h-[160px] sm:max-h-none bg-muted overflow-hidden">
                           {service.images?.[0]?.image && (
                             <img
                               src={
@@ -951,7 +951,7 @@ export default function HomePage() {
                             className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all touch-target ${
                               favorites.has(service.id)
                                 ? "bg-red-500 text-white"
-                                : "bg-white/90 text-neutral-600 hover:bg-white hover:scale-105"
+                                : "bg-card/90 text-muted-foreground hover:bg-card hover:scale-105"
                             }`}
                           >
                             <Heart
@@ -965,23 +965,23 @@ export default function HomePage() {
                           </button>
                         </div>
                         <div className="p-3 sm:p-4 flex flex-col flex-1">
-                          <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             {service.category?.name || t("listing")}
                           </span>
-                          <h3 className="text-sm sm:text-base font-semibold text-neutral-900 mt-1 mb-2 line-clamp-2 group-hover:text-neutral-700">
+                          <h3 className="text-sm sm:text-base font-semibold text-foreground mt-1 mb-2 line-clamp-2 group-hover:text-muted-foreground">
                             {service.title}
                           </h3>
                           <div className="mb-2 sm:mb-3 mt-auto">
                             <RatingDisplay listing={service} />
                           </div>
-                          <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-neutral-100">
-                            <span className="text-base sm:text-lg font-bold text-neutral-900">
+                          <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
+                            <span className="text-base sm:text-lg font-bold text-foreground">
                               ${service.price_per_day}
-                              <span className="text-xs font-normal text-neutral-500">
+                              <span className="text-xs font-normal text-muted-foreground">
                                 /day
                               </span>
                             </span>
-                            <span className="text-sm font-semibold text-neutral-900 group-hover:underline">
+                            <span className="text-sm font-semibold text-foreground group-hover:underline">
                               {t("view")} →
                             </span>
                           </div>

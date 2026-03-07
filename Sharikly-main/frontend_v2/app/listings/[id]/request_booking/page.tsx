@@ -64,16 +64,16 @@ export default function RequestBookingPage() {
 
   if (!listing) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Loading listing...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading listing...</div>
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Please log in to request a booking</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Please log in to request a booking</div>
       </div>
     )
   }
@@ -246,18 +246,18 @@ export default function RequestBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeft className="h-5 w-5" />
             <span>Back</span>
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">Request Booking</h1>
+          <h1 className="text-2xl font-bold text-foreground">Request Booking</h1>
         </div>
       </div>
 
@@ -412,7 +412,7 @@ export default function RequestBookingPage() {
               <Button
                 onClick={handleSendRequest}
                 disabled={loading || !message.trim() || !dateRange?.from || !dateRange?.to}
-                className="w-full mt-6 bg-gradient-to-r from-purple-600 via-purple-500 to-fuchsia-500 hover:from-purple-700 hover:via-purple-600 hover:to-fuchsia-600 text-white rounded-xl py-6 text-lg font-semibold shadow-[0_18px_40px_rgba(147,51,234,0.55)] disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:hover:bg-gray-300"
+                className="w-full mt-6 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl py-6 text-lg font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

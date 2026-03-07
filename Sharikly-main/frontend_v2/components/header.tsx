@@ -301,7 +301,7 @@ export default function Header() {
               <LanguageSwitcher />
               <button
                 onClick={() => setShowLogin(true)}
-                className="px-4 py-2 border border-border text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
+                className="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full transition-all text-sm font-medium"
               >
                 {t("sign_in") || "Log In"}
               </button>
@@ -504,7 +504,7 @@ export default function Header() {
                     setShowLogin(true);
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex-1 py-2.5 border border-border text-foreground rounded-lg hover:bg-accent transition text-sm font-medium"
+                  className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition text-sm font-medium"
                 >
                   Log In
                 </button>
