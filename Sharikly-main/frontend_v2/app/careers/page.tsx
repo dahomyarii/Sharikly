@@ -26,9 +26,9 @@ export default function CareersPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-background border-b border-border sticky top-0 z-40">
         <div className="flex items-center justify-between px-4 py-3 md:py-4">
           <Button
             variant="ghost"
@@ -38,7 +38,7 @@ export default function CareersPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-bold text-gray-900">Careers</h1>
+          <h1 className="text-lg font-bold text-foreground">Careers</h1>
           <div className="w-8" />
         </div>
       </header>
@@ -46,22 +46,22 @@ export default function CareersPage() {
       {/* Content */}
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
         <div className="space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Join Our Team</h2>
-          <p className="text-lg text-gray-600">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">Join Our Team</h2>
+          <p className="text-lg text-muted-foreground">
             Help us build the future of peer-to-peer sharing.
           </p>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-gray-900">Open Positions</h3>
+          <h3 className="text-2xl font-bold text-foreground">Open Positions</h3>
           <div className="space-y-3">
             {jobs.map((job, idx) => (
-              <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div key={idx} className="border border-border rounded-lg p-4 bg-card hover:shadow-md transition-shadow">
                 <div className="flex items-start gap-3">
                   <Briefcase className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900">{job.title}</h4>
-                    <p className="text-sm text-gray-600">{job.department} • {job.type}</p>
+                    <h4 className="font-semibold text-foreground">{job.title}</h4>
+                    <p className="text-sm text-muted-foreground">{job.department} • {job.type}</p>
                   </div>
                 </div>
               </div>
@@ -70,8 +70,8 @@ export default function CareersPage() {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-gray-900">Benefits</h3>
-          <ul className="space-y-2 text-gray-700">
+          <h3 className="text-2xl font-bold text-foreground">Benefits</h3>
+          <ul className="space-y-2 text-muted-foreground">
             <li className="flex gap-3">
               <span className="text-blue-600 font-bold">✓</span>
               <span>Competitive salary</span>

@@ -10,9 +10,9 @@ export default function AboutPage() {
   const { t } = useLocale();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-background border-b border-border sticky top-0 z-40">
         <div className="flex items-center justify-between px-4 py-3 md:py-4">
           <Button
             variant="ghost"
@@ -22,7 +22,7 @@ export default function AboutPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-bold text-gray-900">{t("about_us")}</h1>
+          <h1 className="text-lg font-bold text-foreground">{t("about_us")}</h1>
           <div className="w-8" />
         </div>
       </header>
@@ -30,22 +30,22 @@ export default function AboutPage() {
       {/* Content */}
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
         <div className="space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
             {t("about_ekra")}
           </h2>
-          <p className="text-lg text-gray-600">{t("ekra_description")}</p>
+          <p className="text-lg text-muted-foreground">{t("ekra_description")}</p>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-gray-900">
+          <h3 className="text-2xl font-bold text-foreground">
             {t("our_mission")}
           </h3>
-          <p className="text-gray-700 leading-relaxed">{t("mission_text")}</p>
+          <p className="text-muted-foreground leading-relaxed">{t("mission_text")}</p>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-gray-900">{t("why_ekra")}</h3>
-          <ul className="space-y-3 text-gray-700">
+          <h3 className="text-2xl font-bold text-foreground">{t("why_ekra")}</h3>
+          <ul className="space-y-3 text-muted-foreground">
             <li className="flex gap-3">
               <span className="text-blue-600 font-bold">✓</span>
               <span>{t("safe_transactions")}</span>

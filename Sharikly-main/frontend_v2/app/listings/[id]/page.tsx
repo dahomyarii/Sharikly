@@ -602,7 +602,7 @@ export default function ListingDetail() {
               placeholder="Search listings..."
               value={headerSearch}
               onChange={(e) => setHeaderSearch(e.target.value)}
-              className="w-full pl-10 min-h-[44px] bg-white border-0 text-gray-800 placeholder:text-gray-400 rounded-xl"
+              className="w-full pl-10 min-h-[44px] bg-card border-0 text-foreground placeholder:text-muted-foreground rounded-xl"
               aria-label="Search listings"
             />
           </div>
@@ -678,7 +678,7 @@ export default function ListingDetail() {
                     onClick={() =>
                       openFullscreen(images.indexOf(mainImage || images[0]))
                     }
-                    className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 min-h-[40px] sm:min-h-[44px] px-2 sm:px-3 bg-white/90 hover:bg-white text-gray-800 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity touch-target rounded-lg sm:rounded-xl text-sm"
+                    className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 min-h-[40px] sm:min-h-[44px] px-2 sm:px-3 bg-card/90 hover:bg-card text-foreground opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity touch-target rounded-lg sm:rounded-xl text-sm"
                     size="sm"
                   >
                     <ZoomIn className="h-4 w-4 sm:mr-2" />
@@ -1313,7 +1313,7 @@ export default function ListingDetail() {
 
       {/* Mobile full-screen booking flow (Fat Llama style) */}
       {showMobileBooking && (
-        <div className="fixed inset-0 z-50 lg:hidden flex flex-col bg-white">
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col bg-background">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
             <h2 className="text-base font-semibold text-gray-900">
               Select rental period
@@ -1424,7 +1424,7 @@ export default function ListingDetail() {
             </p>
           </div>
 
-          <div className="fixed bottom-0 left-0 right-0 lg:hidden px-4 pb-4 pt-2 bg-white border-t border-gray-200">
+          <div className="fixed bottom-0 left-0 right-0 lg:hidden px-4 pb-4 pt-2 bg-background border-t border-border">
             {user && !isOwner ? (
               <Button
                 className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold disabled:opacity-50"

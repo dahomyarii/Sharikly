@@ -23,8 +23,8 @@ export default function HowItWorksPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="bg-background border-b border-border sticky top-0 z-40">
         <div className="flex items-center justify-between px-4 py-3 md:py-4">
           <Button
             variant="ghost"
@@ -34,17 +34,17 @@ export default function HowItWorksPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-bold text-gray-900">How it works</h1>
+          <h1 className="text-lg font-bold text-foreground">How it works</h1>
           <div className="w-8" />
         </div>
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-12">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
             Rent gear in four steps
           </h2>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Browse, request, pay, and enjoy. Simple and secure.
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function HowItWorksPage() {
             return (
               <div
                 key={i}
-                className="flex gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50/50"
+                className="flex gap-4 p-4 rounded-xl border border-border bg-card/60"
               >
                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
                   <Icon className="w-6 h-6 text-blue-600" />
@@ -64,26 +64,26 @@ export default function HowItWorksPage() {
                   <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
                     Step {i + 1}
                   </span>
-                  <h3 className="text-lg font-semibold text-gray-900 mt-0.5">
+                  <h3 className="text-lg font-semibold text-foreground mt-0.5">
                     {step.title}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">{step.text}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{step.text}</p>
                 </div>
               </div>
             );
           })}
         </div>
 
-        <div className="pt-8 border-t border-gray-200">
-          <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 mb-6">
+        <div className="pt-8 border-t border-border">
+          <h3 className="flex items-center gap-2 text-xl font-bold text-foreground mb-6">
             <HelpCircle className="w-5 h-5 text-blue-600" />
             Frequently asked questions
           </h3>
           <ul className="space-y-4">
             {faqs.map((faq, i) => (
               <li key={i} className="border-b border-gray-100 pb-4 last:border-0">
-                <p className="font-semibold text-gray-900">{faq.q}</p>
-                <p className="text-sm text-gray-600 mt-1">{faq.a}</p>
+                <p className="font-semibold text-foreground">{faq.q}</p>
+                <p className="text-sm text-muted-foreground mt-1">{faq.a}</p>
               </li>
             ))}
           </ul>

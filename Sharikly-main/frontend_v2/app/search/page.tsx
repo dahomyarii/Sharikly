@@ -63,14 +63,14 @@ export default function SearchPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by title, description, location, or category"
-            className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white"
+            className="w-full pl-11 pr-4 py-3 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/70"
           />
         </div>
       </div>
 
       {/* Results count */}
       {query && (
-        <div className="mb-4 text-sm text-gray-600">
+        <div className="mb-4 text-sm text-muted-foreground">
           {filtered?.length || 0} result{filtered?.length !== 1 ? 's' : ''} found
           {query && ` for "${query}"`}
         </div>
@@ -86,7 +86,7 @@ export default function SearchPage() {
             <ListingCard key={listing.id} listing={listing} />
           ))
         ) : (
-          <div className="col-span-full text-center py-12 text-gray-500">
+          <div className="col-span-full text-center py-12 text-muted-foreground">
             {query ? `No listings found for "${query}"` : 'Start typing to search listings'}
           </div>
         )}

@@ -42,9 +42,9 @@ export default function BlogPage() {
   }, [query, posts])
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-background border-b border-border sticky top-0 z-40">
         <div className="flex items-center justify-between px-4 py-3 md:py-4">
           <Button
             variant="ghost"
@@ -54,7 +54,7 @@ export default function BlogPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-bold text-gray-900">Blog</h1>
+          <h1 className="text-lg font-bold text-foreground">Blog</h1>
           <div className="w-8" />
         </div>
       </header>
@@ -62,8 +62,8 @@ export default function BlogPage() {
       {/* Content */}
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
         <div className="space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Latest News & Tips</h2>
-          <p className="text-lg text-gray-600">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">Latest News & Tips</h2>
+          <p className="text-lg text-muted-foreground">
             Stay updated with insights and stories from the EKRA community.
           </p>
         </div>
@@ -71,14 +71,14 @@ export default function BlogPage() {
         {/* Search */}
         <div className="">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
             <input
               aria-label="Search blog posts"
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search posts by title, excerpt, or author"
-              className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+              className="w-full pl-11 pr-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/60 bg-card text-foreground placeholder:text-muted-foreground"
             />
           </div>
         </div>
@@ -86,10 +86,10 @@ export default function BlogPage() {
         <div className="space-y-4">
           {filteredPosts.length > 0 ? (
             filteredPosts.map((post, idx) => (
-              <div key={idx} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
-                <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                <div className="flex gap-4 text-sm text-gray-600">
+              <div key={idx} className="border border-border rounded-lg p-6 bg-card hover:shadow-md transition-shadow">
+                <h3 className="text-xl font-bold text-foreground mb-2">{post.title}</h3>
+                <p className="text-muted-foreground mb-4">{post.excerpt}</p>
+                <div className="flex gap-4 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <User className="w-4 h-4" />
                     {post.author}
@@ -102,7 +102,7 @@ export default function BlogPage() {
               </div>
             ))
           ) : (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-muted-foreground">
               No posts found. Try a different search term.
             </div>
           )}

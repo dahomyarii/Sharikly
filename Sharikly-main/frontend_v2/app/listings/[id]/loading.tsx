@@ -9,12 +9,12 @@ export default function ListingDetailLoading() {
             <div className="h-4 w-1/2 bg-gray-100 rounded animate-pulse" />
             <div className="h-24 w-full bg-gray-100 rounded animate-pulse" />
           </div>
-          <div className="lg:col-span-1">
-            <div className="rounded-2xl border border-gray-200 p-6 space-y-4 bg-white">
-              <div className="h-12 w-24 bg-gray-200 rounded animate-pulse mx-auto" />
-              <div className="h-64 bg-gray-100 rounded-xl animate-pulse" />
-            </div>
+        <div className="lg:col-span-1">
+          <div className="rounded-2xl border border-border p-6 space-y-4 bg-card">
+            <div className="h-12 w-24 bg-muted rounded animate-pulse mx-auto" />
+            <div className="h-64 bg-muted rounded-xl animate-pulse" />
           </div>
+        </div>
         </div>
       </div>
     </div>

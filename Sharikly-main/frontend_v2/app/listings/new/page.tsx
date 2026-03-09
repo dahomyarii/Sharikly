@@ -245,9 +245,9 @@ export default function NewListing() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-neutral-100">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border">
         <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between">
           <button
             onClick={() => router.back()}
