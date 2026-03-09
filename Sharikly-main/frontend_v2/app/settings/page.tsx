@@ -569,15 +569,15 @@ export default function SettingsPage() {
   const renderPreferences = () => (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">{t('preferences')}</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-xl font-semibold text-foreground">{t('preferences')}</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Customize your experience.
         </p>
       </div>
 
       {/* Language */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium text-foreground mb-3">
           <Globe className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
           {t('language')}
         </label>
@@ -586,8 +586,8 @@ export default function SettingsPage() {
             onClick={() => setLang('en')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${
               lang === 'en'
-                ? 'border-black bg-black text-white'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-card text-foreground hover:border-foreground'
             }`}
           >
             {lang === 'en' && <Check className="w-4 h-4" />}
@@ -597,8 +597,8 @@ export default function SettingsPage() {
             onClick={() => setLang('ar')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${
               lang === 'ar'
-                ? 'border-black bg-black text-white'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-card text-foreground hover:border-foreground'
             }`}
           >
             {lang === 'ar' && <Check className="w-4 h-4" />}
@@ -613,16 +613,16 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-red-600">{t('danger_zone')}</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Irreversible actions on your account.
         </p>
       </div>
 
-      <Card className="border-red-200 bg-red-50/50 p-5">
+      <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/40 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h3 className="font-medium text-gray-900">{t('delete_account')}</h3>
-            <p className="text-sm text-gray-500 mt-1 max-w-md">
+            <h3 className="font-medium text-foreground">{t('delete_account')}</h3>
+            <p className="text-sm text-muted-foreground mt-1 max-w-md">
               {t('delete_account_warning')}
             </p>
           </div>
@@ -644,15 +644,15 @@ export default function SettingsPage() {
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-foreground">
                 {t('delete_account')}
               </h3>
             </div>
 
-            <p className="text-sm text-gray-600">{t('delete_account_warning')}</p>
+            <p className="text-sm text-muted-foreground">{t('delete_account_warning')}</p>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 {t('type_password_to_confirm')}
               </label>
               <Input

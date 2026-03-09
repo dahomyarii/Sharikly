@@ -223,24 +223,24 @@ function BookingsPageContent() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">{t('please_login')}</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">{t('please_login')}</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+    <div className="min-h-screen bg-background text-foreground pb-20 md:pb-0">
       <div className="max-w-3xl mx-auto px-3 py-4 sm:px-4 sm:py-6 mobile-content">
         <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <button
             onClick={() => router.back()}
-            className="p-2 rounded-lg hover:bg-gray-200 transition touch-target"
+            className="p-2 rounded-lg hover:bg-accent transition touch-target"
             aria-label="Go back"
           >
-            <ArrowLeft className="h-5 w-5 text-gray-700" />
+            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
           </button>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
             {t('my_bookings')}
           </h1>
         </div>
@@ -254,7 +254,7 @@ function BookingsPageContent() {
         {loading ? (
           <ul className="space-y-3 sm:space-y-4">
             {[...Array(4)].map((_, i) => (
-              <li key={i} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <li key={i} className="bg-card rounded-xl border border-border overflow-hidden">
                 <div className="flex gap-3 sm:gap-4 p-3 sm:p-4">
                   <div className="w-20 h-20 rounded-lg bg-gray-200 animate-pulse flex-shrink-0" />
                   <div className="flex-1 space-y-2">
@@ -271,15 +271,15 @@ function BookingsPageContent() {
             ))}
           </ul>
         ) : bookings.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 mb-2">No bookings yet</p>
-            <p className="text-sm text-gray-500 mb-6">
+          <div className="bg-card rounded-xl border border-border p-8 text-center">
+            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-2">No bookings yet</p>
+            <p className="text-sm text-muted-foreground mb-6">
               When you request to book an item, it will show up here.
             </p>
             <Link
               href="/listings"
-              className="inline-block px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+              className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
             >
               Browse listings
             </Link>
@@ -315,10 +315,10 @@ function BookingsPageContent() {
               return (
                 <li
                   key={booking.id}
-                  className="bg-white rounded-xl border border-gray-200 overflow-hidden"
+                  className="bg-card rounded-xl border border-border overflow-hidden"
                 >
                   <div className="flex gap-3 sm:gap-4 p-3 sm:p-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
                       {getImageUrl(listing) ? (
                         <img
                           src={getImageUrl(listing)!}
@@ -326,7 +326,7 @@ function BookingsPageContent() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                           <Calendar className="h-8 w-8" />
                         </div>
                       )}
@@ -334,7 +334,7 @@ function BookingsPageContent() {
                     <div className="flex-1 min-w-0">
                       <Link
                         href={`/listings/${listing?.id}`}
-                        className="font-semibold text-gray-900 hover:underline line-clamp-1"
+                        className="font-semibold text-foreground hover:underline line-clamp-1"
                       >
                         {listing?.title}
                       </Link>

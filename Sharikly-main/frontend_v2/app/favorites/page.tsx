@@ -67,24 +67,26 @@ export default function FavoritesPage() {
   if (!list.length && !loading) {
     return (
       <div className="mx-auto max-w-5xl px-3 py-4 sm:p-4 mobile-content text-center py-12 sm:py-16 pb-20 md:pb-12">
-        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">{t("my_favorites")}</h1>
-        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
-          <Heart className="w-8 h-8 text-gray-400" />
+        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-foreground">
+          {t("my_favorites")}
+        </h1>
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
+          <Heart className="w-8 h-8 text-muted-foreground" />
         </div>
-        <p className="text-gray-600 font-medium mb-1">{t("no_favorites")}</p>
-        <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
+        <p className="text-muted-foreground font-medium mb-1">{t("no_favorites")}</p>
+        <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
           Save listings you like by tapping the heart. They'll show up here.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/listings"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] bg-gray-900 text-white rounded-xl hover:bg-gray-800 font-medium touch-target"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 font-medium touch-target"
           >
             {t("browse")}
           </Link>
           <Link
             href="/listings/new"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium touch-target"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] border border-border text-foreground rounded-xl hover:bg-accent font-medium touch-target"
           >
             <Plus className="w-4 h-4" />
             {t("list_new")}

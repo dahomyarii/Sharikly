@@ -249,9 +249,9 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+    <div className="flex flex-col h-screen bg-background overflow-hidden">
       {/* Header */}
-      <div className="bg-white border-b p-4 flex-shrink-0">
+      <div className="bg-card border-b border-border p-4 flex-shrink-0">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
             <button

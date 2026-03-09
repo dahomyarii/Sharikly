@@ -455,18 +455,18 @@ export default function ProfilePage() {
 
         {/* My Bookings — separate section */}
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
             <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
             My Bookings
           </h2>
-          <Card className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-gray-100 rounded-2xl shadow-sm">
+          <Card className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-border rounded-2xl shadow-sm bg-card">
             <div>
-              <p className="text-gray-600 mb-1">
+              <p className="text-muted-foreground mb-1">
                 {bookingsCount !== null
                   ? `You have ${bookingsCount} booking${bookingsCount !== 1 ? "s" : ""} (as renter or owner).`
                   : "View and manage your booking requests."}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Accept or decline requests on your listings, or pay for confirmed bookings.
               </p>
             </div>
@@ -482,7 +482,7 @@ export default function ProfilePage() {
 
         {/* My Listings — separate section */}
         <div className="mb-6">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
             <Package className="w-5 h-5 sm:w-6 sm:h-6" />
             My Listings
           </h2>
@@ -506,8 +506,8 @@ export default function ProfilePage() {
               ))}
             </div>
           ) : (
-            <Card className="p-8 text-center text-gray-500">
-              <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <Card className="p-8 text-center text-muted-foreground bg-card">
+              <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
               <p>You haven't created any listings yet.</p>
               <Button
                 onClick={() => router.push("/listings/new")}
@@ -522,13 +522,13 @@ export default function ProfilePage() {
         {/* My Reviews */}
         {reviews.length > 0 && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
               <Star className="w-6 h-6" />
               My Reviews
             </h2>
             <div className="space-y-4">
               {reviews.map((review: any) => (
-                <Card key={review.id} className="p-4">
+                <Card key={review.id} className="p-4 bg-card">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -544,18 +544,18 @@ export default function ProfilePage() {
                             />
                           ))}
                         </div>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           on{" "}
                           <a
                             href={`/listings/${review.listing?.id}`}
-                            className="text-black hover:underline font-medium"
+                            className="text-primary hover:underline font-medium"
                           >
                             {review.listing?.title}
                           </a>
                         </span>
                       </div>
                       {review.comment && (
-                        <p className="text-gray-700">{review.comment}</p>
+                        <p className="text-foreground">{review.comment}</p>
                       )}
                     </div>
                   </div>

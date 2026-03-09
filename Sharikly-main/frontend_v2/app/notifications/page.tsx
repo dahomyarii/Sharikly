@@ -178,29 +178,29 @@ function NotificationsPageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-black" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-foreground" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 pb-32 md:pb-8">
+    <div className="min-h-screen bg-background py-4 sm:py-6 pb-32 md:pb-8">
       <div className="max-w-2xl mx-auto px-3 sm:px-4 mobile-content">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="p-2 rounded-full hover:bg-gray-200 transition touch-target"
+              className="p-2 rounded-full hover:bg-muted transition touch-target"
               aria-label="Back"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </Link>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
               <Bell className="w-7 h-7" />
               {t('notifications')}
               {unreadCount > 0 && (
-                <span className="ml-1 min-w-[22px] h-6 px-1.5 flex items-center justify-center rounded-full bg-black text-white text-xs font-semibold">
+                <span className="ml-1 min-w-[22px] h-6 px-1.5 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}
@@ -225,12 +225,12 @@ function NotificationsPageContent() {
         </div>
 
         {safeList.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-10 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <Bell className="w-8 h-8 text-gray-400" />
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-6 sm:p-10 text-center">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <Bell className="w-8 h-8 text-muted-foreground" />
             </div>
-            <p className="text-lg font-medium text-gray-700 mb-1">{t('no_notifications') || 'No notifications yet'}</p>
-            <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
+            <p className="text-lg font-medium text-foreground mb-1">{t('no_notifications') || 'No notifications yet'}</p>
+            <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
               When someone accepts or declines your booking, or sends you a message, you&apos;ll see it here.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -249,21 +249,21 @@ function NotificationsPageContent() {
                 <li key={n.id}>
                   <Link
                     href={n.link || '/notifications'}
-                    className={`block bg-white rounded-xl border p-3 sm:p-4 hover:bg-gray-50/80 transition shadow-sm touch-target ${
-                      !n.read ? 'border-l-4 border-l-black border-gray-200' : 'border-gray-100'
+                    className={`block bg-card rounded-xl border p-3 sm:p-4 hover:bg-accent/60 transition shadow-sm touch-target ${
+                      !n.read ? 'border-l-4 border-l-primary border-border' : 'border-border'
                     }`}
                     onClick={() => !n.read && markRead(n.id)}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900">{n.title}</p>
-                        {n.body && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{n.body}</p>}
-                        <p className="text-xs text-gray-400 mt-2">
+                        <p className="font-medium text-foreground">{n.title}</p>
+                        {n.body && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{n.body}</p>}
+                        <p className="text-xs text-muted-foreground mt-2">
                           {safeFormatDate(n.created_at)}
                         </p>
                       </div>
                       {!n.read && (
-                        <span className="shrink-0 w-2 h-2 rounded-full bg-black mt-2" aria-hidden />
+                        <span className="shrink-0 w-2 h-2 rounded-full bg-primary mt-2" aria-hidden />
                       )}
                     </div>
                   </Link>
