@@ -205,6 +205,27 @@ export default function ListingDetail() {
           </div>
         </div>
       </div>
+
+      {/* Mobile bottom \"See available dates\" bar above nav */}
+      {!isOwner && (
+        <div className="fixed inset-x-0 bottom-[5.25rem] z-40 px-3 pb-1 lg:hidden pointer-events-none">
+          <div className="max-w-md mx-auto rounded-2xl bg-background/95 border border-purple-500/40 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl flex items-center justify-between gap-3 px-3 py-2 pointer-events-auto mobile-listing-cta-enter">
+            <div>
+              <p className="text-[11px] text-gray-400">Your price</p>
+              <p className="text-sm font-semibold text-gray-50">
+                ${data.price_per_day}
+                <span className="text-[11px] text-gray-400"> /day</span>
+              </p>
+            </div>
+            <Button
+              className="flex-1 min-h-[40px] rounded-full bg-green-500 hover:bg-green-600 text-white font-semibold text-sm shadow-md"
+              onClick={() => setShowMobileBooking(true)}
+            >
+              See available dates
+            </Button>
+          </div>
+        </div>
+      )}
     );
   }
 
@@ -1048,23 +1069,6 @@ export default function ListingDetail() {
           </div>
 
           <div className="lg:col-span-1 space-y-4">
-            {/* Mobile booking teaser card */}
-            <Card className="p-4 flex items-center justify-between gap-3 lg:hidden">
-              <div>
-                <p className="text-xs text-gray-500">Your price</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  ${data.price_per_day}
-                  <span className="text-sm text-gray-500"> /day</span>
-                </p>
-              </div>
-              <Button
-                className="flex-1 min-h-[44px] rounded-full bg-green-500 hover:bg-green-600 text-white font-semibold text-sm shadow-md"
-                onClick={() => setShowMobileBooking(true)}
-              >
-                See available dates
-              </Button>
-            </Card>
-
             {/* Desktop booking card */}
             <Card className="p-6 sticky top-24 space-y-5 hidden lg:block">
               {/* Price */}

@@ -546,10 +546,13 @@
   }
 }
 
-/* Mobile bottom nav slide-up (legacy) */
-@keyframes slideUp {
+/* Mobile listing CTA (above bottom nav) */
+.mobile-listing-cta-enter {
+  animation: mobileListingCtaEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes mobileListingCtaEnter {
   from {
-    transform: translateY(100%);
+    transform: translateY(120%);
     opacity: 0;
   }
   to {
