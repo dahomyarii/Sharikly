@@ -27,14 +27,24 @@ import { toListingsArray, sliceListings, buildListingsQuery } from "@/lib/listin
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
-// Softer outline colors for category pills (border + text, less bright)
+// Unselected: outline only (border + text, less bright)
 const CATEGORY_OUTLINE_COLORS = [
-  "border-pink-300/80 text-pink-700 bg-pink-50/80 dark:border-pink-500/50 dark:text-pink-300 dark:bg-pink-950/30",
-  "border-sky-300/80 text-sky-700 bg-sky-50/80 dark:border-sky-500/50 dark:text-sky-300 dark:bg-sky-950/30",
-  "border-violet-300/80 text-violet-700 bg-violet-50/80 dark:border-violet-500/50 dark:text-violet-300 dark:bg-violet-950/30",
-  "border-amber-300/80 text-amber-700 bg-amber-50/80 dark:border-amber-500/50 dark:text-amber-300 dark:bg-amber-950/30",
-  "border-emerald-300/80 text-emerald-700 bg-emerald-50/80 dark:border-emerald-500/50 dark:text-emerald-300 dark:bg-emerald-950/30",
-  "border-rose-300/80 text-rose-700 bg-rose-50/80 dark:border-rose-500/50 dark:text-rose-300 dark:bg-rose-950/30",
+  "border-pink-300/80 text-pink-700 bg-transparent dark:border-pink-500/50 dark:text-pink-300 dark:bg-transparent",
+  "border-sky-300/80 text-sky-700 bg-transparent dark:border-sky-500/50 dark:text-sky-300 dark:bg-transparent",
+  "border-violet-300/80 text-violet-700 bg-transparent dark:border-violet-500/50 dark:text-violet-300 dark:bg-transparent",
+  "border-amber-300/80 text-amber-700 bg-transparent dark:border-amber-500/50 dark:text-amber-300 dark:bg-transparent",
+  "border-emerald-300/80 text-emerald-700 bg-transparent dark:border-emerald-500/50 dark:text-emerald-300 dark:bg-transparent",
+  "border-rose-300/80 text-rose-700 bg-transparent dark:border-rose-500/50 dark:text-rose-300 dark:bg-transparent",
+];
+
+// Selected: filled background (softer, not bright)
+const CATEGORY_FILLED_COLORS = [
+  "border-pink-300 bg-pink-200/90 text-pink-800 dark:border-pink-500/60 dark:bg-pink-900/50 dark:text-pink-100",
+  "border-sky-300 bg-sky-200/90 text-sky-800 dark:border-sky-500/60 dark:bg-sky-900/50 dark:text-sky-100",
+  "border-violet-300 bg-violet-200/90 text-violet-800 dark:border-violet-500/60 dark:bg-violet-900/50 dark:text-violet-100",
+  "border-amber-300 bg-amber-200/90 text-amber-800 dark:border-amber-500/60 dark:bg-amber-900/50 dark:text-amber-100",
+  "border-emerald-300 bg-emerald-200/90 text-emerald-800 dark:border-emerald-500/60 dark:bg-emerald-900/50 dark:text-emerald-100",
+  "border-rose-300 bg-rose-200/90 text-rose-800 dark:border-rose-500/60 dark:bg-rose-900/50 dark:text-rose-100",
 ];
 
 const getCategoryOutlineById = (id: number) => {
@@ -42,6 +52,13 @@ const getCategoryOutlineById = (id: number) => {
   const safeId = Number.isFinite(id) ? Math.abs(id) : 0;
   const index = safeId % CATEGORY_OUTLINE_COLORS.length;
   return CATEGORY_OUTLINE_COLORS[index];
+};
+
+const getCategoryFilledById = (id: number) => {
+  if (!CATEGORY_FILLED_COLORS.length) return CATEGORY_FILLED_COLORS[0];
+  const safeId = Number.isFinite(id) ? Math.abs(id) : 0;
+  const index = safeId % CATEGORY_FILLED_COLORS.length;
+  return CATEGORY_FILLED_COLORS[index];
 };
 
 export default function HomePage() {
@@ -633,15 +650,14 @@ export default function HomePage() {
                 const { icon: IconComponent } = getCategoryIcon(cat.name);
                 const isSelected = selectedCategory === cat.id;
                 const outlineClasses = getCategoryOutlineById(cat.id);
+                const filledClasses = getCategoryFilledById(cat.id);
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target border-2 ${outlineClasses} ${
-                      isSelected
-                        ? "ring-2 ring-primary/40 ring-offset-2 ring-offset-background scale-[1.02] pill-active"
-                        : "hover:opacity-90"
-                    }`}
+                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all touch-target border-2 ${
+                      isSelected ? filledClasses : outlineClasses
+                    } ${isSelected ? "scale-[1.02] pill-active shadow-sm" : "hover:opacity-90"}`}
                   >
                     <IconComponent className="h-4 w-4" />
                     {cat.name}
