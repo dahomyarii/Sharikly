@@ -103,10 +103,10 @@ export default function UserAdminMessagesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading messages...</p>
+          <p className="text-muted-foreground">Loading messages...</p>
         </div>
       </div>
     )
@@ -114,11 +114,11 @@ export default function UserAdminMessagesPage() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-3 sm:px-4 mobile-content">
+      <div className="min-h-screen bg-background flex items-center justify-center px-3 sm:px-4 mobile-content">
         <Card className="p-6 sm:p-8 text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Please Log In</h2>
-          <p className="text-gray-600 mb-6">You need to be logged in to send messages to the admin.</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">Please Log In</h2>
+          <p className="text-muted-foreground mb-6">You need to be logged in to send messages to the admin.</p>
           <div className="flex gap-3">
             <Button
               variant="outline"
@@ -140,21 +140,21 @@ export default function UserAdminMessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+    <div className="min-h-screen bg-background pb-20 md:pb-0 text-foreground">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-card border-b border-border sticky top-0 z-40">
         <div className="flex items-center gap-3 sm:gap-4 px-3 py-3 sm:px-4 sm:py-4 md:py-5 mobile-content">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="text-gray-800 hover:bg-gray-100 touch-target"
+            className="text-foreground hover:bg-accent touch-target"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Support Messages</h1>
-            <p className="text-xs sm:text-sm text-gray-600">Send messages to admins and track responses</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">Support Messages</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Send messages to admins and track responses</p>
           </div>
         </div>
       </header>
@@ -163,11 +163,11 @@ export default function UserAdminMessagesPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* New Message Form */}
           <div className="lg:col-span-1">
-            <Card className="p-4 sm:p-6 border border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Send New Message</h2>
+            <Card className="p-4 sm:p-6 border border-border bg-card">
+              <h2 className="text-lg font-bold text-foreground mb-4">Send New Message</h2>
               <form onSubmit={handleSubmitMessage} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Subject</label>
                   <Input
                     type="text"
                     value={subject}
@@ -177,7 +177,7 @@ export default function UserAdminMessagesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Message</label>
                   <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
@@ -200,13 +200,13 @@ export default function UserAdminMessagesPage() {
           {/* Messages List and Details */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Messages List */}
-            <div className="bg-white rounded-lg border border-gray-200">
-              <div className="p-3 sm:p-4 border-b border-gray-200">
-                <h2 className="font-semibold text-gray-900">Your Messages ({messages.length})</h2>
+              <div className="bg-card rounded-lg border border-border">
+                <div className="p-3 sm:p-4 border-b border-border">
+                  <h2 className="font-semibold text-foreground">Your Messages ({messages.length})</h2>
               </div>
-              <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+              <div className="divide-y divide-border max-h-96 overflow-y-auto">
                 {messages.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500">
+                  <div className="p-6 text-center text-muted-foreground">
                     <p>No messages yet. Send one to get started!</p>
                   </div>
                 ) : (
@@ -214,14 +214,14 @@ export default function UserAdminMessagesPage() {
                     <button
                       key={msg.id}
                       onClick={() => setSelectedMessage(msg)}
-                      className={`w-full p-3 sm:p-4 text-left hover:bg-gray-50 transition-colors touch-target ${
-                        selectedMessage?.id === msg.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                      className={`w-full p-3 sm:p-4 text-left hover:bg-accent/60 transition-colors touch-target ${
+                        selectedMessage?.id === msg.id ? 'bg-primary/10 border-l-4 border-l-primary' : ''
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-900 truncate">{msg.subject}</p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="font-semibold text-foreground truncate">{msg.subject}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
                             {safeFormatDate(msg.created_at)}
                           </p>
                         </div>
@@ -237,38 +237,38 @@ export default function UserAdminMessagesPage() {
 
             {/* Message Detail */}
             {selectedMessage && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">{selectedMessage.subject}</h3>
+              <div className="bg-card rounded-lg border border-border p-6">
+                <h3 className="text-xl font-bold text-foreground mb-4">{selectedMessage.subject}</h3>
 
                 {/* Sent Message */}
-                <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/40 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm text-gray-600">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
                       Sent: {formatDate(selectedMessage.created_at)}
                     </span>
                   </div>
-                  <p className="text-gray-700 whitespace-pre-wrap mt-3">{selectedMessage.message}</p>
+                  <p className="text-foreground whitespace-pre-wrap mt-3">{selectedMessage.message}</p>
                 </div>
 
                 {/* Admin Response */}
                 {selectedMessage.responded && selectedMessage.admin_response ? (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="p-4 bg-green-50 dark:bg-emerald-950/40 border border-green-200 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
                       <span className="font-semibold text-gray-900">Admin Response</span>
                     </div>
-                    <p className="text-gray-700 whitespace-pre-wrap mb-3">{selectedMessage.admin_response}</p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-foreground whitespace-pre-wrap mb-3">{selectedMessage.admin_response}</p>
+                    <p className="text-xs text-muted-foreground">
                       Responded: {formatDate(selectedMessage.admin_response_date || '')}
                     </p>
                   </div>
                 ) : (
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-3">
+                  <div className="p-4 bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 rounded-lg flex items-center gap-3">
                     <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-gray-900">Awaiting Response</p>
-                      <p className="text-sm text-gray-600">The admin team will respond to your message soon.</p>
+                      <p className="font-semibold text-foreground">Awaiting Response</p>
+                      <p className="text-sm text-muted-foreground">The admin team will respond to your message soon.</p>
                     </div>
                   </div>
                 )}

@@ -320,22 +320,13 @@ export default function Header() {
           <ThemeToggle />
           <LanguageSwitcher />
           {!user && (
-            <>
-              <button
-                type="button"
-                onClick={() => setShowLogin(true)}
-                className="px-3 py-1.5 text-xs font-medium rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              >
-                {t("sign_in") || "Log In"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowSignup(true)}
-                className="px-3 py-1.5 text-xs font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                {t("sign_up") || "Sign Up"}
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={() => setShowLogin(true)}
+              className="px-3 py-1.5 text-xs font-medium rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              {t("sign_in") || "Log In"}
+            </button>
           )}
           <button
             ref={menuButtonRef}

@@ -74,9 +74,9 @@ export default function PublicProfilePage() {
 
   if (profileError) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">User not found</p>
+          <p className="text-muted-foreground mb-4">User not found</p>
           <Button variant="outline" onClick={() => router.back()}>Go Back</Button>
         </div>
       </div>
@@ -85,7 +85,7 @@ export default function PublicProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-background py-8">
         <div className="max-w-4xl mx-auto px-4">
           <SkeletonLoader />
         </div>
@@ -98,25 +98,25 @@ export default function PublicProfilePage() {
     : null
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-card border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-accent rounded-full transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">Profile</h1>
+          <h1 className="text-lg font-semibold text-foreground">Profile</h1>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Profile Card */}
-        <Card className="p-6 mb-6">
+        <Card className="p-6 mb-6 bg-card">
           <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
-            <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 ring-4 ring-gray-100">
+            <div className="w-24 h-24 rounded-full overflow-hidden bg-muted flex-shrink-0 ring-4 ring-muted">
               {profile.avatar ? (
                 <img
                   src={getImageUrl(profile.avatar)}
@@ -125,20 +125,20 @@ export default function PublicProfilePage() {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <User className="w-10 h-10 text-gray-400" />
+                  <User className="w-10 h-10 text-muted-foreground" />
                 </div>
               )}
             </div>
 
             <div className="flex-1 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                <h2 className="text-2xl font-bold text-gray-900">{profile.username}</h2>
+                <h2 className="text-2xl font-bold text-foreground">{profile.username}</h2>
                 {profile.is_email_verified && (
                   <Check className="w-5 h-5 text-blue-500" />
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-sm text-gray-500 mb-3">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-sm text-muted-foreground mb-3">
                 {joinedDate && (
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
@@ -156,7 +156,7 @@ export default function PublicProfilePage() {
               </div>
 
               {profile.bio && (
-                <p className="text-gray-600 leading-relaxed">{profile.bio}</p>
+                <p className="text-muted-foreground leading-relaxed">{profile.bio}</p>
               )}
 
               {user && user.id !== profile.id && (
@@ -165,7 +165,7 @@ export default function PublicProfilePage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowReportModal(true)}
-                    className="text-gray-600 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                    className="text-muted-foreground border-border hover:bg-red-50 hover:text-red-600 hover:border-red-200"
                   >
                     <Flag className="w-4 h-4 mr-2" />
                     {t('report_user')}
@@ -187,7 +187,7 @@ export default function PublicProfilePage() {
                           setBlockLoading(false)
                         }
                       }}
-                      className="text-gray-600 border-gray-300"
+                      className="text-muted-foreground border-border"
                     >
                       {blockLoading ? '...' : t('unblock_user')}
                     </Button>
@@ -211,7 +211,7 @@ export default function PublicProfilePage() {
                           setBlockLoading(false)
                         }
                       }}
-                      className="text-gray-600 border-gray-300 hover:bg-gray-100"
+                      className="text-muted-foreground border-border hover:bg-accent"
                     >
                       {blockLoading ? '...' : t('block_user')}
                     </Button>
@@ -232,7 +232,7 @@ export default function PublicProfilePage() {
 
         {/* Listings */}
         <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
             <Package className="w-5 h-5" />
             Listings by {profile.username}
           </h3>
@@ -243,8 +243,8 @@ export default function PublicProfilePage() {
               ))}
             </div>
           ) : (
-            <Card className="p-8 text-center text-gray-500">
-              <Package className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+            <Card className="p-8 text-center text-muted-foreground bg-card">
+              <Package className="w-10 h-10 mx-auto mb-3 text-muted-foreground/60" />
               <p>No listings yet</p>
             </Card>
           )}

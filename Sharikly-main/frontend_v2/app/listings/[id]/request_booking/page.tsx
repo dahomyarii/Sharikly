@@ -263,20 +263,20 @@ export default function RequestBookingPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Box: You're requesting to book */}
-        <Card className="p-4 mb-6 border-2 border-gray-200 bg-white shadow-sm">
+        <Card className="p-4 mb-6 border-2 border-border bg-card shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-600 font-medium">You're requesting to book</p>
+              <p className="text-sm text-muted-foreground font-medium">You're requesting to book</p>
               <Link
                 href={`/listings/${listing.id}`}
-                className="text-lg font-bold text-gray-900 hover:text-black hover:underline truncate block"
+                className="text-lg font-bold text-foreground hover:text-foreground hover:underline truncate block"
               >
                 {listing.title}
               </Link>
             </div>
             <Link
               href={`/listings/${listing.id}`}
-              className="text-sm font-medium text-gray-600 hover:text-black shrink-0"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground shrink-0"
             >
               View listing →
             </Link>
@@ -287,7 +287,7 @@ export default function RequestBookingPage() {
           {/* Left Column - Listing Info */}
           <div className="md:col-span-2 space-y-6">
             {/* Listing Card */}
-            <Card className="p-6">
+            <Card className="p-6 bg-card">
               <div className="flex gap-4 mb-4">
                 {listing.images?.[0] && (
                   <Link
@@ -302,9 +302,9 @@ export default function RequestBookingPage() {
                   </Link>
                 )}
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">{listing.title}</h2>
-                  <p className="text-sm text-gray-600 line-clamp-2">{listing.description}</p>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                  <h2 className="text-xl font-bold text-foreground mb-1">{listing.title}</h2>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{listing.description}</p>
+                  <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                     {listing.city && (
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
@@ -317,25 +317,25 @@ export default function RequestBookingPage() {
             </Card>
 
             {/* Owner Info */}
-            <Card className="p-6">
+            <Card className="p-6 bg-card">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User className="h-6 w-6 text-gray-400" />
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                  <User className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-foreground">
                     {listing.owner?.username || listing.owner?.email}
                   </h3>
-                  <p className="text-sm text-gray-500">Owner</p>
+                  <p className="text-sm text-muted-foreground">Owner</p>
                 </div>
               </div>
             </Card>
 
             {/* Message */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Message to Owner</h3>
+            <Card className="p-6 bg-card">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Message to Owner</h3>
               <textarea
-                className="w-full border border-gray-200 rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500/80 resize-none"
+                className="w-full border border-border rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500/80 resize-none bg-background text-foreground"
                 placeholder="Tell the owner about your booking request, any special requirements, or questions..."
                 rows={6}
                 value={message}
@@ -352,33 +352,33 @@ export default function RequestBookingPage() {
 
           {/* Right Column - Booking Summary */}
           <div className="md:col-span-1">
-            <Card className="p-6 sticky top-24 border border-purple-100 shadow-[0_18px_45px_rgba(147,51,234,0.25)] bg-white/95 rounded-2xl">
+            <Card className="p-6 sticky top-24 border border-purple-100 shadow-[0_18px_45px_rgba(147,51,234,0.25)] bg-card rounded-2xl">
               <h3 className="text-lg font-semibold text-purple-700 mb-6">Booking Summary</h3>
               
               {dateRange?.from && dateRange?.to ? (
-                <div className="mt-2 overflow-hidden rounded-2xl border border-purple-100/80 shadow-sm shadow-purple-200/80">
+                <div className="mt-2 overflow-hidden rounded-2xl border border-purple-100/80 shadow-sm shadow-purple-200/80 bg-background">
                   <table className="w-full text-sm">
                     <tbody>
-                      <tr className="bg-gray-50">
-                        <th className="px-3 py-2 text-left text-gray-500">Dates</th>
-                        <td className="px-3 py-2 font-medium text-gray-900">
+                      <tr className="bg-muted/60">
+                        <th className="px-3 py-2 text-left text-muted-foreground">Dates</th>
+                        <td className="px-3 py-2 font-medium text-foreground">
                           {dateRange.from.toLocaleDateString()} - {dateRange.to.toLocaleDateString()}
                         </td>
                       </tr>
                       <tr>
-                        <th className="px-3 py-2 text-left text-gray-500">Duration</th>
-                        <td className="px-3 py-2 font-medium text-gray-900">
+                        <th className="px-3 py-2 text-left text-muted-foreground">Duration</th>
+                        <td className="px-3 py-2 font-medium text-foreground">
                           {calculateDays()} day{calculateDays() !== 1 ? 's' : ''}
                         </td>
                       </tr>
                       <tr>
-                        <th className="px-3 py-2 text-left text-gray-500">Price / day</th>
-                        <td className="px-3 py-2 font-medium text-gray-900">
+                        <th className="px-3 py-2 text-left text-muted-foreground">Price / day</th>
+                        <td className="px-3 py-2 font-medium text-foreground">
                           ${listing.price_per_day || '0.00'}
                         </td>
                       </tr>
-                      <tr className="bg-gray-50">
-                        <th className="px-3 py-2 text-left text-gray-500">Total</th>
+                      <tr className="bg-muted/60">
+                        <th className="px-3 py-2 text-left text-muted-foreground">Total</th>
                         <td className="px-3 py-2">
                           <div className="inline-flex items-baseline justify-end w-full rounded-full bg-gradient-to-r from-purple-600 via-purple-500 to-fuchsia-500 text-white px-3 py-1.5 shadow-[0_12px_30px_rgba(147,51,234,0.6)]">
                             <span className="text-xs font-medium uppercase tracking-wide mr-2 text-purple-100/90">
@@ -391,12 +391,12 @@ export default function RequestBookingPage() {
                         </td>
                       </tr>
                       <tr>
-                        <th className="px-3 py-2 text-left text-gray-500 align-top">Message</th>
-                        <td className="px-3 py-2 text-gray-900 whitespace-pre-wrap">
+                        <th className="px-3 py-2 text-left text-muted-foreground align-top">Message</th>
+                        <td className="px-3 py-2 text-foreground whitespace-pre-wrap">
                           {message.trim() ? (
                             message
                           ) : (
-                            <span className="text-gray-400">No message yet</span>
+                            <span className="text-muted-foreground/70">No message yet</span>
                           )}
                         </td>
                       </tr>
@@ -404,7 +404,7 @@ export default function RequestBookingPage() {
                   </table>
                 </div>
               ) : (
-                <div className="mt-2 text-sm text-gray-500 text-center py-4">
+                <div className="mt-2 text-sm text-muted-foreground text-center py-4">
                   Select dates on the listing page to see your full price breakdown.
                 </div>
               )}

@@ -51,22 +51,22 @@ export default function VerifyEmailPage() {
   }, [searchParams, router])
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4">
       <Card className="w-full max-w-md p-8 text-center">
         {status === 'loading' && (
           <>
             <Loader2 className="w-16 h-16 mx-auto mb-4 text-blue-500 animate-spin" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Verifying Email</h1>
-            <p className="text-gray-600">Please wait while we verify your email address...</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Verifying Email</h1>
+            <p className="text-muted-foreground">Please wait while we verify your email address...</p>
           </>
         )}
 
         {status === 'success' && (
           <>
             <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Email Verified!</h1>
-            <p className="text-gray-600 mb-6">{message}</p>
-            <p className="text-sm text-gray-500 mb-4">Redirecting to login page...</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Email Verified!</h1>
+            <p className="text-muted-foreground mb-6">{message}</p>
+            <p className="text-sm text-muted-foreground mb-4">Redirecting to login page...</p>
             <Button
               onClick={() => router.push('/auth/login')}
               className="w-full"
@@ -79,8 +79,8 @@ export default function VerifyEmailPage() {
         {status === 'error' && (
           <>
             <XCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Verification Failed</h1>
-            <p className="text-gray-600 mb-6">{message}</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Verification Failed</h1>
+            <p className="text-muted-foreground mb-6">{message}</p>
             <Button
               onClick={() => router.push('/auth/login')}
               variant="outline"

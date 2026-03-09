@@ -61,28 +61,28 @@ export default function BookingReceiptPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">{t('please_login')}</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">{t('please_login')}</p>
       </div>
     )
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-pulse text-gray-500">Loading receipt…</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading receipt…</div>
       </div>
     )
   }
 
   if (error || !booking) {
     return (
-      <div className="min-h-screen bg-gray-50 px-4 py-8">
-        <div className="max-w-md mx-auto bg-white rounded-xl border border-gray-200 p-6 text-center">
-          <p className="text-gray-600 mb-4">{error ?? 'Booking not found.'}</p>
+      <div className="min-h-screen bg-background px-4 py-8">
+        <div className="max-w-md mx-auto bg-card rounded-xl border border-border p-6 text-center">
+          <p className="text-muted-foreground mb-4">{error ?? 'Booking not found.'}</p>
           <Link
             href="/bookings"
-            className="inline-flex items-center gap-2 text-black font-medium hover:underline"
+            className="inline-flex items-center gap-2 text-primary font-medium hover:underline"
           >
             <ArrowLeft className="h-4 w-4" /> Back to My Bookings
           </Link>
@@ -105,33 +105,33 @@ export default function BookingReceiptPage() {
             : booking.status
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={() => router.back()}
-            className="p-2 rounded-lg hover:bg-gray-200 transition"
+            className="p-2 rounded-lg hover:bg-accent transition"
             aria-label="Go back"
           >
-            <ArrowLeft className="h-5 w-5 text-gray-700" />
+            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Receipt className="h-6 w-6" /> Booking receipt
           </h1>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
           {/* Receipt header */}
-          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Booking #{booking.id}</p>
-            <p className="text-sm text-gray-600 mt-0.5">
+          <div className="px-4 py-3 border-b border-border bg-muted/60">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Booking #{booking.id}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
               {safeFormatDate(booking.created_at)}
             </p>
           </div>
 
           {/* Listing summary */}
           <div className="p-4 flex gap-4">
-            <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+            <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
               {getImageUrl(listing) ? (
                 <img
                   src={getImageUrl(listing)!}
@@ -139,7 +139,7 @@ export default function BookingReceiptPage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   <Calendar className="h-8 w-8" />
                 </div>
               )}
@@ -147,11 +147,11 @@ export default function BookingReceiptPage() {
             <div className="flex-1 min-w-0">
               <Link
                 href={`/listings/${listing?.id}`}
-                className="font-semibold text-gray-900 hover:underline line-clamp-2"
+                className="font-semibold text-foreground hover:underline line-clamp-2"
               >
                 {listing?.title}
               </Link>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {isOwner
                   ? `Renter: ${booking.renter?.username || booking.renter?.email}`
                   : `Owner: ${listing?.owner?.username || 'Owner'}`}
@@ -162,17 +162,17 @@ export default function BookingReceiptPage() {
           {/* Dates & total */}
           <div className="px-4 pb-4 space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Dates</span>
-              <span className="text-gray-900 font-medium">
+              <span className="text-muted-foreground">Dates</span>
+              <span className="text-foreground font-medium">
                 {safeFormatDate(booking.start_date)} – {safeFormatDate(booking.end_date)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Total</span>
-              <span className="text-gray-900 font-semibold">${Number(booking.total_price).toFixed(2)}</span>
+              <span className="text-muted-foreground">Total</span>
+              <span className="text-foreground font-semibold">${Number(booking.total_price).toFixed(2)}</span>
             </div>
-            <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-100">
-              <span className="text-gray-500">Status</span>
+            <div className="flex justify-between items-center text-sm pt-2 border-t border-border">
+              <span className="text-muted-foreground">Status</span>
               <span
                 className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${
                   booking.status === 'CONFIRMED'
@@ -180,8 +180,8 @@ export default function BookingReceiptPage() {
                     : booking.status === 'PENDING'
                       ? 'bg-amber-100 text-amber-800'
                       : booking.status === 'CANCELLED' || booking.status === 'DECLINED'
-                        ? 'bg-gray-100 text-gray-600'
-                        : 'bg-gray-100 text-gray-700'
+                        ? 'bg-muted text-muted-foreground'
+                        : 'bg-muted text-foreground'
                 }`}
               >
                 {booking.status === 'CONFIRMED' && <Check className="h-3.5 w-3.5" />}
@@ -190,13 +190,13 @@ export default function BookingReceiptPage() {
             </div>
             {booking.payment_status && (
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500">Payment</span>
+                <span className="text-muted-foreground">Payment</span>
                 <span
                   className={`inline-flex px-2 py-1 rounded text-xs font-medium ${
                     booking.payment_status === 'PAID'
                       ? 'bg-emerald-100 text-emerald-800'
                       : booking.payment_status === 'REFUNDED'
-                        ? 'bg-gray-100 text-gray-600'
+                        ? 'bg-muted text-muted-foreground'
                         : 'bg-orange-100 text-orange-800'
                   }`}
                 >
@@ -214,13 +214,13 @@ export default function BookingReceiptPage() {
         <div className="mt-6 flex flex-col sm:flex-row gap-3">
           <Link
             href="/bookings"
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 font-medium"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
           >
             <ArrowLeft className="h-4 w-4" /> My Bookings
           </Link>
           <Link
             href={`/listings/${listing?.id}`}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-lg hover:bg-accent font-medium"
           >
             View listing
           </Link>

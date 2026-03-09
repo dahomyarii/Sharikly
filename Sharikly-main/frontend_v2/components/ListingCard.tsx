@@ -37,6 +37,8 @@ export default function ListingCard({
   const [reviewCount, setReviewCount] = useState<number>(
     hasRatingFromListing ? listingReviewCount : 0,
   );
+  const effectiveRating = hasRatingFromListing ? listingRating : averageRating;
+  const effectiveReviewCount = hasRatingFromListing ? listingReviewCount : reviewCount;
   const { t } = useLocale();
 
   // Never fetch reviews per card — use only listing data to avoid 429
@@ -158,6 +160,47 @@ export default function ListingCard({
             />
           </svg>
         </button>
+
+        {(listing.owner || effectiveReviewCount > 0) && (
+          <div className="absolute inset-x-1.5 bottom-1.5 sm:inset-x-2 sm:bottom-2 flex items-center justify-between gap-2 rounded-full bg-black/65 text-white px-2.5 py-1 backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-3.5 h-3.5 ${
+                      i < Math.round(effectiveRating || 0)
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-[11px] font-medium truncate">
+                {effectiveReviewCount > 0
+                  ? `${effectiveRating?.toFixed(1) ?? "0.0"} (${effectiveReviewCount})`
+                  : t("no_reviews")}
+              </span>
+            </div>
+            {listing.owner && (
+              <div className="w-8 h-8 rounded-full bg-white/95 flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/80">
+                {listing.owner.avatar ? (
+                  <img
+                    src={
+                      listing.owner.avatar.startsWith("http")
+                        ? listing.owner.avatar
+                        : `${API?.replace("/api", "")}${listing.owner.avatar}`
+                    }
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-4 h-4 text-gray-700" />
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div className={padding}>
         <div className="flex items-center justify-between gap-2 mb-1">
@@ -174,48 +217,7 @@ export default function ListingCard({
         )}
         <div className="text-xs text-muted-foreground mb-2">{listing.city || "—"}</div>
 
-        {listing.owner && !compact && (
-          <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border">
-            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-              {listing.owner.avatar ? (
-                <img
-                  src={
-                    listing.owner.avatar.startsWith("http")
-                      ? listing.owner.avatar
-                      : `${API?.replace("/api", "")}${listing.owner.avatar}`
-                  }
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-3.5 h-3.5 text-muted-foreground" />
-              )}
-            </div>
-            <span className="text-xs font-medium text-muted-foreground truncate">
-              {listing.owner.username || listing.owner.email}
-            </span>
-          </div>
-        )}
-
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-0.5">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-3.5 h-3.5 ${
-                  i < Math.round(hasRatingFromListing ? listingRating : averageRating)
-                    ? "fill-orange-500 text-orange-500"
-                    : "text-muted-foreground/50"
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-muted-foreground">
-            {(hasRatingFromListing ? listingReviewCount : reviewCount) > 0
-              ? `${hasRatingFromListing ? listingRating : averageRating} (${hasRatingFromListing ? listingReviewCount : reviewCount})`
-              : t("no_reviews")}
-          </span>
-        </div>
+        {/* Rating + owner are overlaid inside the image to save space */}
       </div>
     </Link>
   );

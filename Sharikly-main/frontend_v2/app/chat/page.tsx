@@ -228,13 +228,13 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* Sidebar - Show on mobile when no room selected, always on desktop */}
-      <div className={`${!currentRoom || showSidebar ? 'flex' : 'hidden'} md:flex w-full md:w-80 bg-white border-r flex-col min-w-0 absolute md:relative z-10 h-full`}>
+      <div className={`${!currentRoom || showSidebar ? 'flex' : 'hidden'} md:flex w-full md:w-80 bg-card border-r border-border flex-col min-w-0 absolute md:relative z-10 h-full`}>
         {/* Header */}
         <div className="p-3 sm:p-4 border-b pl-[max(0.75rem,var(--safe-area-inset-left))] pr-[max(0.75rem,var(--safe-area-inset-right))] sm:pl-4 sm:pr-4">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Messages</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground">Messages</h1>
             <div className="flex gap-2">
               {currentRoom && (
                 <button
@@ -242,14 +242,14 @@ export default function ChatPage() {
                     setCurrentRoom(null)
                     setShowSidebar(true)
                   }}
-                  className="md:hidden p-2 hover:bg-gray-100 rounded-full"
+                  className="md:hidden p-2 hover:bg-accent rounded-full"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
               )}
               <button
                 onClick={() => router.push('/')}
-                className="p-2 hover:bg-gray-100 rounded-full"
+                className="p-2 hover:bg-accent rounded-full"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
@@ -257,13 +257,13 @@ export default function ChatPage() {
           </div>
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground bg-background text-foreground"
             />
           </div>
         </div>
@@ -274,23 +274,23 @@ export default function ChatPage() {
             <div className="p-4 space-y-3">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex items-start gap-3 p-3">
-                  <div className="w-12 h-12 rounded-full bg-gray-200 animate-pulse flex-shrink-0" />
+                  <div className="w-12 h-12 rounded-full bg-muted animate-pulse flex-shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse w-32" />
-                    <div className="h-3 bg-gray-200 rounded animate-pulse w-24" />
+                    <div className="h-4 bg-muted rounded animate-pulse w-32" />
+                    <div className="h-3 bg-muted rounded animate-pulse w-24" />
                   </div>
                 </div>
               ))}
             </div>
           ) : filteredRooms.length === 0 ? (
             <div className="p-6 text-center">
-              <p className="text-gray-500 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {searchQuery ? 'No conversations found' : 'No conversations yet'}
               </p>
               {!searchQuery && (
                 <a
                   href="/listings"
-                  className="inline-block px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 text-sm font-medium"
+                  className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
                 >
                   Browse listings to message owners
                 </a>
@@ -307,27 +307,27 @@ export default function ChatPage() {
                   setCurrentRoom(room)
                   setShowSidebar(false) // Hide sidebar on mobile when selecting room
                 }}
-                  className={`p-4 border-b cursor-pointer hover:bg-gray-50 transition ${
-                    isActive ? 'bg-gray-50 border-l-4 border-l-black' : ''
+                  className={`p-4 border-b cursor-pointer hover:bg-accent/60 transition ${
+                    isActive ? 'bg-primary/10 border-l-4 border-l-primary' : ''
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                      <User className="h-6 w-6 text-gray-400" />
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <User className="h-6 w-6 text-muted-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-semibold text-gray-900 truncate">
+                        <h3 className="font-semibold text-foreground truncate">
                           {other.username || 'User'}
                         </h3>
                         {room.last_message && (
-                          <span className="text-xs text-gray-500 ml-2">
+                          <span className="text-xs text-muted-foreground ml-2">
                             {formatTime(room.last_message.created_at)}
                           </span>
                         )}
                       </div>
                       {room.last_message && (
-                        <p className="text-sm text-gray-600 truncate">
+                        <p className="text-sm text-muted-foreground truncate">
                           {room.last_message.text || '📷 Image'}
                         </p>
                       )}
@@ -345,16 +345,16 @@ export default function ChatPage() {
         {currentRoom ? (
           <>
             {/* Chat Header */}
-            <div className="bg-white border-b p-4 flex-shrink-0">
+            <div className="bg-card border-b border-border p-4 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowSidebar(true)}
-                  className="md:hidden p-2 hover:bg-gray-100 rounded-full"
+                  className="md:hidden p-2 hover:bg-accent rounded-full"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
-                <a href={`/user/${getOtherParticipant(currentRoom).id}`} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:ring-2 hover:ring-gray-300 transition-all">
-                  <User className="h-5 w-5 text-gray-400" />
+                <a href={`/user/${getOtherParticipant(currentRoom).id}`} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:ring-2 hover:ring-border transition-all">
+                  <User className="h-5 w-5 text-muted-foreground" />
                 </a>
                 <div>
                   <a href={`/user/${getOtherParticipant(currentRoom).id}`} className="hover:underline">
@@ -372,7 +372,7 @@ export default function ChatPage() {
               className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
             >
               {messages.length === 0 ? (
-                <div className="text-center text-gray-500 py-12">
+                <div className="text-center text-muted-foreground py-12">
                   No messages yet. Start the conversation!
                 </div>
               ) : (
@@ -385,8 +385,8 @@ export default function ChatPage() {
                 >
                       <div className={`flex gap-2 max-w-[70%] ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
                         {!isOwn && (
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                            <User className="h-4 w-4 text-gray-400" />
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                            <User className="h-4 w-4 text-muted-foreground" />
                           </div>
                         )}
                         <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
@@ -394,8 +394,8 @@ export default function ChatPage() {
                     <div
                               className={`px-4 py-2 rounded-2xl ${
                                 isOwn
-                                  ? 'bg-black text-white rounded-tr-sm'
-                                  : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'
+                                  ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                                  : 'bg-card border border-border text-foreground rounded-tl-sm'
                       }`}
                     >
                       {msg.text}
@@ -412,7 +412,7 @@ export default function ChatPage() {
                     />
                             </div>
                           )}
-                          <span className="text-xs text-gray-500 mt-1 px-1">
+                          <span className="text-xs text-muted-foreground mt-1 px-1">
                             {formatTime(msg.created_at)}
                           </span>
                         </div>
@@ -425,13 +425,13 @@ export default function ChatPage() {
             </div>
 
             {/* Input Area */}
-            <div className="bg-white border-t p-4 flex-shrink-0">
+            <div className="bg-card border-t border-border p-4 flex-shrink-0">
               <div className="flex items-end gap-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-2 hover:bg-gray-100 rounded-full transition"
+                  className="p-2 hover:bg-accent rounded-full transition"
                 >
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </button>
@@ -453,12 +453,12 @@ export default function ChatPage() {
                 placeholder="Type a message..."
                   rows={1}
                   disabled={sending}
-                  className="flex-1 min-w-0 px-4 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black resize-none max-h-32 disabled:opacity-70"
+                  className="flex-1 min-w-0 px-4 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-foreground resize-none max-h-32 disabled:opacity-70 bg-background text-foreground"
               />
                 <button
                   onClick={handleSend}
                   disabled={sending || !newMessage.trim()}
-                  className="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex items-center justify-center gap-1.5 min-w-[80px]"
+                  className="px-6 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex items-center justify-center gap-1.5 min-w-[80px]"
                 >
                   {sending ? (
                     <>
@@ -475,8 +475,8 @@ export default function ChatPage() {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <MessageCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">Select a conversation to start chatting</p>
+              <MessageCircle className="h-16 w-16 text-muted-foreground/40 mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg">Select a conversation to start chatting</p>
             </div>
           </div>
         )}

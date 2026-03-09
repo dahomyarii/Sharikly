@@ -775,9 +775,6 @@ export default function HomePage() {
                                 {t("price_per_day")}
                               </span>
                             </span>
-                            <span className="text-sm font-semibold text-foreground group-hover:underline">
-                              {t("book_now")} →
-                            </span>
                           </div>
                         </div>
                       </article>

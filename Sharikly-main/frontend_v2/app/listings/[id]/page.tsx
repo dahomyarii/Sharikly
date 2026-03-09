@@ -1294,18 +1294,18 @@ export default function ListingDetail() {
       {!isOwner && (
         <div className="fixed inset-x-0 bottom-[5.25rem] z-40 px-3 pb-1 lg:hidden pointer-events-none">
           <div className="max-w-md mx-auto rounded-2xl bg-background/95 border border-purple-500/40 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl flex items-center justify-between gap-3 px-3 py-2 pointer-events-auto mobile-listing-cta-enter">
-            <div>
-              <p className="text-[11px] text-gray-400">Your price</p>
-              <p className="text-sm font-semibold text-gray-50">
-                ${data.price_per_day}
-                <span className="text-[11px] text-gray-400"> /day</span>
-              </p>
-            </div>
             <Button
               className="flex-1 min-h-[40px] rounded-full bg-green-500 hover:bg-green-600 text-white font-semibold text-sm shadow-md"
               onClick={() => setShowMobileBooking(true)}
             >
-              See available dates
+              <span className="flex items-center justify-center gap-1.5">
+                <span>
+                  ${data.price_per_day}
+                  <span className="text-[11px] opacity-90"> /day</span>
+                </span>
+                <span className="opacity-80">·</span>
+                <span>See available dates</span>
+              </span>
             </Button>
           </div>
         </div>
