@@ -8,7 +8,11 @@ import { useLocale } from "./LocaleProvider";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
-export default function ListingCard({ listing }: { listing: any }) {
+export default function ListingCard({
+  listing,
+  compact = false,
+  highlighted = false,
+}: { listing: any; compact?: boolean; highlighted?: boolean }) {
   const [isFavorited, setIsFavorited] = useState(
     listing?.is_favorited || false,
   );
@@ -110,12 +114,19 @@ export default function ListingCard({ listing }: { listing: any }) {
 
   const imageUrl = getImageUrl();
 
+  const imageHeight = compact ? "h-24 sm:h-28" : "h-28 sm:h-44 md:h-48";
+  const padding = compact ? "p-2 sm:p-3" : "p-3 sm:p-4";
+
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="block border border-gray-200/80 rounded-2xl overflow-hidden hover:shadow-lg hover:border-gray-300/80 transition-all duration-200 mobile-card"
+      className={`block border rounded-xl overflow-hidden transition-all duration-200 mobile-card ${
+        highlighted
+          ? "border-primary ring-2 ring-primary/30 shadow-md"
+          : "border-border bg-card hover:shadow-md hover:border-primary/50"
+      }`}
     >
-      <div className="relative h-28 sm:h-44 md:h-48 bg-gray-100">
+      <div className={`relative ${imageHeight} bg-muted`}>
         <img
           src={imageUrl}
           alt={listing.title}
@@ -126,15 +137,15 @@ export default function ListingCard({ listing }: { listing: any }) {
         />
         <button
           onClick={handleFavoriteClick}
-          className={`absolute top-2 right-2 sm:top-3 sm:right-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full touch-target shadow-sm ${
+          className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full touch-target shadow-sm ${
             isFavorited
               ? "bg-red-500 text-white"
-              : "bg-white/95 text-gray-600 hover:bg-white hover:text-gray-800 active:scale-95"
+              : "bg-card/90 text-muted-foreground hover:bg-card hover:text-foreground active:scale-95"
           } transition-all duration-200`}
           aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
         >
           <svg
-            className="w-5 h-5 flex-shrink-0"
+            className="w-4 h-4 flex-shrink-0"
             fill={isFavorited ? "currentColor" : "none"}
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -148,24 +159,24 @@ export default function ListingCard({ listing }: { listing: any }) {
           </svg>
         </button>
       </div>
-      <div className="p-3 sm:p-4">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-sm sm:text-base line-clamp-2">{listing.title}</h3>
-          <span className="text-sm">
-            ${listing.price_per_day} {t("price_per_day")}
+      <div className={padding}>
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <h3 className="font-semibold text-sm line-clamp-2 text-foreground">{listing.title}</h3>
+          <span className="text-sm font-medium text-foreground shrink-0">
+            ${listing.price_per_day}
+            <span className="text-muted-foreground text-xs">{t("price_per_day")}</span>
           </span>
         </div>
         {listing.category && (
-          <div className="mb-2 inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+          <div className="mb-1.5 inline-block bg-primary/15 text-primary dark:bg-primary/25 text-xs font-medium px-2 py-0.5 rounded">
             {listing.category.name}
           </div>
         )}
-        <div className="text-sm text-gray-500 mb-3">{listing.city || "—"}</div>
+        <div className="text-xs text-muted-foreground mb-2">{listing.city || "—"}</div>
 
-        {/* Lender/Owner Info */}
-        {listing.owner && (
-          <div className="flex items-center gap-2 mb-3 pb-3 border-b">
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+        {listing.owner && !compact && (
+          <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border">
+            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
               {listing.owner.avatar ? (
                 <img
                   src={
@@ -173,44 +184,36 @@ export default function ListingCard({ listing }: { listing: any }) {
                       ? listing.owner.avatar
                       : `${API?.replace("/api", "")}${listing.owner.avatar}`
                   }
-                  alt={listing.owner.username || listing.owner.email}
+                  alt=""
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="w-5 h-5 text-gray-400" />
+                <User className="w-3.5 h-3.5 text-muted-foreground" />
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs text-gray-500">{t("lender")}</div>
-              <span className="text-sm font-medium text-gray-700 truncate block">
-                {listing.owner.username || listing.owner.email}
-              </span>
-            </div>
+            <span className="text-xs font-medium text-muted-foreground truncate">
+              {listing.owner.username || listing.owner.email}
+            </span>
           </div>
         )}
 
-        {/* Rating and Reviews */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`w-4 h-4 ${
+                className={`w-3.5 h-3.5 ${
                   i < Math.round(hasRatingFromListing ? listingRating : averageRating)
                     ? "fill-orange-500 text-orange-500"
-                    : "text-gray-300"
+                    : "text-muted-foreground/50"
                 }`}
               />
             ))}
           </div>
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-xs text-muted-foreground">
             {(hasRatingFromListing ? listingReviewCount : reviewCount) > 0
-              ? `${hasRatingFromListing ? listingRating : averageRating}`
-              : t("no_ratings")}
-          </span>
-          <span className="text-xs text-gray-500">
-            ({(hasRatingFromListing ? listingReviewCount : reviewCount)}{" "}
-            {(hasRatingFromListing ? listingReviewCount : reviewCount) === 1 ? t("review") : t("reviews")})
+              ? `${hasRatingFromListing ? listingRating : averageRating} (${hasRatingFromListing ? listingReviewCount : reviewCount})`
+              : t("no_reviews")}
           </span>
         </div>
       </div>
