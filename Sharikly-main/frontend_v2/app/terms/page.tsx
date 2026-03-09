@@ -26,16 +26,16 @@ export default function TermsPage() {
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
-        <h2 className="text-2xl font-bold text-gray-900">Sharikly Terms of Service</h2>
+        <h2 className="text-2xl font-bold text-gray-900">EKRA Terms of Service</h2>
         <p className="text-gray-600">
           Last updated: {new Date().toLocaleDateString()}
         </p>
         <div className="prose prose-gray max-w-none space-y-4 text-gray-700">
           <p>
-            Welcome to <strong>Sharikly</strong> (&quot;Sharikly&quot;, &quot;we&quot;, &quot;us&quot; or
+            Welcome to <strong>EKRA</strong> (&quot;EKRA&quot;, &quot;we&quot;, &quot;us&quot; or
             &quot;our&quot;). These Terms of Service (&quot;Terms&quot;) govern your access to and use
             of our website, mobile applications, products and services (collectively, the
-            &quot;Service&quot;). Please read them carefully before using Sharikly.
+            &quot;Service&quot;). Please read them carefully before using EKRA.
           </p>
           <p>
             By creating an account, accessing or using the Service, you agree to be bound by these
@@ -47,11 +47,11 @@ export default function TermsPage() {
           </p>
 
           <h3 className="text-lg font-semibold text-gray-900">
-            1. The Sharikly platform
+            1. The EKRA platform
           </h3>
           <p>
-            Sharikly is an online platform that enables users to list, discover and book
-            event-related services and equipment. Unless we explicitly state otherwise, Sharikly
+            EKRA is an online platform that enables users to list, discover and book
+            event-related services and equipment. Unless we explicitly state otherwise, EKRA
             does not itself own, control or manage any listings, and we are not a party to
             contracts directly between users.
           </p>
@@ -63,7 +63,7 @@ export default function TermsPage() {
 
           <h3 className="text-lg font-semibold text-gray-900">2. Eligibility</h3>
           <p>
-            You may use the Service only if you are able to form a binding contract with Sharikly
+            You may use the Service only if you are able to form a binding contract with EKRA
             and are not barred from using the Service under applicable law. By using the Service,
             you represent and warrant that:
           </p>
@@ -101,7 +101,7 @@ export default function TermsPage() {
           <p>
             Users who create listings (&quot;Hosts&quot;) are solely responsible for the accuracy,
             quality, safety, legality and availability of their listings and services. By creating a
-            listing on Sharikly, you agree that:
+            listing on EKRA, you agree that:
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Your listing is accurate, not misleading and kept up to date.</li>
@@ -122,9 +122,9 @@ export default function TermsPage() {
           <h3 className="text-lg font-semibold text-gray-900">5. Bookings and payments</h3>
           <p>
             Users who request or book listings (&quot;Guests&quot;) and Hosts enter into a direct
-            contractual relationship with each other. Sharikly is not a party to that contract.
+            contractual relationship with each other. EKRA is not a party to that contract.
           </p>
-          <p>By making or accepting a booking through Sharikly, you agree that:</p>
+            <p>By making or accepting a booking through EKRA, you agree that:</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>
               Guests are responsible for reviewing the listing details, price, house rules and any
@@ -151,7 +151,7 @@ export default function TermsPage() {
             policy and any related terms shown for the listing.
           </p>
           <p>
-            Where Sharikly provides tools to manage cancellations or refunds, we will process them
+            Where EKRA provides tools to manage cancellations or refunds, we will process them
             in accordance with the applicable policy and any mandatory legal obligations. We are not
             obligated to mediate disputes but may, at our discretion, assist users in resolving
             issues.
@@ -178,7 +178,7 @@ export default function TermsPage() {
               without our prior written permission, except as permitted by applicable law.
             </li>
             <li>
-              Use the Service in a way that harms or could harm Sharikly, our users or any third
+              Use the Service in a way that harms or could harm EKRA, our users or any third
               party.
             </li>
           </ul>
@@ -192,15 +192,15 @@ export default function TermsPage() {
 
           <h3 className="text-lg font-semibold text-gray-900">9. Intellectual property</h3>
           <p>
-            The Service, including the Sharikly name and logo, software, designs, text, graphics,
-            images and other content, is owned by or licensed to Sharikly and is protected by
+            The Service, including the EKRA name and logo, software, designs, text, graphics,
+            images and other content, is owned by or licensed to EKRA and is protected by
             intellectual property laws. Except as expressly allowed in these Terms, you may not copy,
             modify, distribute, sell or lease any part of the Service or included software, nor may
             you reverse engineer or attempt to extract the source code.
           </p>
           <p>
             By submitting content (such as listings, photos or reviews) to the Service, you grant
-            Sharikly a worldwide, non-exclusive, royalty-free licence to use, reproduce, modify,
+            EKRA a worldwide, non-exclusive, royalty-free licence to use, reproduce, modify,
             adapt, publish, translate, create derivative works from, distribute and display such
             content in connection with operating and promoting the Service.
           </p>
@@ -218,7 +218,7 @@ export default function TermsPage() {
             We may suspend or terminate your access to the Service, or remove any content you post,
             at any time and for any reason, including if we reasonably believe you have violated
             these Terms, misused the Service or created risk or possible legal exposure for
-            Sharikly or other users.
+            EKRA or other users.
           </p>
           <p>
             You may stop using the Service at any time and may request deletion of your account,
@@ -234,14 +234,14 @@ export default function TermsPage() {
             performance.
           </p>
           <p>
-            Sharikly does not guarantee the accuracy or completeness of listings, the performance or
+            EKRA does not guarantee the accuracy or completeness of listings, the performance or
             conduct of any user, or that the Service will be uninterrupted, secure or error-free.
             Your interactions with other users and your use of listings are at your own risk.
           </p>
 
           <h3 className="text-lg font-semibold text-gray-900">13. Limitation of liability</h3>
           <p>
-            To the maximum extent permitted by law, Sharikly and its affiliates, officers,
+            To the maximum extent permitted by law, EKRA and its affiliates, officers,
             employees, agents and partners will not be liable for any indirect, incidental, special,
             consequential or punitive damages, or any loss of profits or revenues, whether incurred
             directly or indirectly, or any loss of data, use, goodwill or other intangible losses,
@@ -251,13 +251,13 @@ export default function TermsPage() {
           </p>
           <p>
             In no event will our total liability for all claims relating to the Service exceed the
-            greater of (i) the amounts you paid to Sharikly in the twelve (12) months preceding the
+            greater of (i) the amounts you paid to EKRA in the twelve (12) months preceding the
             event giving rise to the claim or (ii) the equivalent of 100 EUR (or local currency).
           </p>
 
           <h3 className="text-lg font-semibold text-gray-900">14. Indemnification</h3>
           <p>
-            You agree to indemnify, defend and hold harmless Sharikly and its affiliates, officers,
+            You agree to indemnify, defend and hold harmless EKRA and its affiliates, officers,
             employees and agents from and against any claims, liabilities, damages, losses and
             expenses, including reasonable legal and accounting fees, arising out of or in any way
             connected with (a) your access to or use of the Service; (b) your content; (c) your
@@ -272,7 +272,7 @@ export default function TermsPage() {
             These Terms, and any dispute or claim arising out of or in connection with them or their
             subject matter or formation, shall be governed by and construed in accordance with the
             laws of your primary operating jurisdiction, unless otherwise required by mandatory
-            consumer protection law. You and Sharikly agree to submit to the non-exclusive
+            consumer protection law. You and EKRA agree to submit to the non-exclusive
             jurisdiction of the courts of that jurisdiction, without regard to conflict of law
             principles.
           </p>

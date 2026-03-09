@@ -26,27 +26,27 @@ export default function PrivacyPage() {
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
-        <h2 className="text-2xl font-bold text-gray-900">Sharikly Privacy Policy</h2>
+        <h2 className="text-2xl font-bold text-gray-900">EKRA Privacy Policy</h2>
         <p className="text-gray-600">
           Last updated: {new Date().toLocaleDateString()}
         </p>
         <div className="prose prose-gray max-w-none space-y-4 text-gray-700">
           <p>
-            This Privacy Policy explains how <strong>Sharikly</strong> (&quot;Sharikly&quot;,
+            This Privacy Policy explains how <strong>EKRA</strong> (&quot;EKRA&quot;,
             &quot;we&quot;, &quot;us&quot; or &quot;our&quot;) collects, uses, discloses and
             protects your information when you use our website, mobile applications, products and
             services (collectively, the &quot;Service&quot;). It also explains the choices and
             rights you have in relation to your personal data.
           </p>
           <p>
-            By accessing or using Sharikly, you agree to the collection and use of information in
+            By accessing or using EKRA, you agree to the collection and use of information in
             accordance with this Privacy Policy. If you do not agree with this policy, please do not
             use the Service.
           </p>
 
           <h3 className="text-lg font-semibold text-gray-900">1. Who we are and scope</h3>
           <p>
-            Sharikly is a platform that enables users to list, discover and book event-related
+            EKRA is a platform that enables users to list, discover and book event-related
             services and equipment. This Privacy Policy applies to all users of the Service,
             including hosts, guests and visitors to our website.
           </p>
@@ -108,7 +108,7 @@ export default function PrivacyPage() {
             2.2 Information we collect automatically
           </h4>
           <p>
-            When you use Sharikly, we automatically collect certain information about your device
+            When you use EKRA, we automatically collect certain information about your device
             and usage, such as:
           </p>
           <ul className="list-disc pl-5 space-y-1">
@@ -146,7 +146,7 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong>Analytics and advertising partners</strong> who help us understand how users
-              find and engage with Sharikly.
+              find and engage with EKRA.
             </li>
           </ul>
 
@@ -177,7 +177,8 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong>Maintaining safety and security</strong>, detecting and preventing fraud,
-              abuse, spam, security incidents and other harmful activity.
+              abuse, spam, security incidents and other harmful activity (including activity that
+              could harm EKRA, our users or others).
             </li>
             <li>
               <strong>Complying with legal obligations</strong>, enforcing our Terms of Service and
@@ -228,7 +229,7 @@ export default function PrivacyPage() {
             <li>
               <strong>For legal and safety reasons</strong> where we believe disclosure is
               reasonably necessary to comply with law, respond to legal requests, enforce our terms,
-              or protect the rights, property or safety of Sharikly, our users or others.
+              or protect the rights, property or safety of EKRA, our users or others.
             </li>
             <li>
               <strong>In connection with a business transaction</strong> such as a merger,
@@ -331,7 +332,7 @@ export default function PrivacyPage() {
             11. Children&apos;s privacy
           </h3>
           <p>
-            Sharikly is not directed to children and we do not knowingly collect personal data from
+            EKRA is not directed to children and we do not knowingly collect personal data from
             children where it is prohibited by law. If you believe that a child has provided us with
             personal data without appropriate consent, please contact us so that we can take steps
             to delete such information.

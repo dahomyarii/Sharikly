@@ -93,6 +93,7 @@ export default function ListingDetail() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fullscreenIndex, setFullscreenIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showMobileBooking, setShowMobileBooking] = useState(false);
 
   const [reviews, setReviews] = useState<any[]>([]);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -1046,8 +1047,26 @@ export default function ListingDetail() {
             </Card>
           </div>
 
-          <div className="lg:col-span-1">
-            <Card className="p-6 sticky top-24 space-y-5">
+          <div className="lg:col-span-1 space-y-4">
+            {/* Mobile booking teaser card */}
+            <Card className="p-4 flex items-center justify-between gap-3 lg:hidden">
+              <div>
+                <p className="text-xs text-gray-500">Your price</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  ${data.price_per_day}
+                  <span className="text-sm text-gray-500"> /day</span>
+                </p>
+              </div>
+              <Button
+                className="flex-1 min-h-[44px] rounded-full bg-green-500 hover:bg-green-600 text-white font-semibold text-sm shadow-md"
+                onClick={() => setShowMobileBooking(true)}
+              >
+                See available dates
+              </Button>
+            </Card>
+
+            {/* Desktop booking card */}
+            <Card className="p-6 sticky top-24 space-y-5 hidden lg:block">
               {/* Price */}
               <div className="text-center pb-5 border-b border-gray-200">
                 <div className="text-4xl font-bold text-blue-600 mb-1">
@@ -1287,6 +1306,146 @@ export default function ListingDetail() {
           )}
         </section>
       </div>
+
+      {/* Mobile full-screen booking flow (Fat Llama style) */}
+      {showMobileBooking && (
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col bg-white">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <h2 className="text-base font-semibold text-gray-900">
+              Select rental period
+            </h2>
+            <button
+              type="button"
+              onClick={() => setShowMobileBooking(false)}
+              className="min-w-[32px] min-h-[32px] flex items-center justify-center rounded-full hover:bg-gray-100"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5 text-gray-600" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-auto px-4 pt-4 pb-24">
+            <div className="mb-4 text-center">
+              <p className="text-xs uppercase tracking-wide text-gray-400">
+                {safeFormatDate(new Date())?.split(" ").slice(1).join(" ")}
+              </p>
+            </div>
+
+            <div className="flex justify-center mb-4">
+              <DayPicker
+                mode="range"
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={1}
+                showOutsideDays={true}
+                disabled={(date) => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  if (date < today) return true;
+                  if (!availability?.booked_ranges?.length) return false;
+                  const d = new Date(date);
+                  d.setHours(0, 0, 0, 0);
+                  return availability.booked_ranges.some((r) => {
+                    const start = new Date(r.start);
+                    const end = new Date(r.end);
+                    start.setHours(0, 0, 0, 0);
+                    end.setHours(0, 0, 0, 0);
+                    return d >= start && d <= end;
+                  });
+                }}
+              />
+            </div>
+
+            {/* Pickup / Drop-off summary */}
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2">
+                <p className="text-xs text-gray-500">Pickup</p>
+                <p className="text-sm font-medium text-gray-900 mt-1">
+                  {dateRange?.from
+                    ? dateRange.from.toLocaleDateString()
+                    : "Select date"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2">
+                <p className="text-xs text-gray-500">Drop off</p>
+                <p className="text-sm font-medium text-gray-900 mt-1">
+                  {dateRange?.to
+                    ? dateRange.to.toLocaleDateString()
+                    : "Select date"}
+                </p>
+              </div>
+            </div>
+
+            {/* Mobile price breakdown */}
+            {dateRange?.from && dateRange?.to && (() => {
+              const msPerDay = 1000 * 60 * 60 * 24;
+              const nights = Math.max(
+                1,
+                Math.round(
+                  (dateRange.to!.getTime() - dateRange.from!.getTime()) /
+                    msPerDay
+                )
+              );
+              const pricePerDay = parseFloat(data.price_per_day) || 0;
+              const subtotal = pricePerDay * nights;
+              const serviceFee = Math.round(subtotal * 0.1 * 100) / 100;
+              const total = Math.round((subtotal + serviceFee) * 100) / 100;
+              return (
+                <div className="mt-4 space-y-2 text-sm text-gray-700">
+                  <div className="flex justify-between">
+                    <span>
+                      ${pricePerDay.toFixed(2)} × {nights} day
+                      {nights !== 1 ? "s" : ""}
+                    </span>
+                    <span>${subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Service fee</span>
+                    <span>${serviceFee.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold pt-2 border-t border-gray-200">
+                    <span>Total</span>
+                    <span>${total.toFixed(2)}</span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <p className="mt-4 text-xs text-blue-600 flex items-start gap-1">
+              <span className="mt-[2px]">🛡️</span>
+              <span>
+                No commitment when you send a request. You can ask the owner
+                questions before confirming.
+              </span>
+            </p>
+          </div>
+
+          <div className="fixed bottom-0 left-0 right-0 lg:hidden px-4 pb-4 pt-2 bg-white border-t border-gray-200">
+            {user && !isOwner ? (
+              <Button
+                className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold disabled:opacity-50"
+                disabled={!dateRange?.from || !dateRange?.to}
+                onClick={() => {
+                  handleRequestBooking();
+                  setShowMobileBooking(false);
+                }}
+              >
+                Send request
+              </Button>
+            ) : !user ? (
+              <Button
+                className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold"
+                onClick={() => {
+                  setShowMobileBooking(false);
+                  router.push("/auth/login");
+                }}
+              >
+                Log in to continue
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       {isFullscreen && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4 box-border">
