@@ -315,18 +315,36 @@ export default function Header() {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile right side: theme, language, auth buttons, menu */}
         <div className="md:hidden flex gap-1 items-center flex-shrink-0 min-w-0">
           <ThemeToggle />
           <LanguageSwitcher />
+          {!user && (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowLogin(true)}
+                className="px-3 py-1.5 text-xs font-medium rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              >
+                {t("sign_in") || "Log In"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSignup(true)}
+                className="px-3 py-1.5 text-xs font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                {t("sign_up") || "Sign Up"}
+              </button>
+            </>
+          )}
           <button
             ref={menuButtonRef}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 border border-border rounded-xl hover:bg-accent active:bg-accent/80 transition touch-target"
+            className="min-w-[40px] min-h-[40px] flex items-center justify-center p-2 border border-border rounded-xl hover:bg-accent active:bg-accent/80 transition touch-target"
             aria-label="Toggle menu"
           >
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -498,26 +516,7 @@ export default function Header() {
                 </svg>
                 Blog
               </Link>
-              <div className="border-t border-border mt-1 pt-1 px-5 py-3 flex gap-2">
-                <button
-                  onClick={() => {
-                    setShowLogin(true);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition text-sm font-medium"
-                >
-                  Log In
-                </button>
-                <button
-                  onClick={() => {
-                    setShowSignup(true);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition text-sm font-medium"
-                >
-                  Sign Up
-                </button>
-              </div>
+              {/* Auth buttons are now in the top navbar on mobile */}
             </div>
           )}
         </div>

@@ -5,20 +5,19 @@ import { useLocale } from './LocaleProvider'
 
 export default function LanguageSwitcher() {
   const { lang, setLang } = useLocale()
+
+  const toggleLang = () => {
+    setLang(lang === 'en' ? 'ar' : 'en')
+  }
+
   return (
-    <div className="flex items-center gap-2">
-      <button
-        className={`px-2 py-1 rounded ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-transparent'}`}
-        onClick={() => setLang('en')}
-      >
-        EN
-      </button>
-      <button
-        className={`px-2 py-1 rounded ${lang === 'ar' ? 'bg-gray-900 text-white' : 'bg-transparent'}`}
-        onClick={() => setLang('ar')}
-      >
-        AR
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={toggleLang}
+      className="inline-flex items-center justify-center px-3 py-1.5 rounded-full border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors min-w-[44px] min-h-[32px]"
+      aria-label={lang === 'en' ? 'Switch to Arabic' : 'التبديل إلى الإنجليزية'}
+    >
+      {lang === 'en' ? 'EN' : 'AR'}
+    </button>
   )
 }
