@@ -116,8 +116,8 @@ export default function ListingCard({
 
   const imageUrl = getImageUrl();
 
-  const imageHeight = compact ? "h-24 sm:h-28" : "h-28 sm:h-44 md:h-48";
-  const padding = compact ? "p-2 sm:p-3" : "p-3 sm:p-4";
+  const imageHeight = compact ? "h-24 sm:h-32" : "h-32 sm:h-40 md:h-48";
+  const padding = compact ? "px-1.5 pt-1.5 pb-2 sm:px-2 sm:pt-2 sm:pb-3" : "p-2.5 sm:p-3";
 
   return (
     <Link
@@ -128,7 +128,7 @@ export default function ListingCard({
           : "border-border bg-card hover:shadow-md hover:border-primary/50"
       }`}
     >
-      <div className={`relative ${imageHeight} bg-muted`}>
+      <div className={`relative ${imageHeight} bg-muted rounded-xl overflow-hidden`}>
         <img
           src={imageUrl}
           alt={listing.title}
@@ -139,15 +139,13 @@ export default function ListingCard({
         />
         <button
           onClick={handleFavoriteClick}
-          className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full touch-target shadow-sm ${
-            isFavorited
-              ? "bg-red-500 text-white"
-              : "bg-card/90 text-muted-foreground hover:bg-card hover:text-foreground active:scale-95"
-          } transition-all duration-200`}
+          className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 min-w-[28px] min-h-[28px] flex items-center justify-center touch-target transition-transform duration-150 active:scale-95"
           aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
         >
           <svg
-            className="w-4 h-4 flex-shrink-0"
+            className={`w-5 h-5 flex-shrink-0 ${
+              isFavorited ? "text-red-500 fill-red-500" : "text-white drop-shadow"
+            }`}
             fill={isFavorited ? "currentColor" : "none"}
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -178,7 +176,7 @@ export default function ListingCard({
               </div>
               <span className="text-[11px] font-medium truncate">
                 {effectiveReviewCount > 0
-                  ? `${effectiveRating?.toFixed(1) ?? "0.0"} (${effectiveReviewCount})`
+                  ? `${(effectiveRating || 0).toFixed(1)}/5`
                   : t("no_reviews")}
               </span>
             </div>
@@ -203,21 +201,26 @@ export default function ListingCard({
         )}
       </div>
       <div className={padding}>
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <h3 className="font-semibold text-sm line-clamp-2 text-foreground">{listing.title}</h3>
-          <span className="text-sm font-medium text-foreground shrink-0">
+        <h3 className="font-semibold text-sm line-clamp-2 text-foreground mb-1">
+          {listing.title}
+        </h3>
+        <div className="flex items-center justify-between gap-1 mb-1">
+          <span className="text-sm font-semibold text-foreground">
             ${listing.price_per_day}
-            <span className="text-muted-foreground text-xs">{t("price_per_day")}</span>
+            <span className="text-xs font-normal text-muted-foreground">
+              {" "}
+              {t("price_per_day")}
+            </span>
           </span>
+          {listing.category && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
+              {listing.category.name}
+            </span>
+          )}
         </div>
-        {listing.category && (
-          <div className="mb-1.5 inline-block bg-primary/15 text-primary dark:bg-primary/25 text-xs font-medium px-2 py-0.5 rounded">
-            {listing.category.name}
-          </div>
-        )}
-        <div className="text-xs text-muted-foreground mb-2">{listing.city || "—"}</div>
-
-        {/* Rating + owner are overlaid inside the image to save space */}
+        <div className="text-[11px] text-muted-foreground">
+          {listing.city || "—"}
+        </div>
       </div>
     </Link>
   );

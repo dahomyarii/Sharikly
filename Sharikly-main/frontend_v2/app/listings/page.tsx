@@ -254,7 +254,7 @@ function ListingsPageContent() {
 
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
         <div className="flex-1 min-w-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2 sm:gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-2 gap-2 sm:gap-3">
             {isLoading ? (
               [...Array(6)].map((_, i) => <SkeletonLoader key={i} />)
             ) : displayListings?.length > 0 ? (
