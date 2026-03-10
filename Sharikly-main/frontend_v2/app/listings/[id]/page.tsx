@@ -644,7 +644,7 @@ export default function ListingDetail() {
                       }}
                       className={`min-w-[56px] w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-xl overflow-hidden flex-shrink-0 transition-all duration-200 touch-target active:scale-95 ${
                         mainImage === url
-                          ? "border-orange-500 ring-2 ring-orange-200"
+                          ? "border-purple-500 ring-2 ring-purple-200"
                           : "border-gray-200 hover:border-gray-300 active:border-gray-400"
                       }`}
                     >
