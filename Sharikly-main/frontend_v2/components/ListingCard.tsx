@@ -116,7 +116,8 @@ export default function ListingCard({
 
   const imageUrl = getImageUrl();
 
-  const imageHeight = compact ? "h-24 sm:h-24" : "h-28 sm:h-32 md:h-36";
+  // Slightly taller image, smaller overlay
+  const imageHeight = compact ? "h-28 sm:h-28" : "h-32 sm:h-36 md:h-40";
   const padding = compact ? "px-1.5 pt-1.5 pb-2 sm:px-2 sm:pt-2 sm:pb-3" : "px-2.5 pt-2 pb-3 sm:px-3 sm:pt-2.5 sm:pb-3.5";
 
   return (
@@ -158,28 +159,28 @@ export default function ListingCard({
         </button>
 
         {(effectiveReviewCount > 0 || listing.owner) && (
-          <div className="absolute left-2.5 right-2.5 bottom-2 flex items-center justify-between gap-2 rounded-full bg-black/65 text-white px-2.5 py-1 backdrop-blur-sm">
-            <div className="flex items-center gap-1.5 min-w-0">
+          <div className="absolute left-2.5 right-2.5 bottom-2 flex items-center justify-between gap-2 text-white text-[11px] drop-shadow-sm">
+            <div className="flex items-center gap-1 min-w-0">
               <div className="flex items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-3.5 h-3.5 ${
+                    className={`w-3 h-3 ${
                       i < Math.round(effectiveRating || 0)
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-white/35"
+                        ? "text-yellow-300 fill-yellow-300"
+                        : "text-black/20"
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-[11px] font-medium truncate">
+              <span className="font-medium truncate">
                 {effectiveReviewCount > 0
                   ? `${(effectiveRating || 0).toFixed(1)}/5`
                   : t("no_reviews")}
               </span>
             </div>
             {listing.owner && (
-              <div className="w-8 h-8 rounded-full bg-white/95 flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/80 shadow-sm">
+              <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/80 shadow-sm">
                 {listing.owner.avatar ? (
                   <img
                     src={
@@ -191,7 +192,7 @@ export default function ListingCard({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User className="w-4 h-4 text-gray-700" />
+                  <User className="w-3.5 h-3.5 text-gray-700" />
                 )}
               </div>
             )}
