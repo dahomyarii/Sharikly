@@ -1,13 +1,13 @@
 """
 Print Sharikly project commands. Run: python manage.py project_help
-Full doc: desloppify-workspace/SHARIKLY_COMMANDS.md
+Full doc: Dahomify workspace runbook (SHARIKLY_COMMANDS.md in your workspace)
 """
 from django.core.management.base import BaseCommand
 
 
 HELP_TEXT = """
 Sharikly / ekra.app - All commands
-Full doc: desloppify-workspace/SHARIKLY_COMMANDS.md
+Full doc: Dahomify workspace runbook
 
 Backend (cd backend, venv activated):
   python manage.py runserver              Start dev server (port 8000)

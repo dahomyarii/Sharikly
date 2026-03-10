@@ -2,7 +2,7 @@
 /**
  * Generate a ready-to-paste Cursor agent prompt that combines:
  * - Your high-level goal
- * - Dahomify (desloppify) status / next plan
+ * - Dahomify status / next plan
  * - Sharikly ecosystem commands
  *
  * Usage (from Sharikly-main):
@@ -32,7 +32,7 @@ From \`Sharikly-main\` root (no cd):
   - \`npm run frontend -- run test:run\`
   - \`npm run frontend -- run lint\`
 
-- Dahomify (code health, via \`python -m desloppify\`):
+- Dahomify (code health models):
   - \`npm run dahomify -- scan --path .\`        # rescan project (if status says tool changed)
   - \`npm run dahomify -- status\`               # overall health + AGENT PLAN
   - \`npm run dahomify -- next --count 10\`      # top 10 prioritized findings
@@ -44,7 +44,7 @@ From \`Sharikly-main\` root (no cd):
   - GitHub Actions CI: backend tests + frontend lint + frontend tests on push/PR to main
 
 - Project runbook:
-  - \`desloppify-workspace/SHARIKLY_COMMANDS.md\`
+- \`SHARIKLY_COMMANDS.md\` in your Dahomify workspace
 
 ## How you should use Dahomify to drive your work
 

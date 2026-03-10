@@ -2,7 +2,7 @@
 help:
 	@echo ""
 	@echo "Sharikly / ekra.app — All commands"
-	@echo "Full doc: desloppify-workspace/SHARIKLY_COMMANDS.md"
+	@echo "Full doc: Dahomify workspace runbook"
 	@echo ""
 	@echo "Backend (cd backend, venv activated):"
 	@echo "  python manage.py runserver              Start dev server (port 8000)"

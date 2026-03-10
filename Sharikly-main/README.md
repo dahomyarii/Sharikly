@@ -69,6 +69,6 @@ npm run dev
 - **Frontend**: Copy `frontend_v2/.env.local.example` to `frontend_v2/.env.local` and set `NEXT_PUBLIC_API_URL=http://127.0.0.1:8000` (or your backend URL).
 
 ## Notes
-- **Commands:** From repo root run `npm run help` or `make help`; from backend (venv) run `python manage.py project_help`. Full list: [desloppify-workspace/SHARIKLY_COMMANDS.md](../desloppify-workspace/SHARIKLY_COMMANDS.md) (or see that file in the workspace).
+- **Commands:** From repo root run `npm run help` or `make help`; from backend (venv) run `python manage.py project_help`. Full list is in the Dahomify workspace runbook (`SHARIKLY_COMMANDS.md` in your workspace).
 - **Payments**: Production payments use Tap (15% platform / 85% owner). See [backend/TAP_SETUP.md](backend/TAP_SETUP.md).
 - **MVP scope**: Listings, bookings, auth, chat, notifications, reports, i18n. Roadmap: [ROADMAP.md](ROADMAP.md).

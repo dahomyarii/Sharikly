@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
  * Print Sharikly project commands. Run: npm run help (from repo root)
- * Full doc: desloppify-workspace/SHARIKLY_COMMANDS.md
+ * Full doc: Dahomify workspace commands (see workspace runbook)
  */
 const lines = [
   "",
   "Sharikly / ekra.app — All commands (run from Sharikly-main root)",
-  "Full doc: desloppify-workspace/SHARIKLY_COMMANDS.md",
+  "Full doc: Dahomify workspace runbook",
   "",
   "Ecosystem (no cd — run from Sharikly-main):",
   "  npm run backend -- runserver              Start Django (uses backend/.venv)",

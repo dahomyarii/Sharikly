@@ -66,7 +66,7 @@ Contexts:
             npm run frontend -- dev
             npm run frontend -- run test:run
             npm run frontend -- run lint
-  dahomify  Run dahomify (python -m desloppify) from project root. Examples:
+  dahomify  Run Dahomify models from project root. Examples:
             npm run dahomify -- scan --path .
             npm run dahomify -- status
             npm run dahomify -- next
