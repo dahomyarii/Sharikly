@@ -161,19 +161,19 @@ export default function ListingCard({
         {(effectiveReviewCount > 0 || listing.owner) && (
           <div className="absolute left-2.5 right-2.5 bottom-2 flex items-center justify-between gap-2 text-white text-[11px] drop-shadow-sm">
             <div className="flex items-center gap-1 min-w-0">
-              <div className="flex items-center gap-0.5">
+              <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-black/35 backdrop-blur-[2px]">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-3 h-3 ${
+                    className={`w-3 h-3 drop-shadow-[0_0_4px_rgba(0,0,0,0.8)] ${
                       i < Math.round(effectiveRating || 0)
                         ? "text-yellow-300 fill-yellow-300"
-                        : "text-black/20"
+                        : "text-white/70"
                     }`}
                   />
                 ))}
               </div>
-              <span className="font-medium truncate">
+              <span className="font-medium truncate drop-shadow-[0_0_4px_rgba(0,0,0,0.8)]">
                 {effectiveReviewCount > 0
                   ? `${(effectiveRating || 0).toFixed(1)}/5`
                   : t("no_reviews")}
