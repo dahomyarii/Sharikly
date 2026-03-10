@@ -116,8 +116,8 @@ export default function ListingCard({
 
   const imageUrl = getImageUrl();
 
-  const imageHeight = compact ? "h-24 sm:h-32" : "h-32 sm:h-40 md:h-48";
-  const padding = compact ? "px-1.5 pt-1.5 pb-2 sm:px-2 sm:pt-2 sm:pb-3" : "p-2.5 sm:p-3";
+  const imageHeight = compact ? "h-28 sm:h-32" : "h-32 sm:h-40 md:h-48";
+  const padding = compact ? "px-1.5 pt-1.5 pb-2 sm:px-2 sm:pt-2 sm:pb-3" : "px-2.5 pt-2 pb-3 sm:px-3 sm:pt-2.5 sm:pb-3.5";
 
   return (
     <Link
@@ -128,7 +128,7 @@ export default function ListingCard({
           : "border-border bg-card hover:shadow-md hover:border-primary/50"
       }`}
     >
-      <div className={`relative ${imageHeight} bg-muted rounded-xl overflow-hidden`}>
+      <div className={`relative ${imageHeight} bg-muted rounded-2xl overflow-hidden`}>
         <img
           src={imageUrl}
           alt={listing.title}
@@ -159,68 +159,32 @@ export default function ListingCard({
           </svg>
         </button>
 
-        {(listing.owner || effectiveReviewCount > 0) && (
-          <div className="absolute inset-x-1.5 bottom-1.5 sm:inset-x-2 sm:bottom-2 flex items-center justify-between gap-2 rounded-full bg-black/65 text-white px-2.5 py-1 backdrop-blur-sm">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <div className="flex items-center gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-3.5 h-3.5 ${
-                      i < Math.round(effectiveRating || 0)
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-white/40"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-[11px] font-medium truncate">
-                {effectiveReviewCount > 0
-                  ? `${(effectiveRating || 0).toFixed(1)}/5`
-                  : t("no_reviews")}
-              </span>
-            </div>
-            {listing.owner && (
-              <div className="w-8 h-8 rounded-full bg-white/95 flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/80">
-                {listing.owner.avatar ? (
-                  <img
-                    src={
-                      listing.owner.avatar.startsWith("http")
-                        ? listing.owner.avatar
-                        : `${API?.replace("/api", "")}${listing.owner.avatar}`
-                    }
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-4 h-4 text-gray-700" />
-                )}
-              </div>
+        {listing.owner && (
+          <div className="absolute right-2 bottom-2 w-9 h-9 rounded-full bg-white/95 flex items-center justify-center overflow-hidden border border-white/80 shadow-sm">
+            {listing.owner.avatar ? (
+              <img
+                src={
+                  listing.owner.avatar.startsWith("http")
+                    ? listing.owner.avatar
+                    : `${API?.replace("/api", "")}${listing.owner.avatar}`
+                }
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <User className="w-4 h-4 text-gray-700" />
             )}
           </div>
         )}
       </div>
       <div className={padding}>
-        <h3 className="font-semibold text-sm line-clamp-2 text-foreground mb-1">
+        <h3 className="font-semibold text-[13px] leading-snug line-clamp-2 text-foreground mb-1">
           {listing.title}
         </h3>
-        <div className="flex items-center justify-between gap-1 mb-1">
-          <span className="text-sm font-semibold text-foreground">
-            ${listing.price_per_day}
-            <span className="text-xs font-normal text-muted-foreground">
-              {" "}
-              {t("price_per_day")}
-            </span>
-          </span>
-          {listing.category && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
-              {listing.category.name}
-            </span>
-          )}
-        </div>
-        <div className="text-[11px] text-muted-foreground">
-          {listing.city || "—"}
-        </div>
+        <p className="text-sm font-semibold text-primary mt-0.5">
+          ${listing.price_per_day}
+          <span className="text-xs font-normal text-muted-foreground"> {t("price_per_day")}</span>
+        </p>
       </div>
     </Link>
   );
