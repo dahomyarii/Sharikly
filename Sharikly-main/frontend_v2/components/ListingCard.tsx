@@ -116,17 +116,14 @@ export default function ListingCard({
 
   const imageUrl = getImageUrl();
 
-  // Use a tighter, card-like height so the image isn't too tall on 3-column grids
   const imageHeight = compact ? "h-24 sm:h-24" : "h-28 sm:h-32 md:h-36";
   const padding = compact ? "px-1.5 pt-1.5 pb-2 sm:px-2 sm:pt-2 sm:pb-3" : "px-2.5 pt-2 pb-3 sm:px-3 sm:pt-2.5 sm:pb-3.5";
 
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className={`block border rounded-xl overflow-hidden transition-all duration-200 mobile-card ${
-        highlighted
-          ? "border-primary ring-2 ring-primary/30 shadow-md"
-          : "border-border bg-card hover:shadow-md hover:border-primary/50"
+      className={`block rounded-2xl overflow-hidden transition-all duration-200 mobile-card ${
+        highlighted ? "ring-2 ring-primary/40" : ""
       }`}
     >
       <div className={`relative ${imageHeight} bg-muted rounded-2xl overflow-hidden`}>
@@ -160,20 +157,43 @@ export default function ListingCard({
           </svg>
         </button>
 
-        {listing.owner && (
-          <div className="absolute right-2 bottom-2 w-9 h-9 rounded-full bg-white/95 flex items-center justify-center overflow-hidden border border-white/80 shadow-sm">
-            {listing.owner.avatar ? (
-              <img
-                src={
-                  listing.owner.avatar.startsWith("http")
-                    ? listing.owner.avatar
-                    : `${API?.replace("/api", "")}${listing.owner.avatar}`
-                }
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="w-4 h-4 text-gray-700" />
+        {(effectiveReviewCount > 0 || listing.owner) && (
+          <div className="absolute left-2.5 right-2.5 bottom-2 flex items-center justify-between gap-2 rounded-full bg-black/65 text-white px-2.5 py-1 backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-3.5 h-3.5 ${
+                      i < Math.round(effectiveRating || 0)
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-white/35"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-[11px] font-medium truncate">
+                {effectiveReviewCount > 0
+                  ? `${(effectiveRating || 0).toFixed(1)}/5`
+                  : t("no_reviews")}
+              </span>
+            </div>
+            {listing.owner && (
+              <div className="w-8 h-8 rounded-full bg-white/95 flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/80 shadow-sm">
+                {listing.owner.avatar ? (
+                  <img
+                    src={
+                      listing.owner.avatar.startsWith("http")
+                        ? listing.owner.avatar
+                        : `${API?.replace("/api", "")}${listing.owner.avatar}`
+                    }
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-4 h-4 text-gray-700" />
+                )}
+              </div>
             )}
           </div>
         )}
