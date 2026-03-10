@@ -116,7 +116,8 @@ export default function ListingCard({
 
   const imageUrl = getImageUrl();
 
-  const imageHeight = compact ? "h-28 sm:h-32" : "h-32 sm:h-40 md:h-48";
+  // Use a tighter, card-like height so the image isn't too tall on 3-column grids
+  const imageHeight = compact ? "h-24 sm:h-24" : "h-28 sm:h-32 md:h-36";
   const padding = compact ? "px-1.5 pt-1.5 pb-2 sm:px-2 sm:pt-2 sm:pb-3" : "px-2.5 pt-2 pb-3 sm:px-3 sm:pt-2.5 sm:pb-3.5";
 
   return (

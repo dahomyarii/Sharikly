@@ -24,6 +24,7 @@ import Link from "next/link";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import { useLocale } from "@/components/LocaleProvider";
 import { toListingsArray, sliceListings, buildListingsQuery } from "@/lib/listingsUtils";
+import ListingCard from "@/components/ListingCard";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -692,93 +693,7 @@ export default function HomePage() {
               {isListingsLoading
                 ? [...Array(6)].map((_, i) => <SkeletonLoader key={i} />)
                 : hotServices.map((service: any) => (
-                    <Link
-                      key={service.id}
-                      href={`/listings/${service.id}`}
-                      className="group block"
-                    >
-                      <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border hover:border-border shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                        <div className="relative aspect-[4/3] max-h-[180px] sm:max-h-none bg-muted overflow-hidden">
-                          {service.images?.[0]?.image && (
-                            <img
-                              src={
-                                service.images[0].image.startsWith("http")
-                                  ? service.images[0].image
-                                  : `${API}${service.images[0].image}`
-                              }
-                              alt={service.title}
-                              className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out"
-                              loading="lazy"
-                              decoding="async"
-                              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            />
-                          )}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleFavoriteClick(e, service.id);
-                            }}
-                            className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all touch-target ${
-                              favorites.has(service.id)
-                                ? "bg-red-500 text-white"
-                                : "bg-card/90 text-muted-foreground hover:bg-card hover:scale-105"
-                            }`}
-                          >
-                            <Heart
-                              className="h-5 w-5"
-                              fill={
-                                favorites.has(service.id)
-                                  ? "currentColor"
-                                  : "none"
-                              }
-                            />
-                          </button>
-                        </div>
-                        <div className="p-3 sm:p-5 flex flex-col flex-1">
-                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            {service.category?.name || t("listing")}
-                          </span>
-                          <h3 className="text-base sm:text-lg font-semibold text-foreground mt-1 mb-2 line-clamp-2 group-hover:text-muted-foreground">
-                            {service.title}
-                          </h3>
-                          {service.owner && (
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="w-6 h-6 rounded-full bg-muted overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                {service.owner.avatar ? (
-                                  <img
-                                    src={
-                                      service.owner.avatar.startsWith("http")
-                                        ? service.owner.avatar
-                                        : `${API?.replace("/api", "")}${service.owner.avatar}`
-                                    }
-                                    alt=""
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <User className="w-3.5 h-3.5 text-muted-foreground" />
-                                )}
-                              </div>
-                              <span className="text-xs text-muted-foreground truncate">
-                                {service.owner.username || service.owner.email}
-                              </span>
-                            </div>
-                          )}
-                          <div className="mb-4 mt-auto">
-                            <RatingDisplay listing={service} />
-                          </div>
-                          <div className="flex items-center justify-between pt-3 border-t border-border">
-                            <span className="text-xl font-bold text-foreground">
-                              ${service.price_per_day}
-                              <span className="text-sm font-normal text-muted-foreground">
-                                {" "}
-                                {t("price_per_day")}
-                              </span>
-                            </span>
-                          </div>
-                        </div>
-                      </article>
-                    </Link>
+                  <ListingCard key={service.id} listing={service} compact />
                   ))}
             </div>
           </div>
@@ -812,73 +727,7 @@ export default function HomePage() {
                     </div>
                   ))
                 : recommendations.map((service: any) => (
-                    <Link
-                      key={service.id}
-                      href={`/listings/${service.id}`}
-                      className="group block"
-                    >
-                      <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border hover:border-border shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                        <div className="relative aspect-[4/3] max-h-[160px] sm:max-h-none bg-muted overflow-hidden">
-                          {service.images?.[0]?.image && (
-                            <img
-                              src={
-                                service.images[0].image.startsWith("http")
-                                  ? service.images[0].image
-                                  : `${API}${service.images[0].image}`
-                              }
-                              alt={service.title}
-                              className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out"
-                              loading="lazy"
-                              decoding="async"
-                              sizes="(max-width: 640px) 240px, 280px"
-                            />
-                          )}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleFavoriteClick(e, service.id);
-                            }}
-                            className={`absolute top-3 right-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all touch-target ${
-                              favorites.has(service.id)
-                                ? "bg-red-500 text-white"
-                                : "bg-card/90 text-muted-foreground hover:bg-card hover:scale-105"
-                            }`}
-                          >
-                            <Heart
-                              className="h-5 w-5"
-                              fill={
-                                favorites.has(service.id)
-                                  ? "currentColor"
-                                  : "none"
-                              }
-                            />
-                          </button>
-                        </div>
-                        <div className="p-3 sm:p-4 flex flex-col flex-1">
-                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            {service.category?.name || t("listing")}
-                          </span>
-                          <h3 className="text-sm sm:text-base font-semibold text-foreground mt-1 mb-2 line-clamp-2 group-hover:text-muted-foreground">
-                            {service.title}
-                          </h3>
-                          <div className="mb-2 sm:mb-3 mt-auto">
-                            <RatingDisplay listing={service} />
-                          </div>
-                          <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
-                            <span className="text-base sm:text-lg font-bold text-foreground">
-                              ${service.price_per_day}
-                              <span className="text-xs font-normal text-muted-foreground">
-                                /day
-                              </span>
-                            </span>
-                            <span className="text-sm font-semibold text-foreground group-hover:underline">
-                              {t("view")} →
-                            </span>
-                          </div>
-                        </div>
-                      </article>
-                    </Link>
+                    <ListingCard key={service.id} listing={service} compact />
                   ))}
             </div>
           </div>
