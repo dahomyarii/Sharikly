@@ -7,7 +7,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import LocationPicker from "@/components/LocationPicker";
+import ListingsMap from "@/components/ListingsMap";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -725,17 +725,6 @@ export default function ListingDetail() {
                     <Share2 className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">Share</span>
                   </Button>
-                  {!isOwner && user && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => router.push("/chat")}
-                      className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target rounded-lg"
-                    >
-                      <MessageCircle className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Message</span>
-                    </Button>
-                  )}
                   {similarListings.length > 0 && (
                     <Button
                       variant="ghost"
@@ -854,15 +843,86 @@ export default function ListingDetail() {
                   )}
                 </div>
 
-                {/* Map */}
+                {/* Location + stats card (FatLlama-style) */}
                 {data.latitude && data.longitude && (
-                  <div className="p-0">
-                    <LocationPicker
-                      readOnly={true}
-                      initialLat={data.latitude}
-                      initialLng={data.longitude}
-                      initialRadius={data.pickup_radius_m || 300}
-                    />
+                  <div className="p-5 flex flex-col lg:flex-row gap-4">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs">
+                          ✓
+                        </div>
+                        <span className="font-medium">
+                          {data.owner?.is_email_verified ? "Identified" : "Identity not yet verified"}
+                        </span>
+                      </div>
+                      {typeof data.owner?.typical_response_minutes === "number" && (
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <span className="w-5 h-5 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-[11px]">
+                            ⏱
+                          </span>
+                          <span>
+                            Usually responds{" "}
+                            {data.owner.typical_response_minutes <= 60
+                              ? "within an hour"
+                              : data.owner.typical_response_minutes <= 180
+                              ? "within a few hours"
+                              : data.owner.typical_response_minutes <= 1440
+                              ? "within a day"
+                              : "within a few days"}
+                          </span>
+                        </div>
+                      )}
+                      {typeof data.owner?.response_rate === "number" && (
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <span className="w-5 h-5 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-[11px]">
+                            💬
+                          </span>
+                          <span>{data.owner.response_rate}% response rate</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <span className="w-5 h-5 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-[11px]">
+                          📍
+                        </span>
+                        <span>
+                          {data.city
+                            ? `Pickup near ${data.city}${
+                                data.pickup_radius_m
+                                  ? ` · ~${(data.pickup_radius_m / 1609.34).toFixed(1)} mi radius`
+                                  : ""
+                              }`
+                            : "Pickup location shown on map"}
+                        </span>
+                      </div>
+                      {!isOwner && user && (
+                        <div className="pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push("/chat")}
+                            className="rounded-full px-4"
+                          >
+                            <MessageCircle className="h-4 w-4 mr-1" />
+                            Send message
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-[220px]">
+                      <ListingsMap
+                        listings={[
+                          {
+                            id: data.id,
+                            latitude: data.latitude,
+                            longitude: data.longitude,
+                            pickup_radius_m: data.pickup_radius_m,
+                            title: data.title,
+                          },
+                        ]}
+                        selectedId={data.id}
+                        className="h-full"
+                      />
+                    </div>
                   </div>
                 )}
               </Card>

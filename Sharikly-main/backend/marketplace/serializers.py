@@ -5,13 +5,110 @@ from .models import *
 User = get_user_model()
 
 
+def _compute_user_response_stats(user: User):
+    """
+    Compute simple chat-based response statistics for a lender.
+
+    We look at each chat room the user participates in and measure how often
+    they reply to the first inbound message from the other participant, and
+    how long that first reply typically takes.
+    """
+    from .models import ChatRoom, Message  # Local import to avoid circulars
+
+    rooms = (
+        ChatRoom.objects.filter(participants=user)
+        .prefetch_related("participants", "messages__sender")
+        .all()
+    )
+
+    total_threads = 0
+    responded_threads = 0
+    response_minutes: list[float] = []
+
+    for room in rooms:
+        messages = list(room.messages.all().order_by("created_at"))
+        if not messages:
+            continue
+
+        # Find the first message from someone other than the user
+        first_inbound = None
+        for idx, msg in enumerate(messages):
+            if msg.sender_id != user.id:
+                first_inbound = (idx, msg)
+                break
+
+        if not first_inbound:
+            continue
+
+        total_threads += 1
+        start_idx, inbound_msg = first_inbound
+
+        # Find the user's first reply after that inbound message
+        reply = None
+        for msg in messages[start_idx + 1 :]:
+            if msg.sender_id == user.id:
+                reply = msg
+                break
+
+        if reply:
+            responded_threads += 1
+            delta = reply.created_at - inbound_msg.created_at
+            minutes = max(0.0, delta.total_seconds() / 60.0)
+            response_minutes.append(minutes)
+
+    if not total_threads:
+        return {"response_rate": None, "typical_minutes": None}
+
+    rate = round((responded_threads / total_threads) * 100)
+
+    if not response_minutes:
+        return {"response_rate": rate, "typical_minutes": None}
+
+    response_minutes.sort()
+    mid = len(response_minutes) // 2
+    if len(response_minutes) % 2 == 1:
+        typical = response_minutes[mid]
+    else:
+        typical = (response_minutes[mid - 1] + response_minutes[mid]) / 2.0
+
+    return {"response_rate": rate, "typical_minutes": round(typical)}
+
+
 # ==========================
 # USER SERIALIZER
 # ==========================
 class UserSerializer(serializers.ModelSerializer):
+    response_rate = serializers.SerializerMethodField()
+    typical_response_minutes = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "username", "email", "avatar", "bio", "is_email_verified"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "avatar",
+            "bio",
+            "is_email_verified",
+            "response_rate",
+            "typical_response_minutes",
+        ]
+
+    def _get_cached_response_stats(self, obj: User):
+        cached = getattr(obj, "_cached_response_stats", None)
+        if cached is not None:
+            return cached
+        stats = _compute_user_response_stats(obj)
+        setattr(obj, "_cached_response_stats", stats)
+        return stats
+
+    def get_response_rate(self, obj):
+        stats = self._get_cached_response_stats(obj)
+        return stats.get("response_rate")
+
+    def get_typical_response_minutes(self, obj):
+        stats = self._get_cached_response_stats(obj)
+        return stats.get("typical_minutes")
 
 
 class PublicUserSerializer(serializers.ModelSerializer):
