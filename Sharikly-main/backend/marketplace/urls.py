@@ -18,7 +18,9 @@ urlpatterns = [
     path("users/<int:pk>/unblock/", views.UnblockUserView.as_view(), name="unblock_user"),
     path("users/blocked/", views.BlockedUsersListView.as_view(), name="blocked_users_list"),
     path("notifications/", views.NotificationListView.as_view(), name="notification_list"),
+    path("notifications/unread-count/", views.NotificationUnreadCountView.as_view(), name="notification_unread_count"),
     path("notifications/mark-read/", views.NotificationMarkReadView.as_view(), name="notification_mark_read"),
+    path("notifications/preferences/", views.NotificationPreferenceView.as_view(), name="notification_preferences"),
     path(
         "auth/token/",
         views.CustomTokenObtainPairView.as_view(),

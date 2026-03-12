@@ -537,3 +537,16 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = ["id", "notification_type", "title", "body", "link", "read", "created_at"]
         read_only_fields = ["id", "notification_type", "title", "body", "link", "created_at"]
+
+
+class NotificationPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationPreference
+        fields = [
+            "inapp_booking_updates",
+            "inapp_messages",
+            "email_booking_updates",
+            "email_messages",
+            "updated_at",
+        ]
+        read_only_fields = ["updated_at"]

@@ -325,6 +325,24 @@ class Notification(models.Model):
         return f"{self.title} for {self.user.email}"
 
 
+class NotificationPreference(models.Model):
+    """
+    User notification preferences.
+    - inapp_* controls whether we create in-app Notification rows.
+    - email_* controls whether we send transactional emails (non-payment).
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="notification_preferences")
+    inapp_booking_updates = models.BooleanField(default=True)
+    inapp_messages = models.BooleanField(default=True)
+    email_booking_updates = models.BooleanField(default=True)
+    email_messages = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Notification prefs for {self.user.email}"
+
+
 # ==========================
 # CONTACT MESSAGES
 # ==========================

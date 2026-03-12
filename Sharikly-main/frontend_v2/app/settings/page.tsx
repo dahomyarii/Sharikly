@@ -69,6 +69,15 @@ export default function SettingsPage() {
   const [blockedUsers, setBlockedUsers] = useState<any[]>([])
   const [blockedLoading, setBlockedLoading] = useState(false)
 
+  // Notification preferences
+  const [notifPrefs, setNotifPrefs] = useState({
+    inapp_booking_updates: true,
+    inapp_messages: true,
+    email_booking_updates: true,
+    email_messages: false,
+  })
+  const [notifPrefsLoading, setNotifPrefsLoading] = useState(false)
+
   useEffect(() => {
     const token = localStorage.getItem('access_token')
     if (!token) {
@@ -78,6 +87,12 @@ export default function SettingsPage() {
     }
     fetchUser()
   }, [router])
+
+  useEffect(() => {
+    if (user && activeSection === 'preferences') {
+      fetchNotificationPreferences()
+    }
+  }, [user, activeSection])
 
   useEffect(() => {
     if (user && activeSection === 'blocked') fetchBlockedUsers()
@@ -132,6 +147,50 @@ export default function SettingsPage() {
     if (!imgPath) return ''
     if (imgPath.startsWith('http')) return imgPath
     return `${API?.replace('/api', '')}${imgPath}`
+  }
+
+  const fetchNotificationPreferences = async () => {
+    const token = localStorage.getItem('access_token')
+    if (!token || !API) return
+    setNotifPrefsLoading(true)
+    try {
+      const res = await axiosInstance.get(`${API}/notifications/preferences/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = res?.data
+      if (data && typeof data === 'object') {
+        setNotifPrefs((prev) => ({
+          ...prev,
+          inapp_booking_updates: data.inapp_booking_updates ?? prev.inapp_booking_updates,
+          inapp_messages: data.inapp_messages ?? prev.inapp_messages,
+          email_booking_updates: data.email_booking_updates ?? prev.email_booking_updates,
+          email_messages: data.email_messages ?? prev.email_messages,
+        }))
+      }
+    } catch {
+      // keep defaults on error
+    } finally {
+      setNotifPrefsLoading(false)
+    }
+  }
+
+  const updateNotificationPreferences = async (patch: Partial<typeof notifPrefs>) => {
+    const token = localStorage.getItem('access_token')
+    if (!token || !API) return
+    const next = { ...notifPrefs, ...patch }
+    setNotifPrefs(next)
+    try {
+      await axiosInstance.patch(
+        `${API}/notifications/preferences/`,
+        patch,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      showToast(t('preferences_saved') || 'Preferences updated', 'success')
+    } catch (err: any) {
+      showToast(err?.response?.data?.detail || 'Failed to update preferences', 'error')
+      // reload from server on failure
+      fetchNotificationPreferences()
+    }
   }
 
   // ── Profile handlers ──
@@ -571,7 +630,7 @@ export default function SettingsPage() {
       <div>
         <h2 className="text-xl font-semibold text-foreground">{t('preferences')}</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Customize your experience.
+          Customize your experience and how we contact you.
         </p>
       </div>
 
@@ -605,6 +664,86 @@ export default function SettingsPage() {
             {t('arabic')}
           </button>
         </div>
+      </div>
+
+      {/* Notifications */}
+      <div className="border-t border-gray-200 pt-5 mt-2">
+        <h3 className="text-sm font-semibold text-foreground mb-3">{t('notifications') || 'Notifications'}</h3>
+        {notifPrefsLoading ? (
+          <p className="text-xs text-muted-foreground">Loading preferences…</p>
+        ) : (
+          <div className="space-y-3 text-sm">
+            <p className="text-xs text-muted-foreground mb-1">
+              Choose how you want to hear about bookings and messages. Payment emails are managed separately.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={notifPrefs.inapp_booking_updates}
+                  onChange={(e) =>
+                    updateNotificationPreferences({ inapp_booking_updates: e.target.checked })
+                  }
+                />
+                <span>
+                  <span className="font-medium text-foreground block">In-app booking updates</span>
+                  <span className="text-xs text-muted-foreground">
+                    Show notifications when a booking is accepted, declined or cancelled.
+                  </span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={notifPrefs.inapp_messages}
+                  onChange={(e) =>
+                    updateNotificationPreferences({ inapp_messages: e.target.checked })
+                  }
+                />
+                <span>
+                  <span className="font-medium text-foreground block">In-app messages</span>
+                  <span className="text-xs text-muted-foreground">
+                    Badge and feed when someone sends you a new message.
+                  </span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={notifPrefs.email_booking_updates}
+                  onChange={(e) =>
+                    updateNotificationPreferences({ email_booking_updates: e.target.checked })
+                  }
+                />
+                <span>
+                  <span className="font-medium text-foreground block">Email booking updates</span>
+                  <span className="text-xs text-muted-foreground">
+                    Email you when a booking is accepted, declined or cancelled.
+                  </span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={notifPrefs.email_messages}
+                  onChange={(e) =>
+                    updateNotificationPreferences({ email_messages: e.target.checked })
+                  }
+                />
+                <span>
+                  <span className="font-medium text-foreground block">Email new messages</span>
+                  <span className="text-xs text-muted-foreground">
+                    Optional: email when you receive a new message (no payment info).
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -93,6 +93,22 @@ def _create_notification(user, notification_type, title, body: str = "", link: s
     """
     if not user:
         return
+    # Respect in-app notification preferences
+    try:
+        prefs = NotificationPreference.objects.filter(user=user).first()
+        if not prefs:
+            prefs = NotificationPreference.objects.create(user=user)
+        if notification_type == Notification.NotificationType.NEW_MESSAGE and not prefs.inapp_messages:
+            return
+        if notification_type in (
+            Notification.NotificationType.BOOKING_ACCEPTED,
+            Notification.NotificationType.BOOKING_DECLINED,
+            Notification.NotificationType.BOOKING_CANCELLED,
+        ) and not prefs.inapp_booking_updates:
+            return
+    except Exception:
+        # If prefs lookup fails, still try to notify in-app
+        prefs = None
     try:
         Notification.objects.create(
             user=user,
@@ -118,6 +134,23 @@ def _send_notification_email(to_email: str, subject: str, plain_message: str):
         )
     except Exception:
         logger.error("Notification email delivery failed")
+
+
+def _should_send_email(user, kind: str) -> bool:
+    """
+    kind: 'booking' | 'message'
+    """
+    try:
+        prefs = NotificationPreference.objects.filter(user=user).first()
+        if not prefs:
+            prefs = NotificationPreference.objects.create(user=user)
+        if kind == "booking":
+            return bool(prefs.email_booking_updates)
+        if kind == "message":
+            return bool(prefs.email_messages)
+    except Exception:
+        return True
+    return True
 
 
 class BlockUserView(APIView):
@@ -181,6 +214,32 @@ class NotificationListView(generics.ListAPIView):
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user).order_by("-created_at")
 
+
+class NotificationUnreadCountView(APIView):
+    """GET: return { count: N } unread notifications for the current user."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        c = Notification.objects.filter(user=request.user, read=False).count()
+        return Response({"count": c}, status=status.HTTP_200_OK)
+
+
+class NotificationPreferenceView(APIView):
+    """GET/PATCH: current user's notification preferences."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        prefs, _ = NotificationPreference.objects.get_or_create(user=request.user)
+        return Response(NotificationPreferenceSerializer(prefs).data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        prefs, _ = NotificationPreference.objects.get_or_create(user=request.user)
+        serializer = NotificationPreferenceSerializer(prefs, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class NotificationMarkReadView(APIView):
     """
@@ -799,11 +858,12 @@ class BookingAcceptView(APIView):
             body=f"Your request for \"{booking.listing.title}\" was accepted. Dates: {booking.start_date} to {booking.end_date}.",
             link=link,
         )
-        _send_notification_email(
-            booking.renter.email,
-            f"Booking accepted: {booking.listing.title}",
-            f"Hi,\n\nYour booking request for \"{booking.listing.title}\" was accepted.\nDates: {booking.start_date} to {booking.end_date}.\n\nView your bookings: {link}\n\n— Sharikly",
-        )
+        if _should_send_email(booking.renter, "booking"):
+            _send_notification_email(
+                booking.renter.email,
+                f"Booking accepted: {booking.listing.title}",
+                f"Hi,\n\nYour booking request for \"{booking.listing.title}\" was accepted.\nDates: {booking.start_date} to {booking.end_date}.\n\nView your bookings: {link}\n\n— Sharikly",
+            )
         return Response(BookingSerializer(booking).data, status=status.HTTP_200_OK)
 
 
@@ -834,11 +894,12 @@ class BookingDeclineView(APIView):
             body=f"Your request for \"{booking.listing.title}\" was declined by the owner.",
             link=link,
         )
-        _send_notification_email(
-            booking.renter.email,
-            f"Booking declined: {booking.listing.title}",
-            f"Hi,\n\nYour booking request for \"{booking.listing.title}\" was declined by the owner.\n\nView your bookings: {link}\n\n— Sharikly",
-        )
+        if _should_send_email(booking.renter, "booking"):
+            _send_notification_email(
+                booking.renter.email,
+                f"Booking declined: {booking.listing.title}",
+                f"Hi,\n\nYour booking request for \"{booking.listing.title}\" was declined by the owner.\n\nView your bookings: {link}\n\n— Sharikly",
+            )
         return Response(BookingSerializer(booking).data, status=status.HTTP_200_OK)
 
 
@@ -888,11 +949,12 @@ class BookingCancelView(APIView):
             else f'Your booking for "{booking.listing.title}" was cancelled by the owner.',
             link=link,
         )
-        _send_notification_email(
-            other.email,
-            f"Booking cancelled: {booking.listing.title}",
-            f"Hi,\n\nA booking for \"{booking.listing.title}\" was cancelled.\n\nView bookings: {link}\n\n— Sharikly",
-        )
+        if _should_send_email(other, "booking"):
+            _send_notification_email(
+                other.email,
+                f"Booking cancelled: {booking.listing.title}",
+                f"Hi,\n\nA booking for \"{booking.listing.title}\" was cancelled.\n\nView bookings: {link}\n\n— Sharikly",
+            )
         return Response(BookingSerializer(booking).data, status=status.HTTP_200_OK)
 
 

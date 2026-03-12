@@ -25,6 +25,7 @@ export default function Header() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
+  const [notificationsUnreadCount, setNotificationsUnreadCount] = useState(0);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const notificationsDropdownRef = useRef<HTMLDivElement>(null);
@@ -64,7 +65,7 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showNotificationsDropdown]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notificationsUnreadCount || notifications.filter((n) => !n.read).length;
 
   React.useEffect(() => {
     const loadUser = () => {
@@ -141,6 +142,7 @@ export default function Header() {
   useEffect(() => {
     if (!user || !API) {
       setNotifications([]);
+      setNotificationsUnreadCount(0);
       return;
     }
     const token = localStorage.getItem("access_token");
@@ -155,6 +157,50 @@ export default function Header() {
       })
       .catch(() => setNotifications([]));
   }, [user]);
+
+  // Fetch unread notifications count (fast)
+  useEffect(() => {
+    if (!user || !API) {
+      setNotificationsUnreadCount(0);
+      return;
+    }
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    axiosInstance
+      .get(`${API}/notifications/unread-count/`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => setNotificationsUnreadCount(typeof res.data?.count === "number" ? res.data.count : 0))
+      .catch(() => setNotificationsUnreadCount(0));
+  }, [user, pathname]);
+
+  const markNotificationRead = async (id: number) => {
+    if (!API) return;
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    try {
+      await axiosInstance.patch(
+        `${API}/notifications/mark-read/`,
+        { id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications((prev) => (Array.isArray(prev) ? prev : []).map((n) => (n?.id === id ? { ...n, read: true } : n)));
+      setNotificationsUnreadCount((c) => Math.max(0, (typeof c === "number" ? c : 0) - 1));
+    } catch (_) {}
+  };
+
+  const markAllNotificationsRead = async () => {
+    if (!API) return;
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    try {
+      await axiosInstance.patch(
+        `${API}/notifications/mark-read/`,
+        { all: true },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications((prev) => (Array.isArray(prev) ? prev : []).map((n) => ({ ...n, read: true })));
+      setNotificationsUnreadCount(0);
+    } catch (_) {}
+  };
 
   function handleLogout() {
     localStorage.removeItem("access_token");
@@ -246,6 +292,15 @@ export default function Header() {
                   <div className="absolute right-0 top-full mt-2 w-[320px] max-h-[400px] flex flex-col rounded-xl bg-popover border border-border shadow-xl z-50 overflow-hidden">
                     <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                       <span className="font-semibold text-foreground">Notifications</span>
+                      {unreadCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => markAllNotificationsRead()}
+                          className="text-xs font-medium text-muted-foreground hover:text-foreground hover:underline"
+                        >
+                          Mark all read
+                        </button>
+                      )}
                     </div>
                     <div className="overflow-y-auto flex-1 min-h-0">
                       {notifications.length === 0 ? (
@@ -258,7 +313,10 @@ export default function Header() {
                             <li key={n.id}>
                               <Link
                                 href={n.link || "/notifications"}
-                                onClick={() => setShowNotificationsDropdown(false)}
+                                onClick={() => {
+                                  setShowNotificationsDropdown(false);
+                                  if (n?.id && !n?.read) markNotificationRead(n.id);
+                                }}
                                 className={`block px-4 py-3 hover:bg-accent text-left border-b border-border last:border-0 ${
                                   !n.read ? "bg-primary/5 dark:bg-primary/10" : ""
                                 }`}
