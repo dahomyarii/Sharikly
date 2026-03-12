@@ -26,10 +26,10 @@ export default function MyReportsPage() {
 
   useEffect(() => {
     const token =
-      typeof window !== \"undefined\" ? localStorage.getItem(\"access_token\") : null;
+      typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     if (!token || !API) {
       setLoading(false);
-      router.push(\"/auth/login\");
+      router.push("/auth/login");
       return;
     }
     axiosInstance
