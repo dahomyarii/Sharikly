@@ -470,6 +470,13 @@ class ListingListCreateView(generics.ListCreateAPIView):
             return qs
         # Public list: only active
         qs = qs.filter(is_active=True)
+        # Optional: filter by owner (public profile pages)
+        owner_id = self.request.query_params.get("owner")
+        if owner_id:
+            try:
+                qs = qs.filter(owner_id=int(owner_id))
+            except ValueError:
+                logger.debug("Invalid owner filter value")
         # Filters (GET only)
         search = (self.request.query_params.get("search") or "").strip()
         if search:
