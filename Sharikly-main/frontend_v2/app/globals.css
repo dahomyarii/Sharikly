@@ -210,8 +210,8 @@
   }
   .mobile-card {
     border-radius: 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    box-shadow: none;
+    transition: transform 0.2s ease;
   }
   .mobile-card:active {
     transform: scale(0.99);
