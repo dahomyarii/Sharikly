@@ -19,15 +19,17 @@ export default function ListingCard({ listing }: ListingCardProps) {
     }
   }, [])
 
+  const imageHeight = "h-40 sm:h-40 md:h-48"
+
   return (
-    <div className="border rounded-2xl overflow-hidden hover:shadow-md transition">
+    <div className="rounded-[28px_14px_28px_14px] overflow-hidden mobile-card border-none shadow-none">
       <Link href={`/listings/${listing.id}`}>
-        <div className="relative h-48">
+        <div className={`relative ${imageHeight} bg-muted rounded-[22px_10px_22px_10px] overflow-hidden`}>
           {listing.images && listing.images[0] ? (
             <img
               src={listing.images[0].image.startsWith('http') ? listing.images[0].image : `${API || ''}${listing.images[0].image}`}
               alt={listing.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover listing-img-mobile listing-card-img-mobile"
             />
           ) : (
             <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
@@ -35,7 +37,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
             </div>
           )}
         </div>
-        <div className="p-4">
+        <div className="p-4 bg-card">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">{listing.title}</h3>
             <span className="text-sm">${listing.price_per_day}/day</span>
@@ -44,7 +46,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
           
           {/* Lender/Owner Info */}
           {listing.owner && (
-            <div className="flex items-center gap-2 mb-3 pb-3 border-b">
+            <div className="flex items-center gap-2 mb-3 pb-3">
               <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {listing.owner.avatar ? (
                   <img
@@ -68,7 +70,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
       </Link>
 
       {user && (
-        <div className="p-4 border-t">
+        <div className="p-4 bg-card">
           <Link
             href={`/listings/${listing.id}/request_booking`}
             className="inline-block px-4 py-2 bg-blue-600 text-white rounded-full text-sm"
