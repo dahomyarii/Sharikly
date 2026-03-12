@@ -95,6 +95,36 @@ export default function PublicProfilePage() {
     ? new Date(profile.date_joined).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     : null
 
+  const startChatWithUser = async () => {
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('access') ||
+          localStorage.getItem('access_token') ||
+          localStorage.getItem('token')
+        : null
+    if (!token) {
+      router.push('/chat')
+      return
+    }
+    try {
+      const res = await axiosInstance.post(
+        `${API}/chat/rooms/get-or-create/`,
+        { participant_id: Number(id) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      const roomId = res.data?.id
+      if (roomId) {
+        router.push(`/chat/${roomId}`)
+        return
+      }
+    } catch (_) {}
+    router.push('/chat')
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
@@ -177,7 +207,7 @@ export default function PublicProfilePage() {
                   <div className="mt-4 flex flex-wrap gap-2 justify-center sm:justify-start">
                     <Button
                       size="sm"
-                      onClick={() => router.push('/chat')}
+                      onClick={startChatWithUser}
                       className="rounded-full px-4"
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />

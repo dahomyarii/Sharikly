@@ -105,6 +105,38 @@ export default function ListingDetail() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const { showToast } = useToast();
 
+  const startChatWithOwner = async () => {
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access") ||
+          localStorage.getItem("access_token") ||
+          localStorage.getItem("token")
+        : null;
+    if (!token || !data?.owner?.id) {
+      router.push("/chat");
+      return;
+    }
+    try {
+      const res = await axiosInstance.post(
+        `${API}/chat/rooms/get-or-create/`,
+        { participant_id: data.owner.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const roomId = res.data?.id;
+      if (roomId) {
+        router.push(`/chat/${roomId}`);
+        return;
+      }
+    } catch (e) {
+      // fall back to inbox
+    }
+    router.push("/chat");
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUser = localStorage.getItem("user");
@@ -835,7 +867,7 @@ export default function ListingDetail() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => router.push("/chat")}
+                      onClick={startChatWithOwner}
                       className="flex-shrink-0 text-xs"
                     >
                       Message
@@ -899,7 +931,7 @@ export default function ListingDetail() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => router.push("/chat")}
+                            onClick={startChatWithOwner}
                             className="rounded-full px-4"
                           >
                             <MessageCircle className="h-4 w-4 mr-1" />

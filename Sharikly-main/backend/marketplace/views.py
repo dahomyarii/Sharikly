@@ -995,6 +995,62 @@ class ChatRoomListCreateView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class ChatRoomGetOrCreateView(APIView):
+    """
+    POST: get or create a 1:1 chat room with another user.
+
+    Body:
+      { "participant_id": 123 }
+
+    Returns:
+      { "id": <room_id> }
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from django.db.models import Count
+
+        participant_id = request.data.get("participant_id")
+        try:
+            other_id = int(participant_id)
+        except (TypeError, ValueError):
+            return Response(
+                {"detail": "participant_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if other_id == request.user.id:
+            return Response(
+                {"detail": "You cannot start a conversation with yourself."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        other = get_object_or_404(User, id=other_id)
+
+        blocked_ids = _blocked_user_ids(request.user)
+        if other_id in blocked_ids:
+            return Response(
+                {"detail": "You cannot start a conversation with this user."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        existing = (
+            ChatRoom.objects.filter(participants=request.user)
+            .filter(participants=other)
+            .annotate(pcount=Count("participants"))
+            .filter(pcount=2)
+            .first()
+        )
+        if existing:
+            return Response({"id": existing.id}, status=status.HTTP_200_OK)
+
+        room = ChatRoom.objects.create()
+        room.participants.set([request.user, other])
+        room.save()
+        return Response({"id": room.id}, status=status.HTTP_201_CREATED)
+
+
 class MessageListView(generics.ListAPIView):
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
