@@ -21,6 +21,23 @@ interface Message {
   created_at: string
 }
 
+interface RoomListingContext {
+  id: number
+  title: string
+  city?: string | null
+  image?: string | null
+}
+
+interface RoomWithListing {
+  id: number
+  participants: Array<{
+    id: number
+    username: string
+    email: string
+  }>
+  listing?: RoomListingContext | null
+}
+
 interface BookingRequestPayload {
   greeting: string
   dates: string
@@ -83,7 +100,7 @@ export default function ChatRoomPage() {
   const [text, setText] = useState('')
   const [user, setUser] = useState<any>(null)
   const [otherUser, setOtherUser] = useState<any>(null)
-  const [room, setRoom] = useState<any>(null)
+  const [room, setRoom] = useState<RoomWithListing | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -100,7 +117,7 @@ export default function ChatRoomPage() {
     }
   }, [])
 
-  // Fetch room details
+  // Fetch room details (including optional listing context)
   const fetchRoom = async () => {
     try {
       const token = localStorage.getItem('access_token')
@@ -109,10 +126,12 @@ export default function ChatRoomPage() {
       const res = await axiosInstance.get(`${API}/chat/rooms/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      const foundRoom = res.data.find((r: any) => r.id === parseInt(room_id))
+      const foundRoom: RoomWithListing | undefined = Array.isArray(res.data)
+        ? res.data.find((r: RoomWithListing) => r.id === parseInt(room_id))
+        : undefined
       if (foundRoom) {
         setRoom(foundRoom)
-        const other = foundRoom.participants.find((p: any) => p.id !== user?.id)
+        const other = foundRoom.participants.find((p) => p.id !== user?.id)
         setOtherUser(other)
       }
     } catch (err) {
@@ -271,6 +290,18 @@ export default function ChatRoomPage() {
                 <h1 className="font-semibold text-gray-900 truncate">
                   {otherUser?.username || 'Chat'}
                 </h1>
+                {room?.listing && (
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/listings/${room.listing!.id}`)}
+                    className="mt-0.5 text-xs text-gray-500 hover:text-gray-700 hover:underline flex items-center gap-1 truncate"
+                  >
+                    <span className="truncate">
+                      {room.listing.title}
+                      {room.listing.city ? ` · ${room.listing.city}` : ''}
+                    </span>
+                  </button>
+                )}
               </div>
             </Link>
           </div>
@@ -308,6 +339,42 @@ export default function ChatRoomPage() {
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
       >
+        {room?.listing && (
+          <div className="flex justify-center mb-2">
+            <button
+              type="button"
+              onClick={() => router.push(`/listings/${room.listing!.id}`)}
+              className="w-full max-w-md text-left"
+            >
+              <div className="flex gap-3 rounded-2xl border border-gray-200 bg-white/90 hover:bg-gray-50 transition shadow-sm overflow-hidden">
+                {room.listing.image && (
+                  <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
+                    <Image
+                      src={getFullImageUrl(room.listing.image)}
+                      alt={room.listing.title}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="py-2 pr-3 pl-3 flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-0.5">
+                    Listing
+                  </p>
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {room.listing.title}
+                  </p>
+                  {room.listing.city && (
+                    <p className="text-xs text-gray-500 truncate">
+                      {room.listing.city}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </button>
+          </div>
+        )}
               {messages.length === 0 ? (
                 <div className="text-center text-gray-500 py-12 space-y-2">
                   <p>No messages yet.</p>

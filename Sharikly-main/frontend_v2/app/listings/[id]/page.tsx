@@ -100,6 +100,7 @@ export default function ListingDetail() {
 
   const [reviews, setReviews] = useState<any[]>([]);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [hasReportedListing, setHasReportedListing] = useState(false);
   const [headerSearch, setHeaderSearch] = useState("");
   const similarSectionRef = useRef<HTMLDivElement>(null);
 
@@ -126,7 +127,7 @@ export default function ListingDetail() {
     try {
       const res = await axiosInstance.post(
         `${API}/chat/rooms/get-or-create/`,
-        { participant_id: data.owner.id },
+        { participant_id: data.owner.id, listing_id: data.id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const roomId = res.data?.id;
@@ -772,13 +773,18 @@ export default function ListingDetail() {
                     </Button>
                   )}
                   <Button
-                    onClick={() => setShowReportModal(true)}
+                    onClick={() => {
+                      setShowReportModal(true);
+                      setHasReportedListing(false);
+                    }}
                     variant="ghost"
                     size="sm"
                     className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target rounded-lg"
                   >
                     <Flag className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">Report</span>
+                    <span className="hidden sm:inline">
+                      {hasReportedListing ? "Reported" : "Report"}
+                    </span>
                   </Button>
                   <Button
                     onClick={toggleFavorite}
@@ -890,6 +896,26 @@ export default function ListingDetail() {
                           {data.owner?.is_email_verified ? "Identified" : "Identity not yet verified"}
                         </span>
                       </div>
+                      {typeof data.owner?.response_rate === "number" &&
+                        typeof data.owner?.typical_response_minutes === "number" &&
+                        data.owner.response_rate >= 80 &&
+                        data.owner.typical_response_minutes !== null &&
+                        data.owner.typical_response_minutes <= 60 && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <span className="w-5 h-5 rounded-full bg-sky-100 border border-sky-300 flex items-center justify-center text-[11px]">
+                              💬
+                            </span>
+                            <span>Fast responder</span>
+                          </div>
+                        )}
+                      {averageRating >= 4.5 && reviews.length >= 5 && (
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <span className="w-5 h-5 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-[11px]">
+                            ⭐
+                          </span>
+                          <span>Top lender</span>
+                        </div>
+                      )}
                       {typeof data.owner?.typical_response_minutes === "number" && (
                         <div className="flex items-center gap-2 text-sm text-gray-700">
                           <span className="w-5 h-5 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-[11px]">
@@ -1593,6 +1619,7 @@ export default function ListingDetail() {
           target="listing"
           targetId={Number(id)}
           onClose={() => setShowReportModal(false)}
+          onSuccess={() => setHasReportedListing(true)}
         />
       )}
     </div>

@@ -142,6 +142,14 @@ class AvailabilityBlock(models.Model):
 # ==========================
 class ChatRoom(models.Model):
     participants = models.ManyToManyField(User, related_name="chat_rooms")
+    # Optional listing context – when a conversation is started from a listing.
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="chat_rooms",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -30,9 +30,10 @@ interface ReportModalProps {
   targetId: number
   onClose: () => void
   title?: string
+  onSuccess?: () => void
 }
 
-export default function ReportModal({ target, targetId, onClose, title }: ReportModalProps) {
+export default function ReportModal({ target, targetId, onClose, title, onSuccess }: ReportModalProps) {
   const { t } = useLocale()
   const { showToast } = useToast()
   const [reason, setReason] = useState<string>('')
@@ -96,6 +97,9 @@ export default function ReportModal({ target, targetId, onClose, title }: Report
         headers: { Authorization: `Bearer ${token}` },
       })
       showToast(t('report_success'), 'success')
+      if (onSuccess) {
+        onSuccess()
+      }
       onClose()
     } catch (err: any) {
       showToast(err?.response?.data?.detail || err?.response?.data?.reason?.[0] || 'Failed to submit report', 'error')

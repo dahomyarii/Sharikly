@@ -120,6 +120,25 @@ function BookingsPageContent() {
   const isOwner = (booking: any) =>
     booking.listing?.owner?.id === user?.id
 
+  const getCancellationCopy = (booking: any, ownerView: boolean) => {
+    const paid = booking.payment_status === 'PAID'
+    const declinedOrCancelled = booking.status === 'DECLINED' || booking.status === 'CANCELLED'
+
+    if (declinedOrCancelled) {
+      return 'This booking is no longer active.'
+    }
+
+    if (ownerView) {
+      return 'As the owner, you can cancel pending or confirmed bookings here. The renter will be notified automatically.'
+    }
+
+    if (!paid) {
+      return 'You can cancel pending requests or unpaid confirmed bookings here at any time. For already paid bookings, contact support if you need a refund.'
+    }
+
+    return 'Paid bookings cannot be cancelled from here. Please contact support if you need help.'
+  }
+
   const handleAccept = async (bookingId: number) => {
     setActionId(bookingId)
     const token = localStorage.getItem('access_token')
@@ -377,7 +396,9 @@ function BookingsPageContent() {
                       )}
                       {declinedOrCancelled && (
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs text-gray-500">Requested → {booking.status === 'DECLINED' ? 'Declined' : 'Cancelled'}</span>
+                          <span className="text-xs text-gray-500">
+                            Requested → {booking.status === 'DECLINED' ? 'Declined by owner' : 'Cancelled'}
+                          </span>
                         </div>
                       )}
                       <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -495,6 +516,17 @@ function BookingsPageContent() {
                           </button>
                         </div>
                       )}
+                      <div className="mt-3 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
+                        <p className="text-[11px] sm:text-xs text-gray-600 leading-snug">
+                          {getCancellationCopy(booking, ownerView)}
+                          {!ownerView && !declinedOrCancelled && (
+                            <>
+                              {' '}
+                              Need different dates? Cancel this request here and send a new one from the listing page.
+                            </>
+                          )}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </li>

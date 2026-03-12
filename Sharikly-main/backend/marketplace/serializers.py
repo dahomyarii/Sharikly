@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from datetime import timedelta
 from .models import *
 
 User = get_user_model()
@@ -115,10 +117,23 @@ class PublicUserSerializer(serializers.ModelSerializer):
     """Public profile — no email exposed."""
     listings_count = serializers.SerializerMethodField()
     average_rating = serializers.SerializerMethodField()
+    response_rate = serializers.SerializerMethodField()
+    typical_response_minutes = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "username", "avatar", "bio", "is_email_verified", "date_joined", "listings_count", "average_rating"]
+        fields = [
+            "id",
+            "username",
+            "avatar",
+            "bio",
+            "is_email_verified",
+            "date_joined",
+            "listings_count",
+            "average_rating",
+            "response_rate",
+            "typical_response_minutes",
+        ]
 
     def get_listings_count(self, obj):
         return obj.listings.count() if hasattr(obj, "listings") else 0
@@ -129,6 +144,22 @@ class PublicUserSerializer(serializers.ModelSerializer):
             return 0
         result = obj.listings.aggregate(avg=Avg("reviews__rating"))
         return round(result["avg"] or 0, 1)
+
+    def _get_cached_response_stats(self, obj: User):
+        cached = getattr(obj, "_cached_response_stats", None)
+        if cached is not None:
+            return cached
+        stats = _compute_user_response_stats(obj)
+        setattr(obj, "_cached_response_stats", stats)
+        return stats
+
+    def get_response_rate(self, obj):
+        stats = self._get_cached_response_stats(obj)
+        return stats.get("response_rate")
+
+    def get_typical_response_minutes(self, obj):
+        stats = self._get_cached_response_stats(obj)
+        return stats.get("typical_minutes")
 
 
 # ==========================
@@ -378,14 +409,67 @@ class MessageSerializer(serializers.ModelSerializer):
 class ChatRoomSerializer(serializers.ModelSerializer):
     participants = UserSerializer(many=True, read_only=True)
     last_message = serializers.SerializerMethodField()
+    listing = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
-        fields = ["id", "participants", "created_at", "last_message"]
+        fields = ["id", "participants", "created_at", "last_message", "listing", "unread_count"]
 
     def get_last_message(self, obj):
         last_msg = obj.messages.last()
         return MessageSerializer(last_msg).data if last_msg else None
+
+    def get_listing(self, obj):
+        """
+        Lightweight listing context for chat room headers.
+        Returns only the minimal fields needed for a small preview banner.
+        """
+        listing = getattr(obj, "listing", None)
+        if not listing:
+            return None
+
+        first_image = None
+        try:
+            img = listing.images.first()
+            if img and img.image:
+                first_image = img.image.url
+        except Exception:
+            first_image = None
+
+        return {
+            "id": listing.id,
+            "title": listing.title,
+            "city": listing.city,
+            "image": first_image,
+        }
+
+    def get_unread_count(self, obj):
+        """
+        Per-room unread count for the current user.
+        Mirrors the logic used by ChatUnreadCountView but scoped to one room.
+        """
+        request = self.context.get("request")
+        if not request or not getattr(request, "user", None) or not request.user.is_authenticated:
+            return 0
+
+        user = request.user
+
+        try:
+            last = ParticipantLastRead.objects.filter(user=user, room=obj).first()
+        except Exception:
+            return 0
+
+        since = last.last_read_at if last else timezone.now() - timedelta(days=365 * 10)
+        try:
+            return (
+                Message.objects.filter(room=obj)
+                .exclude(sender=user)
+                .filter(created_at__gt=since)
+                .count()
+            )
+        except Exception:
+            return 0
 
 
 # ==========================

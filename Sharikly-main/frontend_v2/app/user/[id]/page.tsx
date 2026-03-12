@@ -31,6 +31,7 @@ export default function PublicProfilePage() {
   const { t } = useLocale()
   const [user, setUser] = useState<any>(null)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [hasReportedUser, setHasReportedUser] = useState(false)
   const [blockedIds, setBlockedIds] = useState<number[]>([])
   const [blockLoading, setBlockLoading] = useState(false)
 
@@ -195,6 +196,22 @@ export default function PublicProfilePage() {
                     <Package className="w-3.5 h-3.5" />
                     {profile.listings_count} listing{profile.listings_count !== 1 ? 's' : ''}
                   </span>
+                  {typeof profile.response_rate === 'number' &&
+                    typeof profile.typical_response_minutes === 'number' &&
+                    profile.response_rate >= 80 &&
+                    profile.typical_response_minutes !== null &&
+                    profile.typical_response_minutes <= 60 && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-700 border border-sky-500/30">
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        Fast responder
+                      </span>
+                    )}
+                  {profile.average_rating >= 4.5 && profile.listings_count >= 3 && (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-800 border border-amber-500/30">
+                      <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                      Top lender
+                    </span>
+                  )}
                 </div>
 
                 {profile.bio && (
@@ -216,11 +233,14 @@ export default function PublicProfilePage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setShowReportModal(true)}
+                      onClick={() => {
+                        setShowReportModal(true)
+                        setHasReportedUser(false)
+                      }}
                       className="rounded-full"
                     >
                       <Flag className="w-4 h-4 mr-2" />
-                      {t('report_user')}
+                      {hasReportedUser ? t('report_submitted') || 'Reported' : t('report_user')}
                     </Button>
                     {blockedIds.includes(profile.id) ? (
                       <Button
@@ -280,6 +300,7 @@ export default function PublicProfilePage() {
             target="user"
             targetId={Number(id)}
             onClose={() => setShowReportModal(false)}
+            onSuccess={() => setHasReportedUser(true)}
           />
         )}
 

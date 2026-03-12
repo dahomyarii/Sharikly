@@ -745,43 +745,7 @@ export default function HomePage() {
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {recentlyViewedListings.map((service: any) => (
-                  <Link
-                    key={service.id}
-                    href={`/listings/${service.id}`}
-                    className="group block"
-                  >
-                    <article className="card-hover overflow-hidden rounded-xl sm:rounded-2xl bg-card border border-border hover:border-border shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                      <div className="relative aspect-[4/3] max-h-[140px] sm:max-h-none bg-muted overflow-hidden">
-                        {service.images?.[0]?.image && (
-                          <img
-                            src={
-                              service.images[0].image.startsWith("http")
-                                ? service.images[0].image
-                                : `${API}${service.images[0].image}`
-                            }
-                            alt={service.title}
-                            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out"
-                            loading="lazy"
-                            sizes="(max-width: 768px) 50vw, 25vw"
-                          />
-                        )}
-                      </div>
-                      <div className="p-3">
-                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider line-clamp-1">
-                          {service.category?.name || t("listing")}
-                        </span>
-                        <h3 className="text-sm font-semibold text-foreground mt-0.5 line-clamp-2 group-hover:text-muted-foreground">
-                          {service.title}
-                        </h3>
-                        <div className="mt-2 flex items-baseline gap-1">
-                          <span className="text-base font-bold text-foreground">
-                            ${service.price_per_day}
-                          </span>
-                          <span className="text-xs text-muted-foreground">/day</span>
-                        </div>
-                      </div>
-                    </article>
-                  </Link>
+                  <ListingCard key={service.id} listing={service} compact />
                 ))}
               </div>
             </div>

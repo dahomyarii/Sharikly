@@ -100,6 +100,7 @@ urlpatterns = [
     ),
     # Reports
     path("reports/", views.ReportCreateView.as_view(), name="report_create"),
+    path("reports/my/", views.ReportListView.as_view(), name="report_list_my"),
     # Contact Messages
     path(
         "contact-messages/",

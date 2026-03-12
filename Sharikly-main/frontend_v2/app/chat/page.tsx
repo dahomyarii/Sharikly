@@ -27,6 +27,13 @@ interface ChatRoom {
     email: string
   }>
   last_message?: Message
+  unread_count?: number
+  listing?: {
+    id: number
+    title: string
+    city?: string | null
+    image?: string | null
+  } | null
 }
 
 export default function ChatPage() {
@@ -89,16 +96,25 @@ export default function ChatPage() {
     }
   }
 
+  // Poll rooms and messages with slightly longer interval to reduce load
   useEffect(() => {
-    if (user) {
-      fetchRooms()
-      const interval = setInterval(() => {
+    if (!user) return
+
     fetchRooms()
-        if (currentRoom) {
-          fetchMessages(currentRoom.id)
-        }
-      }, 3000)
-      return () => clearInterval(interval)
+
+    const roomsInterval = setInterval(() => {
+      fetchRooms()
+    }, 7000)
+
+    const messagesInterval = setInterval(() => {
+      if (currentRoom) {
+        fetchMessages(currentRoom.id)
+      }
+    }, 4000)
+
+    return () => {
+      clearInterval(roomsInterval)
+      clearInterval(messagesInterval)
     }
   }, [user, currentRoom])
 
@@ -320,17 +336,29 @@ export default function ChatPage() {
                         <h3 className="font-semibold text-foreground truncate">
                           {other.username || 'User'}
                         </h3>
-                        {room.last_message && (
-                          <span className="text-xs text-muted-foreground ml-2">
-                            {formatTime(room.last_message.created_at)}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                          {room.last_message && (
+                            <span className="text-xs text-muted-foreground">
+                              {formatTime(room.last_message.created_at)}
+                            </span>
+                          )}
+                          {typeof room.unread_count === 'number' && room.unread_count > 0 && (
+                            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold">
+                              {room.unread_count > 99 ? '99+' : room.unread_count}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      {room.last_message && (
+                      {room.listing ? (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {room.listing.title}
+                          {room.listing.city ? ` · ${room.listing.city}` : ''}
+                        </p>
+                      ) : room.last_message ? (
                         <p className="text-sm text-muted-foreground truncate">
                           {room.last_message.text || '📷 Image'}
                         </p>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </div>

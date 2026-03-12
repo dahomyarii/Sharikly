@@ -528,8 +528,12 @@ class ListingListCreateView(generics.ListCreateAPIView):
         if self.request.user.is_authenticated and self.request.query_params.get("mine") == "1":
             qs = qs.filter(owner=self.request.user).order_by("-created_at")
             return qs
-        # Public list: only active
+        # Public list: only active, and hide listings from users I've blocked / who blocked me
         qs = qs.filter(is_active=True)
+        if self.request.user.is_authenticated:
+            blocked_ids = _blocked_user_ids(self.request.user)
+            if blocked_ids:
+                qs = qs.exclude(owner_id__in=blocked_ids)
         # Optional: filter by owner (public profile pages)
         owner_id = self.request.query_params.get("owner")
         if owner_id:
@@ -833,6 +837,11 @@ class SimilarListingsView(APIView):
 
         current = get_object_or_404(Listing, pk=pk)
         qs = Listing.objects.filter(is_active=True).exclude(pk=pk)
+        # Hide similar listings from blocked users
+        if request.user and request.user.is_authenticated:
+            blocked_ids = _blocked_user_ids(request.user)
+            if blocked_ids:
+                qs = qs.exclude(owner_id__in=blocked_ids)
         if current.category_id:
             qs = qs.filter(category_id=current.category_id)
         qs = qs.annotate(
@@ -1225,6 +1234,15 @@ class ChatRoomListCreateView(generics.ListCreateAPIView):
 
         room = ChatRoom.objects.create()
         room.participants.set(participants)
+
+        # Optional: attach listing context when starting chat from a listing
+        listing_id = request.data.get("listing")
+        if listing_id:
+            try:
+                listing = Listing.objects.get(id=listing_id)
+                room.listing = listing
+            except Listing.DoesNotExist:
+                pass
         room.save()
 
         serializer = self.get_serializer(room)
@@ -1236,7 +1254,7 @@ class ChatRoomGetOrCreateView(APIView):
     POST: get or create a 1:1 chat room with another user.
 
     Body:
-      { "participant_id": 123 }
+      { "participant_id": 123, "listing_id": optional<int> }
 
     Returns:
       { "id": <room_id> }
@@ -1278,11 +1296,30 @@ class ChatRoomGetOrCreateView(APIView):
             .filter(pcount=2)
             .first()
         )
+        listing_id = request.data.get("listing_id")
+
         if existing:
+            # If this room doesn't yet have listing context and a listing_id is provided,
+            # attach it so the UI can show a preview banner.
+            if listing_id and not existing.listing_id:
+                try:
+                    listing = Listing.objects.get(id=listing_id)
+                    existing.listing = listing
+                    existing.save(update_fields=["listing"])
+                except Listing.DoesNotExist:
+                    pass
             return Response({"id": existing.id}, status=status.HTTP_200_OK)
 
         room = ChatRoom.objects.create()
         room.participants.set([request.user, other])
+
+        if listing_id:
+            try:
+                listing = Listing.objects.get(id=listing_id)
+                room.listing = listing
+            except Listing.DoesNotExist:
+                pass
+
         room.save()
         return Response({"id": room.id}, status=status.HTTP_201_CREATED)
 
@@ -1577,6 +1614,16 @@ class ReportCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(reporter=self.request.user)
+
+
+class ReportListView(generics.ListAPIView):
+    """List reports created by the current user (for simple history UI)."""
+
+    serializer_class = ReportSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Report.objects.filter(reporter=self.request.user).order_by("-created_at")
 
 
 # --- CONTACT MESSAGE VIEWS ---
