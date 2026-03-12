@@ -460,6 +460,7 @@ class ListingListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         from django.db.models import Q
+        from django.db.models import Avg, OuterRef, Exists
 
         qs = Listing.objects.all()
         if self.request.method != "GET":
@@ -506,6 +507,33 @@ class ListingListCreateView(generics.ListCreateAPIView):
                 qs = qs.filter(price_per_day__lte=float(max_price))
             except ValueError:
                 logger.debug("Invalid max_price filter value")
+
+        # Rating filter (server-side)
+        rating_min = self.request.query_params.get("rating_min")
+        if rating_min is not None and rating_min != "":
+            try:
+                rmin = float(rating_min)
+                qs = qs.annotate(avg_rating=Avg("reviews__rating")).filter(avg_rating__gte=rmin)
+            except ValueError:
+                logger.debug("Invalid rating_min filter value")
+
+        # Availability window filter (exclude listings with overlapping PENDING/CONFIRMED bookings)
+        available_from = self.request.query_params.get("available_from")
+        available_to = self.request.query_params.get("available_to")
+        if available_from and available_to:
+            try:
+                start = dt.strptime(available_from, "%Y-%m-%d").date()
+                end = dt.strptime(available_to, "%Y-%m-%d").date()
+                if end >= start:
+                    overlap_qs = Booking.objects.filter(
+                        listing_id=OuterRef("pk"),
+                        status__in=[Booking.Status.PENDING, Booking.Status.CONFIRMED],
+                        start_date__lte=end,
+                        end_date__gte=start,
+                    )
+                    qs = qs.annotate(has_overlap=Exists(overlap_qs)).filter(has_overlap=False)
+            except (ValueError, TypeError):
+                logger.debug("Invalid availability filter values")
         # Ordering
         order = self.request.query_params.get("order") or "newest"
         if order == "price_asc":
@@ -515,6 +543,51 @@ class ListingListCreateView(generics.ListCreateAPIView):
         else:
             qs = qs.order_by("-created_at")
         return qs
+
+
+class ListingSuggestView(APIView):
+    """
+    GET /listings/suggest/?q=...
+    Returns lightweight suggestions for autocomplete.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        from django.db.models import Q
+
+        q = (request.query_params.get("q") or "").strip()
+        if len(q) < 2:
+            return Response({"titles": [], "cities": [], "categories": []}, status=status.HTTP_200_OK)
+
+        base = Listing.objects.filter(is_active=True)
+        titles = (
+            base.filter(title__icontains=q)
+            .values_list("title", flat=True)
+            .order_by("title")
+            .distinct()[:8]
+        )
+        cities = (
+            base.filter(city__isnull=False)
+            .filter(city__icontains=q)
+            .values_list("city", flat=True)
+            .order_by("city")
+            .distinct()[:8]
+        )
+        categories = (
+            Category.objects.filter(name__icontains=q)
+            .values("id", "name")
+            .order_by("name")
+            .distinct()[:8]
+        )
+        return Response(
+            {
+                "titles": list(titles),
+                "cities": [c for c in list(cities) if c],
+                "categories": list(categories),
+            },
+            status=status.HTTP_200_OK,
+        )
 
     def paginate_queryset(self, queryset):
         # Don't paginate "my listings" (profile needs all)

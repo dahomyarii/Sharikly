@@ -33,6 +33,9 @@ function buildListingsUrl(params: {
   city: string;
   min_price: string;
   max_price: string;
+  rating_min: string;
+  available_from: string;
+  available_to: string;
   order: string;
   page: number;
 }): string {
@@ -42,6 +45,9 @@ function buildListingsUrl(params: {
   if (params.city) sp.set("city", params.city);
   if (params.min_price) sp.set("min_price", params.min_price);
   if (params.max_price) sp.set("max_price", params.max_price);
+  if (params.rating_min) sp.set("rating_min", params.rating_min);
+  if (params.available_from) sp.set("available_from", params.available_from);
+  if (params.available_to) sp.set("available_to", params.available_to);
   if (params.order && params.order !== "newest") sp.set("order", params.order);
   if (params.page > 1) sp.set("page", String(params.page));
   const qs = sp.toString();
@@ -62,6 +68,9 @@ function ListingsPageContent() {
   const [city, setCity] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [ratingMin, setRatingMin] = useState("");
+  const [availableFrom, setAvailableFrom] = useState("");
+  const [availableTo, setAvailableTo] = useState("");
   const [order, setOrder] = useState("newest");
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
@@ -69,11 +78,13 @@ function ListingsPageContent() {
   const [urlReady, setUrlReady] = useState(false);
   const hasSyncedFromUrl = useRef(false);
   const lastGoodData = useRef<{ listings: unknown[]; totalCount: number; hasNext: boolean; hasPrevious: boolean } | null>(null);
+  const [showSuggest, setShowSuggest] = useState(false);
 
   const debouncedSearch = useDebounce(search, DEBOUNCE_MS);
   const debouncedCity = useDebounce(city, DEBOUNCE_MS);
   const debouncedMinPrice = useDebounce(minPrice, DEBOUNCE_MS);
   const debouncedMaxPrice = useDebounce(maxPrice, DEBOUNCE_MS);
+  const debouncedRatingMin = useDebounce(ratingMin, DEBOUNCE_MS);
 
   useEffect(() => {
     if (hasSyncedFromUrl.current) return;
@@ -83,6 +94,9 @@ function ListingsPageContent() {
     const c = searchParams.get("city") ?? "";
     const min = searchParams.get("min_price") ?? "";
     const max = searchParams.get("max_price") ?? "";
+    const rmin = searchParams.get("rating_min") ?? "";
+    const af = searchParams.get("available_from") ?? "";
+    const at = searchParams.get("available_to") ?? "";
     const ord = searchParams.get("order") ?? "newest";
     const p = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
     setSearch(q);
@@ -90,6 +104,9 @@ function ListingsPageContent() {
     setCity(c);
     setMinPrice(min);
     setMaxPrice(max);
+    setRatingMin(rmin);
+    setAvailableFrom(af);
+    setAvailableTo(at);
     setOrder(ord);
     setPage(p);
     setUrlReady(true);
@@ -103,11 +120,14 @@ function ListingsPageContent() {
     if (city) sp.set("city", city);
     if (minPrice) sp.set("min_price", minPrice);
     if (maxPrice) sp.set("max_price", maxPrice);
+    if (ratingMin) sp.set("rating_min", ratingMin);
+    if (availableFrom) sp.set("available_from", availableFrom);
+    if (availableTo) sp.set("available_to", availableTo);
     if (order && order !== "newest") sp.set("order", order);
     if (page > 1) sp.set("page", String(page));
     const qs = sp.toString();
     window.history.replaceState(null, "", qs ? `/listings?${qs}` : "/listings");
-  }, [urlReady, search, category, city, minPrice, maxPrice, order, page]);
+  }, [urlReady, search, category, city, minPrice, maxPrice, ratingMin, availableFrom, availableTo, order, page]);
 
   const listingsUrl = useMemo(
     () =>
@@ -117,10 +137,13 @@ function ListingsPageContent() {
         city: debouncedCity,
         min_price: debouncedMinPrice,
         max_price: debouncedMaxPrice,
+        rating_min: debouncedRatingMin,
+        available_from: availableFrom,
+        available_to: availableTo,
         order,
         page,
       }),
-    [debouncedSearch, category, debouncedCity, debouncedMinPrice, debouncedMaxPrice, order, page]
+    [debouncedSearch, category, debouncedCity, debouncedMinPrice, debouncedMaxPrice, debouncedRatingMin, availableFrom, availableTo, order, page]
   );
 
   const { data: rawData, error, isLoading } = useSWR(urlReady ? listingsUrl : null, fetcher, {
@@ -131,6 +154,15 @@ function ListingsPageContent() {
     },
   });
   const { data: categories } = useSWR(`${API}/categories/`, fetcher);
+
+  const { data: suggestData } = useSWR(
+    urlReady && debouncedSearch.trim().length >= 2 ? `${API}/listings/suggest/?q=${encodeURIComponent(debouncedSearch.trim())}` : null,
+    fetcher
+  );
+  const titles: string[] = Array.isArray(suggestData?.titles) ? suggestData.titles : [];
+  const citiesSuggest: string[] = Array.isArray(suggestData?.cities) ? suggestData.cities : [];
+  const categoriesSuggest: Array<{ id: number; name: string }> = Array.isArray(suggestData?.categories) ? suggestData.categories : [];
+  const hasSuggest = titles.length + citiesSuggest.length + categoriesSuggest.length > 0;
 
   const listings = Array.isArray(rawData) ? rawData : rawData?.results ?? [];
   const totalCount = typeof rawData?.count === "number" ? rawData.count : listings.length;
@@ -173,10 +205,72 @@ function ListingsPageContent() {
               aria-label={t("search_listings")}
               type="search"
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); setShowSuggest(true); }}
+              onFocus={() => setShowSuggest(true)}
+              onBlur={() => setTimeout(() => setShowSuggest(false), 150)}
               placeholder={t("search_listings")}
               className={inputClasses}
             />
+            {showSuggest && debouncedSearch.trim().length >= 2 && (
+              <div className={`absolute z-30 mt-2 w-full rounded-xl border border-border bg-popover shadow-xl overflow-hidden ${hasSuggest ? "" : "hidden"}`}>
+                <div className="max-h-72 overflow-y-auto">
+                  {titles.length > 0 && (
+                    <div className="py-2">
+                      <div className="px-3 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Titles
+                      </div>
+                      {titles.map((v) => (
+                        <button
+                          key={`t-${v}`}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => { setSearch(v); setPage(1); setShowSuggest(false); }}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-accent/60 transition"
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {citiesSuggest.length > 0 && (
+                    <div className="py-2 border-t border-border">
+                      <div className="px-3 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Cities
+                      </div>
+                      {citiesSuggest.map((v) => (
+                        <button
+                          key={`c-${v}`}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => { setCity(v); setShowFilters(true); setPage(1); setShowSuggest(false); }}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-accent/60 transition"
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {categoriesSuggest.length > 0 && (
+                    <div className="py-2 border-t border-border">
+                      <div className="px-3 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Categories
+                      </div>
+                      {categoriesSuggest.map((cat) => (
+                        <button
+                          key={`cat-${cat.id}`}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => { setCategory(String(cat.id)); setShowFilters(true); setPage(1); setShowSuggest(false); }}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-accent/60 transition"
+                        >
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             <select
@@ -200,7 +294,7 @@ function ListingsPageContent() {
         </div>
 
         {showFilters && (
-          <div className="p-3 rounded-lg border border-border bg-card/50 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="p-3 rounded-lg border border-border bg-card/50 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
             <div>
               <label className={labelClasses}>{t("category")}</label>
               <select
@@ -245,6 +339,37 @@ function ListingsPageContent() {
                 value={maxPrice}
                 onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }}
                 placeholder="—"
+                className={inputClasses}
+              />
+            </div>
+            <div>
+              <label className={labelClasses}>Min rating</label>
+              <select
+                value={ratingMin}
+                onChange={(e) => { setRatingMin(e.target.value); setPage(1); }}
+                className={`${selectClasses} w-full`}
+              >
+                <option value="">Any</option>
+                <option value="4">4+</option>
+                <option value="4.5">4.5+</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClasses}>Available from</label>
+              <input
+                type="date"
+                value={availableFrom}
+                onChange={(e) => { setAvailableFrom(e.target.value); setPage(1); }}
+                className={inputClasses}
+              />
+            </div>
+            <div>
+              <label className={labelClasses}>Available to</label>
+              <input
+                type="date"
+                value={availableTo}
+                onChange={(e) => { setAvailableTo(e.target.value); setPage(1); }}
                 className={inputClasses}
               />
             </div>

@@ -42,6 +42,7 @@ urlpatterns = [
     # Listings & Categories
     path("categories/", views.CategoryListView.as_view(), name="categories"),
     path("listings/", views.ListingListCreateView.as_view(), name="listings"),
+    path("listings/suggest/", views.ListingSuggestView.as_view(), name="listings_suggest"),
     path(
         "listings/<int:pk>/",
         views.ListingRetrieveUpdateView.as_view(),
