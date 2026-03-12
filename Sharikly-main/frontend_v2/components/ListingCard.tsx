@@ -128,7 +128,7 @@ export default function ListingCard({
       }`}
     >
       <div
-        className={`relative ${imageHeight} bg-muted rounded-[22px_10px_22px_10px] overflow-hidden border border-border/40 shadow-[0_4px_10px_rgba(15,23,42,0.18)]`}
+        className={`relative ${imageHeight} bg-muted rounded-[22px_10px_22px_10px] overflow-hidden`}
       >
         <img
           src={imageUrl}
