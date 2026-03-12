@@ -631,7 +631,7 @@ export default function ListingDetail() {
 
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <Card className="overflow-hidden rounded-2xl border-gray-200/80 shadow-sm">
+            <div className="overflow-hidden rounded-2xl">
               {/* Mobile: fixed-height Amazon-style slideshow. Desktop: normal flexible layout. */}
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 p-2 sm:p-4 md:min-h-0">
                 {/* Thumbnails: horizontal strip on mobile (small), vertical on desktop */}
@@ -686,7 +686,7 @@ export default function ListingDetail() {
                   </Button>
                 </div>
               </div>
-            </Card>
+            </div>
 
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-3">
@@ -760,16 +760,16 @@ export default function ListingDetail() {
                 </div>
               </div>
 
-              <Card className="p-6">
+              <div className="p-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-3">
                   Description
                 </h2>
                 <p className="text-gray-600 leading-relaxed whitespace-pre-line">
                   {data.description}
                 </p>
-              </Card>
+              </div>
 
-              <Card className="p-6">
+              <div className="p-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-3">
                   Good to know
                 </h2>
@@ -787,7 +787,7 @@ export default function ListingDetail() {
                     <span>Use the Message button to ask the owner before requesting to book.</span>
                   </li>
                 </ul>
-              </Card>
+              </div>
 
               <Card className="overflow-hidden">
                 {/* Lender Info */}
@@ -928,7 +928,7 @@ export default function ListingDetail() {
               </Card>
             </div>
 
-            <Card className="p-6">
+            <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
                 Leave a review
               </h2>
@@ -1011,9 +1011,9 @@ export default function ListingDetail() {
                   </div>
                 </>
               )}
-            </Card>
+            </div>
 
-            <Card className="p-6">
+            <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Customer Reviews
               </h2>
@@ -1104,12 +1104,12 @@ export default function ListingDetail() {
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
           </div>
 
           <div className="lg:col-span-1 space-y-4">
             {/* Desktop booking card */}
-            <Card className="p-6 sticky top-24 space-y-5 hidden lg:block">
+            <div className="p-6 sticky top-24 space-y-5 hidden lg:block rounded-2xl bg-background/0">
               {/* Price */}
               <div className="text-center pb-5 border-b border-gray-200">
                 <div className="text-4xl font-bold text-blue-600 mb-1">
@@ -1265,7 +1265,7 @@ export default function ListingDetail() {
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
           </div>
         </div>
 
