@@ -117,13 +117,13 @@ export default function ListingCard({
   const imageUrl = getImageUrl();
 
   // Slightly taller image, smaller overlay
-  const imageHeight = compact ? "h-28 sm:h-28" : "h-32 sm:h-36 md:h-40";
+  const imageHeight = compact ? "h-28 sm:h-28" : "h-32 sm:h-40 md:h-48";
   const padding = compact ? "px-1.5 pt-1.5 pb-2 sm:px-2 sm:pt-2 sm:pb-3" : "px-2.5 pt-2 pb-3 sm:px-3 sm:pt-2.5 sm:pb-3.5";
 
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className={`block rounded-[22px_10px_22px_10px] overflow-hidden transition-all duration-200 mobile-card ${
+      className={`block overflow-hidden transition-all duration-200 mobile-card rounded-[28px_14px_28px_14px] ${
         highlighted ? "ring-2 ring-primary/40" : ""
       }`}
     >
