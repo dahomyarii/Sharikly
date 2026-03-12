@@ -123,7 +123,7 @@ export default function ListingCard({
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className={`block overflow-hidden transition-all duration-200 mobile-card rounded-[28px_14px_28px_14px] ${
+      className={`block overflow-hidden transition-all duration-200 mobile-card rounded-[28px_14px_28px_14px] border-none shadow-none ${
         highlighted ? "ring-2 ring-primary/40" : ""
       }`}
     >
