@@ -705,7 +705,11 @@ class ListingRetrieveUpdateView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ListingAvailabilityView(APIView):
-    """Return booked date ranges for a listing (PENDING + CONFIRMED) so calendar can disable them."""
+    """
+    Return unavailable date ranges for a listing combining:
+    - PENDING + CONFIRMED bookings
+    - owner-defined availability blocks
+    """
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, pk):
@@ -719,7 +723,104 @@ class ListingAvailabilityView(APIView):
             {"start": str(s), "end": str(e)}
             for s, e in booked
         ]
-        return Response({"booked_ranges": booked_ranges})
+        blocks = AvailabilityBlock.objects.filter(listing=listing).values_list(
+            "start_date", "end_date", "reason"
+        )
+        blocked_ranges = [
+            {"start": str(s), "end": str(e), "reason": r or ""}
+            for s, e, r in blocks
+        ]
+        return Response(
+            {
+                "booked_ranges": booked_ranges,
+                "blocked_ranges": blocked_ranges,
+            }
+        )
+
+
+class ListingAvailabilityBlockView(APIView):
+    """
+    Owner-only management of availability blocks for a listing.
+
+    GET: list blocks
+    POST: create a new block
+      body: { "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD", "reason": "optional" }
+    DELETE: delete a block (by id in body)
+      body: { "id": 123 }
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _get_listing_for_owner(self, request, pk):
+        listing = get_object_or_404(Listing, pk=pk)
+        if listing.owner_id != request.user.id:
+            raise PermissionDenied("Only the owner can manage availability blocks.")
+        return listing
+
+    def get(self, request, pk):
+        listing = self._get_listing_for_owner(request, pk)
+        blocks = AvailabilityBlock.objects.filter(listing=listing).order_by(
+            "start_date"
+        )
+        serializer = AvailabilityBlockSerializer(blocks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, pk):
+        listing = self._get_listing_for_owner(request, pk)
+        serializer = AvailabilityBlockSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        start = serializer.validated_data["start_date"]
+        end = serializer.validated_data["end_date"]
+        # ensure no overlap with bookings
+        if _booking_overlaps(listing, start, end):
+            return Response(
+                {
+                    "detail": "This block overlaps an existing booking. Adjust the dates or manage bookings first."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # prevent overlapping with existing blocks
+        from django.db.models import Q
+
+        has_block_overlap = AvailabilityBlock.objects.filter(listing=listing).filter(
+            Q(start_date__lte=end, end_date__gte=start)
+        ).exists()
+        if has_block_overlap:
+            return Response(
+                {
+                    "detail": "This block overlaps an existing availability block. Adjust the dates."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        block = AvailabilityBlock.objects.create(
+            listing=listing,
+            start_date=start,
+            end_date=end,
+            reason=serializer.validated_data.get("reason", ""),
+        )
+        return Response(
+            AvailabilityBlockSerializer(block).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def delete(self, request, pk):
+        listing = self._get_listing_for_owner(request, pk)
+        block_id = request.data.get("id")
+        if not block_id:
+            return Response(
+                {"detail": "Provide 'id' of the block to delete."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        block = AvailabilityBlock.objects.filter(
+            id=block_id, listing=listing
+        ).first()
+        if not block:
+            return Response(
+                {"detail": "Availability block not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        block.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SimilarListingsView(APIView):

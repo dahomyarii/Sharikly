@@ -56,6 +56,11 @@ urlpatterns = [
         name="listing_availability",
     ),
     path(
+        "listings/<int:pk>/availability-blocks/",
+        views.ListingAvailabilityBlockView.as_view(),
+        name="listing_availability_blocks",
+    ),
+    path(
         "listings/<int:pk>/similar/",
         views.SimilarListingsView.as_view(),
         name="listing_similar",

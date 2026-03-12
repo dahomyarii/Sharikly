@@ -116,6 +116,27 @@ class Booking(models.Model):
         return f"Booking for {self.listing.title} by {self.renter.email}"
 
 
+class AvailabilityBlock(models.Model):
+    """
+    Owner-defined blackout window where the listing cannot be booked (e.g. maintenance, personal use).
+    These windows are merged with bookings when computing availability.
+    """
+
+    listing = models.ForeignKey(
+        Listing, on_delete=models.CASCADE, related_name="availability_blocks"
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["start_date"]
+
+    def __str__(self):
+        return f"Block for {self.listing.title}: {self.start_date} → {self.end_date}"
+
+
 # ==========================
 # CHAT SYSTEM
 # ==========================

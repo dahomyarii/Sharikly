@@ -321,6 +321,28 @@ class BookingSerializer(serializers.ModelSerializer):
         ]
 
 
+class AvailabilityBlockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AvailabilityBlock
+        fields = [
+            "id",
+            "start_date",
+            "end_date",
+            "reason",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
+
+    def validate(self, attrs):
+        start = attrs.get("start_date")
+        end = attrs.get("end_date")
+        if start and end and end < start:
+            raise serializers.ValidationError(
+                {"end_date": "end_date must be on or after start_date."}
+            )
+        return attrs
+
+
 # ==========================
 # MESSAGE SERIALIZER
 # ==========================

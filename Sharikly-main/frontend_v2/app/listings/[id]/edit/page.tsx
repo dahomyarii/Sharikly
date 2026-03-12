@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useToast } from '@/components/ui/toast'
 import { ArrowLeft, Loader2 } from 'lucide-react'
+import { DayPicker } from 'react-day-picker'
+import type { DateRange } from 'react-day-picker'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -27,6 +29,10 @@ export default function EditListingPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [togglingActive, setTogglingActive] = useState(false)
+  const [availabilityBlocks, setAvailabilityBlocks] = useState<Array<{ id: number; start_date: string; end_date: string; reason?: string }>>([])
+  const [newBlockRange, setNewBlockRange] = useState<DateRange | undefined>(undefined)
+  const [newBlockReason, setNewBlockReason] = useState('')
+  const [savingBlock, setSavingBlock] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('access_token')
@@ -37,8 +43,9 @@ export default function EditListingPage() {
     Promise.all([
       axiosInstance.get(`${API}/listings/${id}/`, { headers: { Authorization: `Bearer ${token}` } }),
       axiosInstance.get(`${API}/categories/`),
+      axiosInstance.get(`${API}/listings/${id}/availability-blocks/`, { headers: { Authorization: `Bearer ${token}` } }),
     ])
-      .then(([listingRes, catRes]) => {
+      .then(([listingRes, catRes, blocksRes]) => {
         const data = listingRes.data
         setListing(data)
         setTitle(data.title || '')
@@ -48,6 +55,7 @@ export default function EditListingPage() {
         setCategoryId(data.category?.id ? String(data.category.id) : '')
         setIsActive(data.is_active !== false)
         setCategories(Array.isArray(catRes.data) ? catRes.data : [])
+        setAvailabilityBlocks(Array.isArray(blocksRes.data) ? blocksRes.data : [])
       })
       .catch(() => {
         showToast('Could not load listing', 'error')
@@ -122,6 +130,55 @@ export default function EditListingPage() {
       showToast(msg || 'Failed to update', 'error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleCreateBlock = async () => {
+    if (!newBlockRange?.from || !newBlockRange?.to) return
+    const token = localStorage.getItem('access_token')
+    if (!token || !listing) return
+    if (listing.owner?.id !== JSON.parse(localStorage.getItem('user') || '{}')?.id) {
+      showToast('You can only edit your own listing', 'error')
+      return
+    }
+    setSavingBlock(true)
+    try {
+      const payload = {
+        start_date: newBlockRange.from.toISOString().slice(0, 10),
+        end_date: newBlockRange.to.toISOString().slice(0, 10),
+        reason: newBlockReason.trim() || undefined,
+      }
+      const res = await axiosInstance.post(`${API}/listings/${id}/availability-blocks/`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setAvailabilityBlocks((prev) => [...prev, res.data])
+      setNewBlockRange(undefined)
+      setNewBlockReason('')
+      showToast('Availability block added', 'success')
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || 'Could not add availability block'
+      showToast(msg, 'error')
+    } finally {
+      setSavingBlock(false)
+    }
+  }
+
+  const handleDeleteBlock = async (blockId: number) => {
+    const token = localStorage.getItem('access_token')
+    if (!token || !listing) return
+    if (!confirm('Remove this availability block?')) return
+    try {
+      await axiosInstance.delete(
+        `${API}/listings/${id}/availability-blocks/`,
+        {
+          data: { id: blockId },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      setAvailabilityBlocks((prev) => prev.filter((b) => b.id !== blockId))
+      showToast('Availability block removed', 'success')
+    } catch {
+      showToast('Could not remove availability block', 'error')
     }
   }
 
@@ -248,6 +305,83 @@ export default function EditListingPage() {
             {togglingActive ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {isActive ? 'Hide from search' : 'Show in search'}
           </Button>
+        </Card>
+        <Card className="p-6 mt-6 bg-card">
+          <h2 className="text-lg font-semibold text-foreground mb-2">Availability calendar</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Block out dates when this item is not available (e.g. you&apos;re using it yourself or it&apos;s under maintenance).
+            These dates will be treated the same as bookings in the public calendar.
+          </p>
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+            <div>
+              <DayPicker
+                mode="range"
+                selected={newBlockRange}
+                onSelect={setNewBlockRange}
+                numberOfMonths={1}
+                disabled={{ before: new Date() }}
+                className="border border-border rounded-lg p-2 bg-background"
+              />
+              <div className="mt-3">
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Reason (optional)
+                </label>
+                <input
+                  type="text"
+                  value={newBlockReason}
+                  onChange={(e) => setNewBlockReason(e.target.value)}
+                  maxLength={200}
+                  placeholder="e.g. On holiday, item in use"
+                  className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-foreground focus:border-transparent bg-background text-foreground"
+                />
+              </div>
+              <Button
+                type="button"
+                className="mt-3"
+                disabled={savingBlock || !newBlockRange?.from || !newBlockRange?.to}
+                onClick={handleCreateBlock}
+              >
+                {savingBlock ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Save blocked dates
+              </Button>
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-foreground">Existing blocked dates</h3>
+              {availabilityBlocks.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No blocked dates yet. Use the calendar to add a block.
+                </p>
+              ) : (
+                <ul className="space-y-2 max-h-64 overflow-auto pr-1">
+                  {availabilityBlocks.map((b) => (
+                    <li
+                      key={b.id}
+                      className="flex items-center justify-between gap-2 border border-border rounded-lg px-3 py-2 text-sm"
+                    >
+                      <div>
+                        <div className="font-medium">
+                          {b.start_date} &rarr; {b.end_date}
+                        </div>
+                        {b.reason ? (
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {b.reason}
+                          </div>
+                        ) : null}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteBlock(b.id)}
+                      >
+                        Remove
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </Card>
       </div>
     </div>

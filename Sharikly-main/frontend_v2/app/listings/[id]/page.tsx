@@ -77,7 +77,10 @@ export default function ListingDetail() {
   }, []);
 
   const { data, error: listingError } = useSWR(id ? `${API}/listings/${id}/` : null, fetcher);
-  const { data: availability } = useSWR<{ booked_ranges: { start: string; end: string }[] }>(
+  const { data: availability } = useSWR<{
+    booked_ranges: { start: string; end: string }[];
+    blocked_ranges?: { start: string; end: string; reason?: string }[];
+  }>(
     id ? `${API}/listings/${id}/availability/` : null,
     (url: string) => axiosInstance.get(url).then((r) => r.data)
   );
@@ -1166,16 +1169,20 @@ export default function ListingDetail() {
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
                       if (date < today) return true;
-                      if (!availability?.booked_ranges?.length) return false;
+                      if (!availability?.booked_ranges?.length && !availability?.blocked_ranges?.length) return false;
                       const d = new Date(date);
                       d.setHours(0, 0, 0, 0);
-                      return availability.booked_ranges.some((r) => {
-                        const start = new Date(r.start);
-                        const end = new Date(r.end);
-                        start.setHours(0, 0, 0, 0);
-                        end.setHours(0, 0, 0, 0);
-                        return d >= start && d <= end;
-                      });
+                      const isIn = (ranges: { start: string; end: string }[] | undefined) => {
+                        if (!ranges?.length) return false;
+                        return ranges.some((r) => {
+                          const start = new Date(r.start);
+                          const end = new Date(r.end);
+                          start.setHours(0, 0, 0, 0);
+                          end.setHours(0, 0, 0, 0);
+                          return d >= start && d <= end;
+                        });
+                      };
+                      return isIn(availability.booked_ranges) || isIn(availability.blocked_ranges);
                     }}
                     className="w-full"
                   />
@@ -1438,16 +1445,20 @@ export default function ListingDetail() {
                   const today = new Date();
                   today.setHours(0, 0, 0, 0);
                   if (date < today) return true;
-                  if (!availability?.booked_ranges?.length) return false;
+                  if (!availability?.booked_ranges?.length && !availability?.blocked_ranges?.length) return false;
                   const d = new Date(date);
                   d.setHours(0, 0, 0, 0);
-                  return availability.booked_ranges.some((r) => {
-                    const start = new Date(r.start);
-                    const end = new Date(r.end);
-                    start.setHours(0, 0, 0, 0);
-                    end.setHours(0, 0, 0, 0);
-                    return d >= start && d <= end;
-                  });
+                  const isIn = (ranges: { start: string; end: string }[] | undefined) => {
+                    if (!ranges?.length) return false;
+                    return ranges.some((r) => {
+                      const start = new Date(r.start);
+                      const end = new Date(r.end);
+                      start.setHours(0, 0, 0, 0);
+                      end.setHours(0, 0, 0, 0);
+                      return d >= start && d <= end;
+                    });
+                  };
+                  return isIn(availability.booked_ranges) || isIn(availability.blocked_ranges);
                 }}
               />
             </div>
