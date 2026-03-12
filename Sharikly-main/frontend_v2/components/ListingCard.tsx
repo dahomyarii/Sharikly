@@ -127,7 +127,9 @@ export default function ListingCard({
         highlighted ? "ring-2 ring-primary/40" : ""
       }`}
     >
-      <div className={`relative ${imageHeight} bg-muted rounded-[22px_10px_22px_10px] overflow-hidden`}>
+      <div
+        className={`relative ${imageHeight} bg-muted rounded-[22px_10px_22px_10px] overflow-hidden border border-border/40 shadow-[0_4px_10px_rgba(15,23,42,0.18)]`}
+      >
         <img
           src={imageUrl}
           alt={listing.title}
@@ -159,7 +161,7 @@ export default function ListingCard({
         </button>
 
         {(effectiveReviewCount > 0 || listing.owner) && (
-          <div className="absolute left-2.5 right-2.5 bottom-2 flex items-center justify-between gap-2 text-white text-[11px] drop-shadow-sm">
+          <div className="absolute left-3 right-3 bottom-3 flex items-center justify-between gap-2 text-white text-[11px] drop-shadow-sm">
             <div className="flex items-center gap-1 min-w-0">
               <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-black/35 backdrop-blur-[2px]">
                 {[...Array(5)].map((_, i) => (
