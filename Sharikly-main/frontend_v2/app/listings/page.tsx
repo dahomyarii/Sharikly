@@ -79,12 +79,22 @@ function ListingsPageContent() {
   const hasSyncedFromUrl = useRef(false);
   const lastGoodData = useRef<{ listings: unknown[]; totalCount: number; hasNext: boolean; hasPrevious: boolean } | null>(null);
   const [showSuggest, setShowSuggest] = useState(false);
+  const [canUseSavedSearches, setCanUseSavedSearches] = useState(false);
 
   const debouncedSearch = useDebounce(search, DEBOUNCE_MS);
   const debouncedCity = useDebounce(city, DEBOUNCE_MS);
   const debouncedMinPrice = useDebounce(minPrice, DEBOUNCE_MS);
   const debouncedMaxPrice = useDebounce(maxPrice, DEBOUNCE_MS);
   const debouncedRatingMin = useDebounce(ratingMin, DEBOUNCE_MS);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const token =
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("access") ||
+      localStorage.getItem("access_token".toUpperCase());
+    setCanUseSavedSearches(!!token);
+  }, []);
 
   useEffect(() => {
     if (hasSyncedFromUrl.current) return;
@@ -154,6 +164,10 @@ function ListingsPageContent() {
     },
   });
   const { data: categories } = useSWR(`${API}/categories/`, fetcher);
+  const { data: savedSearches, mutate: mutateSavedSearches } = useSWR(
+    urlReady && canUseSavedSearches ? `${API}/saved-searches/` : null,
+    fetcher
+  );
 
   const { data: suggestData } = useSWR(
     urlReady && debouncedSearch.trim().length >= 2 ? `${API}/listings/suggest/?q=${encodeURIComponent(debouncedSearch.trim())}` : null,
@@ -284,6 +298,28 @@ function ListingsPageContent() {
             </select>
             <button
               type="button"
+              disabled={!canUseSavedSearches || (!search && !category && !city && !minPrice && !maxPrice && !ratingMin && !availableFrom && !availableTo)}
+              onClick={async () => {
+                if (!canUseSavedSearches || typeof window === "undefined") return;
+                const qs = window.location.search || "";
+                if (!qs) return;
+                try {
+                  await axiosInstance.post(`${API}/saved-searches/`, { query: qs });
+                  mutateSavedSearches();
+                } catch {
+                  // Swallow errors; toasts are handled globally by axios interceptor if needed.
+                }
+              }}
+              className={`flex items-center justify-center gap-1 min-h-[40px] px-3 py-2 border rounded-lg text-sm touch-target ${
+                canUseSavedSearches
+                  ? "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  : "border-border bg-card text-muted-foreground opacity-60 cursor-not-allowed"
+              }`}
+            >
+              Save search
+            </button>
+            <button
+              type="button"
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center justify-center gap-1.5 min-h-[40px] min-w-[40px] sm:min-w-0 px-3 py-2 border rounded-lg text-sm touch-target ${showFilters ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-accent/50"}`}
             >
@@ -373,6 +409,24 @@ function ListingsPageContent() {
                 className={inputClasses}
               />
             </div>
+          </div>
+        )}
+        {Array.isArray(savedSearches) && savedSearches.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {savedSearches.map((s: any) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => {
+                  if (typeof window === "undefined") return;
+                  const qs = s.query || "";
+                  window.location.href = `/listings${qs.startsWith("?") ? qs : qs ? `?${qs}` : ""}`;
+                }}
+                className="px-3 py-1.5 text-xs rounded-full border border-border bg-card text-foreground hover:bg-accent"
+              >
+                {s.label || s.query.replace(/^\?/, "") || "Saved search"}
+              </button>
+            ))}
           </div>
         )}
       </div>

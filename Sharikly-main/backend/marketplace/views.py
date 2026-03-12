@@ -517,6 +517,29 @@ class ListingListCreateView(generics.ListCreateAPIView):
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
+    def get_serializer_context(self):
+        """
+        Ensure request is available on create so nested serializers that rely on it
+        (e.g. favorites, reviews) behave consistently.
+        """
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
+    def perform_create(self, serializer):
+        """
+        Create listing with images while preserving the client-provided ordering.
+
+        The frontend sends images in the desired order (cover first). We mirror that
+        into ListingImage.position so the gallery order is stable across edits.
+        """
+        images = self.request.FILES.getlist("images")
+        if not images:
+            raise ValidationError({"images": "At least one image is required"})
+        listing = serializer.save(owner=self.request.user)
+        for idx, img in enumerate(images):
+            ListingImage.objects.create(listing=listing, image=img, position=idx)
+
     def get_queryset(self):
         from django.db.models import Q
         from django.db.models import Avg, OuterRef, Exists
@@ -652,25 +675,7 @@ class ListingSuggestView(APIView):
             status=status.HTTP_200_OK,
         )
 
-    def paginate_queryset(self, queryset):
-        # Don't paginate "my listings" (profile needs all)
-        if self.request.query_params.get("mine") == "1":
-            return None
-        return super().paginate_queryset(queryset)
-
-    def get_serializer_context(self):
-        """Ensure the request is passed to the serializer context"""
-        context = super().get_serializer_context()
-        context["request"] = self.request
-        return context
-
-    def perform_create(self, serializer):
-        images = self.request.FILES.getlist("images")
-        if not images:
-            raise ValidationError({"images": "At least one image is required"})
-        listing = serializer.save(owner=self.request.user)
-        for img in images:
-            ListingImage.objects.create(listing=listing, image=img)
+    # Suggest endpoint is read-only; creation is handled by ListingListCreateView.
 
 
 class ListingRetrieveUpdateView(generics.RetrieveUpdateDestroyAPIView):
@@ -1803,3 +1808,33 @@ class BlogPostDetailView(generics.RetrieveUpdateDestroyAPIView):
             )
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# --- Saved Search Views ---
+class SavedSearchListCreateView(generics.ListCreateAPIView):
+    """
+    GET: list current user's saved searches (newest first).
+    POST: create a new saved search for the current user.
+    """
+
+    serializer_class = SavedSearchSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return SavedSearch.objects.filter(user=self.request.user).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class SavedSearchDetailView(generics.RetrieveDestroyAPIView):
+    """
+    GET: retrieve a single saved search (owner only).
+    DELETE: delete a saved search.
+    """
+
+    serializer_class = SavedSearchSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return SavedSearch.objects.filter(user=self.request.user)

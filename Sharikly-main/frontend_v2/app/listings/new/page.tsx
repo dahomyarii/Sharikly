@@ -134,10 +134,8 @@ export default function NewListing() {
     setDragOver(false)
   }
 
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault()
-
-    if (cooldownSeconds > 0) {
+  async function submitListing(publish: boolean) {
+    if (cooldownSeconds > 0 && publish) {
       showToast(`Please wait ${cooldownSeconds} seconds before creating another listing`, 'warning')
       return
     }
@@ -208,6 +206,7 @@ export default function NewListing() {
       formData.append('longitude', String(longitude))
       formData.append('pickup_radius_m', String(radius))
       formData.append('category_id', String(categoryId).trim())
+      formData.append('is_active', publish ? 'true' : 'false')
       images.forEach(img => {
         formData.append('images', img.file)
       })
@@ -219,20 +218,20 @@ export default function NewListing() {
         },
       })
 
-      if (typeof window !== 'undefined') {
+      if (publish && typeof window !== 'undefined') {
         localStorage.setItem('lastListingTime', Date.now().toString())
         setCooldownSeconds(COOLDOWN_DURATION)
       }
 
-      showToast('Listing created successfully!', 'success')
+      showToast(publish ? 'Listing created successfully!' : 'Draft saved (hidden from search).', 'success')
       if (API) {
         mutate(`${API}/listings/`)
         mutate((k) => typeof k === 'string' && k.includes('/listings/'), undefined, { revalidate: true })
       }
-      setTimeout(() => router.push('/'), 1000)
+      setTimeout(() => router.push('/listings'), 800)
     } catch (err: any) {
       console.error(err)
-      let errorMsg = 'Failed to create listing'
+      let errorMsg = 'Failed to save listing'
       if (err?.response?.data) {
         const errors = Object.entries(err.response.data)
           .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(', ') : val}`)
@@ -242,6 +241,11 @@ export default function NewListing() {
       showToast(errorMsg, 'error')
       setIsSubmitting(false)
     }
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    await submitListing(true)
   }
 
   return (
@@ -453,22 +457,32 @@ export default function NewListing() {
 
         {/* ── Submit ── */}
         <section className="pt-2 pb-8">
-          <button
-            type="submit"
-            disabled={isSubmitting || cooldownSeconds > 0}
-            className="w-full h-12 bg-black text-white text-sm font-semibold uppercase tracking-wider rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Creating...
-              </>
-            ) : cooldownSeconds > 0 ? (
-              `Wait ${cooldownSeconds}s`
-            ) : (
-              'Publish Listing'
-            )}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              type="submit"
+              disabled={isSubmitting || cooldownSeconds > 0}
+              className="flex-1 h-12 bg-black text-white text-sm font-semibold uppercase tracking-wider rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : cooldownSeconds > 0 ? (
+                `Wait ${cooldownSeconds}s`
+              ) : (
+                'Publish Listing'
+              )}
+            </button>
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => submitListing(false)}
+              className="flex-1 h-12 border border-neutral-300 text-sm font-semibold uppercase tracking-wider rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            >
+              Save as draft
+            </button>
+          </div>
           {cooldownSeconds > 0 && (
             <p className="text-center text-xs text-neutral-400 mt-3">
               Please wait {cooldownSeconds} second{cooldownSeconds !== 1 ? 's' : ''} before creating another listing

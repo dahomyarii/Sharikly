@@ -22,19 +22,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let listingPages: MetadataRoute.Sitemap = [];
   if (API_BASE) {
     try {
-      const res = await fetch(`${API_BASE}/listings/?limit=1000`, {
-        next: { revalidate: 3600 },
-      });
-      if (res.ok) {
+      // Respect backend pagination instead of requesting a huge "limit"
+      // Cap the number of pages to avoid unbounded work if there are many listings.
+      const pageSize = 100;
+      const maxPages = 10;
+      const listings: { id: number; updated_at?: string }[] = [];
+
+      for (let page = 1; page <= maxPages; page += 1) {
+        const res = await fetch(
+          `${API_BASE}/listings/?page=${page}&page_size=${pageSize}`,
+          {
+            next: { revalidate: 3600 },
+          },
+        );
+        if (!res.ok) {
+          break;
+        }
         const data = await res.json();
-        const listings = Array.isArray(data) ? data : data?.results ?? [];
-        listingPages = listings.map((item: { id: number; updated_at?: string }) => ({
-          url: `${base}/listings/${item.id}`,
-          lastModified: item.updated_at ? new Date(item.updated_at) : new Date(),
-          changeFrequency: "weekly" as const,
-          priority: 0.8,
-        }));
+        const batch = Array.isArray(data) ? data : data?.results ?? [];
+        if (!batch.length) {
+          break;
+        }
+        listings.push(...batch);
+        if (!data?.next) {
+          break;
+        }
       }
+
+      listingPages = listings.map((item) => ({
+        url: `${base}/listings/${item.id}`,
+        lastModified: item.updated_at ? new Date(item.updated_at) : new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      }));
     } catch {
       // ignore fetch errors; static sitemap still works
     }

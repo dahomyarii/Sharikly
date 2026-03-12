@@ -46,6 +46,13 @@ class Listing(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["owner", "created_at"]),
+            models.Index(fields=["is_active", "created_at"]),
+            models.Index(fields=["is_active", "price_per_day"]),
+        ]
+
     def __str__(self):
         return self.title
 
@@ -71,6 +78,13 @@ class ListingImage(models.Model):
         Listing, on_delete=models.CASCADE, related_name="images"
     )
     image = models.ImageField(upload_to="listing_images/")
+    position = models.PositiveIntegerField(
+        default=0,
+        help_text="Display order (0 = cover). Smaller numbers appear first.",
+    )
+
+    class Meta:
+        ordering = ["position", "id"]
 
     def __str__(self):
         return f"Image for {self.listing.title}"
@@ -448,3 +462,30 @@ class BlogPost(models.Model):
             self.published_date = timezone.now()
         
         super().save(*args, **kwargs)
+
+
+# ==========================
+# SAVED SEARCHES
+# ==========================
+class SavedSearch(models.Model):
+    """
+    A saved search stores the original query string the user used on the listings page.
+    We keep it lightweight and reuse the existing listings filters on the frontend.
+    """
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="saved_searches",
+    )
+    # Raw query string starting with "?" (e.g. "?search=bike&city=Riyadh")
+    query = models.CharField(max_length=1000)
+    # Optional human-friendly label; if empty the UI can derive it from filters.
+    label = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.label or f"Search #{self.pk} for {self.user.email}"

@@ -168,7 +168,7 @@ class PublicUserSerializer(serializers.ModelSerializer):
 class ListingImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ListingImage
-        fields = ["id", "image"]
+        fields = ["id", "image", "position"]
 
 
 # ==========================
@@ -276,7 +276,10 @@ class ListingSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         category_id = validated_data.pop("category_id", None)
-        validated_data["is_active"] = True  # New listings appear in search by default
+        # Allow the client to explicitly create a hidden/draft listing by sending is_active=False.
+        # Default remains True so existing flows keep publishing immediately.
+        is_active = validated_data.pop("is_active", True)
+        validated_data["is_active"] = bool(is_active)
         listing = Listing.objects.create(**validated_data)
         if category_id:
             try:
@@ -656,3 +659,10 @@ class NotificationPreferenceSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["updated_at"]
+
+
+class SavedSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedSearch
+        fields = ["id", "query", "label", "created_at"]
+        read_only_fields = ["id", "created_at"]

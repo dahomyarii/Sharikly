@@ -134,6 +134,17 @@ urlpatterns = [
         views.BlogPostDetailView.as_view(),
         name="blog_detail",
     ),
+    # Saved searches
+    path(
+        "saved-searches/",
+        views.SavedSearchListCreateView.as_view(),
+        name="saved_search_list_create",
+    ),
+    path(
+        "saved-searches/<int:pk>/",
+        views.SavedSearchDetailView.as_view(),
+        name="saved_search_detail",
+    ),
     # Include router URLs
     path("", include(router.urls)),
 ]
