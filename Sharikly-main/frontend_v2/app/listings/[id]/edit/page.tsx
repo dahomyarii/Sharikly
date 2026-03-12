@@ -191,198 +191,258 @@ export default function EditListingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground py-8">
-      <div className="max-w-xl mx-auto px-4">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          Back
-        </button>
-        <h1 className="text-2xl font-bold text-foreground mb-6">Edit listing</h1>
-        <Card className="p-6 bg-card">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Title</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={200}
-                className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-foreground focus:border-transparent bg-background text-foreground"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Price per day ($)</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-foreground focus:border-transparent bg-background text-foreground"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">City</label>
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                maxLength={100}
-                className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-foreground focus:border-transparent bg-background text-foreground"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Category <span className="text-red-500">*</span></label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-foreground focus:border-transparent bg-background text-foreground"
-                required
-              >
-                <option value="">Select category (required)</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Description</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={5}
-                className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-foreground focus:border-transparent resize-none bg-background text-foreground"
-              />
-            </div>
-            <div className="flex gap-3 pt-2">
-              <Button type="submit" disabled={saving} className="flex-1 gap-2">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                Save changes
-              </Button>
-              <Button type="button" variant="outline" onClick={() => router.push(`/listings/${id}`)}>
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </Card>
-        <Card className="p-6 mt-6 bg-card">
-          <h2 className="text-lg font-semibold text-foreground mb-2">Visibility</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            {isActive
-              ? 'This listing is visible in search. You can hide it from search (it will stay visible to you on your profile).'
-              : 'This listing is hidden from search. Only you can see it on your profile. Activate to show it again.'}
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={togglingActive}
-            onClick={async () => {
-              const token = localStorage.getItem('access_token')
-              if (!token || !listing) return
-              setTogglingActive(true)
-              try {
-                await axiosInstance.patch(
-                  `${API}/listings/${id}/`,
-                  { is_active: !isActive },
-                  { headers: { Authorization: `Bearer ${token}` } }
-                )
-                setIsActive(!isActive)
-                setListing((prev: any) => (prev ? { ...prev, is_active: !isActive } : prev))
-                showToast(isActive ? 'Listing hidden from search' : 'Listing is now visible', 'success')
-              } catch {
-                showToast('Failed to update visibility', 'error')
-              } finally {
-                setTogglingActive(false)
-              }
-            }}
+    <div className="min-h-screen bg-background text-foreground pb-8">
+      {/* Sticky mobile header */}
+      <div className="sticky top-0 z-30 bg-background/95 border-b border-border backdrop-blur-sm px-4 py-3 md:hidden">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
           >
-            {togglingActive ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            {isActive ? 'Hide from search' : 'Show in search'}
-          </Button>
-        </Card>
-        <Card className="p-6 mt-6 bg-card">
-          <h2 className="text-lg font-semibold text-foreground mb-2">Availability calendar</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Block out dates when this item is not available (e.g. you&apos;re using it yourself or it&apos;s under maintenance).
-            These dates will be treated the same as bookings in the public calendar.
-          </p>
-          <div className="grid gap-4 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-            <div>
-              <DayPicker
-                mode="range"
-                selected={newBlockRange}
-                onSelect={setNewBlockRange}
-                numberOfMonths={1}
-                disabled={{ before: new Date() }}
-                className="border border-border rounded-lg p-2 bg-background"
-              />
-              <div className="mt-3">
-                <label className="block text-sm font-medium text-foreground mb-1">
-                  Reason (optional)
+            <ArrowLeft className="h-5 w-5" />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+          <span className="text-sm font-semibold">Edit listing</span>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 pt-6 md:pt-10">
+        {/* Desktop header */}
+        <div className="hidden md:flex items-center justify-between gap-4 mb-6">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="text-sm font-medium">Back to listing</span>
+          </button>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Edit listing</h1>
+        </div>
+
+        <div className="grid gap-6 lg:gap-8 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1.1fr)]">
+          {/* Main form */}
+          <Card className="p-4 sm:p-6 md:p-7 bg-card rounded-2xl shadow-sm">
+            <h2 className="text-lg font-semibold mb-4 sm:mb-5">Details</h2>
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-foreground">
+                  Title <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={newBlockReason}
-                  onChange={(e) => setNewBlockReason(e.target.value)}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   maxLength={200}
-                  placeholder="e.g. On holiday, item in use"
-                  className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-foreground focus:border-transparent bg-background text-foreground"
+                  className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
+                  required
+                  placeholder="What are you renting?"
                 />
               </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-foreground">
+                    Price per day ($)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
+                    placeholder="25.00"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-foreground">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    maxLength={100}
+                    className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
+                    placeholder="Riyadh, Dubai…"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-foreground">
+                  Category <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
+                  required
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-foreground">
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={6}
+                  className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none bg-background text-foreground"
+                  placeholder="Describe the condition, what’s included, and any pickup/return rules."
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 gap-2 justify-center"
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Save changes
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push(`/listings/${id}`)}
+                  className="w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </Card>
+
+          {/* Side column: visibility + availability */}
+          <div className="space-y-6 md:space-y-7">
+            <Card className="p-4 sm:p-5 bg-card rounded-2xl shadow-sm">
+              <h2 className="text-base sm:text-lg font-semibold text-foreground mb-1.5">
+                Visibility
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                {isActive
+                  ? 'This listing appears in search. You can hide it any time and it will stay visible only on your profile.'
+                  : 'This listing is hidden from search. Only you can see it on your profile until you reactivate it.'}
+              </p>
               <Button
                 type="button"
-                className="mt-3"
-                disabled={savingBlock || !newBlockRange?.from || !newBlockRange?.to}
-                onClick={handleCreateBlock}
+                variant="outline"
+                disabled={togglingActive}
+                onClick={async () => {
+                  const token = localStorage.getItem('access_token')
+                  if (!token || !listing) return
+                  setTogglingActive(true)
+                  try {
+                    await axiosInstance.patch(
+                      `${API}/listings/${id}/`,
+                      { is_active: !isActive },
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    )
+                    setIsActive(!isActive)
+                    setListing((prev: any) => (prev ? { ...prev, is_active: !isActive } : prev))
+                    showToast(isActive ? 'Listing hidden from search' : 'Listing is now visible', 'success')
+                  } catch {
+                    showToast('Failed to update visibility', 'error')
+                  } finally {
+                    setTogglingActive(false)
+                  }
+                }}
+                className="w-full sm:w-auto"
               >
-                {savingBlock ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Save blocked dates
+                {togglingActive ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : null}
+                {isActive ? 'Hide from search' : 'Show in search'}
               </Button>
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-foreground">Existing blocked dates</h3>
-              {availabilityBlocks.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No blocked dates yet. Use the calendar to add a block.
-                </p>
-              ) : (
-                <ul className="space-y-2 max-h-64 overflow-auto pr-1">
-                  {availabilityBlocks.map((b) => (
-                    <li
-                      key={b.id}
-                      className="flex items-center justify-between gap-2 border border-border rounded-lg px-3 py-2 text-sm"
-                    >
-                      <div>
-                        <div className="font-medium">
-                          {b.start_date} &rarr; {b.end_date}
-                        </div>
-                        {b.reason ? (
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {b.reason}
+            </Card>
+
+            <Card className="p-4 sm:p-5 bg-card rounded-2xl shadow-sm">
+              <h2 className="text-base sm:text-lg font-semibold text-foreground mb-1.5">
+                Availability calendar
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Block out dates when this item isn&apos;t available (you&apos;re using it yourself, travelling, or under maintenance).
+              </p>
+              <div className="grid gap-4 lg:gap-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+                <div>
+                  <DayPicker
+                    mode="range"
+                    selected={newBlockRange}
+                    onSelect={setNewBlockRange}
+                    numberOfMonths={1}
+                    disabled={{ before: new Date() }}
+                    className="border border-border rounded-xl p-2 bg-background"
+                  />
+                  <div className="mt-3 space-y-1.5">
+                    <label className="block text-sm font-medium text-foreground">
+                      Reason (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={newBlockReason}
+                      onChange={(e) => setNewBlockReason(e.target.value)}
+                      maxLength={200}
+                      placeholder="e.g. On holiday, personal use, in repair"
+                      className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    className="mt-3 w-full sm:w-auto"
+                    disabled={savingBlock || !newBlockRange?.from || !newBlockRange?.to}
+                    onClick={handleCreateBlock}
+                  >
+                    {savingBlock ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Save blocked dates
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-foreground">Existing blocked dates</h3>
+                  {availabilityBlocks.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No blocked dates yet. Use the calendar to add a block.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2 max-h-64 overflow-auto pr-1">
+                      {availabilityBlocks.map((b) => (
+                        <li
+                          key={b.id}
+                          className="flex items-center justify-between gap-2 border border-border rounded-lg px-3 py-2 text-sm bg-background/80"
+                        >
+                          <div>
+                            <div className="font-medium">
+                              {b.start_date} &rarr; {b.end_date}
+                            </div>
+                            {b.reason ? (
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                {b.reason}
+                              </div>
+                            ) : null}
                           </div>
-                        ) : null}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteBlock(b.id)}
-                      >
-                        Remove
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteBlock(b.id)}
+                          >
+                            Remove
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </Card>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   )

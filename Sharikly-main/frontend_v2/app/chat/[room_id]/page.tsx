@@ -498,47 +498,6 @@ export default function ChatRoomPage() {
         )}
         <div ref={messagesEndRef} />
       </div>
-
-      {/* Input Area */}
-      <div className="bg-white border-t p-4 flex-shrink-0">
-        <div className="flex items-end gap-2">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
-          >
-            <ImageIcon className="h-5 w-5 text-gray-600" />
-          </button>
-        <input
-            type="file"
-            ref={fileInputRef}
-            accept="image/*"
-            className="hidden"
-          />
-          <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
-            rows={1}
-            disabled={sending}
-            className="flex-1 min-w-0 px-4 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black resize-none max-h-32 disabled:opacity-70"
-          />
-        <button
-          onClick={handleSend}
-            disabled={sending || (!text.trim() && !fileInputRef.current?.files?.length)}
-            className="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex items-center justify-center gap-1.5 min-w-[80px]"
-        >
-          {sending ? (
-            <>
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              Sending…
-            </>
-          ) : (
-            'Send'
-          )}
-        </button>
-        </div>
-      </div>
     </div>
   )
 }
