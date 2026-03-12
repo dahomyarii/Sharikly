@@ -123,11 +123,11 @@ export default function ListingCard({
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className={`block rounded-[22px_10px_22px_10px] overflow-hidden transition-all duration-200 mobile-card ${
+      className={`block overflow-hidden transition-all duration-200 mobile-card border border-border bg-card ${
         highlighted ? "ring-2 ring-primary/40" : ""
-      }`}
+      } rounded-xl`}
     >
-      <div className={`relative ${imageHeight} bg-muted rounded-[22px_10px_22px_10px] overflow-hidden`}>
+      <div className={`relative ${imageHeight} bg-muted overflow-hidden rounded-t-[10px] rounded-b-none`}>
         <img
           src={imageUrl}
           alt={listing.title}
