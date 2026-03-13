@@ -277,6 +277,7 @@ export default function SettingsPage() {
         data: { password: deletePassword },
       })
       localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
       localStorage.removeItem('user')
       showToast(t('account_deleted'), 'success')
       window.location.href = '/'
@@ -314,6 +315,7 @@ export default function SettingsPage() {
                   variant="outline"
                   onClick={() => {
                     localStorage.removeItem('access_token')
+                    localStorage.removeItem('refresh_token')
                     localStorage.removeItem('user')
                     window.dispatchEvent(new CustomEvent('userLogout'))
                     router.push('/auth/login')

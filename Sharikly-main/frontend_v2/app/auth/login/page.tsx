@@ -33,8 +33,12 @@ export default function LoginPage() {
         password,
       });
       const token = res.data.access;
+      const refreshToken = res.data.refresh;
 
       localStorage.setItem("access_token", token);
+      if (refreshToken) {
+        localStorage.setItem("refresh_token", refreshToken);
+      }
       axiosInstance.defaults.headers.common["Authorization"] =
         `Bearer ${token}`;
 

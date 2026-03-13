@@ -16,9 +16,13 @@ export default function LoginPage() {
     try {
       const res = await axios.post(`${API}/auth/token/`, { email, password })
       const token = res.data.access
+      const refreshToken = res.data.refresh
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('access_token', token)
+        if (refreshToken) {
+          localStorage.setItem('refresh_token', refreshToken)
+        }
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       }
 

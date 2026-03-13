@@ -120,12 +120,33 @@ export default function HomePage() {
       }
     };
 
+    const handleListingCreated = (event: CustomEvent) => {
+      const createdListing = event.detail?.listing;
+      if (!API || !createdListing?.id || createdListing?.is_active === false) {
+        return;
+      }
+
+      mutate(
+        `${API}/listings/`,
+        (currentListings: any) => {
+          const normalized = toListingsArray(currentListings);
+          return [
+            createdListing,
+            ...normalized.filter((listing: any) => listing?.id !== createdListing.id),
+          ];
+        },
+        { revalidate: false },
+      );
+    };
+
     window.addEventListener("userLogin", handleLogin as EventListener);
     window.addEventListener("userLogout", handleLogout as EventListener);
+    window.addEventListener("listingCreated", handleListingCreated as EventListener);
 
     return () => {
       window.removeEventListener("userLogin", handleLogin as EventListener);
       window.removeEventListener("userLogout", handleLogout as EventListener);
+      window.removeEventListener("listingCreated", handleListingCreated as EventListener);
     };
   }, []);
 

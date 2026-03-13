@@ -15,6 +15,7 @@ export default function Navbar() {
   const handleLogout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
       localStorage.removeItem("user");
       window.dispatchEvent(new CustomEvent("userLogout"));
       router.push("/");

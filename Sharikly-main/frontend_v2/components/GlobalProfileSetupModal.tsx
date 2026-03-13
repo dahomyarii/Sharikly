@@ -12,6 +12,20 @@ function isProfileIncomplete(user: any): boolean {
   return !hasAvatar && !hasBio
 }
 
+function profileSetupHandledKey(user: any): string {
+  return `profileSetupHandled:${user?.id ?? 'anonymous'}`
+}
+
+function hasHandledProfileSetup(user: any): boolean {
+  if (typeof window === 'undefined' || !user) return false
+  return localStorage.getItem(profileSetupHandledKey(user)) === '1'
+}
+
+function markProfileSetupHandled(user: any): void {
+  if (typeof window === 'undefined' || !user) return
+  localStorage.setItem(profileSetupHandledKey(user), '1')
+}
+
 export default function GlobalProfileSetupModal() {
   const { isOpen, user, hideProfileSetup, showProfileSetup } = useProfileSetup()
   const router = useRouter()
@@ -19,7 +33,7 @@ export default function GlobalProfileSetupModal() {
   useEffect(() => {
     const handleLogin = (event: CustomEvent) => {
       const userData = event.detail?.user
-      if (userData && isProfileIncomplete(userData)) {
+      if (userData && isProfileIncomplete(userData) && !hasHandledProfileSetup(userData)) {
         // Small delay so the login modal closes first
         setTimeout(() => {
           showProfileSetup(userData)
@@ -37,11 +51,10 @@ export default function GlobalProfileSetupModal() {
   useEffect(() => {
     if (typeof window === 'undefined') return
     const stored = localStorage.getItem('user')
-    const dismissed = sessionStorage.getItem('profileSetupDismissed')
-    if (stored && !dismissed) {
+    if (stored) {
       try {
         const userData = JSON.parse(stored)
-        if (isProfileIncomplete(userData)) {
+        if (isProfileIncomplete(userData) && !hasHandledProfileSetup(userData)) {
           setTimeout(() => showProfileSetup(userData), 800)
         }
       } catch {}
@@ -49,13 +62,13 @@ export default function GlobalProfileSetupModal() {
   }, [showProfileSetup])
 
   const handleUpdate = (updatedUser: any) => {
-    sessionStorage.setItem('profileSetupDismissed', '1')
+    markProfileSetupHandled(updatedUser)
     hideProfileSetup()
     router.refresh()
   }
 
   const handleClose = () => {
-    sessionStorage.setItem('profileSetupDismissed', '1')
+    markProfileSetupHandled(user)
     hideProfileSetup()
   }
 

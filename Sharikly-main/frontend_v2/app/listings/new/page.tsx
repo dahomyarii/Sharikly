@@ -211,12 +211,13 @@ export default function NewListing() {
         formData.append('images', img.file)
       })
 
-      await axios.post(`${API}/listings/`, formData, {
+      const response = await axios.post(`${API}/listings/`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       })
+      const createdListing = response.data
 
       if (publish && typeof window !== 'undefined') {
         localStorage.setItem('lastListingTime', Date.now().toString())
@@ -225,8 +226,24 @@ export default function NewListing() {
 
       showToast(publish ? 'Listing created successfully!' : 'Draft saved (hidden from search).', 'success')
       if (API) {
-        mutate(`${API}/listings/`)
+        mutate(
+          `${API}/listings/`,
+          (currentListings: any) => {
+            if (!publish || !createdListing?.id) {
+              return currentListings
+            }
+            const currentArray = Array.isArray(currentListings) ? currentListings : []
+            return [
+              createdListing,
+              ...currentArray.filter((listing: any) => listing?.id !== createdListing.id),
+            ]
+          },
+          { revalidate: false }
+        )
         mutate((k) => typeof k === 'string' && k.includes('/listings/'), undefined, { revalidate: true })
+      }
+      if (publish && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('listingCreated', { detail: { listing: createdListing } }))
       }
       setTimeout(() => router.push('/listings'), 800)
     } catch (err: any) {

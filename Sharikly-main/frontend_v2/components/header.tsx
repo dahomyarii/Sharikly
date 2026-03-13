@@ -204,6 +204,7 @@ export default function Header() {
 
   function handleLogout() {
     localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
     setUser(null);
     window.location.href = "/"; // refresh UI after logout

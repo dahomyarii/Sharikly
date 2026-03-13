@@ -36,6 +36,14 @@ export default function ProfileSetupModal({
   }, [])
 
   useEffect(() => {
+    setUsername(user?.username || '')
+    setBio(user?.bio || '')
+    if (!user?.avatar) {
+      setAvatarPreview(null)
+    }
+  }, [user])
+
+  useEffect(() => {
     if (user?.avatar) {
       const url = user.avatar.startsWith('http')
         ? user.avatar
@@ -78,11 +86,11 @@ export default function ProfileSetupModal({
 
       const updatedUser = response.data
       localStorage.setItem('user', JSON.stringify(updatedUser))
+      onUpdate(updatedUser)
       window.dispatchEvent(
         new CustomEvent('userLogin', { detail: { user: updatedUser, token } })
       )
 
-      onUpdate(updatedUser)
       showToast('Profile updated!', 'success')
     } catch (error: any) {
       console.error('Error updating profile:', error)
