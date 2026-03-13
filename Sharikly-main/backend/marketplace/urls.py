@@ -74,6 +74,9 @@ urlpatterns = [
     path("bookings/<int:pk>/refund/", views.BookingRefundView.as_view(), name="booking_refund"),
     path("bookings/<int:pk>/checkout/", views.BookingCreateCheckoutSessionView.as_view(), name="booking_checkout"),
     path("moyasar/callback/", views.MoyasarPaymentCallbackView.as_view(), name="moyasar_callback"),
+    path("earnings/dashboard/", views.LandlordEarningsDashboardView.as_view(), name="earnings_dashboard"),
+    path("earnings/public/", views.PublicCommunityEarningsView.as_view(), name="earnings_public"),
+    path("earnings/calculator/", views.EarningsCalculatorView.as_view(), name="earnings_calculator"),
     # Favorites
     path("favorites/", views.UserFavoritesListView.as_view(), name="user_favorites"),
     path(

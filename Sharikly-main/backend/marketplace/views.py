@@ -20,6 +20,11 @@ from django.utils.http import urlsafe_base64_decode
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from .models import *
 from .serializers import *
+from .earnings import (
+    build_landlord_dashboard,
+    build_public_community_earnings,
+    calculate_projected_earnings,
+)
 from accounts.views import send_verification_email, send_password_reset_email
 from accounts.tokens import email_verification_token, password_reset_token
 from rest_framework import viewsets
@@ -1609,6 +1614,41 @@ class ReviewVoteView(generics.CreateAPIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
+
+
+class LandlordEarningsDashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        serializer = LandlordEarningsDashboardSerializer(
+            build_landlord_dashboard(request.user, request=request)
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PublicCommunityEarningsView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        serializer = PublicCommunityEarningsSerializer(
+            build_public_community_earnings(request=request)
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class EarningsCalculatorView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        input_serializer = EarningsCalculatorInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        serializer = EarningsCalculatorResponseSerializer(
+            calculate_projected_earnings(
+                products_count=input_serializer.validated_data["products_count"],
+                daily_rental_price=input_serializer.validated_data["daily_rental_price"],
+            )
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # --- REPORT VIEWS ---

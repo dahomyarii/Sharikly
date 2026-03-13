@@ -355,6 +355,104 @@ class BookingSerializer(serializers.ModelSerializer):
         ]
 
 
+class EarningsListingSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    total_earnings = serializers.DecimalField(max_digits=12, decimal_places=2)
+    rentals_count = serializers.IntegerField()
+
+
+class EarningsSummarySerializer(serializers.Serializer):
+    total_earnings = serializers.DecimalField(max_digits=12, decimal_places=2)
+    this_month_earnings = serializers.DecimalField(max_digits=12, decimal_places=2)
+    rentals_count = serializers.IntegerField()
+    rating = serializers.FloatField()
+    highest_earning_item = EarningsListingSerializer(allow_null=True)
+
+
+class EarningsPointSerializer(serializers.Serializer):
+    daily = serializers.DateField(required=False)
+    month = serializers.DateField(required=False)
+    label = serializers.CharField()
+    earnings = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+
+class EarningsChartSerializer(serializers.Serializer):
+    daily = EarningsPointSerializer(many=True)
+    monthly = EarningsPointSerializer(many=True)
+
+
+class TopLessorEntrySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+    avatar = serializers.CharField(allow_null=True)
+    monthly_earnings = serializers.DecimalField(max_digits=12, decimal_places=2)
+    rentals_count = serializers.IntegerField()
+    rating = serializers.FloatField()
+
+
+class TopRenterEntrySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+    avatar = serializers.CharField(allow_null=True)
+    rentals_count = serializers.IntegerField()
+    total_spent = serializers.DecimalField(max_digits=12, decimal_places=2)
+    rating = serializers.FloatField(allow_null=True)
+
+
+class EarningsLeaderboardsSerializer(serializers.Serializer):
+    top_lessors_this_month = TopLessorEntrySerializer(many=True)
+    top_renters_this_month = TopRenterEntrySerializer(many=True)
+
+
+class LandlordRankingSerializer(serializers.Serializer):
+    position = serializers.IntegerField()
+    total_lessors = serializers.IntegerField()
+    suggested_additional_products = serializers.IntegerField()
+    hint = serializers.CharField()
+
+
+class SuperHostRequirementSerializer(serializers.Serializer):
+    label = serializers.CharField()
+    met = serializers.BooleanField()
+    detail = serializers.CharField()
+
+
+class SuperHostStatusSerializer(serializers.Serializer):
+    qualified = serializers.BooleanField()
+    title = serializers.CharField()
+    requirements = SuperHostRequirementSerializer(many=True)
+    benefits = serializers.ListField(child=serializers.CharField())
+
+
+class LandlordEarningsDashboardSerializer(serializers.Serializer):
+    summary = EarningsSummarySerializer()
+    chart = EarningsChartSerializer()
+    leaderboards = EarningsLeaderboardsSerializer()
+    ranking = LandlordRankingSerializer()
+    super_host = SuperHostStatusSerializer()
+
+
+class PublicCommunityEarningsSerializer(serializers.Serializer):
+    total_lessor_earnings = serializers.DecimalField(max_digits=14, decimal_places=2)
+    average_lessor_income_per_month = serializers.DecimalField(max_digits=12, decimal_places=2)
+    highest_earning_lessors_per_month = TopLessorEntrySerializer(many=True)
+    homepage = serializers.DictField()
+    attraction = serializers.DictField()
+
+
+class EarningsCalculatorInputSerializer(serializers.Serializer):
+    products_count = serializers.IntegerField(min_value=1, max_value=1000)
+    daily_rental_price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)
+
+
+class EarningsCalculatorResponseSerializer(serializers.Serializer):
+    products_count = serializers.IntegerField()
+    daily_rental_price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    monthly_earnings = serializers.DecimalField(max_digits=12, decimal_places=2)
+    annual_earnings = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+
 class AvailabilityBlockSerializer(serializers.ModelSerializer):
     class Meta:
         model = AvailabilityBlock
