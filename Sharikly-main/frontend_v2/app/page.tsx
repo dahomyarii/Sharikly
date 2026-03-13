@@ -25,6 +25,7 @@ import SkeletonLoader from "@/components/SkeletonLoader";
 import { useLocale } from "@/components/LocaleProvider";
 import { toListingsArray, sliceListings, buildListingsQuery } from "@/lib/listingsUtils";
 import ListingCard from "@/components/ListingCard";
+import { CommunityEarningsSection } from "@/components/earnings/CommunityEarningsSection";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -751,6 +752,8 @@ export default function HomePage() {
             </div>
           </section>
         )}
+
+        <CommunityEarningsSection />
       </div>
     </div>
   );

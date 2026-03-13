@@ -57,6 +57,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/start-renting" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
+                  Start Renting
+                </Link>
+              </li>
+              <li>
                 <Link href="/favorites" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   My Favorites
                 </Link>
@@ -91,6 +96,16 @@ export default function Footer() {
               <li>
                 <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
                   Blog & News
+                </Link>
+              </li>
+              <li>
+                <Link href="/community-earnings" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
+                  Community Earnings
+                </Link>
+              </li>
+              <li>
+                <Link href="/top-hosts" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
+                  Top Hosts
                 </Link>
               </li>
             </ul>

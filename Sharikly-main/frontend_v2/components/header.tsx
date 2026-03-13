@@ -8,7 +8,7 @@ import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 import axiosInstance from "@/lib/axios";
-import { Bell } from "lucide-react";
+import { Bell, TrendingUp as TrendingUpIcon } from "lucide-react";
 
 const SignupModal = dynamic(() => import("./SignupModal"), { ssr: false });
 const LoginModal = dynamic(() => import("./LoginModal"), { ssr: false });
@@ -224,6 +224,12 @@ export default function Header() {
           >
             Browse
           </Link>
+          <Link
+            href="/community-earnings"
+            className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
+          >
+            Community Earnings
+          </Link>
           {user ? (
             <>
               <Link
@@ -254,6 +260,12 @@ export default function Header() {
                 className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
               >
                 {t("my_bookings")}
+              </Link>
+              <Link
+                href="/earnings"
+                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
+              >
+                Earnings
               </Link>
               <Link
                 href="/profile"
@@ -457,6 +469,14 @@ export default function Header() {
                 )}
               </Link>
               <Link
+                href="/earnings"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
+                Earnings Dashboard
+              </Link>
+              <Link
                 href="/profile"
                 className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -475,6 +495,30 @@ export default function Header() {
                   <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
                 </svg>
                 List an Item
+              </Link>
+              <Link
+                href="/community-earnings"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
+                Community Earnings
+              </Link>
+              <Link
+                href="/top-hosts"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
+                Top Hosts
+              </Link>
+              <Link
+                href="/start-renting"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
+                Start Renting
               </Link>
               <Link
                 href="/about"
@@ -535,6 +579,22 @@ export default function Header() {
             </div>
           ) : (
             <div className="py-2">
+              <Link
+                href="/community-earnings"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
+                Community Earnings
+              </Link>
+              <Link
+                href="/start-renting"
+                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
+                Start Renting
+              </Link>
               <Link
                 href="/about"
                 className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"

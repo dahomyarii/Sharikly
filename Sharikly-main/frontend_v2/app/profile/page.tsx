@@ -453,6 +453,24 @@ export default function ProfilePage() {
           </Card>
         </div>
 
+        <Card className="p-5 sm:p-6 mb-4 sm:mb-6 rounded-2xl border-primary/20 bg-primary/5 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Earnings Dashboard</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Track total earnings, this month&apos;s performance, your best product, and your rank among lessors.
+              </p>
+            </div>
+            <Button
+              onClick={() => router.push("/earnings")}
+              className="flex items-center gap-2 shrink-0"
+            >
+              Open Earnings Dashboard
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </Card>
+
         {/* My Bookings — separate section */}
         <div className="mb-6 sm:mb-8">
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
