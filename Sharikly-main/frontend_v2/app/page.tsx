@@ -212,25 +212,38 @@ export default function HomePage() {
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: "url(/image.jpeg)" }}
             />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(25,17,52,0.18),rgba(25,17,52,0.54))]" />
-            <div className="relative z-10 flex min-h-[260px] flex-col justify-between sm:min-h-[300px]">
-              <div className="max-w-[280px] rounded-[24px] bg-white/78 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.12)] backdrop-blur-md">
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.14),rgba(25,17,52,0.28))]" />
+            <div className="relative z-10 flex min-h-[260px] flex-col justify-between rounded-[28px] bg-white/68 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.12)] backdrop-blur-md sm:min-h-[300px] sm:p-5">
+              <div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                     Start earning
                   </p>
-                  <h2 className="mt-2 text-2xl font-black leading-tight text-foreground">
-                    Turn your items into income
+                  <h2 className="mt-3 text-2xl font-black leading-tight text-foreground sm:text-[2rem]">
+                    Turn your items into monthly income
                   </h2>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    List your camera gear, gaming devices, tools, and more with the same premium
-                    flow.
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    List your camera gear, gaming devices, tools, and more. Meet renters nearby
+                    and get paid securely.
                   </p>
                 </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-[24px] bg-white/88 p-4 shadow-sm">
+                    <p className="text-sm text-muted-foreground">Estimated earnings</p>
+                    <p className="mt-1 text-4xl font-black text-emerald-500">SAR 2,300</p>
+                    <p className="text-sm text-muted-foreground">/ month</p>
+                  </div>
+                  <div className="rounded-[24px] bg-primary/10 p-4 backdrop-blur-sm">
+                    <p className="text-sm font-semibold text-foreground">Fast payouts</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      Verified renters, secure bookings, and simple listing management.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="max-w-[280px] rounded-[24px] bg-white/84 p-3.5 shadow-[0_18px_40px_rgba(15,23,42,0.12)] backdrop-blur-md">
+              <div>
                 <Link href="/listings/new">
-                  <Button size="lg" className="h-11 w-full justify-center rounded-full">
+                  <Button size="lg" className="h-11 w-full justify-center rounded-full sm:h-12">
                     <Plus className="h-4 w-4" />
                     List Your Item
                   </Button>
