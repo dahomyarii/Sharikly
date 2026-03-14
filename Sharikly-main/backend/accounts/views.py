@@ -133,8 +133,8 @@ def send_verification_email(user: User) -> None:
     )
     html_body = _build_verification_html(user.username or user.email, verify_url)
 
-    # Always send from the SES no-reply address
-    from_email = "Ekra <no-reply@ekra.app>"
+    # Use the active mail provider's configured sender.
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or None
 
     email = EmailMultiAlternatives(
         subject=subject,
@@ -236,7 +236,7 @@ def send_password_reset_email(user: User) -> None:
         f"If you didn't request this, ignore this email.\n\n— Ekra Team"
     )
     html_body = _build_reset_html(user.username or user.email, reset_url)
-    from_email = "Ekra <no-reply@ekra.app>"
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or None
     email = EmailMultiAlternatives(
         subject=subject,
         body=plain_text,
