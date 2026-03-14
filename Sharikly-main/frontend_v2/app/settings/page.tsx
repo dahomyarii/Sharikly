@@ -837,9 +837,14 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 sm:py-8 pb-28 md:pb-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">{t('settings')}</h1>
+    <div className="min-h-screen bg-background py-6 pb-28 sm:py-8 md:pb-8">
+      <div className="marketplace-shell">
+        <div className="mb-5 sm:mb-6">
+          <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
+            Account
+          </p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-foreground">{t('settings')}</h1>
+        </div>
 
         <div className="flex flex-col md:flex-row gap-5 md:gap-6">
           {/* Sidebar (desktop) / Tabs (mobile) */}
@@ -853,10 +858,10 @@ export default function SettingsPage() {
                   <button
                     key={item.id}
                     onClick={() => setActiveSection(item.id)}
-                    className={`flex items-center gap-2 min-h-[44px] px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all touch-target ${
+                    className={`flex items-center gap-2 min-h-[44px] px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all touch-target ${
                       isActive
-                        ? 'bg-black text-white'
-                        : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 active:bg-gray-50'
+                        ? 'ekra-gradient text-white shadow-[0_14px_34px_rgba(124,58,237,0.28)]'
+                        : 'bg-white/90 text-muted-foreground border border-border hover:bg-accent/70'
                     } ${item.id === 'danger' && !isActive ? 'text-red-500 border-red-200' : ''}`}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
@@ -867,7 +872,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Desktop: vertical sidebar */}
-            <div className="hidden md:block space-y-1">
+            <div className="surface-panel hidden space-y-1 rounded-[28px] p-2 md:block">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon
                 const isActive = activeSection === item.id
@@ -875,10 +880,10 @@ export default function SettingsPage() {
                   <button
                     key={item.id}
                     onClick={() => setActiveSection(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left ${
+                    className={`w-full flex items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-black text-white'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        ? 'ekra-gradient text-white shadow-[0_14px_34px_rgba(124,58,237,0.22)]'
+                        : 'text-muted-foreground hover:bg-accent/70'
                     } ${item.id === 'danger' && !isActive ? 'text-red-500 hover:bg-red-50' : ''}`}
                   >
                     <Icon className="w-4 h-4" />
@@ -890,7 +895,7 @@ export default function SettingsPage() {
           </nav>
 
           {/* Main content */}
-          <Card className="flex-1 p-4 sm:p-6 md:p-8">
+          <Card className="flex-1 rounded-[34px] p-4 sm:p-6 md:p-8">
             {sectionRenderers[activeSection]()}
           </Card>
         </div>

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import ListingCard from '@/components/ListingCard'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import ReportModal from '@/components/ReportModal'
-import { ArrowLeft, Star, Check, Package, User, Calendar, MessageCircle, Flag } from 'lucide-react'
+import { ArrowLeft, Star, Check, Package, User, Calendar, MessageCircle, Flag, Crown } from 'lucide-react'
 import { useLocale } from '@/components/LocaleProvider'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
@@ -173,6 +173,12 @@ export default function PublicProfilePage() {
                   <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground truncate">
                     {profile.username}
                   </h2>
+                  {profile.is_super_host && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-amber-500/10 text-amber-800 border border-amber-500/30">
+                      <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                      Super Host
+                    </span>
+                  )}
                   {profile.is_email_verified && (
                     <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
                       <Check className="w-3.5 h-3.5" />

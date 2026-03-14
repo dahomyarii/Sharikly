@@ -64,7 +64,7 @@ export default function FloatingModal({
       />
       <div
         ref={contentRef}
-        className="relative z-50 bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4 animate-fade-in max-h-[90vh] overflow-y-auto"
+        className="surface-panel relative z-50 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/70 bg-background/95 p-6 sm:p-8 animate-fade-in"
       >
         {children}
       </div>

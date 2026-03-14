@@ -6,179 +6,106 @@ import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'luc
 
 export default function Footer() {
   return (
-    <footer className="bg-card border-t border-border text-muted-foreground py-8 sm:py-12 md:py-16 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-16">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mobile-content">
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-12 mb-8 sm:mb-12">
-          {/* Brand Column */}
-          <div className="lg:col-span-1">
-            <div className="mb-6 flex items-center gap-2">
-              <img src="/logo.png" alt="EKRA" className="h-8 w-8" />
-              <h2 className="text-foreground font-bold text-2xl bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                EKRA
-              </h2>
+    <footer className="pb-[calc(7rem+env(safe-area-inset-bottom))] pt-10 md:pb-14">
+      <div className="marketplace-shell">
+        <div className="surface-panel overflow-hidden rounded-[36px] border border-white/65 bg-card/95 p-6 sm:p-8 lg:p-10">
+          <div className="mb-8 flex flex-col gap-6 border-b border-border pb-8 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-xl">
+              <div className="mb-4 flex items-center gap-3">
+                <img src="/logo.png" alt="EKRA" className="h-11 w-11" />
+                <div>
+                  <h2 className="text-2xl font-black tracking-tight text-foreground">
+                    Ekra
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Rent smarter. Earn from what you already own.
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm leading-7 text-muted-foreground">
+                Discover trusted rentals near you, book with confidence, and turn unused items
+                into steady income for your community.
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-              A modern marketplace platform connecting buyers and sellers in your community.
-            </p>
-            <div className="flex gap-3">
-              <Link href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
-                <Facebook className="w-4 h-4" />
-              </Link>
-              <Link href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
-                <Twitter className="w-4 h-4" />
-              </Link>
-              <Link href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
-                <Instagram className="w-4 h-4" />
-              </Link>
-              <Link href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
-                <Linkedin className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Services Column */}
-          <div>
-            <h3 className="text-foreground font-semibold mb-6 text-sm uppercase tracking-wider">Services</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/listings" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Browse Listings
-                </Link>
-              </li>
-              <li>
-                <Link href="/listings?filter=new" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  New Items
-                </Link>
-              </li>
-              <li>
-                <Link href="/listings?filter=featured" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Featured Items
-                </Link>
-              </li>
-              <li>
-                <Link href="/start-renting" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Start Renting
-                </Link>
-              </li>
-              <li>
-                <Link href="/favorites" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  My Favorites
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Company Column */}
-          <div>
-            <h3 className="text-foreground font-semibold mb-6 text-sm uppercase tracking-wider">Company</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  How it works
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/careers" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Careers
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Blog & News
-                </Link>
-              </li>
-              <li>
-                <Link href="/community-earnings" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Community Earnings
-                </Link>
-              </li>
-              <li>
-                <Link href="/top-hosts" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Top Hosts
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal Column */}
-          <div>
-            <h3 className="text-foreground font-semibold mb-6 text-sm uppercase tracking-wider">Legal</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy#cookies" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Cookie Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                  Contact Us
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact Column */}
-          <div>
-            <h3 className="text-foreground font-semibold mb-6 text-sm uppercase tracking-wider">Get in Touch</h3>
-            <ul className="space-y-3">
-              <li className="flex gap-3 items-start">
-                <Mail className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                <a href="mailto:support@ekra.com" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
+            <div className="glass-panel rounded-[28px] px-5 py-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Contact
+              </p>
+              <div className="mt-3 space-y-3 text-sm text-foreground">
+                <a href="mailto:support@ekra.com" className="flex items-center gap-3 hover:text-primary">
+                  <Mail className="h-4 w-4 text-primary" />
                   support@ekra.com
                 </a>
-              </li>
-              <li className="flex gap-3 items-start">
-                <Phone className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                <a href="tel:+966112345678" className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm">
-                    +966 54 292 1670
+                <a href="tel:+966542921670" className="flex items-center gap-3 hover:text-primary">
+                  <Phone className="h-4 w-4 text-primary" />
+                  +966 54 292 1670
                 </a>
-              </li>
-              <li className="flex gap-3 items-start">
-                <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                <span className="text-muted-foreground text-sm">
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-4 w-4 text-primary" />
                   Riyadh, Saudi Arabia
-                </span>
-              </li>
-            </ul>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Divider */}
-        <div className="border-t border-border my-8"></div>
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Marketplace
+              </h3>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/listings" className="hover:text-foreground">Browse listings</Link></li>
+                <li><Link href="/listings/new" className="hover:text-foreground">List your item</Link></li>
+                <li><Link href="/favorites" className="hover:text-foreground">Saved items</Link></li>
+                <li><Link href="/community-earnings" className="hover:text-foreground">Community earnings</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Company
+              </h3>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/about" className="hover:text-foreground">About</Link></li>
+                <li><Link href="/how-it-works" className="hover:text-foreground">How it works</Link></li>
+                <li><Link href="/careers" className="hover:text-foreground">Careers</Link></li>
+                <li><Link href="/blog" className="hover:text-foreground">Blog</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Support
+              </h3>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/contact" className="hover:text-foreground">Contact</Link></li>
+                <li><Link href="/privacy" className="hover:text-foreground">Privacy policy</Link></li>
+                <li><Link href="/terms" className="hover:text-foreground">Terms of service</Link></li>
+                <li><Link href="/sitemap.xml" className="hover:text-foreground">Sitemap</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Follow us
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                <Link href="#" className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
+                  <Facebook className="h-4 w-4" />
+                </Link>
+                <Link href="#" className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
+                  <Twitter className="h-4 w-4" />
+                </Link>
+                <Link href="#" className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
+                  <Instagram className="h-4 w-4" />
+                </Link>
+                <Link href="#" className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
+                  <Linkedin className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
 
-        {/* Bottom Section */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground">
-            &copy; 2026 EKRA. All rights reserved.
-          </p>
-          <div className="flex gap-6">
-            <Link href="/sitemap.xml" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
-              Sitemap
-            </Link>
-            <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
-              Contact
-            </Link>
+          <div className="mt-8 flex flex-col gap-3 border-t border-border pt-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+            <p>&copy; 2026 EKRA. All rights reserved.</p>
+            <p>Built for trusted local renting across Saudi Arabia.</p>
           </div>
         </div>
       </div>

@@ -5,11 +5,15 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+if (MAPBOX_TOKEN) {
+  mapboxgl.accessToken = MAPBOX_TOKEN;
+}
+
 const DEFAULT_LAT = 24.7136;
 const DEFAULT_LNG = 46.6753;
 const DEFAULT_RADIUS_M = 5000;
-const PURPLE_FILL = "rgba(147, 51, 234, 0.25)";
-const PURPLE_STROKE = "rgba(147, 51, 234, 0.6)";
+const PURPLE_FILL = "rgba(124, 58, 237, 0.16)";
+const PURPLE_STROKE = "rgba(124, 58, 237, 0.55)";
 
 function createCircleGeoJSON(lat: number, lng: number, radiusM: number) {
   const earthRadiusM = 6371000;
@@ -60,6 +64,8 @@ export default function ListingsMap({
   const map = useRef<mapboxgl.Map | null>(null);
   const circleSource = useRef<mapboxgl.GeoJSONSource | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const listingsRef = useRef<ListingForMap[]>(listings);
+  const selectedIdRef = useRef<number | null>(selectedId);
 
   const firstWithCoords = listings.find(
     (l) => l.latitude != null && l.longitude != null
@@ -73,6 +79,58 @@ export default function ListingsMap({
       createCircleGeoJSON(lat, lng, r),
     []
   );
+
+  useEffect(() => {
+    listingsRef.current = listings;
+    selectedIdRef.current = selectedId;
+  }, [listings, selectedId]);
+
+  const renderMarkers = useCallback((mapInstance: mapboxgl.Map) => {
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = [];
+    const withCoords = listingsRef.current.filter(
+      (l) => l.latitude != null && l.longitude != null
+    );
+
+    markersRef.current = withCoords.map((listing) => {
+      const el = document.createElement("button");
+      el.type = "button";
+      el.className = "listings-map-marker";
+      el.innerHTML = `
+        <div style="
+          min-width: 38px;
+          height: 38px;
+          padding: 0 12px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          background: ${selectedIdRef.current === listing.id ? "linear-gradient(135deg,#7c3aed,#9333ea)" : "rgba(255,255,255,0.94)"};
+          color: ${selectedIdRef.current === listing.id ? "#ffffff" : "#281a46"};
+          border: 1px solid rgba(255,255,255,0.85);
+          box-shadow: 0 14px 34px rgba(34, 17, 68, 0.18);
+          cursor: pointer;
+          font-size: 11px;
+          font-weight: 700;
+          backdrop-filter: blur(10px);
+        ">${selectedIdRef.current === listing.id ? "Selected" : "View"}</div>
+      `;
+      el.onclick = () => onSelectListing?.(listing.id);
+      return new mapboxgl.Marker({ element: el })
+        .setLngLat([listing.longitude!, listing.latitude!])
+        .addTo(mapInstance);
+    });
+
+    if (withCoords.length > 1) {
+      const lngs = withCoords.map((l) => l.longitude!);
+      const lats = withCoords.map((l) => l.latitude!);
+      const bounds = new mapboxgl.LngLatBounds(
+        [Math.min(...lngs), Math.min(...lats)],
+        [Math.max(...lngs), Math.max(...lats)]
+      );
+      mapInstance.fitBounds(bounds, { padding: 48, maxZoom: 12 });
+    }
+  }, [onSelectListing]);
 
   useEffect(() => {
     if (!MAPBOX_TOKEN || !mapContainer.current) return;
@@ -115,38 +173,7 @@ export default function ListingsMap({
         },
       });
 
-      const withCoords = listings.filter(
-        (l) => l.latitude != null && l.longitude != null
-      );
-      markersRef.current = withCoords.map((listing) => {
-        const el = document.createElement("div");
-        el.className = "listings-map-marker";
-        el.innerHTML = `
-          <div style="
-            width: 24px; height: 24px;
-            background: ${selectedId === listing.id ? "#7c3aed" : "#a855f7"};
-            border: 2px solid white;
-            border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            cursor: pointer;
-          " title="${(listing.title || "").replace(/"/g, "&quot;")}"></div>
-        `;
-        el.onclick = () => onSelectListing?.(listing.id);
-        const marker = new mapboxgl.Marker({ element: el })
-          .setLngLat([listing.longitude!, listing.latitude!])
-          .addTo(mapInstance);
-        return marker;
-      });
-
-      if (withCoords.length > 1) {
-        const lngs = withCoords.map((l) => l.longitude!);
-        const lats = withCoords.map((l) => l.latitude!);
-        const bounds = new mapboxgl.LngLatBounds(
-          [Math.min(...lngs), Math.min(...lats)],
-          [Math.max(...lngs), Math.max(...lats)]
-        );
-        mapInstance.fitBounds(bounds, { padding: 48, maxZoom: 12 });
-      }
+      renderMarkers(mapInstance);
     });
 
     return () => {
@@ -157,7 +184,7 @@ export default function ListingsMap({
         map.current = null;
       }
     };
-  }, []);
+  }, [centerLat, centerLng, radiusM, createCircle, renderMarkers]);
 
   useEffect(() => {
     if (!circleSource.current || !firstWithCoords) return;
@@ -170,10 +197,15 @@ export default function ListingsMap({
     );
   }, [firstWithCoords?.id, radiusM, createCircle]);
 
+  useEffect(() => {
+    if (!map.current) return;
+    renderMarkers(map.current);
+  }, [renderMarkers]);
+
   if (!MAPBOX_TOKEN) {
     return (
       <div
-        className={`rounded-xl border border-border bg-muted/30 flex items-center justify-center text-muted-foreground text-sm ${className}`}
+        className={`surface-panel flex items-center justify-center rounded-[28px] bg-muted/30 text-sm text-muted-foreground ${className}`}
         style={{ minHeight: 280 }}
       >
         Map unavailable (no token)
@@ -182,12 +214,12 @@ export default function ListingsMap({
   }
 
   return (
-    <div className={`rounded-xl border border-border overflow-hidden bg-muted/20 ${className}`}>
+    <div className={`overflow-hidden rounded-[28px] border border-white/70 bg-muted/20 ${className}`}>
       <div
         ref={mapContainer}
-        className="w-full h-full min-h-[280px] sm:min-h-[320px] lg:min-h-[400px]"
+        className="h-full min-h-[320px] w-full rounded-[24px] sm:min-h-[360px] lg:min-h-[520px]"
       />
-      <div className="flex items-center justify-end gap-2 px-2 py-1.5 bg-background/80 border-t border-border text-[10px] text-muted-foreground">
+      <div className="flex items-center justify-end gap-2 border-t border-border bg-background/80 px-3 py-2 text-[10px] text-muted-foreground">
         <span>© Mapbox</span>
         <span>© OpenStreetMap</span>
       </div>

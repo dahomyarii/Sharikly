@@ -17,7 +17,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         type="button"
         aria-label="Toggle theme"
         className={cn(
-          "min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] flex items-center justify-center rounded-full hover:bg-accent transition-colors touch-target",
+          "min-w-[44px] min-h-[44px] md:min-w-[40px] md:min-h-[40px] flex items-center justify-center rounded-full border border-white/60 bg-background/90 shadow-sm transition-colors touch-target",
           className
         )}
       >
@@ -35,7 +35,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
       className={cn(
-        "min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] flex items-center justify-center rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors touch-target ring-1 ring-border/60 hover:ring-primary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "min-w-[44px] min-h-[44px] md:min-w-[40px] md:min-h-[40px] flex items-center justify-center rounded-full border border-white/60 bg-background/90 text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-colors touch-target shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         className
       )}
     >

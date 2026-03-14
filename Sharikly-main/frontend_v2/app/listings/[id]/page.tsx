@@ -620,54 +620,54 @@ export default function ListingDetail() {
   return (
     <div className="min-h-screen bg-background">
 
-      <header className="bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 text-white px-4 py-3 sticky top-0 z-40 shadow-md" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
+      <header className="sticky top-0 z-40 border-b border-white/50 bg-background/75 px-4 py-3 backdrop-blur-xl" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
         <form onSubmit={handleHeaderSearchSubmit} className="max-w-7xl mx-auto flex items-center gap-3">
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="text-white hover:bg-white/20 min-w-[44px] min-h-[44px] touch-target rounded-xl"
+            className="min-h-[44px] min-w-[44px] rounded-full border border-white/60 bg-white/85 text-foreground shadow-sm touch-target hover:bg-accent/70"
           >
             <ArrowLeft className="h-6 w-6" />
           </Button>
           <div className="flex-1 relative min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
             <Input
               type="search"
               placeholder="Search listings..."
               value={headerSearch}
               onChange={(e) => setHeaderSearch(e.target.value)}
-              className="w-full pl-10 min-h-[44px] bg-card border-0 text-foreground placeholder:text-muted-foreground rounded-xl"
+              className="w-full min-h-[48px] rounded-full border-white/60 bg-white/90 pl-10"
               aria-label="Search listings"
             />
           </div>
         </form>
       </header>
 
-      <div className="max-w-7xl mx-auto px-3 py-4 pb-24 sm:pb-8 sm:px-6 lg:p-8 mobile-content">
+      <div className="marketplace-shell py-4 pb-24 sm:pb-8 lg:py-8">
         {/* Breadcrumbs */}
-        <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-4" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-gray-800 transition-colors">Home</Link>
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
-          <Link href="/listings" className="hover:text-gray-800 transition-colors">Listings</Link>
+        <nav className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground" aria-label="Breadcrumb">
+          <Link href="/" className="transition-colors hover:text-foreground">Home</Link>
+          <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+          <Link href="/listings" className="transition-colors hover:text-foreground">Listings</Link>
           {data.category?.name && (
             <>
-              <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
-              <Link href={`/listings?category=${data.category.id}`} className="hover:text-gray-800 transition-colors truncate max-w-[120px] sm:max-w-[200px]">
+              <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              <Link href={`/listings?category=${data.category.id}`} className="max-w-[120px] truncate transition-colors hover:text-foreground sm:max-w-[200px]">
                 {data.category.name}
               </Link>
             </>
           )}
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
-          <span className="text-gray-800 font-medium truncate max-w-[140px] sm:max-w-[280px]" title={data.title}>
+          <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+          <span className="max-w-[140px] truncate font-medium text-foreground sm:max-w-[280px]" title={data.title}>
             {data.title}
           </span>
         </nav>
 
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <div className="overflow-hidden rounded-2xl">
+            <div className="surface-panel overflow-hidden rounded-[34px] p-2 sm:p-3">
               {/* Mobile: fixed-height Amazon-style slideshow. Desktop: normal flexible layout. */}
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 p-2 sm:p-4 md:min-h-0">
                 {/* Thumbnails: horizontal strip on mobile (small), vertical on desktop */}
@@ -678,10 +678,10 @@ export default function ListingDetail() {
                       onClick={() => {
                         setMainImage(url);
                       }}
-                      className={`min-w-[56px] w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-xl overflow-hidden flex-shrink-0 transition-all duration-200 touch-target active:scale-95 ${
+                      className={`min-w-[56px] w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-2xl overflow-hidden flex-shrink-0 transition-all duration-200 touch-target active:scale-95 ${
                         mainImage === url
-                          ? "border-purple-500 ring-2 ring-purple-200"
-                          : "border-gray-200 hover:border-gray-300 active:border-gray-400"
+                          ? "border-primary ring-2 ring-primary/20"
+                          : "border-border hover:border-primary/40 active:border-primary/50"
                       }`}
                     >
                       <img
@@ -697,7 +697,7 @@ export default function ListingDetail() {
 
                 {/* Main image: forced small box on mobile, flexible on desktop */}
                 <div className="flex-1 relative group min-w-0 min-h-0">
-                  <div className="h-[320px] sm:h-auto sm:aspect-[4/3] sm:max-h-[40vh] md:max-h-[420px] overflow-hidden rounded-lg bg-gray-100">
+                  <div className="h-[320px] overflow-hidden rounded-[28px] bg-muted sm:h-auto sm:max-h-[40vh] sm:aspect-[4/3] md:max-h-[420px]">
                     <img
                       src={mainImage || images[0]}
                       alt={data.title}
@@ -714,7 +714,7 @@ export default function ListingDetail() {
                     onClick={() =>
                       openFullscreen(images.indexOf(mainImage || images[0]))
                     }
-                    className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 min-h-[40px] sm:min-h-[44px] px-2 sm:px-3 bg-card/90 hover:bg-card text-foreground opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity touch-target rounded-lg sm:rounded-xl text-sm"
+                    className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 min-h-[40px] rounded-full bg-card/90 px-3 text-sm text-foreground opacity-100 transition-opacity touch-target hover:bg-card sm:min-h-[44px] sm:opacity-0 sm:group-hover:opacity-100"
                     size="sm"
                   >
                     <ZoomIn className="h-4 w-4 sm:mr-2" />
@@ -724,10 +724,10 @@ export default function ListingDetail() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="surface-panel space-y-4 rounded-[34px] p-5 sm:p-6">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                  <h1 className="mb-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
                     {data.title}
                   </h1>
                   <div className="flex items-center gap-2 mb-4">
@@ -743,10 +743,10 @@ export default function ListingDetail() {
                         />
                       ))}
                     </div>
-                    <span className="text-lg font-semibold text-gray-700">
+                    <span className="text-lg font-semibold text-foreground">
                       {averageRating}
                     </span>
-                    <span className="text-gray-500">
+                    <span className="text-muted-foreground">
                       ({reviews.length} reviews)
                     </span>
                   </div>
@@ -756,7 +756,7 @@ export default function ListingDetail() {
                     onClick={handleShare}
                     variant="ghost"
                     size="sm"
-                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target rounded-lg"
+                    className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                   >
                     <Share2 className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">Share</span>
@@ -766,7 +766,7 @@ export default function ListingDetail() {
                       variant="ghost"
                       size="sm"
                       onClick={scrollToSimilar}
-                      className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target rounded-lg"
+                      className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                     >
                       <List className="h-4 w-4 sm:mr-1" />
                       <span className="hidden sm:inline">Similar</span>
@@ -779,7 +779,7 @@ export default function ListingDetail() {
                     }}
                     variant="ghost"
                     size="sm"
-                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 min-h-[44px] touch-target rounded-lg"
+                    className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                   >
                     <Flag className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">
@@ -790,41 +790,41 @@ export default function ListingDetail() {
                     onClick={toggleFavorite}
                     variant="ghost"
                     size="icon"
-                    className="hover:bg-gray-100 min-w-[44px] min-h-[44px] touch-target rounded-lg"
+                    className="min-h-[44px] min-w-[44px] rounded-full border border-border bg-background/80 touch-target hover:bg-accent/70"
                   >
                     <Heart
                       className={`h-6 w-6 transition-all ${
-                        isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
+                        isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"
                       }`}
                     />
                   </Button>
                 </div>
               </div>
 
-              <div className="p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-3">
+              <div className="rounded-[28px] bg-white/70 p-5">
+                <h2 className="mb-3 text-xl font-semibold text-foreground">
                   Description
                 </h2>
-                <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
                   {data.description}
                 </p>
               </div>
 
-              <div className="p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-3">
+              <div className="rounded-[28px] bg-white/70 p-5">
+                <h2 className="mb-3 text-xl font-semibold text-foreground">
                   Good to know
                 </h2>
-                <ul className="space-y-3 text-gray-600 text-sm">
+                <ul className="space-y-3 text-sm text-muted-foreground">
                   <li className="flex gap-2">
-                    <span className="text-gray-400 font-medium shrink-0">Cancellation:</span>
+                    <span className="font-medium shrink-0 text-foreground">Cancellation:</span>
                     <span>Contact the owner for cancellation policy. You can cancel from My Bookings before payment.</span>
                   </li>
                   <li className="flex gap-2">
-                    <span className="text-gray-400 font-medium shrink-0">What to bring:</span>
+                    <span className="font-medium shrink-0 text-foreground">What to bring:</span>
                     <span>Only yourself—pick up and return at the agreed location. Return the item in the same condition.</span>
                   </li>
                   <li className="flex gap-2">
-                    <span className="text-gray-400 font-medium shrink-0">Questions?</span>
+                    <span className="font-medium shrink-0 text-foreground">Questions?</span>
                     <span>Use the Message button to ask the owner before requesting to book.</span>
                   </li>
                 </ul>
@@ -989,13 +989,13 @@ export default function ListingDetail() {
               </Card>
             </div>
 
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            <div className="surface-panel rounded-[34px] p-6">
+              <h2 className="mb-4 text-2xl font-black tracking-tight text-foreground">
                 Leave a review
               </h2>
 
               {userHasReviewed ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="rounded-[24px] border border-blue-200 bg-blue-50 p-4">
                   <p className="text-blue-800 font-medium">
                     ✓ You have already reviewed this listing
                   </p>
@@ -1004,7 +1004,7 @@ export default function ListingDetail() {
                   </p>
                 </div>
               ) : !user ? (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="rounded-[24px] border border-gray-200 bg-gray-50 p-4">
                   <p className="text-gray-700 font-medium">
                     Please log in to leave a review
                   </p>
@@ -1016,7 +1016,7 @@ export default function ListingDetail() {
                   </Button>
                 </div>
               ) : isOwner ? (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="rounded-[24px] border border-gray-200 bg-gray-50 p-4">
                   <p className="text-gray-700 font-medium">
                     You cannot review your own listing
                   </p>
@@ -1049,7 +1049,7 @@ export default function ListingDetail() {
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Write your review..."
-                    className="w-full border rounded-md p-3 h-28 resize-none"
+                    className="h-28 w-full resize-none rounded-2xl border border-border bg-background/90 p-3"
                   />
 
                   <div className="mt-4 flex gap-2">
@@ -1074,13 +1074,13 @@ export default function ListingDetail() {
               )}
             </div>
 
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            <div className="surface-panel rounded-[34px] p-6">
+              <h2 className="mb-6 text-2xl font-black tracking-tight text-foreground">
                 Customer Reviews
               </h2>
               <div className="space-y-6">
                 {reviews.length === 0 && (
-                  <p className="text-gray-500">
+                  <p className="text-muted-foreground">
                     No reviews yet. Be the first to review this listing.
                   </p>
                 )}
@@ -1088,7 +1088,7 @@ export default function ListingDetail() {
                 {reviews.map((review) => (
                   <div
                     key={review.id}
-                    className="border-b border-gray-200 pb-6 last:border-0"
+                    className="border-b border-border pb-6 last:border-0"
                   >
                     <div className="flex items-start gap-4">
                       <a href={`/user/${review.raw?.user?.id}`} className="flex-shrink-0">
@@ -1102,11 +1102,11 @@ export default function ListingDetail() {
                         <div className="flex items-center justify-between mb-2">
                           <div>
                             <a href={`/user/${review.raw?.user?.id}`} className="hover:underline">
-                              <h4 className="font-semibold text-gray-800">
+                              <h4 className="font-semibold text-foreground">
                                 {review.user.name}
                               </h4>
                             </a>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               {review.date}
                             </p>
                           </div>
@@ -1123,14 +1123,14 @@ export default function ListingDetail() {
                             ))}
                           </div>
                         </div>
-                        <p className="text-gray-700 mb-3">{review.comment}</p>
+                        <p className="mb-3 text-foreground/90">{review.comment}</p>
                         <div className="flex items-center gap-4">
                           <button
                             onClick={() => handleVote(review.id, "up")}
                             className={`flex items-center gap-2 text-sm transition-colors ${
                               review.userVote === "HELPFUL"
                                 ? "text-blue-600 font-semibold"
-                                : "text-gray-600 hover:text-blue-600"
+                                : "text-muted-foreground hover:text-blue-600"
                             }`}
                           >
                             <ThumbsUp
@@ -1147,7 +1147,7 @@ export default function ListingDetail() {
                             className={`flex items-center gap-2 text-sm transition-colors ${
                               review.userVote === "NOT_HELPFUL"
                                 ? "text-red-600 font-semibold"
-                                : "text-gray-600 hover:text-red-600"
+                                : "text-muted-foreground hover:text-red-600"
                             }`}
                           >
                             <ThumbsDown
@@ -1170,18 +1170,18 @@ export default function ListingDetail() {
 
           <div className="lg:col-span-1 space-y-4">
             {/* Desktop booking card */}
-            <div className="p-6 sticky top-24 space-y-5 hidden lg:block rounded-2xl bg-background/0">
+            <div className="surface-panel sticky top-24 hidden space-y-5 rounded-[34px] p-6 lg:block">
               {/* Price */}
-              <div className="text-center pb-5 border-b border-gray-200">
-                <div className="text-4xl font-bold text-blue-600 mb-1">
-                  ${data.price_per_day}
+              <div className="border-b border-border pb-5 text-center">
+                <div className="mb-1 text-4xl font-black tracking-tight text-primary">
+                  SAR {data.price_per_day}
                 </div>
-                <div className="text-gray-500">per day</div>
+                <div className="text-muted-foreground">per day</div>
               </div>
 
               {/* Calendar */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                <h3 className="mb-3 text-lg font-semibold text-foreground">
                   Select Dates
                 </h3>
                 <div className="calendar-wrapper">
@@ -1216,14 +1216,14 @@ export default function ListingDetail() {
 
                 {/* Date selection summary */}
                 {dateRange?.from && (
-                  <div className="mt-3 text-sm text-gray-600 text-center">
+                  <div className="mt-3 text-center text-sm text-muted-foreground">
                     {dateRange.to ? (
                       <span>
                         {dateRange.from.toLocaleDateString()} &mdash; {dateRange.to.toLocaleDateString()}
                       </span>
                     ) : (
                       <span>
-                        {dateRange.from.toLocaleDateString()} &mdash; <span className="text-gray-400">select end date</span>
+                        {dateRange.from.toLocaleDateString()} &mdash; <span className="text-muted-foreground">select end date</span>
                       </span>
                     )}
                   </div>
@@ -1239,18 +1239,18 @@ export default function ListingDetail() {
                 const serviceFee = Math.round(subtotal * 0.1 * 100) / 100;
                 const total = Math.round((subtotal + serviceFee) * 100) / 100;
                 return (
-                  <div className="space-y-3 pt-4 border-t border-gray-200">
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>${pricePerDay.toFixed(2)} &times; {nights} day{nights !== 1 ? "s" : ""}</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                  <div className="space-y-3 border-t border-border pt-4">
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>SAR {pricePerDay.toFixed(2)} &times; {nights} day{nights !== 1 ? "s" : ""}</span>
+                      <span>SAR {subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-600">
+                    <div className="flex justify-between text-sm text-muted-foreground">
                       <span>Service fee</span>
-                      <span>${serviceFee.toFixed(2)}</span>
+                      <span>SAR {serviceFee.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between font-bold text-gray-900 text-base pt-3 border-t border-gray-200">
+                    <div className="flex justify-between border-t border-border pt-3 text-base font-bold text-foreground">
                       <span>Total</span>
-                      <span>${total.toFixed(2)}</span>
+                      <span>SAR {total.toFixed(2)}</span>
                     </div>
                   </div>
                 );
@@ -1261,19 +1261,19 @@ export default function ListingDetail() {
                 {user && !isOwner && (
                   <Button
                     onClick={handleRequestBooking}
-                    className="w-full min-h-[52px] h-14 bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl active:scale-[0.99] transition-all duration-200 touch-target"
+                    className="h-14 w-full min-h-[52px] rounded-2xl text-lg font-semibold touch-target"
                   >
                     Send Request
                   </Button>
                 )}
                 {!user && (
                   <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-3">
+                    <p className="mb-3 text-sm text-muted-foreground">
                       Please log in to request booking
                     </p>
                     <Button
                       onClick={() => router.push("/auth/login")}
-                      className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-xl"
+                      className="h-12 w-full rounded-2xl font-semibold"
                     >
                       Log In
                     </Button>
@@ -1288,7 +1288,7 @@ export default function ListingDetail() {
                   <Button
                     variant="outline"
                     onClick={scrollToSimilar}
-                    className="w-full gap-2 rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className="w-full gap-2 rounded-2xl"
                   >
                     <List className="h-4 w-4" />
                     View similar listings
@@ -1337,12 +1337,12 @@ export default function ListingDetail() {
         {/* Similar / Recommended listings — real algorithm (same category + price similarity) */}
         <section
           ref={similarSectionRef}
-          className="mt-8 sm:mt-12 pt-8 sm:pt-12 border-t border-gray-200"
+          className="mt-8 border-t border-border pt-8 sm:mt-12 sm:pt-12"
         >
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
+          <h2 className="mb-4 text-xl font-black tracking-tight text-foreground sm:mb-6 sm:text-2xl">
             Similar listings
           </h2>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="mb-6 text-sm text-muted-foreground">
             More like this — same category, similar price
           </p>
 

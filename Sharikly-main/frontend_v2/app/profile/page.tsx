@@ -304,15 +304,15 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 md:py-8 pb-20 md:pb-0">
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 mobile-content">
+    <div className="min-h-screen bg-background py-4 pb-20 sm:py-6 md:pb-0 md:py-8">
+      <div className="marketplace-shell">
         {/* Profile Header */}
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-6 rounded-2xl border-gray-200/80 shadow-sm">
+        <Card className="mb-4 overflow-hidden rounded-[34px] p-4 sm:mb-6 sm:p-6">
           <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
             {/* Avatar Section */}
             <div className="flex-shrink-0">
               <div className="relative">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-muted sm:h-32 sm:w-32">
                   {avatarPreview ? (
                     <img
                       src={getFullImageUrl(avatarPreview)}
@@ -320,11 +320,11 @@ export default function ProfilePage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User className="w-16 h-16 text-gray-400" />
+                    <User className="w-16 h-16 text-muted-foreground" />
                   )}
                 </div>
                 {isEditing && (
-                  <label className="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full cursor-pointer hover:bg-gray-800 transition-colors">
+                  <label className="absolute bottom-0 right-0 ekra-gradient cursor-pointer rounded-full p-2 text-white transition-opacity hover:opacity-90">
                     <Camera className="w-4 h-4" />
                     <input
                       type="file"
@@ -342,7 +342,7 @@ export default function ProfilePage() {
               {isEditing ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="mb-1 block text-sm font-medium text-foreground">
                       Username
                     </label>
                     <Input
@@ -353,7 +353,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="mb-1 block text-sm font-medium text-foreground">
                       Bio
                     </label>
                     <textarea
@@ -361,7 +361,7 @@ export default function ProfilePage() {
                       value={formData.bio}
                       onChange={handleInputChange}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full rounded-2xl border border-border bg-background/90 px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30"
                       placeholder="Tell us about yourself..."
                     />
                   </div>
@@ -388,7 +388,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
+                    <h1 className="text-xl font-black tracking-tight text-foreground sm:text-2xl md:text-3xl">
                       {user.username || user.email}
                     </h1>
                     <Button
@@ -400,15 +400,15 @@ export default function ProfilePage() {
                       Edit Profile
                     </Button>
                   </div>
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Mail className="w-4 h-4" />
                     <span>{user.email}</span>
                   </div>
                   {user.bio && (
                     <div className="mt-4">
                       <div className="flex items-start gap-2">
-                        <FileText className="w-4 h-4 text-gray-400 mt-1" />
-                        <p className="text-gray-700 whitespace-pre-wrap">
+                        <FileText className="mt-1 w-4 h-4 text-muted-foreground" />
+                        <p className="whitespace-pre-wrap text-foreground/90">
                           {user.bio}
                         </p>
                       </div>
@@ -422,26 +422,26 @@ export default function ProfilePage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <Card className="p-3 sm:p-4 text-center rounded-2xl border-gray-200/80 shadow-sm">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">
+          <Card className="rounded-[28px] p-3 text-center sm:p-4">
+            <div className="text-xl font-black text-foreground sm:text-2xl">
               {listings.length}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">Listings</div>
+            <div className="text-xs text-muted-foreground sm:text-sm">Listings</div>
           </Card>
-          <Card className="p-3 sm:p-4 text-center rounded-2xl border-gray-200/80 shadow-sm">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">
+          <Card className="rounded-[28px] p-3 text-center sm:p-4">
+            <div className="text-xl font-black text-foreground sm:text-2xl">
               {bookingsCount ?? "—"}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">Bookings</div>
+            <div className="text-xs text-muted-foreground sm:text-sm">Bookings</div>
           </Card>
-          <Card className="p-3 sm:p-4 text-center rounded-2xl border-gray-200/80 shadow-sm">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">
+          <Card className="rounded-[28px] p-3 text-center sm:p-4">
+            <div className="text-xl font-black text-foreground sm:text-2xl">
               {reviews.length}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">Reviews</div>
+            <div className="text-xs text-muted-foreground sm:text-sm">Reviews</div>
           </Card>
-          <Card className="p-3 sm:p-4 text-center rounded-2xl border-gray-200/80 shadow-sm">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">
+          <Card className="rounded-[28px] p-3 text-center sm:p-4">
+            <div className="text-xl font-black text-foreground sm:text-2xl">
               {reviews.length > 0
                 ? (
                     reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
@@ -449,7 +449,7 @@ export default function ProfilePage() {
                   ).toFixed(1)
                 : "0"}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">Avg Rating</div>
+            <div className="text-xs text-muted-foreground sm:text-sm">Avg Rating</div>
           </Card>
         </div>
 

@@ -8,6 +8,8 @@ import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import FloatingModal from "@/components/FloatingModal";
 import { useToast } from "@/components/ui/toast";
 import { useLocale } from "@/components/LocaleProvider";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
 export default function SignupPage({ onClose }: { onClose?: () => void }) {
@@ -75,57 +77,58 @@ export default function SignupPage({ onClose }: { onClose?: () => void }) {
     <FloatingModal onClose={onClose}>
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-black transition-colors mb-4"
+        className="mb-5 flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="w-4 h-4" />
         Go back
       </button>
-      <h1 className="text-2xl font-semibold text-center mb-6">
-        {t("create_account")}
-      </h1>
+      <div className="mb-6 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.26em] text-primary/80">
+          Become a host
+        </p>
+        <h1 className="mt-3 text-3xl font-black tracking-tight text-foreground">
+          {t("create_account")}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Create your account to book rentals or start earning from your own items.
+        </p>
+      </div>
       <form onSubmit={handleSignup} className="space-y-5">
-        {/* Username */}
         <div className="space-y-1">
-          <label className="text-sm text-gray-700">{t("username")}</label>
-          <input
+          <label className="text-sm font-medium text-foreground">{t("username")}</label>
+          <Input
             type="text"
-            className="w-full h-12 border rounded-lg px-4 focus:ring-2 focus:ring-blue-500"
             placeholder={t("username")}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>
-        {/* Email */}
         <div className="space-y-1">
-          <label className="text-sm text-gray-700">{t("email")}</label>
-          <input
+          <label className="text-sm font-medium text-foreground">{t("email")}</label>
+          <Input
             type="email"
-            className="w-full h-12 border rounded-lg px-4 focus:ring-2 focus:ring-blue-500"
             placeholder="example@gmail.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
-        {/* Phone */}
         <div className="space-y-1">
-          <label className="text-sm text-gray-700">{t("phone_number")}</label>
-          <input
+          <label className="text-sm font-medium text-foreground">{t("phone_number")}</label>
+          <Input
             type="tel"
-            className="w-full h-12 border rounded-lg px-4 focus:ring-2 focus:ring-blue-500"
             placeholder={t("phone_number")}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
         </div>
-        {/* Password */}
         <div className="space-y-1">
-          <label className="text-sm text-gray-700">{t("password")}</label>
+          <label className="text-sm font-medium text-foreground">{t("password")}</label>
           <div className="relative">
-            <input
+            <Input
               type={showPassword ? "text" : "password"}
-              className="w-full h-12 border rounded-lg px-4 pr-10 focus:ring-2 focus:ring-blue-500"
+              className="pr-11"
               placeholder={t("password")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -134,13 +137,12 @@ export default function SignupPage({ onClose }: { onClose?: () => void }) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             >
               {showPassword ? <EyeOff /> : <Eye />}
             </button>
           </div>
         </div>
-        {/* Message */}
         {msg && (
           <p
             className={`text-center text-sm ${msg.includes("created") ? "text-green-600" : "text-red-600"}`}
@@ -148,25 +150,24 @@ export default function SignupPage({ onClose }: { onClose?: () => void }) {
             {msg}
           </p>
         )}
-        {/* Signup button */}
-        <button
+        <Button
           type="submit"
+          size="lg"
           disabled={isLoading}
-          className="w-full h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full"
         >
           {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
           {isLoading ? t("creating_account") : t("sign_up")}
-        </button>
-        {/* Login link */}
-        <p className="text-center text-sm text-gray-600">
+        </Button>
+        <div className="rounded-[24px] bg-accent/40 px-4 py-4 text-center text-sm text-muted-foreground">
           {t("already_have_account")}{" "}
           <span
             onClick={() => router.push("/auth/login")}
-            className="text-blue-600 font-medium cursor-pointer hover:underline"
+            className="cursor-pointer font-semibold text-primary hover:underline"
           >
             {t("login")}
           </span>
-        </p>
+        </div>
       </form>
     </FloatingModal>
   );

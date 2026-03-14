@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Star, User } from "lucide-react";
+import { Crown, Heart, MapPin, Star, User } from "lucide-react";
 import { useLocale } from "./LocaleProvider";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
@@ -115,101 +115,103 @@ export default function ListingCard({
   };
 
   const imageUrl = getImageUrl();
-
-  // Taller cards on phone, same desktop sizes
-  const imageHeight = compact ? "h-32 sm:h-32 md:h-32" : "h-40 sm:h-40 md:h-48";
-  const padding = compact ? "px-1.5 pt-1.5 pb-2 sm:px-2 sm:pt-2 sm:pb-3" : "px-2.5 pt-2 pb-3 sm:px-3 sm:pt-2.5 sm:pb-3.5";
+  const imageHeight = compact ? "h-32 sm:h-36" : "h-44 sm:h-52";
+  const currency = listing?.currency || "SAR";
+  const locationText = listing?.city || listing?.location || listing?.address || "Near you";
 
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className={`block overflow-hidden transition-all duration-200 mobile-card rounded-[28px_14px_28px_14px] border-none shadow-none ${
-        highlighted ? "ring-2 ring-primary/40" : ""
+      className={`group block overflow-hidden rounded-[28px] transition-all duration-200 ${
+        highlighted ? "ring-2 ring-primary/35" : ""
       }`}
     >
-      <div
-        className={`relative ${imageHeight} bg-muted rounded-[22px_10px_22px_10px] overflow-hidden`}
-      >
-        <img
-          src={imageUrl}
-          alt={listing.title}
-          className="w-full h-full object-cover listing-img-mobile listing-card-img-mobile"
-          loading="lazy"
-          decoding="async"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        />
-        <button
-          onClick={handleFavoriteClick}
-          className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 min-w-[28px] min-h-[28px] flex items-center justify-center touch-target transition-transform duration-150 active:scale-95"
-          aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
-        >
-          <svg
-            className={`w-5 h-5 flex-shrink-0 ${
-              isFavorited ? "text-red-500 fill-red-500" : "text-white drop-shadow"
-            }`}
-            fill={isFavorited ? "currentColor" : "none"}
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-            />
-          </svg>
-        </button>
+      <article className="surface-panel mobile-card overflow-hidden rounded-[28px] bg-card/95 group-hover:-translate-y-1">
+        <div className={`relative overflow-hidden rounded-[24px] ${imageHeight}`}>
+          <img
+            src={imageUrl}
+            alt={listing.title}
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] listing-img-mobile listing-card-img-mobile"
+            loading="lazy"
+            decoding="async"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          />
+          <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
+            <div className="rounded-full border border-white/65 bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-foreground shadow-sm">
+              {listing?.category?.name || "Popular"}
+            </div>
+            <button
+              onClick={handleFavoriteClick}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/90 shadow-sm transition hover:scale-105"
+              aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
+            >
+              <Heart
+                className={`h-4 w-4 ${isFavorited ? "fill-red-500 text-red-500" : "text-foreground"}`}
+              />
+            </button>
+          </div>
+        </div>
 
-        {(effectiveReviewCount > 0 || listing.owner) && (
-          <div className="absolute left-3 right-3 bottom-3 flex items-center justify-between gap-2 text-white text-[11px] drop-shadow-sm">
-            <div className="flex items-center gap-1 min-w-0">
-              <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-black/35 backdrop-blur-[2px]">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-3 h-3 drop-shadow-[0_0_4px_rgba(0,0,0,0.8)] ${
-                      i < Math.round(effectiveRating || 0)
-                        ? "text-yellow-300 fill-yellow-300"
-                        : "text-white/70"
-                    }`}
-                  />
-                ))}
+        <div className="p-4">
+          <div className="mb-2 flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="line-clamp-2 text-sm font-bold leading-6 text-foreground sm:text-base">
+                {listing.title}
+              </h3>
+              <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" />
+                <span className="truncate">{locationText}</span>
               </div>
-              <span className="font-medium truncate drop-shadow-[0_0_4px_rgba(0,0,0,0.8)]">
-                {effectiveReviewCount > 0
-                  ? `${(effectiveRating || 0).toFixed(1)}/5`
-                  : t("no_reviews")}
-              </span>
             </div>
             {listing.owner && (
-              <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/80 shadow-sm">
-                {listing.owner.avatar ? (
-                  <img
-                    src={
-                      listing.owner.avatar.startsWith("http")
-                        ? listing.owner.avatar
-                        : `${API?.replace("/api", "")}${listing.owner.avatar}`
-                    }
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-3.5 h-3.5 text-gray-700" />
+              <div className="relative flex-shrink-0">
+                <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/70 bg-white shadow-sm">
+                  {listing.owner.avatar ? (
+                    <img
+                      src={
+                        listing.owner.avatar.startsWith("http")
+                          ? listing.owner.avatar
+                          : `${API?.replace("/api", "")}${listing.owner.avatar}`
+                      }
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-4 w-4 text-gray-700" />
+                  )}
+                </div>
+                {listing.owner.is_super_host && (
+                  <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-white shadow-sm ring-2 ring-white/80">
+                    <Crown className="h-2.5 w-2.5 fill-current" />
+                  </span>
                 )}
               </div>
             )}
           </div>
-        )}
-      </div>
-      <div className={padding}>
-        <h3 className="font-semibold text-[13px] leading-snug line-clamp-2 text-foreground mb-1">
-          {listing.title}
-        </h3>
-        <p className="text-sm font-semibold text-primary mt-0.5">
-          ${listing.price_per_day}
-          <span className="text-xs font-normal text-muted-foreground"> {t("price_per_day")}</span>
-        </p>
-      </div>
+
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+              <Star className="h-3.5 w-3.5 fill-current" />
+              {effectiveReviewCount > 0 ? (effectiveRating || 0).toFixed(1) : "New"}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {effectiveReviewCount > 0 ? `${effectiveReviewCount} reviews` : "No reviews yet"}
+            </span>
+          </div>
+
+          <div className="flex items-end justify-between gap-3">
+            <p className="text-lg font-black tracking-tight text-primary">
+              {currency} {listing.price_per_day}
+              <span className="ml-1 text-xs font-medium text-muted-foreground">
+                {t("price_per_day")}
+              </span>
+            </p>
+            <span className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+              Rent now
+            </span>
+          </div>
+        </div>
+      </article>
     </Link>
   );
 }

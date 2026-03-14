@@ -8,7 +8,19 @@ import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 import axiosInstance from "@/lib/axios";
-import { Bell, TrendingUp as TrendingUpIcon } from "lucide-react";
+import {
+  Bell,
+  Compass,
+  Heart,
+  Home,
+  Menu,
+  MessageCircle,
+  Plus,
+  Search,
+  TrendingUp as TrendingUpIcon,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 
 const SignupModal = dynamic(() => import("./SignupModal"), { ssr: false });
 const LoginModal = dynamic(() => import("./LoginModal"), { ssr: false });
@@ -210,226 +222,235 @@ export default function Header() {
     window.location.href = "/"; // refresh UI after logout
   }
 
+  const desktopLinks = [
+    { href: "/listings", label: "Rent" },
+    { href: "/listings", label: "Categories" },
+    { href: "/how-it-works", label: "How it Works" },
+  ];
+
+  const mobileNavItems = [
+    { href: "/", label: "Explore", icon: Home, active: pathname === "/" },
+    {
+      href: "/bookings",
+      label: "Bookings",
+      icon: Compass,
+      active: pathname === "/bookings",
+    },
+    {
+      href: "/chat",
+      label: "Messages",
+      icon: MessageCircle,
+      active: pathname === "/chat" || pathname.startsWith("/chat/"),
+      badge: chatUnreadCount,
+    },
+    {
+      href: user ? "/profile" : "/auth/login",
+      label: user ? "My items" : "Account",
+      icon: UserIcon,
+      active: pathname === "/profile" || pathname === "/auth/login",
+    },
+  ];
+
   return (
     <>
-      <header className="bg-background/95 backdrop-blur-md border-b border-border shadow-sm px-3 py-3 sm:px-4 sm:py-3 md:p-4 flex justify-between items-center min-h-[52px] md:min-h-0 gap-2 min-w-0">
-        <Link href="/" className="flex items-center gap-2 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 justify-center p-2 -ml-2 rounded-lg active:opacity-80 flex-shrink-0 max-w-[50vw] md:max-w-none">
-          <img src="/logo.png" alt="EKRA" className="h-8 w-8 flex-shrink-0" />
-          <span className="text-lg sm:text-xl font-bold truncate text-foreground">EKRA</span>
-        </Link>
+      <header className="sticky top-0 z-40 border-b border-white/50 bg-background/70 backdrop-blur-xl">
+        <div className="marketplace-shell flex min-h-[80px] items-center justify-between gap-3 py-3">
+          <Link
+            href="/"
+            className="flex items-center gap-3 rounded-full px-1.5 py-1.5 transition hover:bg-white/40"
+          >
+            <img src="/logo.png" alt="EKRA" className="h-10 w-10 flex-shrink-0" />
+            <div className="min-w-0">
+              <span className="block truncate text-xl font-black tracking-tight text-foreground">
+                Ekra
+              </span>
+              <span className="hidden text-xs text-muted-foreground sm:block">
+                Rent Anything Nearby
+              </span>
+            </div>
+          </Link>
 
-        <div className="hidden md:flex gap-2 items-center">
-          <Link
-            href="/listings"
-            className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
-          >
-            Browse
-          </Link>
-          <Link
-            href="/community-earnings"
-            className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
-          >
-            Community Earnings
-          </Link>
-          {user ? (
-            <>
+          <nav className="hidden items-center gap-1 rounded-full border border-white/60 bg-white/70 p-1 shadow-sm lg:flex">
+            {desktopLinks.map((link) => (
               <Link
-                href="/listings/new"
-                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
+                key={link.label}
+                href={link.href}
+                className="rounded-full px-5 py-2.5 text-sm font-medium text-muted-foreground transition hover:bg-accent/70 hover:text-foreground"
               >
-                List Item
+                {link.label}
               </Link>
-              <Link
-                href="/chat"
-                className="relative px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
-              >
-                Chat
-                {chatUnreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-purple-700 text-white text-xs font-medium">
-                    {chatUnreadCount > 99 ? "99+" : chatUnreadCount}
-                  </span>
-                )}
-              </Link>
-              <Link
-                href="/favorites"
-                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
-              >
-                {t("favorites")}
-              </Link>
-              <Link
-                href="/bookings"
-                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
-              >
-                {t("my_bookings")}
-              </Link>
-              <Link
-                href="/earnings"
-                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
-              >
-                Earnings
-              </Link>
-              <Link
-                href="/profile"
-                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
-              >
-                Profile
-              </Link>
-              <Link
-                href="/settings"
-                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-all text-sm font-medium"
-              >
-                Settings
-              </Link>
-              {/* Notifications bell — expandable dropdown */}
-              <div className="relative" ref={notificationsDropdownRef}>
-                <button
-                  ref={notificationsBellRef}
-                  type="button"
-                  onClick={() => setShowNotificationsDropdown((v) => !v)}
-                  className="relative p-2 rounded-full hover:bg-accent transition-all touch-target text-muted-foreground"
-                  aria-label="Notifications"
-                  aria-expanded={showNotificationsDropdown}
+            ))}
+          </nav>
+
+          <div className="hidden items-center gap-2 md:flex">
+            <ThemeToggle />
+            <LanguageSwitcher />
+            {user && (
+              <>
+                <Link
+                  href="/favorites"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/80 text-muted-foreground shadow-sm transition hover:bg-accent/70 hover:text-foreground"
+                  aria-label={t("favorites")}
                 >
-                  <Bell
-                    className={`w-5 h-5 ${
-                      unreadCount > 0 ? "text-red-600 dark:text-red-400" : "currentColor"
-                    }`}
-                  />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-semibold">
-                      {unreadCount > 99 ? "99+" : unreadCount}
+                  <Heart className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/chat"
+                  className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/80 text-muted-foreground shadow-sm transition hover:bg-accent/70 hover:text-foreground"
+                  aria-label="Chat"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  {chatUnreadCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                      {chatUnreadCount > 99 ? "99+" : chatUnreadCount}
                     </span>
                   )}
-                </button>
-                {showNotificationsDropdown && (
-                  <div className="absolute right-0 top-full mt-2 w-[320px] max-h-[400px] flex flex-col rounded-xl bg-popover border border-border shadow-xl z-50 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                      <span className="font-semibold text-foreground">Notifications</span>
-                      {unreadCount > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => markAllNotificationsRead()}
-                          className="text-xs font-medium text-muted-foreground hover:text-foreground hover:underline"
-                        >
-                          Mark all read
-                        </button>
-                      )}
-                    </div>
-                    <div className="overflow-y-auto flex-1 min-h-0">
-                      {notifications.length === 0 ? (
-                        <div className="px-4 py-8 text-center text-muted-foreground text-sm">
-                          No notifications yet
-                        </div>
-                      ) : (
-                        <ul className="py-1">
-                          {notifications.slice(0, 5).map((n) => (
-                            <li key={n.id}>
-                              <Link
-                                href={n.link || "/notifications"}
-                                onClick={() => {
-                                  setShowNotificationsDropdown(false);
-                                  if (n?.id && !n?.read) markNotificationRead(n.id);
-                                }}
-                                className={`block px-4 py-3 hover:bg-accent text-left border-b border-border last:border-0 ${
-                                  !n.read ? "bg-primary/5 dark:bg-primary/10" : ""
-                                }`}
-                              >
-                                <p className="font-medium text-foreground text-sm">{n.title}</p>
-                                {n.body ? (
-                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
-                                ) : null}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                    <div className="border-t border-border p-2">
-                      <Link
-                        href="/notifications"
-                        onClick={() => setShowNotificationsDropdown(false)}
-                        className="block w-full text-center py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition"
-                      >
-                        View more
-                      </Link>
-                    </div>
-                  </div>
+                </Link>
+              </>
+            )}
+            <div className="relative" ref={notificationsDropdownRef}>
+              <button
+                ref={notificationsBellRef}
+                type="button"
+                onClick={() => setShowNotificationsDropdown((v) => !v)}
+                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/80 text-muted-foreground shadow-sm transition hover:bg-accent/70 hover:text-foreground"
+                aria-label="Notifications"
+                aria-expanded={showNotificationsDropdown}
+              >
+                <Bell className="h-4 w-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
                 )}
-              </div>
-              <div className="w-px h-6 bg-border mx-1" />
-              <ThemeToggle />
-              <LanguageSwitcher />
-              <button
-                onClick={() => handleLogout()}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all text-sm font-medium"
-              >
-                {t("logout")}
               </button>
-            </>
-          ) : (
-            <>
-              <ThemeToggle />
-              <LanguageSwitcher />
-              <button
-                onClick={() => setShowLogin(true)}
-                className="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full transition-all text-sm font-medium"
-              >
-                {t("sign_in") || "Log In"}
-              </button>
-              <button
-                onClick={() => setShowSignup(true)}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all text-sm font-medium"
-              >
-                {t("sign_up") || "Sign Up"}
-              </button>
-            </>
-          )}
-        </div>
+              {showNotificationsDropdown && (
+                <div className="surface-panel absolute right-0 top-full z-50 mt-3 flex max-h-[420px] w-[340px] flex-col overflow-hidden rounded-[28px] bg-popover/95">
+                  <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                    <span className="font-semibold text-foreground">Notifications</span>
+                    {unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => markAllNotificationsRead()}
+                        className="text-xs font-medium text-primary hover:underline"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+                  <div className="min-h-0 flex-1 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                        No notifications yet
+                      </div>
+                    ) : (
+                      <ul className="p-2">
+                        {notifications.slice(0, 5).map((n) => (
+                          <li key={n.id}>
+                            <Link
+                              href={n.link || "/notifications"}
+                              onClick={() => {
+                                setShowNotificationsDropdown(false);
+                                if (n?.id && !n?.read) markNotificationRead(n.id);
+                              }}
+                              className={`mb-2 block rounded-2xl px-4 py-3 transition hover:bg-accent/60 ${
+                                !n.read ? "bg-primary/8 dark:bg-primary/12" : "bg-transparent"
+                              }`}
+                            >
+                              <p className="text-sm font-semibold text-foreground">{n.title}</p>
+                              {n.body ? (
+                                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                  {n.body}
+                                </p>
+                              ) : null}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="border-t border-border p-2">
+                    <Link
+                      href="/notifications"
+                      onClick={() => setShowNotificationsDropdown(false)}
+                      className="block rounded-2xl py-2.5 text-center text-sm font-medium text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
+                    >
+                      View more
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+            {user ? (
+              <>
+                <Link
+                  href="/listings/new"
+                  className="ekra-gradient inline-flex min-h-[44px] items-center justify-center rounded-full px-5 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)]"
+                >
+                  Become a Host
+                </Link>
+                <Link
+                  href="/profile"
+                  className="flex h-11 min-w-[44px] items-center justify-center rounded-full border border-white/60 bg-white/85 px-3 text-sm font-semibold text-foreground shadow-sm"
+                >
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar.startsWith("http") ? user.avatar : `/api${user.avatar}`}
+                      alt=""
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="h-4 w-4" />
+                  )}
+                </Link>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-accent/70 hover:text-foreground"
+                >
+                  {t("sign_in") || "Log In"}
+                </button>
+                <button
+                  onClick={() => setShowSignup(true)}
+                  className="ekra-gradient rounded-full px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)]"
+                >
+                  Become a Host
+                </button>
+              </>
+            )}
+          </div>
 
-        {/* Mobile right side: theme, language, auth buttons, menu */}
-        <div className="md:hidden flex gap-1 items-center flex-shrink-0 min-w-0">
-          <ThemeToggle />
-          <LanguageSwitcher />
-          {!user && (
+          <div className="flex items-center gap-2 md:hidden">
             <button
               type="button"
-              onClick={() => setShowLogin(true)}
-              className="px-3 py-1.5 text-xs font-medium rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              onClick={() => window.location.assign("/listings")}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-white/85 text-muted-foreground shadow-sm"
+              aria-label="Search"
             >
-              {t("sign_in") || "Log In"}
+              <Search className="h-4 w-4" />
             </button>
-          )}
-          <button
-            ref={menuButtonRef}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="min-w-[40px] min-h-[40px] flex items-center justify-center p-2 border border-border rounded-xl hover:bg-accent active:bg-accent/80 transition touch-target"
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <button
+              ref={menuButtonRef}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-white/85 text-muted-foreground shadow-sm"
+              aria-label="Toggle menu"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
+              {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div ref={mobileMenuRef} className="md:hidden bg-background border-t border-border shadow-lg">
+        <div ref={mobileMenuRef} className="surface-panel md:hidden mx-3 mt-3 overflow-hidden rounded-[28px] border border-white/70 bg-background/95">
           {user ? (
             <div className="py-2">
               {/* User info */}
-              <div className="px-5 py-3 flex items-center gap-3 border-b border-border mb-1">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+              <div className="mb-1 flex items-center gap-3 border-b border-border px-5 py-4">
+                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted">
                   {user.avatar ? (
                     <img src={user.avatar.startsWith('http') ? user.avatar : `/api${user.avatar}`} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -447,14 +468,14 @@ export default function Header() {
               {/* Menu links */}
               <Link
                 href="/bookings"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {t("my_bookings")}
               </Link>
               <Link
                 href="/notifications"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Bell
@@ -471,7 +492,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/earnings"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
@@ -479,7 +500,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/profile"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -489,7 +510,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/listings/new"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -499,7 +520,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/community-earnings"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
@@ -507,7 +528,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/top-hosts"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
@@ -515,7 +536,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/start-renting"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
@@ -523,7 +544,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/about"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -533,7 +554,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/contact"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -543,7 +564,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/blog"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -553,7 +574,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/settings"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -563,13 +584,13 @@ export default function Header() {
               </Link>
 
               {/* Divider + Logout */}
-              <div className="border-t border-border mt-1 pt-1">
+              <div className="mt-1 border-t border-border pt-1">
                 <button
                   onClick={() => {
                     handleLogout();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center gap-3 px-5 py-3 text-destructive hover:bg-destructive/10 transition text-sm w-full"
+                  className="flex w-full items-center gap-3 px-5 py-3 text-sm text-destructive transition hover:bg-destructive/10"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -582,7 +603,7 @@ export default function Header() {
             <div className="py-2">
               <Link
                 href="/community-earnings"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
@@ -590,7 +611,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/start-renting"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <TrendingUpIcon className="w-5 h-5 text-muted-foreground" />
@@ -598,7 +619,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/about"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -608,7 +629,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/contact"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -618,7 +639,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/blog"
-                className="flex items-center gap-3 px-5 py-3 text-muted-foreground hover:bg-accent hover:text-foreground transition text-sm"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -626,7 +647,28 @@ export default function Header() {
                 </svg>
                 Blog
               </Link>
-              {/* Auth buttons are now in the top navbar on mobile */}
+              <div className="px-5 py-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLogin(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="mb-3 w-full rounded-full border border-border bg-white px-4 py-3 text-sm font-medium text-foreground"
+                >
+                  {t("sign_in") || "Log in"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSignup(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="ekra-gradient w-full rounded-full px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)]"
+                >
+                  Become a Host
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -651,7 +693,7 @@ export default function Header() {
         />
       )}
 
-       {/* Mobile Bottom Navigation — glass + orange active state + animations */}
+      {/* Mobile Bottom Navigation */}
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-bottom-nav-enter"
         style={{
@@ -660,112 +702,56 @@ export default function Header() {
           paddingRight: "max(0.75rem, var(--safe-area-inset-right))",
         }}
       >
-        <div className="mb-2 mx-0 rounded-2xl bg-background/95 backdrop-blur-xl border border-purple-500/30 shadow-[0_-6px_28px_rgba(147,51,234,0.35)] dark:shadow-[0_-6px_28px_rgba(88,28,135,0.55)] transition-all duration-300">
-          <div className="flex justify-around items-center h-14 px-0.5 gap-0">
-            {/* Home */}
-            <Link
-              href="/"
-              className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
-                pathname === "/"
-                  ? "bg-purple-500/10 text-purple-500 ring-1 ring-purple-400/70"
-                  : "text-muted-foreground hover:text-purple-400 active:bg-purple-500/10"
-              }`}
-              title="Home"
-            >
-              <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-              <span className="text-[10px] mt-0.5 font-medium">Home</span>
-            </Link>
-
-            {/* Browse */}
-            <Link
-              href="/listings"
-              className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
-                pathname === "/listings" || (pathname.startsWith("/listings/") && pathname !== "/listings/new" && !pathname.includes("/request_booking"))
-                  ? "bg-purple-500/10 text-purple-500 ring-1 ring-purple-400/70"
-                  : "text-muted-foreground hover:text-purple-400 active:bg-purple-500/10"
-              }`}
-              title="Browse"
-            >
-              <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-              <span className="text-[10px] mt-0.5 font-medium">Browse</span>
-            </Link>
-
-            {/* Favorites */}
-            <Link
-              href="/favorites"
-              className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 relative ${
-                pathname === "/favorites"
-                  ? "bg-purple-500/10 text-purple-500 ring-1 ring-purple-400/70"
-                  : "text-muted-foreground hover:text-purple-400 active:bg-purple-500/10"
-              }`}
-              title="Favorites"
-            >
-              <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-              <span className="text-[10px] mt-0.5 font-medium">Saved</span>
-            </Link>
-
-            {/* Chat */}
-            <Link
-              href="/chat"
-              className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 relative ${
-                pathname === "/chat" || pathname.startsWith("/chat/")
-                  ? "bg-purple-500/10 text-purple-500 ring-1 ring-purple-400/70"
-                  : "text-muted-foreground hover:text-purple-400 active:bg-purple-500/10"
-              }`}
-              title="Messages"
-            >
-              <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-              {chatUnreadCount > 0 && (
-                <span className="absolute top-1 right-2 min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-purple-700 text-white text-[10px] font-medium">
-                  {chatUnreadCount > 99 ? "99+" : chatUnreadCount}
-                </span>
-              )}
-              <span className="text-[10px] mt-0.5 font-medium">Chat</span>
-            </Link>
-
-            {/* Profile / Login */}
-            {user ? (
+        <div className="mx-auto mb-2 flex max-w-sm items-end justify-between rounded-[32px] border border-white/60 bg-background/95 px-4 py-3 shadow-[0_-12px_45px_rgba(124,58,237,0.22)] backdrop-blur-xl">
+          {mobileNavItems.slice(0, 2).map((item) => {
+            const Icon = item.icon;
+            return (
               <Link
-                href="/profile"
-                className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl touch-target transition-all duration-200 ease-out active:scale-95 ${
-                  pathname === "/profile"
-                    ? "bg-purple-500/10 text-purple-500 ring-1 ring-purple-400/70"
-                    : "text-muted-foreground hover:text-purple-400 active:bg-purple-500/10"
+                key={item.label}
+                href={item.href}
+                className={`relative flex min-w-[58px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1.5 text-[11px] font-medium transition ${
+                  item.active ? "text-primary" : "text-muted-foreground"
                 }`}
-                title="Profile"
               >
-                <svg className="w-[22px] h-[22px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-                <span className="text-[10px] mt-0.5 font-medium">Profile</span>
+                <Icon className={`h-5 w-5 ${item.active ? "scale-105" : ""}`} />
+                <span>{item.label}</span>
+                {item.badge ? (
+                  <span className="absolute right-2 top-0 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold text-primary-foreground">
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </span>
+                ) : null}
               </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowLogin(true)}
-                className="flex flex-col items-center justify-center min-w-[52px] min-h-[52px] rounded-xl text-muted-foreground hover:text-purple-400 active:scale-95 active:bg-purple-500/10 touch-target transition-all duration-200 ease-out"
-                title="Login"
+            );
+          })}
+
+          <Link
+            href="/listings/new"
+            className="-mt-8 flex h-16 w-16 items-center justify-center rounded-[24px] ekra-gradient text-primary-foreground shadow-[0_16px_35px_rgba(124,58,237,0.42)]"
+            title="List item"
+          >
+            <Plus className="h-7 w-7" />
+          </Link>
+
+          {mobileNavItems.slice(2).map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`relative flex min-w-[58px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1.5 text-[11px] font-medium transition ${
+                  item.active ? "text-primary" : "text-muted-foreground"
+                }`}
               >
-                <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                  <polyline points="10 17 15 12 10 7"/>
-                  <line x1="15" y1="12" x2="3" y2="12"/>
-                </svg>
-                <span className="text-[10px] mt-0.5 font-medium">Login</span>
-              </button>
-            )}
-          </div>
+                <Icon className={`h-5 w-5 ${item.active ? "scale-105" : ""}`} />
+                <span>{item.label}</span>
+                {item.badge ? (
+                  <span className="absolute right-2 top-0 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold text-primary-foreground">
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </span>
+                ) : null}
+              </Link>
+            );
+          })}
         </div>
       </nav>
     </>

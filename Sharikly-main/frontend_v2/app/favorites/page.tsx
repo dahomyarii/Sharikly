@@ -66,45 +66,55 @@ export default function FavoritesPage() {
 
   if (!list.length && !loading) {
     return (
-      <div className="mx-auto max-w-5xl px-3 py-4 sm:p-4 mobile-content text-center py-12 sm:py-16 pb-20 md:pb-12">
-        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-foreground">
-          {t("my_favorites")}
-        </h1>
-        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
+      <div className="marketplace-shell py-4 pb-24 md:pb-12">
+        <div className="surface-panel px-4 py-12 text-center sm:px-8 sm:py-16">
+          <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
+            Saved
+          </p>
+          <h1 className="mt-3 text-3xl font-black tracking-tight text-foreground">
+            {t("my_favorites")}
+          </h1>
+          <div className="mx-auto mb-6 mt-6 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
           <Heart className="w-8 h-8 text-muted-foreground" />
-        </div>
-        <p className="text-muted-foreground font-medium mb-1">{t("no_favorites")}</p>
-        <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-          Save listings you like by tapping the heart. They'll show up here.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href="/listings"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 font-medium touch-target"
-          >
-            {t("browse")}
-          </Link>
-          <Link
-            href="/listings/new"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] border border-border text-foreground rounded-xl hover:bg-accent font-medium touch-target"
-          >
-            <Plus className="w-4 h-4" />
-            {t("list_new")}
-          </Link>
+          </div>
+          <p className="mb-1 font-medium text-muted-foreground">{t("no_favorites")}</p>
+          <p className="mx-auto mb-6 max-w-sm text-sm text-muted-foreground">
+            Save listings you like by tapping the heart. They&apos;ll show up here.
+          </p>
+          <div className="flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              href="/listings"
+              className="ekra-gradient inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-5 py-3 font-medium text-primary-foreground touch-target"
+            >
+              {t("browse")}
+            </Link>
+            <Link
+              href="/listings/new"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-border px-5 py-3 font-medium text-foreground touch-target hover:bg-accent"
+            >
+              <Plus className="w-4 h-4" />
+              {t("list_new")}
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   if (error) {
-    return <div className="px-3 py-4 mobile-content text-red-600">{t("failed_to_load")}</div>;
+    return <div className="marketplace-shell py-4 text-red-600">{t("failed_to_load")}</div>;
   }
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-5xl px-3 py-4 sm:p-4 mobile-content pb-20 md:pb-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-8">{t("my_favorites")}</h1>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+      <div className="marketplace-shell py-4 pb-24 md:pb-10">
+        <div className="mb-6">
+          <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
+            Saved
+          </p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-foreground">{t("my_favorites")}</h1>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <SkeletonLoader key={i} />
           ))}
@@ -114,15 +124,25 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-3 py-4 sm:p-4 mobile-content pb-20 md:pb-8">
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-8">{t("my_favorites")}</h1>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+    <div className="marketplace-shell py-4 pb-24 md:pb-10">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
+            Saved
+          </p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-foreground">{t("my_favorites")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Keep your favorite rentals in one place and come back when you&apos;re ready to book.
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {list.map((favorite: any) => (
           <ListingCard key={favorite.id} listing={favorite.listing} />
         ))}
       </div>
       {nextPage && (
-        <div className="mt-6 sm:mt-8 flex justify-center">
+        <div className="mt-6 flex justify-center sm:mt-8">
           <Button
             variant="outline"
             onClick={loadMore}
