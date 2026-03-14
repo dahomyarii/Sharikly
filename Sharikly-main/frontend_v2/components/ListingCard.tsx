@@ -119,6 +119,54 @@ export default function ListingCard({
   const currency = listing?.currency || "SAR";
   const locationText = listing?.city || listing?.location || listing?.address || "Near you";
 
+  if (compact) {
+    return (
+      <Link
+        href={`/listings/${listing.id}`}
+        className={`group block overflow-hidden rounded-[22px] transition-all duration-200 ${
+          highlighted ? "ring-2 ring-primary/35" : ""
+        }`}
+      >
+        <article className="overflow-hidden rounded-[22px] bg-white shadow-[0_12px_35px_rgba(25,17,52,0.06)] transition group-hover:-translate-y-1">
+          <div className="relative">
+            <img
+              src={imageUrl}
+              alt={listing.title}
+              className={`h-full w-full object-cover ${imageHeight}`}
+              loading="lazy"
+              decoding="async"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+            />
+            <button
+              onClick={handleFavoriteClick}
+              className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-slate-700 shadow-sm"
+              aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
+            >
+              <Heart
+                className={`h-4 w-4 ${isFavorited ? "fill-red-500 text-red-500" : "text-slate-600"}`}
+              />
+            </button>
+          </div>
+          <div className="px-3 pb-3 pt-2.5">
+            <h3 className="line-clamp-2 text-[15px] font-bold leading-5 text-slate-900">
+              {listing.title}
+            </h3>
+            <div className="mt-2 flex items-end justify-between gap-2">
+              <p className="text-sm font-black text-amber-500">
+                {currency} {listing.price_per_day}
+                <span className="ml-1 font-medium text-slate-500">{t("price_per_day")}</span>
+              </p>
+              <div className="flex items-center gap-1 text-sm text-slate-700">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                <span>{effectiveReviewCount > 0 ? (effectiveRating || 0).toFixed(1) : "New"}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </Link>
+    );
+  }
+
   return (
     <Link
       href={`/listings/${listing.id}`}

@@ -9,7 +9,7 @@ import { Suspense, useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, MapPin, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, Gamepad2, Headphones, Home, MapPin, MoreHorizontal, Search, SlidersHorizontal, Sparkles, Tent, X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
 const ListingsMap = dynamic(() => import("@/components/ListingsMap"), { ssr: false });
@@ -60,6 +60,16 @@ const inputClasses =
 const selectClasses =
   "min-h-[48px] rounded-2xl border border-white/65 bg-background/90 px-4 text-sm text-foreground shadow-sm outline-none transition focus:ring-2 focus:ring-primary/30";
 const labelClasses = "mb-1.5 block text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground";
+
+function getCategoryIcon(categoryName: string) {
+  const normalized = categoryName.toLowerCase();
+  if (normalized.includes("camera") || normalized.includes("photo")) return Camera;
+  if (normalized.includes("audio") || normalized.includes("head")) return Headphones;
+  if (normalized.includes("camp") || normalized.includes("tent")) return Tent;
+  if (normalized.includes("home") || normalized.includes("house")) return Home;
+  if (normalized.includes("game") || normalized.includes("console")) return Gamepad2;
+  return MoreHorizontal;
+}
 
 function ListingsPageContent() {
   const { t } = useLocale();
@@ -421,6 +431,28 @@ function ListingsPageContent() {
           )}
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
+            {Array.isArray(categories) && categories.slice(0, 8).map((cat: any) => {
+              const Icon = getCategoryIcon(cat.name || "");
+              const isActive = category === String(cat.id);
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => {
+                    setCategory(isActive ? "" : String(cat.id));
+                    setPage(1);
+                  }}
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold shadow-sm transition ${
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border bg-background/90 text-foreground"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {cat.name}
+                </button>
+              );
+            })}
             {(search || category || city || minPrice || maxPrice || ratingMin || availableFrom || availableTo) && (
               <button
                 type="button"
