@@ -45,6 +45,8 @@ export interface ListingForMap {
   longitude?: number | null;
   pickup_radius_m?: number | null;
   title?: string;
+  price_per_day?: number | string | null;
+  currency?: string | null;
 }
 
 interface ListingsMapProps {
@@ -93,14 +95,18 @@ export default function ListingsMap({
     );
 
     markersRef.current = withCoords.map((listing) => {
+      const numericPrice = Number(listing.price_per_day);
+      const markerLabel = Number.isFinite(numericPrice) && numericPrice > 0
+        ? `${listing.currency || "SAR"} ${Math.round(numericPrice)}`
+        : "View";
       const el = document.createElement("button");
       el.type = "button";
       el.className = "listings-map-marker";
       el.innerHTML = `
         <div style="
-          min-width: 38px;
-          height: 38px;
-          padding: 0 12px;
+          min-width: 34px;
+          height: 34px;
+          padding: 0 10px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -108,12 +114,12 @@ export default function ListingsMap({
           background: ${selectedIdRef.current === listing.id ? "linear-gradient(135deg,#7c3aed,#9333ea)" : "rgba(255,255,255,0.94)"};
           color: ${selectedIdRef.current === listing.id ? "#ffffff" : "#281a46"};
           border: 1px solid rgba(255,255,255,0.85);
-          box-shadow: 0 14px 34px rgba(34, 17, 68, 0.18);
+          box-shadow: 0 10px 26px rgba(34, 17, 68, 0.16);
           cursor: pointer;
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 700;
           backdrop-filter: blur(10px);
-        ">${selectedIdRef.current === listing.id ? "Selected" : "View"}</div>
+        ">${markerLabel}</div>
       `;
       el.onclick = () => onSelectListing?.(listing.id);
       return new mapboxgl.Marker({ element: el })
@@ -128,7 +134,7 @@ export default function ListingsMap({
         [Math.min(...lngs), Math.min(...lats)],
         [Math.max(...lngs), Math.max(...lats)]
       );
-      mapInstance.fitBounds(bounds, { padding: 48, maxZoom: 12 });
+      mapInstance.fitBounds(bounds, { padding: 32, maxZoom: 12 });
     }
   }, [onSelectListing]);
 
@@ -217,7 +223,7 @@ export default function ListingsMap({
     <div className={`overflow-hidden rounded-[28px] border border-white/70 bg-muted/20 ${className}`}>
       <div
         ref={mapContainer}
-        className="h-full min-h-[320px] w-full rounded-[24px] sm:min-h-[360px] lg:min-h-[520px]"
+        className="h-full min-h-[260px] w-full rounded-[24px] sm:min-h-[300px] lg:min-h-[420px]"
       />
       <div className="flex items-center justify-end gap-2 border-t border-border bg-background/80 px-3 py-2 text-[10px] text-muted-foreground">
         <span>© Mapbox</span>

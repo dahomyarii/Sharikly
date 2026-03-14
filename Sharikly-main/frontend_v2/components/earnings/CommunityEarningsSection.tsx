@@ -57,9 +57,9 @@ export function CommunityEarningsSection() {
   }, [])
 
   return (
-    <section className="border-t border-border bg-muted/40 py-10 sm:py-14">
+    <section className="border-t border-border bg-muted/40 py-8 sm:py-10">
       <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 mobile-content">
-        <div className="mb-6 max-w-2xl">
+        <div className="mb-5 max-w-2xl">
           <p className="section-label mb-2 text-xs uppercase tracking-wider text-muted-foreground">
             {text.eyebrow}
           </p>
@@ -71,7 +71,7 @@ export function CommunityEarningsSection() {
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
             <div className="grid gap-4 sm:grid-cols-2">
               <Card className="rounded-3xl border-border/70 shadow-sm">
-                <CardContent className="p-6">
+                <CardContent className="p-5">
                   <p className="text-sm text-muted-foreground">{text.total}</p>
                   <p className="mt-3 text-3xl font-semibold text-foreground">
                     {formatCompactSar(data.total_lessor_earnings)}
@@ -79,7 +79,7 @@ export function CommunityEarningsSection() {
                 </CardContent>
               </Card>
               <Card className="rounded-3xl border-border/70 shadow-sm">
-                <CardContent className="p-6">
+                <CardContent className="p-5">
                   <p className="text-sm text-muted-foreground">{text.average}</p>
                   <p className="mt-3 text-3xl font-semibold text-foreground">
                     {formatSar(data.average_lessor_income_per_month)}
@@ -87,7 +87,7 @@ export function CommunityEarningsSection() {
                 </CardContent>
               </Card>
               <Card className="rounded-3xl border-border/70 shadow-sm sm:col-span-2">
-                <CardContent className="p-6">
+                <CardContent className="p-5">
                   <div className="flex flex-wrap gap-3">
                     <Button asChild>
                       <Link href="/community-earnings">{text.publicPage}</Link>
@@ -101,16 +101,16 @@ export function CommunityEarningsSection() {
             </div>
 
             <Card className="rounded-3xl border-border/70 shadow-sm">
-              <CardContent className="p-6">
-                <div className="mb-4 flex items-center justify-between">
+              <CardContent className="p-5">
+                <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-foreground">{text.topHosts}</h3>
                   <Badge variant="secondary">{data.highest_earning_lessors_per_month.length}</Badge>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {data.highest_earning_lessors_per_month.map((host) => (
                     <div
                       key={host.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 p-4"
+                      className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 p-3.5"
                     >
                       <div>
                         <p className="font-medium text-foreground">{host.username}</p>

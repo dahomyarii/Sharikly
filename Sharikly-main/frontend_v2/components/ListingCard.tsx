@@ -118,22 +118,22 @@ export default function ListingCard({
   const currency = listing?.currency || "SAR";
   const displayRating = effectiveReviewCount > 0 ? (effectiveRating || 0).toFixed(1) : "New";
   const imageSizing = compact
-    ? "aspect-[1.04/0.82] p-3 sm:p-4"
-    : "aspect-[1.04/0.82] p-4";
+    ? "aspect-[1.04/0.8] p-2.5 sm:p-3"
+    : "aspect-[1.04/0.8] p-3.5";
 
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className={`group block rounded-[18px] transition-all duration-200 ${
+      className={`group block rounded-[16px] transition-all duration-200 ${
         highlighted ? "ring-2 ring-primary/35" : ""
       }`}
     >
-      <article className="overflow-hidden rounded-[18px] border border-slate-200/80 bg-white shadow-[0_10px_28px_rgba(15,23,42,0.06)] transition group-hover:-translate-y-1 group-hover:shadow-[0_16px_36px_rgba(15,23,42,0.1)]">
+      <article className="overflow-hidden rounded-[16px] border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(15,23,42,0.08)]">
         <div className={`relative ${imageSizing}`}>
           <img
             src={imageUrl}
             alt={listing.title}
-            className="h-full w-full rounded-[14px] object-contain bg-white transition duration-300 group-hover:scale-[1.02]"
+            className="h-full w-full rounded-[12px] object-contain bg-white transition duration-300 group-hover:scale-[1.02]"
             loading="lazy"
             decoding="async"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
@@ -151,20 +151,20 @@ export default function ListingCard({
           )}
         </div>
 
-        <div className="px-3 pb-3.5 pt-0.5 sm:px-4 sm:pb-4">
-          <h3 className="line-clamp-2 text-[13px] font-semibold leading-[1.25] text-slate-800 sm:text-[14px]">
+        <div className="px-2.5 pb-3 pt-0 sm:px-3 sm:pb-3.5">
+          <h3 className="line-clamp-2 text-[12px] font-semibold leading-[1.25] text-slate-800 sm:text-[13px]">
             {listing.title}
           </h3>
-          <div className="mt-2 flex items-end justify-between gap-2">
-            <p className="text-[15px] font-bold leading-none text-amber-500 sm:text-base">
+          <div className="mt-1.5 flex items-end justify-between gap-2">
+            <p className="text-[14px] font-bold leading-none text-amber-500 sm:text-[15px]">
               {currency} {listing.price_per_day}
-              <span className="ml-1 text-[12px] font-medium text-slate-500">
+              <span className="ml-1 text-[11px] font-medium text-slate-500">
                 {t("price_per_day")}
               </span>
             </p>
-            <div className="flex items-center gap-1 text-[14px] font-semibold leading-none text-slate-700">
+            <div className="flex items-center gap-1 text-[12px] font-semibold leading-none text-slate-700 sm:text-[13px]">
               <span>{displayRating}</span>
-              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400 sm:h-3.5 sm:w-3.5" />
             </div>
           </div>
         </div>

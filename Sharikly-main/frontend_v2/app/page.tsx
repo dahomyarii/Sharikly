@@ -14,7 +14,6 @@ import { buildListingsQuery, toListingsArray } from "@/lib/listingsUtils";
 import {
   Camera,
   ChevronRight,
-  Compass,
   Gamepad2,
   Headphones,
   Home,
@@ -33,13 +32,6 @@ const fetcher = async (url: string) => {
   const res = await axiosInstance.get(url);
   return res.data;
 };
-
-function getListingImageUrl(listing: any) {
-  const imageUrl = listing?.images?.[0]?.image;
-  if (!imageUrl) return "/image.jpeg";
-  if (imageUrl.startsWith("http")) return imageUrl;
-  return `${API?.replace("/api", "")}${imageUrl}`;
-}
 
 function getCategoryIcon(categoryName: string) {
   const normalized = categoryName.toLowerCase();
@@ -73,10 +65,18 @@ export default function HomePage() {
 
   const listings = useMemo(() => toListingsArray(listingsData), [listingsData]);
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
-  const featuredListing = listings[0];
-  const popularListings = listings.slice(0, 6);
+  const popularListings = listings.slice(0, 4);
   const visibleCategories = categories.slice(0, 6);
-  const exploreListings = listings.slice(6, 12);
+  const exploreListings = listings.slice(4, 7);
+  const exploreShowcase = exploreListings.length > 0 ? exploreListings : popularListings.slice(0, 3);
+  const averageDailyRate = useMemo(() => {
+    const prices = listings
+      .map((listing: any) => Number(listing?.price_per_day))
+      .filter((value) => Number.isFinite(value) && value > 0);
+    if (prices.length === 0) return 190;
+    return Math.round(prices.reduce((sum, value) => sum + value, 0) / prices.length);
+  }, [listings]);
+  const estimatedMonthlyEarnings = averageDailyRate * 12;
 
   useEffect(() => {
     try {
@@ -114,23 +114,23 @@ export default function HomePage() {
   return (
     <div className="pb-8">
       <section className="marketplace-shell pt-4 sm:pt-6">
-        <div className="grid gap-4 lg:grid-cols-[1.45fr_0.9fr]">
-          <div className="surface-panel relative overflow-hidden rounded-[40px] px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
-            <div className="floating-orb left-[-3rem] top-[-2rem] h-28 w-28 bg-primary/15" />
-            <div className="floating-orb bottom-[-2rem] right-[-1rem] h-24 w-24 bg-emerald-300/25" />
+        <div className="grid gap-3 lg:grid-cols-[1.32fr_0.78fr]">
+          <div className="surface-panel relative overflow-hidden rounded-[34px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
+            <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/15" />
+            <div className="floating-orb bottom-[-2rem] right-[-1rem] h-20 w-20 bg-emerald-300/25" />
             <div className="relative z-10">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.28em] text-primary/80">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/80 sm:text-xs">
                 Ekra marketplace
               </p>
-              <h1 className="max-w-2xl text-4xl font-black leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              <h1 className="max-w-2xl text-[2.6rem] font-black leading-[1.02] tracking-tight text-foreground sm:text-[3.25rem] lg:text-[4rem]">
                 Rent <span className="text-primary">Anything</span> from People Near You
               </h1>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
+              <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground sm:text-[15px]">
                 Search trusted local rentals, book in minutes, and start earning from the gear
                 you already own.
               </p>
 
-              <div className="glass-panel mt-8 rounded-[30px] p-2">
+              <div className="glass-panel mt-5 rounded-[26px] p-2">
                 <div className="grid gap-2 md:grid-cols-[1.7fr_1fr_1fr_auto]">
                   <div className="relative">
                     <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -139,13 +139,13 @@ export default function HomePage() {
                       onChange={(e) => setHeroSearch(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                       placeholder="Search items or location..."
-                      className="h-14 w-full rounded-[22px] border border-transparent bg-white/95 pl-11 pr-4 text-sm outline-none"
+                      className="h-12 w-full rounded-[20px] border border-transparent bg-white/95 pl-11 pr-4 text-sm outline-none"
                     />
                   </div>
                   <select
                     value={heroCategory}
                     onChange={(e) => setHeroCategory(e.target.value)}
-                    className="h-14 rounded-[22px] border border-transparent bg-white/95 px-4 text-sm outline-none"
+                    className="h-12 rounded-[20px] border border-transparent bg-white/95 px-4 text-sm outline-none"
                   >
                     <option value="">{t("all_categories")}</option>
                     {categories.map((category: any) => (
@@ -160,20 +160,20 @@ export default function HomePage() {
                       value={heroCity}
                       onChange={(e) => setHeroCity(e.target.value)}
                       placeholder="Select city"
-                      className="h-14 w-full rounded-[22px] border border-transparent bg-white/95 pl-11 pr-4 text-sm outline-none"
+                      className="h-12 w-full rounded-[20px] border border-transparent bg-white/95 pl-11 pr-4 text-sm outline-none"
                     />
                   </div>
                   <Button
                     size="lg"
                     onClick={handleSearch}
-                    className="h-14 rounded-[22px] px-8"
+                    className="h-12 rounded-[20px] px-6"
                   >
                     Search
                   </Button>
                 </div>
               </div>
 
-              <div className="mt-5 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              <div className="mt-4 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                 {(visibleCategories.length > 0 ? visibleCategories : []).map((category: any) => {
                   const Icon = getCategoryIcon(category.name);
                   return (
@@ -181,7 +181,7 @@ export default function HomePage() {
                       key={category.id}
                       type="button"
                       onClick={() => handleCategoryOpen(category.id)}
-                      className="flex min-w-max items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-3 text-sm font-medium text-foreground shadow-sm"
+                      className="flex min-w-max items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3.5 py-2 text-xs font-medium text-foreground shadow-sm sm:text-sm"
                     >
                       <Icon className="h-4 w-4 text-primary" />
                       {category.name}
@@ -197,7 +197,7 @@ export default function HomePage() {
                   ].map(([label, Icon]: any) => (
                     <span
                       key={label}
-                      className="flex min-w-max items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-3 text-sm font-medium text-foreground shadow-sm"
+                      className="flex min-w-max items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3.5 py-2 text-xs font-medium text-foreground shadow-sm sm:text-sm"
                     >
                       <Icon className="h-4 w-4 text-primary" />
                       {label}
@@ -207,63 +207,45 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="grid gap-4">
-            <div className="surface-panel relative overflow-hidden rounded-[36px] p-5 sm:p-6">
-              <div className="floating-orb right-0 top-0 h-24 w-24 bg-primary/18" />
-              <div className="relative z-10 flex h-full flex-col justify-between gap-6">
+          <div className="surface-panel relative overflow-hidden rounded-[32px] border border-white/70 p-3 sm:p-4">
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: "url(/image.jpeg)" }}
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(25,17,52,0.18),rgba(25,17,52,0.54))]" />
+            <div className="relative z-10 flex min-h-[260px] flex-col justify-between sm:min-h-[300px]">
+              <div className="max-w-[280px] rounded-[24px] bg-white/78 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.12)] backdrop-blur-md">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                     Start earning
                   </p>
-                  <h2 className="mt-3 text-3xl font-black leading-tight text-foreground">
-                    Turn your items into monthly income
+                  <h2 className="mt-2 text-2xl font-black leading-tight text-foreground">
+                    Turn your items into income
                   </h2>
-                  <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                    List your camera gear, gaming devices, tools, and more. Meet renters nearby
-                    and get paid securely.
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    List your camera gear, gaming devices, tools, and more with the same premium
+                    flow.
                   </p>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[26px] bg-white/90 p-4 shadow-sm">
-                    <p className="text-sm text-muted-foreground">Estimated earnings</p>
-                    <p className="mt-1 text-4xl font-black text-emerald-500">SAR 2,300</p>
-                    <p className="text-sm text-muted-foreground">/ month</p>
-                  </div>
-                  <div className="rounded-[26px] ekra-gradient-soft p-4">
-                    <p className="text-sm font-semibold text-foreground">Fast payouts</p>
-                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                      Verified renters, secure bookings, and simple listing management.
-                    </p>
-                  </div>
-                </div>
+              </div>
+              <div className="max-w-[280px] rounded-[24px] bg-white/84 p-3.5 shadow-[0_18px_40px_rgba(15,23,42,0.12)] backdrop-blur-md">
                 <Link href="/listings/new">
-                  <Button size="lg" className="w-full justify-center">
+                  <Button size="lg" className="h-11 w-full justify-center rounded-full">
                     <Plus className="h-4 w-4" />
                     List Your Item
                   </Button>
                 </Link>
               </div>
             </div>
-
-            <div className="surface-panel overflow-hidden rounded-[36px] p-5 sm:hidden">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                Featured rental
-              </p>
-              {featuredListing ? (
-                <div className="mt-3">
-                  <ListingCard listing={featuredListing} compact />
-                </div>
-              ) : (
-                <SkeletonLoader />
-              )}
-            </div>
           </div>
         </div>
       </section>
 
-      <section className="marketplace-shell mt-9">
+      <section className="marketplace-shell mt-7">
         <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-3xl font-black tracking-tight text-slate-900">Popular Items</h2>
+          <h2 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+            Popular Items
+          </h2>
           <Link
             href="/listings"
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary"
@@ -272,58 +254,103 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {listingsLoading
-            ? Array.from({ length: 6 }).map((_, idx) => <SkeletonLoader key={idx} />)
+            ? Array.from({ length: 4 }).map((_, idx) => <SkeletonLoader key={idx} />)
             : popularListings.map((listing: any) => (
                 <ListingCard key={listing.id} listing={listing} compact />
               ))}
         </div>
       </section>
 
-      <section className="marketplace-shell mt-9">
-        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="surface-panel rounded-[36px] p-5 sm:p-6">
-            <div className="mb-5 flex items-end justify-between">
+      <section className="marketplace-shell mt-7">
+        <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="surface-panel rounded-[32px] p-4 sm:p-5">
+            <div className="mb-4 flex items-end justify-between">
               <div>
                 <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
                   Explore more
                 </p>
-                <h2 className="mt-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+                <h2 className="mt-2 text-xl font-black tracking-tight text-foreground sm:text-2xl">
                   Find the right rental for every plan
                 </h2>
               </div>
+              <Link href="/listings" className="text-sm font-semibold text-primary">
+                Browse all
+              </Link>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {listingsLoading
-                ? Array.from({ length: 6 }).map((_, idx) => <SkeletonLoader key={idx} />)
-                : exploreListings.map((listing: any) => (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {listingsLoading ? (
+                Array.from({ length: 3 }).map((_, idx) => <SkeletonLoader key={idx} />)
+              ) : exploreShowcase.length > 0 ? (
+                exploreShowcase.map((listing: any) => (
                     <ListingCard key={listing.id} listing={listing} compact />
-                  ))}
+                  ))
+              ) : (
+                <div className="col-span-full grid gap-3 sm:grid-cols-3">
+                  {(visibleCategories.length > 0 ? visibleCategories.slice(0, 3) : []).map(
+                    (category: any) => {
+                      const Icon = getCategoryIcon(category.name);
+                      return (
+                        <button
+                          key={category.id}
+                          type="button"
+                          onClick={() => handleCategoryOpen(category.id)}
+                          className="rounded-[24px] border border-white/70 bg-white/80 p-4 text-left shadow-sm"
+                        >
+                          <Icon className="h-5 w-5 text-primary" />
+                          <p className="mt-3 text-sm font-semibold text-foreground">
+                            {category.name}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                            Quick access to current rentals in this category.
+                          </p>
+                        </button>
+                      );
+                    }
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {visibleCategories.slice(0, 4).map((category: any) => {
+                const Icon = getCategoryIcon(category.name);
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => handleCategoryOpen(category.id)}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-xs font-medium text-foreground shadow-sm"
+                  >
+                    <Icon className="h-3.5 w-3.5 text-primary" />
+                    {category.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="surface-panel rounded-[36px] p-5 sm:p-6">
-            <div className="mb-5 flex items-center justify-between">
+          <div className="surface-panel rounded-[32px] p-4 sm:p-5">
+            <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
                   Host highlights
                 </p>
-                <h2 className="mt-2 text-2xl font-black tracking-tight text-foreground">
+                <h2 className="mt-2 text-xl font-black tracking-tight text-foreground sm:text-2xl">
                   Earn with your items
                 </h2>
               </div>
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div className="grid gap-3">
-              <div className="rounded-[28px] bg-white/90 p-4 shadow-sm">
+              <div className="rounded-[24px] bg-white/90 p-4 shadow-sm">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-semibold text-foreground">Top hosts this month</span>
                   <span className="success-chip rounded-full px-3 py-1 text-xs font-semibold">
                     Growing
                   </span>
                 </div>
-                <div className="space-y-3 text-sm">
+                <div className="space-y-2.5 text-sm">
                   {[
                     ["Ahmed", "SAR 18,200"],
                     ["Khalid", "SAR 14,400"],
@@ -336,17 +363,38 @@ export default function HomePage() {
                   ))}
                 </div>
               </div>
-              <div className="rounded-[28px] ekra-gradient p-5 text-primary-foreground shadow-[0_18px_40px_rgba(124,58,237,0.28)]">
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-foreground/75">
-                  Start today
-                </p>
-                <h3 className="mt-2 text-2xl font-black">Have a similar item?</h3>
-                <p className="mt-2 text-sm leading-7 text-primary-foreground/85">
-                  Turn it into income on Ekra and start receiving requests from renters nearby.
-                </p>
-                <Link href="/listings/new" className="mt-4 inline-flex">
-                  <Button variant="soft" size="lg" className="text-sm font-semibold">
-                    + List your item
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[24px] ekra-gradient-soft p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                    Estimated earnings
+                  </p>
+                  <p className="mt-2 text-3xl font-black text-emerald-500">
+                    SAR {estimatedMonthlyEarnings.toLocaleString()}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Approximate monthly income from the current average daily rate.
+                  </p>
+                </div>
+                <div className="rounded-[24px] bg-white/90 p-4 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                    Avg daily rate
+                  </p>
+                  <p className="mt-2 text-3xl font-black text-foreground">SAR {averageDailyRate}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    A quick benchmark from the live listings shown on the marketplace.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/listings/new">
+                  <Button size="lg" className="h-11 rounded-full px-5 text-sm font-semibold">
+                    <Plus className="h-4 w-4" />
+                    List your item
+                  </Button>
+                </Link>
+                <Link href="/community-earnings">
+                  <Button variant="outline" size="lg" className="h-11 rounded-full px-5 text-sm font-semibold">
+                    View earnings
                   </Button>
                 </Link>
               </div>
@@ -355,16 +403,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="marketplace-shell mt-8">
-        <div className="overflow-hidden rounded-[28px] bg-[#241d48] px-6 py-5 text-white shadow-[0_18px_50px_rgba(25,17,52,0.18)]">
+      <section className="marketplace-shell mt-6">
+        <div className="overflow-hidden rounded-[24px] bg-[#241d48] px-5 py-4 text-white shadow-[0_18px_50px_rgba(25,17,52,0.18)]">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-2xl font-black tracking-tight">
+              <p className="text-lg font-black tracking-tight sm:text-xl">
                 Start Earning Today <span className="font-medium text-white/80">Turn Your Items into Income!</span>
               </p>
             </div>
             <Link href="/listings/new">
-              <Button variant="soft" size="lg" className="min-h-[48px] rounded-full px-6 text-sm font-semibold">
+              <Button variant="soft" size="lg" className="min-h-[44px] rounded-full px-5 text-sm font-semibold">
                 + List Your Item Now
               </Button>
             </Link>

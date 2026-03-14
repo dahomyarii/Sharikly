@@ -71,6 +71,13 @@ function getCategoryIcon(categoryName: string) {
   return MoreHorizontal;
 }
 
+function getListingImage(listing: any) {
+  const imageUrl = listing?.images?.[0]?.image;
+  if (!imageUrl) return "/image.jpeg";
+  if (imageUrl.startsWith("http")) return imageUrl;
+  return `${API?.replace("/api", "")}${imageUrl}`;
+}
+
 function ListingsPageContent() {
   const { t } = useLocale();
   const searchParams = useSearchParams();
@@ -205,6 +212,8 @@ function ListingsPageContent() {
   const displayHasNext = display.hasNext;
   const displayHasPrevious = display.hasPrevious;
   const displayTotalPages = displayTotalCount > 0 ? Math.ceil(displayTotalCount / 12) : 1;
+  const activeMapListing =
+    displayListings.find((listing: any) => listing.id === selectedListingId) ?? displayListings[0] ?? null;
 
   return (
     <div className="marketplace-shell py-4 pb-24 md:pb-10">
@@ -495,7 +504,7 @@ function ListingsPageContent() {
         </div>
       </section>
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_minmax(340px,420px)] xl:grid-cols-[1fr_minmax(360px,440px)]">
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.28fr)_320px] xl:grid-cols-[minmax(0,1.35fr)_340px]">
         <div className="min-w-0">
           <div className="mb-4 flex items-center justify-between">
             <div>
@@ -508,7 +517,7 @@ function ListingsPageContent() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-2 xl:grid-cols-2">
+          <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 xl:grid-cols-3">
             {isLoading ? (
               [...Array(6)].map((_, i) => <SkeletonLoader key={i} />)
             ) : displayListings?.length > 0 ? (
@@ -579,8 +588,8 @@ function ListingsPageContent() {
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:h-fit">
-          <div className="surface-panel overflow-hidden rounded-[34px] p-3">
-            <div className="mb-3 flex items-center justify-between px-1">
+          <div className="surface-panel overflow-hidden rounded-[30px] p-2.5">
+            <div className="mb-2 flex items-center justify-between px-1">
               <div>
                 <p className="text-sm font-semibold text-foreground">Map view</p>
                 <p className="text-xs text-muted-foreground">Tap a marker to highlight a card</p>
@@ -589,6 +598,29 @@ function ListingsPageContent() {
                 {displayListings.length} shown
               </span>
             </div>
+            {activeMapListing && (
+              <Link
+                href={`/listings/${activeMapListing.id}`}
+                className="mb-2.5 flex items-center gap-3 rounded-[24px] border border-white/70 bg-white/80 p-2.5 shadow-sm transition hover:bg-white"
+              >
+                <img
+                  src={getListingImage(activeMapListing)}
+                  alt={activeMapListing.title}
+                  className="h-14 w-16 rounded-[16px] object-cover"
+                />
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    Selected listing
+                  </p>
+                  <p className="mt-1 line-clamp-1 text-sm font-semibold text-foreground">
+                    {activeMapListing.title}
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-amber-500">
+                    {activeMapListing.currency || "SAR"} {activeMapListing.price_per_day}
+                  </p>
+                </div>
+              </Link>
+            )}
             <ListingsMap
               key={`map-${displayListings?.[0]?.id ?? "default"}-${displayListings?.length ?? 0}`}
               listings={displayListings ?? []}
