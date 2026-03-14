@@ -17,6 +17,7 @@ import {
   MessageCircle,
   Plus,
   Search,
+  Settings2,
   TrendingUp as TrendingUpIcon,
   User as UserIcon,
   X,
@@ -305,6 +306,13 @@ export default function Header() {
                       {chatUnreadCount > 99 ? "99+" : chatUnreadCount}
                     </span>
                   )}
+                </Link>
+                <Link
+                  href="/settings"
+                  className="flex h-10 items-center gap-2 rounded-full border border-white/60 bg-white/80 px-4 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-accent/70 hover:text-foreground"
+                >
+                  <Settings2 className="h-4 w-4" />
+                  {t("settings")}
                 </Link>
               </>
             )}
