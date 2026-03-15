@@ -118,22 +118,22 @@ export default function ListingCard({
   const currency = listing?.currency || "SAR";
   const displayRating = effectiveReviewCount > 0 ? (effectiveRating || 0).toFixed(1) : "New";
   const imageSizing = compact
-    ? "aspect-[1.04/0.82] p-2.5 sm:p-3"
-    : "aspect-[1.04/0.82] p-3.5";
+    ? "aspect-[1.04/0.8] p-2 sm:p-3"
+    : "aspect-[1.04/0.8] p-2.5 sm:p-3.5";
 
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className={`group block rounded-[16px] transition-all duration-200 ${
+      className={`group block rounded-[14px] transition-all duration-200 sm:rounded-[16px] ${
         highlighted ? "ring-2 ring-primary/35" : ""
       }`}
     >
-      <article className="overflow-hidden rounded-[18px] border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(15,23,42,0.08)]">
+      <article className="overflow-hidden rounded-[14px] border border-slate-200/80 bg-white shadow-[0_6px_18px_rgba(15,23,42,0.05)] transition group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(15,23,42,0.08)] sm:rounded-[18px]">
         <div className={`relative ${imageSizing}`}>
           <img
             src={imageUrl}
             alt={listing.title}
-            className="h-full w-full rounded-[12px] object-contain bg-white transition duration-300 group-hover:scale-[1.02]"
+            className="h-full w-full rounded-[10px] object-contain bg-white transition duration-300 group-hover:scale-[1.02] sm:rounded-[12px]"
             loading="lazy"
             decoding="async"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
@@ -141,30 +141,30 @@ export default function ListingCard({
           {!compact && (
             <button
               onClick={handleFavoriteClick}
-              className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/92 text-slate-700 shadow-sm touch-target"
+              className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/92 text-slate-700 shadow-sm touch-target sm:right-3 sm:top-3 sm:h-11 sm:w-11"
               aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
             >
               <Heart
-                className={`h-4 w-4 ${isFavorited ? "fill-red-500 text-red-500" : "text-slate-600"}`}
+                className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isFavorited ? "fill-red-500 text-red-500" : "text-slate-600"}`}
               />
             </button>
           )}
         </div>
 
-        <div className="px-3 pb-3.5 pt-0 sm:px-3.5 sm:pb-4">
-          <h3 className="line-clamp-2 text-[13px] font-semibold leading-[1.3] text-slate-800 sm:text-[13px]">
+        <div className="px-2.5 pb-3 pt-0 sm:px-3.5 sm:pb-4">
+          <h3 className="line-clamp-2 text-[12px] font-semibold leading-[1.25] text-slate-800 sm:text-[13px]">
             {listing.title}
           </h3>
-          <div className="mt-1.5 flex items-end justify-between gap-2">
-            <p className="text-[14px] font-bold leading-none text-amber-500 sm:text-[15px]">
+          <div className="mt-1 flex items-end justify-between gap-1.5 sm:mt-1.5 sm:gap-2">
+            <p className="text-[13px] font-bold leading-none text-amber-500 sm:text-[15px]">
               {currency} {listing.price_per_day}
-              <span className="ml-1 text-[11px] font-medium text-slate-500">
+              <span className="ml-1 text-[10px] font-medium text-slate-500 sm:text-[11px]">
                 {t("price_per_day")}
               </span>
             </p>
-            <div className="flex items-center gap-1 text-[12px] font-semibold leading-none text-slate-700 sm:text-[13px]">
+            <div className="flex items-center gap-1 text-[11px] font-semibold leading-none text-slate-700 sm:text-[13px]">
               <span>{displayRating}</span>
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400 sm:h-3.5 sm:w-3.5" />
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
             </div>
           </div>
         </div>

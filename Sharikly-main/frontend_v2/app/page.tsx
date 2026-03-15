@@ -272,7 +272,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {listingsLoading
             ? Array.from({ length: 4 }).map((_, idx) => <SkeletonLoader key={idx} />)
             : popularListings.map((listing: any) => (
@@ -297,7 +297,7 @@ export default function HomePage() {
                 Browse all
               </Link>
             </div>
-            <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
               {listingsLoading ? (
                 Array.from({ length: 3 }).map((_, idx) => <SkeletonLoader key={idx} />)
               ) : exploreShowcase.length > 0 ? (
