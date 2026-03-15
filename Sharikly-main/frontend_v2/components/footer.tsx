@@ -6,10 +6,10 @@ import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'luc
 
 export default function Footer() {
   return (
-    <footer className="pb-[calc(7rem+env(safe-area-inset-bottom))] pt-10 md:pb-14">
+    <footer className="pb-[calc(7rem+env(safe-area-inset-bottom))] pt-8 md:pb-14 md:pt-10">
       <div className="marketplace-shell">
-        <div className="surface-panel overflow-hidden rounded-[36px] border border-white/65 bg-card/95 p-6 sm:p-8 lg:p-10">
-          <div className="mb-8 flex flex-col gap-6 border-b border-border pb-8 lg:flex-row lg:items-center lg:justify-between">
+        <div className="surface-panel overflow-hidden rounded-[32px] border border-white/65 bg-card/95 p-5 sm:rounded-[36px] sm:p-8 lg:p-10">
+          <div className="mb-6 flex flex-col gap-5 border-b border-border pb-6 sm:mb-8 sm:gap-6 sm:pb-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl">
               <div className="mb-4 flex items-center gap-3">
                 <img src="/logo.png" alt="EKRA" className="h-11 w-11" />

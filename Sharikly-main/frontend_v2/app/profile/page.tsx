@@ -308,7 +308,7 @@ export default function ProfilePage() {
       <div className="marketplace-shell">
         {/* Profile Header */}
         <Card className="mb-4 overflow-hidden rounded-[34px] p-4 sm:mb-6 sm:p-6">
-          <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
+          <div className="flex flex-col gap-4 sm:gap-6 md:flex-row">
             {/* Avatar Section */}
             <div className="flex-shrink-0">
               <div className="relative">
@@ -365,7 +365,7 @@ export default function ProfilePage() {
                       placeholder="Tell us about yourself..."
                     />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Button
                       onClick={handleSave}
                       disabled={isSaving}
@@ -477,7 +477,7 @@ export default function ProfilePage() {
             <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
             My Bookings
           </h2>
-          <Card className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-border rounded-2xl shadow-sm bg-card">
+          <Card className="flex flex-col gap-4 rounded-2xl border-2 border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div>
               <p className="text-muted-foreground mb-1">
                 {bookingsCount !== null
@@ -505,13 +505,13 @@ export default function ProfilePage() {
             My Listings
           </h2>
           {isLoadingListings ? (
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-4 md:gap-6">
               {[...Array(4)].map((_, i) => (
                 <SkeletonLoader key={i} />
               ))}
             </div>
           ) : listings.length > 0 ? (
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-4 md:gap-6">
               {listings.map((listing: any) => (
                 <div key={listing.id} className="relative">
                   {listing.is_active === false && (

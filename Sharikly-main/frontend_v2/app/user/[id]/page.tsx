@@ -144,7 +144,7 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
+      <div className="max-w-5xl mx-auto px-4 py-6 pb-24 sm:py-8 sm:pb-10 mobile-content">
         {/* Profile header */}
         <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-violet-600/15 via-fuchsia-500/10 to-cyan-400/10">
           <div className="absolute inset-0 pointer-events-none">
@@ -153,7 +153,7 @@ export default function PublicProfilePage() {
           </div>
 
           <div className="relative p-5 sm:p-7">
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-end">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-end sm:gap-6">
               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-muted flex-shrink-0 ring-4 ring-background shadow-sm">
                 {profile.avatar ? (
                   <img

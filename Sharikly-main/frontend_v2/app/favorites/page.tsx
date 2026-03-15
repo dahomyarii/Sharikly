@@ -114,7 +114,7 @@ export default function FavoritesPage() {
           </p>
           <h1 className="mt-2 text-3xl font-black tracking-tight text-foreground">{t("my_favorites")}</h1>
         </div>
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <SkeletonLoader key={i} />
           ))}
@@ -136,7 +136,7 @@ export default function FavoritesPage() {
           </p>
         </div>
       </div>
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {list.map((favorite: any) => (
           <ListingCard key={favorite.id} listing={favorite.listing} />
         ))}

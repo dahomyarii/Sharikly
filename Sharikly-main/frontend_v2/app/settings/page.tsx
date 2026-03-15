@@ -846,11 +846,11 @@ export default function SettingsPage() {
           <h1 className="mt-2 text-3xl font-black tracking-tight text-foreground">{t('settings')}</h1>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-5 md:gap-6">
+        <div className="flex flex-col gap-4 md:flex-row md:gap-6">
           {/* Sidebar (desktop) / Tabs (mobile) */}
           <nav className="md:w-56 flex-shrink-0">
             {/* Mobile: tabs wrap to fit screen */}
-            <div className="flex md:hidden flex-wrap gap-2 pb-2">
+            <div className="scrollbar-hide -mx-1 flex gap-2 overflow-x-auto px-1 pb-2 md:hidden">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon
                 const isActive = activeSection === item.id
@@ -895,7 +895,7 @@ export default function SettingsPage() {
           </nav>
 
           {/* Main content */}
-          <Card className="flex-1 rounded-[34px] p-4 sm:p-6 md:p-8">
+          <Card className="flex-1 rounded-[30px] p-4 sm:p-6 md:rounded-[34px] md:p-8">
             {sectionRenderers[activeSection]()}
           </Card>
         </div>
