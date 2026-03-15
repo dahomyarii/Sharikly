@@ -6,7 +6,6 @@ import axiosInstance from "@/lib/axios";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import ListingsMap from "@/components/ListingsMap";
 import Link from "next/link";
 import {
@@ -810,183 +809,42 @@ export default function ListingDetail() {
                 </p>
               </div>
 
-              <div className="rounded-[28px] bg-white/70 p-5">
-                <h2 className="mb-3 text-xl font-semibold text-foreground">
-                  Good to know
-                </h2>
-                <ul className="space-y-3 text-sm text-muted-foreground">
-                  <li className="flex gap-2">
-                    <span className="font-medium shrink-0 text-foreground">Cancellation:</span>
-                    <span>Contact the owner for cancellation policy. You can cancel from My Bookings before payment.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="font-medium shrink-0 text-foreground">What to bring:</span>
-                    <span>Only yourself—pick up and return at the agreed location. Return the item in the same condition.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="font-medium shrink-0 text-foreground">Questions?</span>
-                    <span>Use the Message button to ask the owner before requesting to book.</span>
-                  </li>
-                </ul>
-              </div>
-
-              <Card className="overflow-hidden">
-                {/* Lender Info */}
-                <div className="p-5 flex items-center gap-4 border-b border-gray-100">
-                  <a href={`/user/${data.owner?.id}`} className="flex-shrink-0">
-                    <img
-                      src={
-                        data.owner?.avatar
-                          ? data.owner.avatar.startsWith("http")
-                            ? data.owner.avatar
-                            : `${API}${data.owner.avatar}`
-                          : DEFAULT_AVATAR
-                      }
-                      alt={data.owner?.username || "Lender"}
-                      className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-100 hover:ring-gray-300 transition-all cursor-pointer"
-                    />
-                  </a>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <a href={`/user/${data.owner?.id}`} className="hover:underline">
-                        <h3 className="font-semibold text-gray-900 truncate">
-                          {data.owner?.username || "Unknown"}
-                        </h3>
-                      </a>
-                      {data.owner?.is_email_verified && (
-                        <Check className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <Star className="h-3.5 w-3.5 fill-orange-500 text-orange-500" />
-                      <span className="text-sm font-medium text-gray-700">
-                        {averageRating > 0 ? averageRating : "New"}
-                      </span>
-                      <span className="text-sm text-gray-400">
-                        &middot; {reviews.length} review{reviews.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    {data.owner?.date_joined && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Member since {new Date(data.owner.date_joined).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+              {data.latitude && data.longitude && (
+                <div className="rounded-[28px] bg-white/70 p-4 sm:p-5">
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                      <h2 className="text-xl font-semibold text-foreground">
+                        Pickup Location
+                      </h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {data.city
+                          ? `Pickup near ${data.city}`
+                          : "Pickup location shown on the map"}
                       </p>
+                    </div>
+                    {data.pickup_radius_m && (
+                      <span className="rounded-full border border-border bg-background/75 px-3 py-1 text-xs font-medium text-muted-foreground">
+                        ~{(data.pickup_radius_m / 1609.34).toFixed(1)} mi radius
+                      </span>
                     )}
                   </div>
-                  {!isOwner && user && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={startChatWithOwner}
-                      className="flex-shrink-0 text-xs"
-                    >
-                      Message
-                    </Button>
-                  )}
+                  <ListingsMap
+                    listings={[
+                      {
+                        id: data.id,
+                        latitude: data.latitude,
+                        longitude: data.longitude,
+                        pickup_radius_m: data.pickup_radius_m,
+                        title: data.title,
+                      },
+                    ]}
+                    selectedId={data.id}
+                    className="rounded-[26px] border-white/80 bg-white/55"
+                    hideFooter
+                    mapHeightClassName="min-h-[210px] sm:min-h-[230px] lg:min-h-[245px]"
+                  />
                 </div>
-
-                {/* Location + stats card (FatLlama-style) */}
-                {data.latitude && data.longitude && (
-                  <div className="p-5 flex flex-col lg:flex-row gap-4">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs">
-                          ✓
-                        </div>
-                        <span className="font-medium">
-                          {data.owner?.is_email_verified ? "Identified" : "Identity not yet verified"}
-                        </span>
-                      </div>
-                      {typeof data.owner?.response_rate === "number" &&
-                        typeof data.owner?.typical_response_minutes === "number" &&
-                        data.owner.response_rate >= 80 &&
-                        data.owner.typical_response_minutes !== null &&
-                        data.owner.typical_response_minutes <= 60 && (
-                          <div className="flex items-center gap-2 text-sm text-gray-700">
-                            <span className="w-5 h-5 rounded-full bg-sky-100 border border-sky-300 flex items-center justify-center text-[11px]">
-                              💬
-                            </span>
-                            <span>Fast responder</span>
-                          </div>
-                        )}
-                      {averageRating >= 4.5 && reviews.length >= 5 && (
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <span className="w-5 h-5 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-[11px]">
-                            ⭐
-                          </span>
-                          <span>Top lender</span>
-                        </div>
-                      )}
-                      {typeof data.owner?.typical_response_minutes === "number" && (
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <span className="w-5 h-5 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-[11px]">
-                            ⏱
-                          </span>
-                          <span>
-                            Usually responds{" "}
-                            {data.owner.typical_response_minutes <= 60
-                              ? "within an hour"
-                              : data.owner.typical_response_minutes <= 180
-                              ? "within a few hours"
-                              : data.owner.typical_response_minutes <= 1440
-                              ? "within a day"
-                              : "within a few days"}
-                          </span>
-                        </div>
-                      )}
-                      {typeof data.owner?.response_rate === "number" && (
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <span className="w-5 h-5 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-[11px]">
-                            💬
-                          </span>
-                          <span>{data.owner.response_rate}% response rate</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <span className="w-5 h-5 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-[11px]">
-                          📍
-                        </span>
-                        <span>
-                          {data.city
-                            ? `Pickup near ${data.city}${
-                                data.pickup_radius_m
-                                  ? ` · ~${(data.pickup_radius_m / 1609.34).toFixed(1)} mi radius`
-                                  : ""
-                              }`
-                            : "Pickup location shown on map"}
-                        </span>
-                      </div>
-                      {!isOwner && user && (
-                        <div className="pt-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={startChatWithOwner}
-                            className="rounded-full px-4"
-                          >
-                            <MessageCircle className="h-4 w-4 mr-1" />
-                            Send message
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-[220px]">
-                      <ListingsMap
-                        listings={[
-                          {
-                            id: data.id,
-                            latitude: data.latitude,
-                            longitude: data.longitude,
-                            pickup_radius_m: data.pickup_radius_m,
-                            title: data.title,
-                          },
-                        ]}
-                        selectedId={data.id}
-                        className="h-full"
-                      />
-                    </div>
-                  </div>
-                )}
-              </Card>
+              )}
             </div>
 
             <div className="surface-panel rounded-[34px] p-6">
@@ -1329,6 +1187,151 @@ export default function ListingDetail() {
                     </Button>
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div className="surface-panel rounded-[34px] p-5 sm:p-6">
+              <div className="flex items-start gap-4 border-b border-border pb-5">
+                <a href={`/user/${data.owner?.id}`} className="flex-shrink-0">
+                  <img
+                    src={
+                      data.owner?.avatar
+                        ? data.owner.avatar.startsWith("http")
+                          ? data.owner.avatar
+                          : `${API}${data.owner.avatar}`
+                        : DEFAULT_AVATAR
+                    }
+                    alt={data.owner?.username || "Lender"}
+                    className="h-14 w-14 rounded-full object-cover ring-2 ring-white/80 transition-all hover:ring-primary/20"
+                  />
+                </a>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <a href={`/user/${data.owner?.id}`} className="min-w-0 hover:underline">
+                      <h3 className="truncate text-base font-semibold text-foreground">
+                        {data.owner?.username || "Unknown"}
+                      </h3>
+                    </a>
+                    {data.owner?.is_email_verified && (
+                      <Check className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                    )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Star className="h-3.5 w-3.5 fill-orange-500 text-orange-500" />
+                    <span className="font-medium text-foreground">
+                      {averageRating > 0 ? averageRating : "New"}
+                    </span>
+                    <span>
+                      {reviews.length} review{reviews.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                  {data.owner?.date_joined && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Member since{" "}
+                      {new Date(data.owner.date_joined).toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-5 pt-5">
+                <div className="space-y-2.5">
+                  <h3 className="text-base font-semibold text-foreground">
+                    About the owner
+                  </h3>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="flex gap-2">
+                      <span className="font-medium text-foreground">
+                        Identity:
+                      </span>
+                      <span>
+                        {data.owner?.is_email_verified
+                          ? "Verified account"
+                          : "Identity not yet verified"}
+                      </span>
+                    </div>
+                    {typeof data.owner?.response_rate === "number" && (
+                      <div className="flex gap-2">
+                        <span className="font-medium text-foreground">
+                          Response rate:
+                        </span>
+                        <span>{data.owner.response_rate}%</span>
+                      </div>
+                    )}
+                    {typeof data.owner?.typical_response_minutes === "number" && (
+                      <div className="flex gap-2">
+                        <span className="font-medium text-foreground">
+                          Response time:
+                        </span>
+                        <span>
+                          {data.owner.typical_response_minutes <= 60
+                            ? "Usually within an hour"
+                            : data.owner.typical_response_minutes <= 180
+                            ? "Usually within a few hours"
+                            : data.owner.typical_response_minutes <= 1440
+                            ? "Usually within a day"
+                            : "Usually within a few days"}
+                        </span>
+                      </div>
+                    )}
+                    {data.city && (
+                      <div className="flex gap-2">
+                        <span className="font-medium text-foreground">
+                          Pickup:
+                        </span>
+                        <span>Near {data.city}</span>
+                      </div>
+                    )}
+                  </div>
+                  {!isOwner && user && (
+                    <Button
+                      variant="outline"
+                      onClick={startChatWithOwner}
+                      className="mt-2 h-11 w-full rounded-2xl"
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Message user
+                    </Button>
+                  )}
+                </div>
+
+                <div className="border-t border-border pt-5">
+                  <h3 className="mb-3 text-base font-semibold text-foreground">
+                    Good to know
+                  </h3>
+                  <ul className="space-y-3 text-sm text-muted-foreground">
+                    <li className="flex gap-2">
+                      <span className="shrink-0 font-medium text-foreground">
+                        Cancellation:
+                      </span>
+                      <span>
+                        Contact the owner for cancellation policy. You can cancel
+                        from My Bookings before payment.
+                      </span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="shrink-0 font-medium text-foreground">
+                        What to bring:
+                      </span>
+                      <span>
+                        Only yourself. Pick up and return at the agreed location,
+                        and return the item in the same condition.
+                      </span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="shrink-0 font-medium text-foreground">
+                        Questions:
+                      </span>
+                      <span>
+                        Use the message button before booking if you want to check
+                        anything with the owner first.
+                      </span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
