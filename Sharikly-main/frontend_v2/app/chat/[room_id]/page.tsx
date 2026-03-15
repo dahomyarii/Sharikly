@@ -148,7 +148,7 @@ export default function ChatRoomPage() {
       const res = await axiosInstance.get(`${API}/chat/messages/${room_id}/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setMessages(res.data)
+      setMessages(Array.isArray(res.data) ? res.data : [])
     } catch (err) {
       console.error('Error fetching messages:', err)
     }
@@ -199,7 +199,9 @@ export default function ChatRoomPage() {
   }, [messages, shouldAutoScroll])
 
   const handleSend = async () => {
-    if (!text && !fileInputRef.current?.files?.length) return
+    const trimmedText = text.trim()
+    const selectedFile = fileInputRef.current?.files?.[0]
+    if (!trimmedText && !selectedFile) return
     if (sending) return
 
     const token = localStorage.getItem('access_token')
@@ -207,9 +209,9 @@ export default function ChatRoomPage() {
 
     const formData = new FormData()
     formData.append('room', room_id)
-    if (text) formData.append('text', text)
-    if (fileInputRef.current?.files?.[0]) {
-      formData.append('image', fileInputRef.current.files[0])
+    if (trimmedText) formData.append('text', trimmedText)
+    if (selectedFile) {
+      formData.append('image', selectedFile)
     }
 
     setSending(true)
@@ -258,6 +260,12 @@ export default function ChatRoomPage() {
     if (days < 7) return `${days}d ago`
     return date.toLocaleDateString()
   }
+
+  const visibleMessages = messages.filter((msg) => {
+    const hasText = typeof msg.text === 'string' && msg.text.trim().length > 0
+    const hasImage = typeof msg.image === 'string' && msg.image.trim().length > 0
+    return hasText || hasImage
+  })
 
   if (!user) {
     return (
@@ -375,13 +383,13 @@ export default function ChatRoomPage() {
             </button>
           </div>
         )}
-              {messages.length === 0 ? (
+              {visibleMessages.length === 0 ? (
                 <div className="text-center text-gray-500 py-12 space-y-2">
                   <p>No messages yet.</p>
                   <p className="text-sm">Send a message below to start the conversation.</p>
                 </div>
               ) : (
-          messages.map((msg) => {
+          visibleMessages.map((msg) => {
             const isOwn = msg.sender.id === user.id
             const booking = parseBookingRequest(msg.text)
 
@@ -497,6 +505,55 @@ export default function ChatRoomPage() {
           })
         )}
         <div ref={messagesEndRef} />
+      </div>
+
+      <div className="bg-card border-t border-border p-3 pb-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:p-4 flex-shrink-0">
+        <div className="flex items-end gap-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="p-2 text-muted-foreground transition hover:bg-accent rounded-full touch-target"
+            aria-label="Attach image"
+            disabled={sending}
+          >
+            <ImageIcon className="h-5 w-5" />
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files?.[0] && !sending) {
+                handleSend()
+              }
+            }}
+          />
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleKeyPress}
+            placeholder="Type a message..."
+            rows={1}
+            disabled={sending}
+            className="flex-1 min-w-0 max-h-32 resize-none rounded-2xl border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-foreground disabled:opacity-70"
+          />
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={sending || (!text.trim() && !fileInputRef.current?.files?.length)}
+            className="inline-flex min-w-[84px] items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-3 font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 touch-target"
+          >
+            {sending ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Sending...
+              </>
+            ) : (
+              'Send'
+            )}
+          </button>
+        </div>
       </div>
     </div>
   )
