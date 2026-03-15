@@ -92,6 +92,7 @@ function ListingsPageContent() {
   const [order, setOrder] = useState("newest");
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [mobileView, setMobileView] = useState<"list" | "map">("list");
   const [selectedListingId, setSelectedListingId] = useState<number | null>(null);
   const [urlReady, setUrlReady] = useState(false);
   const hasSyncedFromUrl = useRef(false);
@@ -240,6 +241,26 @@ function ListingsPageContent() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+              <div className="flex rounded-full border border-white/60 bg-white/80 p-1 md:hidden">
+                <button
+                  type="button"
+                  onClick={() => setMobileView("list")}
+                  className={`min-h-[40px] rounded-full px-4 text-sm font-medium transition ${
+                    mobileView === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  List
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileView("map")}
+                  className={`min-h-[40px] rounded-full px-4 text-sm font-medium transition ${
+                    mobileView === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  Map
+                </button>
+              </div>
               <Button
                 variant="soft"
                 onClick={() => setShowFilters(!showFilters)}
@@ -505,7 +526,7 @@ function ListingsPageContent() {
       </section>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.28fr)_320px] xl:grid-cols-[minmax(0,1.35fr)_340px]">
-        <div className="min-w-0">
+        <div className={`min-w-0 ${mobileView === "map" ? "hidden md:block" : ""}`}>
           <div className="mb-4 flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-foreground">
@@ -517,7 +538,7 @@ function ListingsPageContent() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3">
             {isLoading ? (
               [...Array(6)].map((_, i) => <SkeletonLoader key={i} />)
             ) : displayListings?.length > 0 ? (
@@ -587,7 +608,7 @@ function ListingsPageContent() {
           )}
         </div>
 
-        <aside className="lg:sticky lg:top-24 lg:h-fit">
+        <aside className={`${mobileView === "list" ? "hidden md:block" : "block"} lg:sticky lg:top-24 lg:h-fit`}>
           <div className="surface-panel overflow-hidden rounded-[30px] p-2.5">
             <div className="mb-2 flex items-center justify-between px-1">
               <div>

@@ -268,14 +268,14 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    <div className="flex h-[100svh] flex-col bg-background overflow-hidden">
       {/* Header */}
-      <div className="bg-card border-b border-border p-4 flex-shrink-0">
+      <div className="bg-card border-b border-border p-3 pt-[max(0.75rem,var(--safe-area-inset-top))] sm:p-4 flex-shrink-0">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
             <button
               onClick={() => router.push('/chat')}
-              className="p-2 hover:bg-gray-100 rounded-full transition flex-shrink-0"
+              className="p-2 hover:bg-gray-100 rounded-full transition flex-shrink-0 touch-target"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
@@ -325,7 +325,7 @@ export default function ChatRoomPage() {
                 }
               }}
               disabled={blockLoading}
-              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0"
+              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition flex-shrink-0 touch-target"
               title={t('block_user')}
             >
               <Ban className="h-5 w-5" />
@@ -337,7 +337,7 @@ export default function ChatRoomPage() {
       {/* Messages */}
       <div 
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
+        className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0 sm:p-4 sm:space-y-4"
       >
         {room?.listing && (
           <div className="flex justify-center mb-2">
@@ -458,7 +458,7 @@ export default function ChatRoomPage() {
                 key={msg.id}
                 className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`flex gap-2 max-w-[70%] ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div className={`flex gap-2 max-w-[85%] sm:max-w-[75%] ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
                   {!isOwn && (
                     <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
                       <User className="h-4 w-4 text-gray-400" />

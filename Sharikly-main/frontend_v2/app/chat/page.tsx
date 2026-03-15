@@ -244,7 +244,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex min-h-[calc(100svh-5rem-var(--safe-area-inset-bottom))] bg-background overflow-hidden pb-[calc(5.5rem+var(--safe-area-inset-bottom))] md:h-screen md:min-h-0 md:pb-0">
       {/* Sidebar - Show on mobile when no room selected, always on desktop */}
       <div className={`${!currentRoom || showSidebar ? 'flex' : 'hidden'} md:flex w-full md:w-80 bg-card border-r border-border flex-col min-w-0 absolute md:relative z-10 h-full`}>
         {/* Header */}
@@ -258,14 +258,14 @@ export default function ChatPage() {
                     setCurrentRoom(null)
                     setShowSidebar(true)
                   }}
-                  className="md:hidden p-2 hover:bg-accent rounded-full"
+                  className="md:hidden p-2 hover:bg-accent rounded-full touch-target"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
               )}
               <button
                 onClick={() => router.push('/')}
-                className="p-2 hover:bg-accent rounded-full"
+                className="p-2 hover:bg-accent rounded-full touch-target"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
@@ -323,7 +323,7 @@ export default function ChatPage() {
                   setCurrentRoom(room)
                   setShowSidebar(false) // Hide sidebar on mobile when selecting room
                 }}
-                  className={`p-4 border-b cursor-pointer hover:bg-accent/60 transition ${
+                  className={`p-4 border-b cursor-pointer hover:bg-accent/60 transition touch-target ${
                     isActive ? 'bg-primary/10 border-l-4 border-l-primary' : ''
                   }`}
                 >
@@ -373,11 +373,11 @@ export default function ChatPage() {
         {currentRoom ? (
           <>
             {/* Chat Header */}
-            <div className="bg-card border-b border-border p-4 flex-shrink-0">
+            <div className="bg-card border-b border-border p-3 sm:p-4 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowSidebar(true)}
-                  className="md:hidden p-2 hover:bg-accent rounded-full"
+                  className="md:hidden p-2 hover:bg-accent rounded-full touch-target"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
@@ -397,7 +397,7 @@ export default function ChatPage() {
             {/* Messages */}
             <div 
               ref={messagesContainerRef}
-              className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
+              className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0 sm:p-4 sm:space-y-4"
             >
               {messages.length === 0 ? (
                 <div className="text-center text-muted-foreground py-12">
@@ -411,7 +411,7 @@ export default function ChatPage() {
                   key={msg.id}
                       className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                 >
-                      <div className={`flex gap-2 max-w-[70%] ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className={`flex gap-2 max-w-[85%] sm:max-w-[75%] ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
                         {!isOwn && (
                           <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                             <User className="h-4 w-4 text-muted-foreground" />
@@ -453,11 +453,11 @@ export default function ChatPage() {
             </div>
 
             {/* Input Area */}
-            <div className="bg-card border-t border-border p-4 flex-shrink-0">
+            <div className="bg-card border-t border-border p-3 pb-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:p-4 flex-shrink-0">
               <div className="flex items-end gap-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-2 hover:bg-accent rounded-full transition"
+                  className="p-2 hover:bg-accent rounded-full transition touch-target"
                 >
                   <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -481,12 +481,12 @@ export default function ChatPage() {
                 placeholder="Type a message..."
                   rows={1}
                   disabled={sending}
-                  className="flex-1 min-w-0 px-4 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-foreground resize-none max-h-32 disabled:opacity-70 bg-background text-foreground"
+                  className="flex-1 min-w-0 px-4 py-3 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-foreground resize-none max-h-32 disabled:opacity-70 bg-background text-foreground"
               />
                 <button
                   onClick={handleSend}
                   disabled={sending || !newMessage.trim()}
-                  className="px-6 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex items-center justify-center gap-1.5 min-w-[80px]"
+                  className="px-5 py-3 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium inline-flex items-center justify-center gap-1.5 min-w-[84px] touch-target"
                 >
                   {sending ? (
                     <>

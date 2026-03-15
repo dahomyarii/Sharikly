@@ -1417,7 +1417,7 @@ export default function ListingDetail() {
 
       {/* Mobile bottom \"See available dates\" bar above nav */}
       {!isOwner && (
-        <div className="fixed inset-x-0 bottom-[5.25rem] z-40 px-3 pb-1 lg:hidden pointer-events-none">
+        <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(0.75rem+var(--safe-area-inset-bottom))] lg:hidden pointer-events-none">
           <div className="max-w-md mx-auto rounded-2xl bg-background/95 border border-purple-500/40 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl flex items-center justify-between gap-3 px-3 py-2 pointer-events-auto mobile-listing-cta-enter">
             <Button
               className="flex-1 min-h-[40px] rounded-full bg-green-500 hover:bg-green-600 text-white font-semibold text-sm shadow-md"
@@ -1438,8 +1438,8 @@ export default function ListingDetail() {
 
       {/* Mobile full-screen booking flow (Fat Llama style) */}
       {showMobileBooking && (
-        <div className="fixed inset-0 z-50 lg:hidden flex flex-col bg-background">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+        <div className="fixed inset-0 z-50 flex flex-col bg-background lg:hidden">
+          <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
             <h2 className="text-base font-semibold text-gray-900">
               Select rental period
             </h2>
@@ -1453,7 +1453,7 @@ export default function ListingDetail() {
             </button>
           </div>
 
-          <div className="flex-1 overflow-auto px-4 pt-4 pb-24">
+          <div className="flex-1 overflow-auto px-4 pt-4 pb-28">
             <div className="mb-4 text-center">
               <p className="text-xs uppercase tracking-wide text-gray-400">
                 {safeFormatDate(new Date())?.split(" ").slice(1).join(" ")}
@@ -1553,7 +1553,7 @@ export default function ListingDetail() {
             </p>
           </div>
 
-          <div className="fixed bottom-0 left-0 right-0 lg:hidden px-4 pb-4 pt-2 bg-background border-t border-border">
+          <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-background px-4 pb-[calc(1rem+var(--safe-area-inset-bottom))] pt-2 lg:hidden">
             {user && !isOwner ? (
               <Button
                 className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold disabled:opacity-50"

@@ -249,7 +249,7 @@ export default function RequestBookingPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className="max-w-4xl mx-auto px-4 py-4" style={{ paddingTop: "max(1rem, var(--safe-area-inset-top))" }}>
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4"
@@ -261,7 +261,7 @@ export default function RequestBookingPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-6 pb-28 sm:py-8 sm:pb-10">
         {/* Box: You're requesting to book */}
         <Card className="p-4 mb-6 border-2 border-border bg-card shadow-sm">
           <div className="flex items-center gap-3">
@@ -283,9 +283,9 @@ export default function RequestBookingPage() {
           </div>
         </Card>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid gap-6 md:grid-cols-3 md:gap-8">
           {/* Left Column - Listing Info */}
-          <div className="md:col-span-2 space-y-6">
+          <div className="order-2 space-y-5 md:order-1 md:col-span-2 md:space-y-6">
             {/* Listing Card */}
             <Card className="p-6 bg-card">
               <div className="flex gap-4 mb-4">
@@ -351,8 +351,8 @@ export default function RequestBookingPage() {
           </div>
 
           {/* Right Column - Booking Summary */}
-          <div className="md:col-span-1">
-            <Card className="p-6 sticky top-24 border border-purple-100 shadow-[0_18px_45px_rgba(147,51,234,0.25)] bg-card rounded-2xl">
+          <div className="order-1 md:order-2 md:col-span-1">
+            <Card className="rounded-2xl border border-purple-100 bg-card p-5 shadow-[0_18px_45px_rgba(147,51,234,0.25)] md:sticky md:top-24 md:p-6">
               <h3 className="text-lg font-semibold text-purple-700 mb-6">Booking Summary</h3>
               
               {dateRange?.from && dateRange?.to ? (
@@ -412,7 +412,7 @@ export default function RequestBookingPage() {
               <Button
                 onClick={handleSendRequest}
                 disabled={loading || !message.trim() || !dateRange?.from || !dateRange?.to}
-                className="w-full mt-6 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl py-6 text-lg font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                className="mt-6 w-full rounded-xl bg-primary py-6 text-lg font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -427,7 +427,7 @@ export default function RequestBookingPage() {
                 )}
               </Button>
 
-              <p className="text-xs text-gray-500 text-center mt-4">
+              <p className="mt-4 text-center text-xs text-gray-500">
                 You'll be redirected to chat to continue the conversation
               </p>
             </Card>

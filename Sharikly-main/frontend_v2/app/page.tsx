@@ -116,6 +116,11 @@ export default function HomePage() {
       <section className="marketplace-shell pt-4 sm:pt-6">
         <div className="grid gap-3 lg:grid-cols-[1.32fr_0.78fr]">
           <div className="surface-panel relative overflow-hidden rounded-[34px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: "url(/image.jpeg)", backgroundPosition: "left center" }}
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.28),rgba(255,255,255,0.14),rgba(255,255,255,0.08))]" />
             <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/15" />
             <div className="floating-orb bottom-[-2rem] right-[-1rem] h-20 w-20 bg-emerald-300/25" />
             <div className="relative z-10">
@@ -125,7 +130,7 @@ export default function HomePage() {
               <h1 className="max-w-2xl text-[2.6rem] font-black leading-[1.02] tracking-tight text-foreground sm:text-[3.25rem] lg:text-[4rem]">
                 Rent <span className="text-primary">Anything</span> from People Near You
               </h1>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground sm:text-[15px]">
+              <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-slate-900 sm:text-[15px]">
                 Search trusted local rentals, book in minutes, and start earning from the gear
                 you already own.
               </p>
@@ -210,10 +215,10 @@ export default function HomePage() {
           <div className="surface-panel relative overflow-hidden rounded-[32px] border border-white/70 p-3 sm:p-4">
             <div
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: "url(/image.jpeg)" }}
+              style={{ backgroundImage: "url(/image.jpeg)", backgroundPosition: "right center" }}
             />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.14),rgba(25,17,52,0.28))]" />
-            <div className="relative z-10 flex min-h-[260px] flex-col justify-between rounded-[28px] bg-white/68 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.12)] backdrop-blur-md sm:min-h-[300px] sm:p-5">
+            <div className="relative z-10 flex min-h-[260px] flex-col justify-between p-3 sm:min-h-[300px] sm:p-4">
               <div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
@@ -222,7 +227,7 @@ export default function HomePage() {
                   <h2 className="mt-3 text-2xl font-black leading-tight text-foreground sm:text-[2rem]">
                     Turn your items into monthly income
                   </h2>
-                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  <p className="mt-3 text-sm font-medium leading-6 text-slate-900">
                     List your camera gear, gaming devices, tools, and more. Meet renters nearby
                     and get paid securely.
                   </p>
@@ -233,9 +238,9 @@ export default function HomePage() {
                     <p className="mt-1 text-4xl font-black text-emerald-500">SAR 2,300</p>
                     <p className="text-sm text-muted-foreground">/ month</p>
                   </div>
-                  <div className="rounded-[24px] bg-primary/10 p-4 backdrop-blur-sm">
-                    <p className="text-sm font-semibold text-foreground">Fast payouts</p>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  <div className="rounded-[24px] border border-white/60 bg-white/28 p-4 backdrop-blur-md">
+                    <p className="text-sm font-semibold text-slate-900">Fast payouts</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-800">
                       Verified renters, secure bookings, and simple listing management.
                     </p>
                   </div>
@@ -267,7 +272,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-4">
           {listingsLoading
             ? Array.from({ length: 4 }).map((_, idx) => <SkeletonLoader key={idx} />)
             : popularListings.map((listing: any) => (
@@ -277,14 +282,14 @@ export default function HomePage() {
       </section>
 
       <section className="marketplace-shell mt-7">
-        <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="surface-panel rounded-[32px] p-4 sm:p-5">
-            <div className="mb-4 flex items-end justify-between">
+        <div className="grid gap-3 lg:grid-cols-[1fr_0.92fr]">
+          <div className="surface-panel rounded-[28px] p-3.5 sm:p-4">
+            <div className="mb-3 flex items-end justify-between">
               <div>
                 <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
                   Explore more
                 </p>
-                <h2 className="mt-2 text-xl font-black tracking-tight text-foreground sm:text-2xl">
+                <h2 className="mt-1.5 text-lg font-black tracking-tight text-foreground sm:text-xl">
                   Find the right rental for every plan
                 </h2>
               </div>
@@ -292,7 +297,7 @@ export default function HomePage() {
                 Browse all
               </Link>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
               {listingsLoading ? (
                 Array.from({ length: 3 }).map((_, idx) => <SkeletonLoader key={idx} />)
               ) : exploreShowcase.length > 0 ? (
@@ -300,7 +305,7 @@ export default function HomePage() {
                     <ListingCard key={listing.id} listing={listing} compact />
                   ))
               ) : (
-                <div className="col-span-full grid gap-3 sm:grid-cols-3">
+                <div className="col-span-full grid gap-2.5 sm:grid-cols-3">
                   {(visibleCategories.length > 0 ? visibleCategories.slice(0, 3) : []).map(
                     (category: any) => {
                       const Icon = getCategoryIcon(category.name);
@@ -309,10 +314,10 @@ export default function HomePage() {
                           key={category.id}
                           type="button"
                           onClick={() => handleCategoryOpen(category.id)}
-                          className="rounded-[24px] border border-white/70 bg-white/80 p-4 text-left shadow-sm"
+                          className="rounded-[22px] border border-white/70 bg-white/80 p-3 text-left shadow-sm"
                         >
                           <Icon className="h-5 w-5 text-primary" />
-                          <p className="mt-3 text-sm font-semibold text-foreground">
+                          <p className="mt-2.5 text-sm font-semibold text-foreground">
                             {category.name}
                           </p>
                           <p className="mt-1 text-xs leading-5 text-muted-foreground">
@@ -325,7 +330,7 @@ export default function HomePage() {
                 </div>
               )}
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {visibleCategories.slice(0, 4).map((category: any) => {
                 const Icon = getCategoryIcon(category.name);
                 return (
@@ -343,27 +348,27 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="surface-panel rounded-[32px] p-4 sm:p-5">
-            <div className="mb-4 flex items-center justify-between">
+          <div className="surface-panel rounded-[28px] p-3.5 sm:p-4">
+            <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
                   Host highlights
                 </p>
-                <h2 className="mt-2 text-xl font-black tracking-tight text-foreground sm:text-2xl">
+                <h2 className="mt-1.5 text-lg font-black tracking-tight text-foreground sm:text-xl">
                   Earn with your items
                 </h2>
               </div>
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div className="grid gap-3">
-              <div className="rounded-[24px] bg-white/90 p-4 shadow-sm">
+              <div className="rounded-[22px] bg-white/90 p-3.5 shadow-sm">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-semibold text-foreground">Top hosts this month</span>
                   <span className="success-chip rounded-full px-3 py-1 text-xs font-semibold">
                     Growing
                   </span>
                 </div>
-                <div className="space-y-2.5 text-sm">
+                <div className="space-y-2 text-sm">
                   {[
                     ["Ahmed", "SAR 18,200"],
                     ["Khalid", "SAR 14,400"],
@@ -374,28 +379,6 @@ export default function HomePage() {
                       <span className="font-semibold text-emerald-500">{earnings}</span>
                     </div>
                   ))}
-                </div>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[24px] ekra-gradient-soft p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                    Estimated earnings
-                  </p>
-                  <p className="mt-2 text-3xl font-black text-emerald-500">
-                    SAR {estimatedMonthlyEarnings.toLocaleString()}
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Approximate monthly income from the current average daily rate.
-                  </p>
-                </div>
-                <div className="rounded-[24px] bg-white/90 p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                    Avg daily rate
-                  </p>
-                  <p className="mt-2 text-3xl font-black text-foreground">SAR {averageDailyRate}</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    A quick benchmark from the live listings shown on the marketplace.
-                  </p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
