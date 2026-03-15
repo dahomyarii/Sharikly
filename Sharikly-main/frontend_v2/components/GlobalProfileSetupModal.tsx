@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useProfileSetup } from '@/contexts/ProfileSetupContext'
 import ProfileSetupModal from './ProfileSetupModal'
-import { useRouter } from 'next/navigation'
 
 function isProfileIncomplete(user: any): boolean {
   if (!user) return false
@@ -28,24 +27,50 @@ function markProfileSetupHandled(user: any): void {
 
 export default function GlobalProfileSetupModal() {
   const { isOpen, user, hideProfileSetup, showProfileSetup } = useProfileSetup()
-  const router = useRouter()
+  const pendingOpenRef = useRef<number | null>(null)
+  const isOpenRef = useRef(isOpen)
+
+  useEffect(() => {
+    isOpenRef.current = isOpen
+  }, [isOpen])
+
+  const clearPendingOpen = useCallback(() => {
+    if (pendingOpenRef.current !== null) {
+      window.clearTimeout(pendingOpenRef.current)
+      pendingOpenRef.current = null
+    }
+  }, [])
+
+  const scheduleProfileSetup = useCallback(
+    (userData: any, delayMs: number) => {
+      if (typeof window === 'undefined' || !userData) return
+      clearPendingOpen()
+      pendingOpenRef.current = window.setTimeout(() => {
+        pendingOpenRef.current = null
+        if (isOpenRef.current) return
+        if (isProfileIncomplete(userData) && !hasHandledProfileSetup(userData)) {
+          showProfileSetup(userData)
+        }
+      }, delayMs)
+    },
+    [clearPendingOpen, showProfileSetup]
+  )
 
   useEffect(() => {
     const handleLogin = (event: CustomEvent) => {
       const userData = event.detail?.user
       if (userData && isProfileIncomplete(userData) && !hasHandledProfileSetup(userData)) {
         // Small delay so the login modal closes first
-        setTimeout(() => {
-          showProfileSetup(userData)
-        }, 400)
+        scheduleProfileSetup(userData, 400)
       }
     }
 
     window.addEventListener('userLogin', handleLogin as EventListener)
     return () => {
+      clearPendingOpen()
       window.removeEventListener('userLogin', handleLogin as EventListener)
     }
-  }, [showProfileSetup])
+  }, [clearPendingOpen, scheduleProfileSetup])
 
   // Also check on mount if a stored user has an incomplete profile (e.g. page refresh after first signup)
   useEffect(() => {
@@ -55,19 +80,23 @@ export default function GlobalProfileSetupModal() {
       try {
         const userData = JSON.parse(stored)
         if (isProfileIncomplete(userData) && !hasHandledProfileSetup(userData)) {
-          setTimeout(() => showProfileSetup(userData), 800)
+          scheduleProfileSetup(userData, 800)
         }
       } catch {}
     }
-  }, [showProfileSetup])
+    return () => {
+      clearPendingOpen()
+    }
+  }, [clearPendingOpen, scheduleProfileSetup])
 
   const handleUpdate = (updatedUser: any) => {
+    clearPendingOpen()
     markProfileSetupHandled(updatedUser)
     hideProfileSetup()
-    router.refresh()
   }
 
   const handleClose = () => {
+    clearPendingOpen()
     markProfileSetupHandled(user)
     hideProfileSetup()
   }

@@ -218,15 +218,18 @@ export default function ProfilePage() {
     }
   };
 
+  const resetAvatarSelection = () => {
+    setFormData((prev) => ({ ...prev, avatar: null }));
+    setAvatarPreview(user?.avatar || null);
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
       const token = localStorage.getItem("access_token");
       const formDataToSend = new FormData();
       formDataToSend.append("username", formData.username);
-      if (formData.bio) {
-        formDataToSend.append("bio", formData.bio);
-      }
+      formDataToSend.append("bio", formData.bio);
       if (formData.avatar) {
         formDataToSend.append("avatar", formData.avatar);
       }
@@ -324,15 +327,26 @@ export default function ProfilePage() {
                   )}
                 </div>
                 {isEditing && (
-                  <label className="absolute bottom-0 right-0 ekra-gradient cursor-pointer rounded-full p-2 text-white transition-opacity hover:opacity-90">
-                    <Camera className="w-4 h-4" />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarChange}
-                      className="hidden"
-                    />
-                  </label>
+                  <>
+                    <label className="absolute bottom-0 right-0 ekra-gradient cursor-pointer rounded-full p-2 text-white transition-opacity hover:opacity-90">
+                      <Camera className="w-4 h-4" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+                    </label>
+                    {formData.avatar && (
+                      <button
+                        type="button"
+                        onClick={resetAvatarSelection}
+                        className="absolute -left-2 bottom-0 rounded-full border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-foreground shadow-sm"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>

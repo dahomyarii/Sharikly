@@ -205,13 +205,21 @@ export default function SettingsPage() {
     }
   }
 
+  const resetAvatarSelection = () => {
+    setAvatarFile(null)
+    setAvatarPreview(user?.avatar ?? null)
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = ''
+    }
+  }
+
   const handleSaveProfile = async () => {
     setIsSavingProfile(true)
     try {
       const token = localStorage.getItem('access_token')
       const fd = new FormData()
       fd.append('username', profileForm.username)
-      if (profileForm.bio) fd.append('bio', profileForm.bio)
+      fd.append('bio', profileForm.bio)
       if (avatarFile) fd.append('avatar', avatarFile)
 
       const res = await axiosInstance.patch(`${API}/auth/me/`, fd, {
@@ -383,6 +391,27 @@ export default function SettingsPage() {
         <div>
           <p className="font-medium text-gray-900">{user.username}</p>
           <p className="text-sm text-gray-500">{user.email}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => avatarInputRef.current?.click()}
+              className="h-10 rounded-full px-4 text-sm"
+            >
+              <Camera className="mr-2 h-4 w-4" />
+              {avatarPreview ? 'Change photo' : 'Choose photo'}
+            </Button>
+            {avatarFile && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={resetAvatarSelection}
+                className="h-10 rounded-full px-4 text-sm"
+              >
+                Reset selection
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

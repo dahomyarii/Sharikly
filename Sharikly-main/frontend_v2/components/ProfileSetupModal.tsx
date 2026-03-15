@@ -3,16 +3,22 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import axiosInstance from '@/lib/axios'
-import { Camera, X, Loader2, User } from 'lucide-react'
+import { Camera, X, Loader2, User, RefreshCw } from 'lucide-react'
 import { useToast } from '@/components/ui/toast'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
+const MAX_BIO_LENGTH = 160
 
 interface ProfileSetupModalProps {
   isOpen: boolean
   onClose: () => void
   user: any
   onUpdate: (updatedUser: any) => void
+}
+
+function getAvatarUrl(avatar?: string | null) {
+  if (!avatar) return null
+  return avatar.startsWith('http') ? avatar : `${API?.replace('/api', '')}${avatar}`
 }
 
 export default function ProfileSetupModal({
@@ -22,8 +28,8 @@ export default function ProfileSetupModal({
   onUpdate,
 }: ProfileSetupModalProps) {
   const { showToast } = useToast()
-  const [username, setUsername] = useState(user?.username || '')
-  const [bio, setBio] = useState(user?.bio || '')
+  const [username, setUsername] = useState('')
+  const [bio, setBio] = useState('')
   const [avatar, setAvatar] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -36,31 +42,32 @@ export default function ProfileSetupModal({
   }, [])
 
   useEffect(() => {
+    if (!isOpen) return
     setUsername(user?.username || '')
     setBio(user?.bio || '')
-    if (!user?.avatar) {
-      setAvatarPreview(null)
+    setAvatar(null)
+    setAvatarPreview(getAvatarUrl(user?.avatar))
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
-  }, [user])
-
-  useEffect(() => {
-    if (user?.avatar) {
-      const url = user.avatar.startsWith('http')
-        ? user.avatar
-        : `${API?.replace('/api', '')}${user.avatar}`
-      setAvatarPreview(url)
-    }
-  }, [user])
+  }, [isOpen, user?.id, user?.username, user?.bio, user?.avatar])
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      setAvatar(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+    if (!file) return
+    setAvatar(file)
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const resetAvatarSelection = () => {
+    setAvatar(null)
+    setAvatarPreview(getAvatarUrl(user?.avatar))
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
@@ -69,10 +76,8 @@ export default function ProfileSetupModal({
     try {
       const token = localStorage.getItem('access_token')
       const formData = new FormData()
-      formData.append('username', username)
-      if (bio) {
-        formData.append('bio', bio)
-      }
+      formData.append('username', username.trim())
+      formData.append('bio', bio)
       if (avatar) {
         formData.append('avatar', avatar)
       }
@@ -90,7 +95,6 @@ export default function ProfileSetupModal({
       window.dispatchEvent(
         new CustomEvent('userLogin', { detail: { user: updatedUser, token } })
       )
-
       showToast('Profile updated!', 'success')
     } catch (error: any) {
       console.error('Error updating profile:', error)
@@ -100,115 +104,122 @@ export default function ProfileSetupModal({
     }
   }
 
-  if (!isOpen || !mounted) return null
+  if (!isOpen || !mounted || typeof window === 'undefined') return null
 
   const modalContent = (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-      <div
-        className="absolute inset-0"
-        onClick={onClose}
-      />
-      <div className="relative bg-white rounded-2xl max-w-md w-full shadow-2xl animate-[slideUp_0.3s_ease-out] overflow-hidden">
-
-        {/* Header */}
-        <div className="relative bg-black px-6 pt-8 pb-14 text-center">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl animate-[slideUp_0.3s_ease-out]">
+        <div className="relative bg-black px-6 pb-14 pt-8 text-center">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
+            className="absolute right-4 top-4 text-white/60 transition-colors hover:text-white"
             aria-label="Close"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
           <h2 className="text-xl font-bold text-white">Complete your profile</h2>
-          <p className="text-sm text-white/60 mt-1">
-            Help others get to know you
-          </p>
+          <p className="mt-1 text-sm text-white/60">Help others get to know you</p>
         </div>
 
-        {/* Avatar overlapping header */}
-        <div className="flex justify-center -mt-10 relative z-10">
-          <div className="relative group">
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="w-20 h-20 rounded-full bg-gray-100 border-4 border-white shadow-lg flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-            >
-              {avatarPreview ? (
-                <img
-                  src={avatarPreview}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-8 h-8 text-gray-400" />
-              )}
-            </div>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute -bottom-1 -right-1 bg-black text-white p-1.5 rounded-full hover:bg-gray-800 transition-colors shadow-md"
-              aria-label="Upload photo"
-            >
-              <Camera className="w-3.5 h-3.5" />
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              className="hidden"
-            />
-          </div>
+        <div className="relative z-10 -mt-10 flex justify-center">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="group relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-gray-100 shadow-lg transition hover:opacity-90"
+          >
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
+            ) : (
+              <User className="h-8 w-8 text-gray-400" />
+            )}
+            <span className="absolute bottom-0 right-0 rounded-full bg-black p-1.5 text-white shadow-md">
+              <Camera className="h-3.5 w-3.5" />
+            </span>
+          </button>
         </div>
 
-        {/* Form */}
-        <div className="px-6 pt-5 pb-6 space-y-4">
+        <div className="max-h-[calc(90svh-7rem)] space-y-4 overflow-y-auto px-6 pb-6 pt-5">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="user"
+            onChange={handleAvatarChange}
+            className="hidden"
+          />
+
           <p className="text-center text-xs text-gray-400">
-            Tap the avatar to upload a photo
+            Add a profile photo now, or change it any time later from your account.
           </p>
 
-          {/* Username */}
+          <div className="flex flex-wrap justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-gray-200 px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              <Camera className="h-4 w-4" />
+              {avatarPreview ? 'Change photo' : 'Choose photo'}
+            </button>
+            {avatar && (
+              <button
+                type="button"
+                onClick={resetAvatarSelection}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-gray-200 px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Reset selection
+              </button>
+            )}
+          </div>
+
           <div>
-            <label className="block text-xs font-medium uppercase tracking-widest text-gray-400 mb-1.5">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-gray-400">
               Username
             </label>
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Your display name"
-              className="w-full bg-transparent border-b-2 border-gray-200 focus:border-black outline-none text-base font-medium py-2 transition-colors placeholder:text-gray-300"
+              className="w-full border-b-2 border-gray-200 bg-transparent py-2 text-base font-medium outline-none transition-colors placeholder:text-gray-300 focus:border-black"
             />
           </div>
 
-          {/* Bio */}
           <div>
-            <label className="block text-xs font-medium uppercase tracking-widest text-gray-400 mb-1.5">
-              Bio <span className="text-gray-300 normal-case">(optional)</span>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-widest text-gray-400">
+              Bio <span className="normal-case text-gray-300">(optional)</span>
             </label>
             <textarea
               value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={3}
+              onChange={(e) => setBio(e.target.value.slice(0, MAX_BIO_LENGTH))}
+              rows={4}
               placeholder="Tell others about yourself..."
-              className="w-full border-2 border-gray-200 focus:border-black outline-none text-sm py-2.5 px-3 rounded-xl transition-colors placeholder:text-gray-300 resize-none"
+              className="w-full resize-none rounded-xl border-2 border-gray-200 px-3 py-2.5 text-sm outline-none transition-colors placeholder:text-gray-300 focus:border-black"
             />
+            <p className="mt-1 text-right text-xs text-gray-400">
+              {bio.length}/{MAX_BIO_LENGTH}
+            </p>
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-3 pt-3">
             <button
+              type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="flex-1 h-11 border border-gray-200 text-gray-600 text-sm font-medium rounded-full hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="h-11 flex-1 rounded-full border border-gray-200 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
             >
               Skip for now
             </button>
             <button
+              type="button"
               onClick={handleSave}
               disabled={isSaving || !username.trim()}
-              className="flex-1 h-11 bg-black text-white text-sm font-semibold rounded-full hover:bg-gray-800 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-40"
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Saving...
                 </>
               ) : (
@@ -221,6 +232,5 @@ export default function ProfileSetupModal({
     </div>
   )
 
-  if (typeof window === 'undefined') return null
   return createPortal(modalContent, document.body)
 }
