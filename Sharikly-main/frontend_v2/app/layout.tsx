@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
-import { LocaleProvider } from "@/components/LocaleProvider";
-import { Providers } from "@/components/Providers";
-import EmailVerificationBanner from "@/components/EmailVerificationBanner";
+import AppShell from "@/components/AppShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -143,15 +139,7 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <LocaleProvider>
-          <Providers>
-            <Header />
-            <EmailVerificationBanner />
-            <main id="main-content" className="flex-1 min-h-[50vh] main-mobile-pb" tabIndex={-1}>{children}</main>
-            <Footer />
-          </Providers>
-        </LocaleProvider>
-        
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

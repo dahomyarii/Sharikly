@@ -1286,7 +1286,7 @@ export default function ListingDetail() {
                       </div>
                     )}
                   </div>
-                  {!isOwner && user && (
+                  {!isOwner && (
                     <Button
                       variant="outline"
                       onClick={startChatWithOwner}
