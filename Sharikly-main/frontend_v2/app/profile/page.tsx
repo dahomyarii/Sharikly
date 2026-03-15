@@ -519,13 +519,13 @@ export default function ProfilePage() {
             My Listings
           </h2>
           {isLoadingListings ? (
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-4 md:gap-6">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 sm:gap-3 md:gap-4">
               {[...Array(4)].map((_, i) => (
                 <SkeletonLoader key={i} />
               ))}
             </div>
           ) : listings.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-4 md:gap-6">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 sm:gap-3 md:gap-4">
               {listings.map((listing: any) => (
                 <div key={listing.id} className="relative">
                   {listing.is_active === false && (

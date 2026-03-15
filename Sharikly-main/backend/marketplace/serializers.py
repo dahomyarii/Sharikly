@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.db.models import Avg
 from django.utils import timezone
 from datetime import timedelta
 from .models import *
@@ -76,12 +77,38 @@ def _compute_user_response_stats(user: User):
     return {"response_rate": rate, "typical_minutes": round(typical)}
 
 
+def _compute_is_super_host(user: User) -> bool:
+    cached = getattr(user, "_cached_is_super_host", None)
+    if cached is not None:
+        return cached
+
+    rating = (
+        Review.objects.filter(listing__owner=user).aggregate(avg=Avg("rating")).get("avg") or 0
+    )
+    successful_rentals = Booking.objects.filter(
+        listing__owner=user,
+        payment_status=Booking.PaymentStatus.PAID,
+    ).count()
+    response_stats = _compute_user_response_stats(user)
+    response_rate = response_stats.get("response_rate")
+
+    is_super_host = bool(
+        rating >= 4.8
+        and successful_rentals > 20
+        and response_rate is not None
+        and response_rate >= 80
+    )
+    setattr(user, "_cached_is_super_host", is_super_host)
+    return is_super_host
+
+
 # ==========================
 # USER SERIALIZER
 # ==========================
 class UserSerializer(serializers.ModelSerializer):
     response_rate = serializers.SerializerMethodField()
     typical_response_minutes = serializers.SerializerMethodField()
+    is_super_host = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -94,6 +121,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_email_verified",
             "response_rate",
             "typical_response_minutes",
+            "is_super_host",
         ]
 
     def _get_cached_response_stats(self, obj: User):
@@ -112,6 +140,9 @@ class UserSerializer(serializers.ModelSerializer):
         stats = self._get_cached_response_stats(obj)
         return stats.get("typical_minutes")
 
+    def get_is_super_host(self, obj):
+        return _compute_is_super_host(obj)
+
 
 class PublicUserSerializer(serializers.ModelSerializer):
     """Public profile — no email exposed."""
@@ -119,6 +150,7 @@ class PublicUserSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     response_rate = serializers.SerializerMethodField()
     typical_response_minutes = serializers.SerializerMethodField()
+    is_super_host = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -133,6 +165,7 @@ class PublicUserSerializer(serializers.ModelSerializer):
             "average_rating",
             "response_rate",
             "typical_response_minutes",
+            "is_super_host",
         ]
 
     def get_listings_count(self, obj):
@@ -160,6 +193,9 @@ class PublicUserSerializer(serializers.ModelSerializer):
     def get_typical_response_minutes(self, obj):
         stats = self._get_cached_response_stats(obj)
         return stats.get("typical_minutes")
+
+    def get_is_super_host(self, obj):
+        return _compute_is_super_host(obj)
 
 
 # ==========================

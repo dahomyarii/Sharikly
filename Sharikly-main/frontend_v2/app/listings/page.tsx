@@ -538,7 +538,7 @@ function ListingsPageContent() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {isLoading ? (
               [...Array(6)].map((_, i) => <SkeletonLoader key={i} />)
             ) : displayListings?.length > 0 ? (

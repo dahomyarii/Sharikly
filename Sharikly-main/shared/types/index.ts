@@ -10,6 +10,7 @@ export interface User {
   avatar: string | null;
   bio: string | null;
   is_email_verified?: boolean;
+  is_super_host?: boolean;
   date_joined?: string;
   listings_count?: number;
   average_rating?: number;

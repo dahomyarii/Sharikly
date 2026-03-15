@@ -272,7 +272,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-5">
           {listingsLoading
             ? Array.from({ length: 4 }).map((_, idx) => <SkeletonLoader key={idx} />)
             : popularListings.map((listing: any) => (
@@ -297,7 +297,7 @@ export default function HomePage() {
                 Browse all
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {listingsLoading ? (
                 Array.from({ length: 3 }).map((_, idx) => <SkeletonLoader key={idx} />)
               ) : exploreShowcase.length > 0 ? (
@@ -425,7 +425,7 @@ export default function HomePage() {
             <h2 className="mt-2 text-2xl font-black tracking-tight text-foreground">
               Pick up where you left off
             </h2>
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-5">
               {recentlyViewedListings.map((listing: any) => (
                 <ListingCard key={listing.id} listing={listing} compact />
               ))}

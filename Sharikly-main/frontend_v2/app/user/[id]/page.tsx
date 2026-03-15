@@ -317,7 +317,7 @@ export default function PublicProfilePage() {
             Listings by {profile.username}
           </h3>
           {userListings.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {userListings.map((listing: any) => (
                 <ListingCard key={listing.id} listing={listing} />
               ))}
