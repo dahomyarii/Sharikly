@@ -118,8 +118,8 @@ export default function ListingCard({
   const currency = listing?.currency || "SAR";
   const displayRating = effectiveReviewCount > 0 ? (effectiveRating || 0).toFixed(1) : "New";
   const imageSizing = compact
-    ? "aspect-[1.04/0.8] p-2.5 sm:p-3"
-    : "aspect-[1.04/0.8] p-3.5";
+    ? "aspect-[1.04/0.82] p-2.5 sm:p-3"
+    : "aspect-[1.04/0.82] p-3.5";
 
   return (
     <Link
@@ -128,7 +128,7 @@ export default function ListingCard({
         highlighted ? "ring-2 ring-primary/35" : ""
       }`}
     >
-      <article className="overflow-hidden rounded-[16px] border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(15,23,42,0.08)]">
+      <article className="overflow-hidden rounded-[18px] border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(15,23,42,0.08)]">
         <div className={`relative ${imageSizing}`}>
           <img
             src={imageUrl}
@@ -141,7 +141,7 @@ export default function ListingCard({
           {!compact && (
             <button
               onClick={handleFavoriteClick}
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/92 text-slate-700 shadow-sm"
+              className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/92 text-slate-700 shadow-sm touch-target"
               aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
             >
               <Heart
@@ -151,8 +151,8 @@ export default function ListingCard({
           )}
         </div>
 
-        <div className="px-2.5 pb-3 pt-0 sm:px-3 sm:pb-3.5">
-          <h3 className="line-clamp-2 text-[12px] font-semibold leading-[1.25] text-slate-800 sm:text-[13px]">
+        <div className="px-3 pb-3.5 pt-0 sm:px-3.5 sm:pb-4">
+          <h3 className="line-clamp-2 text-[13px] font-semibold leading-[1.3] text-slate-800 sm:text-[13px]">
             {listing.title}
           </h3>
           <div className="mt-1.5 flex items-end justify-between gap-2">

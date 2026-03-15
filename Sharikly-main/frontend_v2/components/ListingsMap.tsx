@@ -104,9 +104,9 @@ export default function ListingsMap({
       el.className = "listings-map-marker";
       el.innerHTML = `
         <div style="
-          min-width: 34px;
-          height: 34px;
-          padding: 0 10px;
+          min-width: 40px;
+          min-height: 40px;
+          padding: 0 12px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -116,7 +116,7 @@ export default function ListingsMap({
           border: 1px solid rgba(255,255,255,0.85);
           box-shadow: 0 10px 26px rgba(34, 17, 68, 0.16);
           cursor: pointer;
-          font-size: 10px;
+          font-size: 11px;
           font-weight: 700;
           backdrop-filter: blur(10px);
         ">${markerLabel}</div>
@@ -223,7 +223,7 @@ export default function ListingsMap({
     <div className={`overflow-hidden rounded-[28px] border border-white/70 bg-muted/20 ${className}`}>
       <div
         ref={mapContainer}
-        className="h-full min-h-[260px] w-full rounded-[24px] sm:min-h-[300px] lg:min-h-[420px]"
+        className="h-full min-h-[240px] w-full rounded-[24px] sm:min-h-[300px] lg:min-h-[420px]"
       />
       <div className="flex items-center justify-end gap-2 border-t border-border bg-background/80 px-3 py-2 text-[10px] text-muted-foreground">
         <span>© Mapbox</span>

@@ -637,3 +637,31 @@
   }
 }
 
+.mobile-page-shell {
+  padding-left: max(0.9rem, var(--safe-area-inset-left));
+  padding-right: max(0.9rem, var(--safe-area-inset-right));
+}
+
+.mobile-sheet-backdrop {
+  background: rgb(17 24 39 / 0.46);
+  backdrop-filter: blur(10px);
+}
+
+.mobile-sheet-panel {
+  width: 100%;
+  max-height: min(90svh, 90vh);
+  border-top-left-radius: 1.75rem;
+  border-top-right-radius: 1.75rem;
+  border: 1px solid color-mix(in oklab, var(--border) 82%, white 18%);
+  background: color-mix(in oklab, var(--background) 95%, white 5%);
+  box-shadow: 0 -20px 60px rgb(15 23 42 / 0.18);
+}
+
+@media (max-width: 767px) {
+  .mobile-sheet-panel {
+    margin-inline: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+

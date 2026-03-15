@@ -61,6 +61,20 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMobileMenuOpen]);
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setShowNotificationsDropdown(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMobileMenuOpen]);
+
   // Close notifications dropdown when clicking outside
   useEffect(() => {
     if (!showNotificationsDropdown) return;
@@ -251,6 +265,12 @@ export default function Header() {
       active: pathname === "/profile" || pathname === "/auth/login",
     },
   ];
+  const hideMobileBottomNav =
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/chat/") ||
+    pathname.startsWith("/listings/") ||
+    pathname.startsWith("/bookings/") ||
+    pathname.startsWith("/messages");
 
   return (
     <>
@@ -453,7 +473,35 @@ export default function Header() {
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div ref={mobileMenuRef} className="surface-panel md:hidden mx-3 mt-3 overflow-hidden rounded-[28px] border border-white/70 bg-background/95">
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/45 backdrop-blur-sm"
+            aria-label="Close menu"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div
+            ref={mobileMenuRef}
+            className="absolute inset-x-3 top-[calc(var(--safe-area-inset-top)+5.4rem)] bottom-[calc(var(--safe-area-inset-bottom)+1rem)] overflow-hidden rounded-[32px] border border-white/70 bg-background/95 shadow-[0_24px_80px_rgba(15,23,42,0.18)]"
+          >
+            <div className="flex h-full flex-col">
+              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                    Menu
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">Browse Ekra on mobile</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-white/80 text-muted-foreground shadow-sm"
+                  aria-label="Close menu"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {user ? (
             <div className="py-2">
               {/* User info */}
@@ -679,6 +727,9 @@ export default function Header() {
               </div>
             </div>
           )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -702,6 +753,7 @@ export default function Header() {
       )}
 
       {/* Mobile Bottom Navigation */}
+      {!hideMobileBottomNav && !isMobileMenuOpen && (
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-bottom-nav-enter"
         style={{
@@ -710,14 +762,14 @@ export default function Header() {
           paddingRight: "max(0.75rem, var(--safe-area-inset-right))",
         }}
       >
-        <div className="mx-auto mb-2 flex max-w-sm items-end justify-between rounded-[32px] border border-white/60 bg-background/95 px-4 py-3 shadow-[0_-12px_45px_rgba(124,58,237,0.22)] backdrop-blur-xl">
+        <div className="mx-auto mb-2 flex max-w-sm items-end justify-between rounded-[32px] border border-white/60 bg-background/95 px-3.5 py-3 shadow-[0_-12px_45px_rgba(124,58,237,0.22)] backdrop-blur-xl">
           {mobileNavItems.slice(0, 2).map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.label}
                 href={item.href}
-                className={`relative flex min-w-[58px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1.5 text-[11px] font-medium transition ${
+                className={`relative flex min-h-[52px] min-w-[58px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1.5 text-[11px] font-medium transition ${
                   item.active ? "text-primary" : "text-muted-foreground"
                 }`}
               >
@@ -746,7 +798,7 @@ export default function Header() {
               <Link
                 key={item.label}
                 href={item.href}
-                className={`relative flex min-w-[58px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1.5 text-[11px] font-medium transition ${
+                className={`relative flex min-h-[52px] min-w-[58px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1.5 text-[11px] font-medium transition ${
                   item.active ? "text-primary" : "text-muted-foreground"
                 }`}
               >
@@ -762,6 +814,7 @@ export default function Header() {
           })}
         </div>
       </nav>
+      )}
     </>
   );
 }

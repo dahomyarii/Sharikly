@@ -111,9 +111,10 @@ export default function ReportModal({ target, targetId, onClose, title, onSucces
   const displayTitle = title ?? (target === 'listing' ? t('report_listing') : t('report_user'))
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
-      <div ref={modalRef} className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+      <button type="button" className="mobile-sheet-backdrop absolute inset-0" onClick={onClose} aria-label="Close report modal" />
+      <div ref={modalRef} className="mobile-sheet-panel relative z-10 w-full overflow-y-auto bg-white sm:max-w-md sm:rounded-[28px]">
+        <div className="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white/95 p-4 backdrop-blur">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
               <AlertCircle className="w-4 h-4 text-red-600" />
@@ -130,7 +131,7 @@ export default function ReportModal({ target, targetId, onClose, title, onSucces
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 p-4 pb-[calc(1.25rem+var(--safe-area-inset-bottom))] sm:pb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               {t('report_reason')} *
@@ -163,7 +164,7 @@ export default function ReportModal({ target, targetId, onClose, title, onSucces
             />
           </div>
 
-          <div className="flex gap-2 pt-2">
+          <div className="sticky bottom-0 flex gap-2 border-t border-gray-100 bg-white/95 pt-3 backdrop-blur">
             <button
               type="button"
               onClick={onClose}

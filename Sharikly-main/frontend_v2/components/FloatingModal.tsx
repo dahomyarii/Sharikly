@@ -53,18 +53,18 @@ export default function FloatingModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
       role="dialog"
       aria-modal="true"
     >
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-md"
+        className="mobile-sheet-backdrop absolute inset-0"
         onClick={onClose}
         aria-hidden="true"
       />
       <div
         ref={contentRef}
-        className="surface-panel relative z-50 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/70 bg-background/95 p-6 sm:p-8 animate-fade-in"
+        className="mobile-sheet-panel surface-panel relative z-50 w-full max-w-md overflow-y-auto px-5 pb-[calc(1.25rem+var(--safe-area-inset-bottom))] pt-5 sm:mx-4 sm:max-h-[90vh] sm:rounded-[32px] sm:border sm:px-6 sm:pb-6 sm:pt-6 sm:p-8 animate-fade-in"
       >
         {children}
       </div>
