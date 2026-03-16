@@ -11,9 +11,6 @@ import {
   CalendarDays,
   Camera,
   Check,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Copy,
   Crown,
   Edit3,
@@ -21,10 +18,7 @@ import {
   Flame,
   ImagePlus,
   Inbox,
-  LayoutDashboard,
   Loader2,
-  LucideIcon,
-  Menu,
   MessageCircle,
   MoreHorizontal,
   PlusCircle,
@@ -375,13 +369,6 @@ export function LandlordEarningsDashboardClient() {
   const [itemsTab, setItemsTab] = useState<DashboardItemsTab>("all")
   const [bookingActionId, setBookingActionId] = useState<number | null>(null)
   const [itemActionKey, setItemActionKey] = useState<string | null>(null)
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
-  const [isTabletNavExpanded, setIsTabletNavExpanded] = useState(false)
-  const [isDesktopWide, setIsDesktopWide] = useState(false)
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    items: true,
-    bookings: true,
-  })
   const [itemModal, setItemModal] = useState<{
     open: boolean
     mode: "create" | "edit"
@@ -442,76 +429,6 @@ export function LandlordEarningsDashboardClient() {
   }>({ open: false, booking: null, text: "", sending: false })
   const [detailsBooking, setDetailsBooking] = useState<any | null>(null)
   const [itemImages, setItemImages] = useState<Array<{ id: string; file: File; preview: string }>>([])
-
-  const sidebarExpanded = isDesktopWide || isTabletNavExpanded
-
-  const dashboardItem = useMemo<DashboardNavLeaf>(
-    () => ({
-      id: "dashboard",
-      label: text.dashboardNav,
-      icon: LayoutDashboard,
-      href: "/earnings",
-    }),
-    [text],
-  )
-
-  const navGroups = useMemo<DashboardNavGroup[]>(
-    () => [
-      {
-        id: "items",
-        label: text.myItemsNav,
-        icon: Package,
-        items: [
-          { id: "all-items", label: text.allItemsNav, icon: Package },
-          { id: "add-item", label: text.addNewItemNav, icon: PlusCircle },
-          { id: "drafts", label: text.draftsNav, icon: FileText },
-          { id: "availability", label: text.availabilityNav, icon: CalendarDays },
-          { id: "pricing", label: text.pricingNav, icon: Wallet },
-          { id: "analytics", label: text.analyticsNav, icon: TrendingUp },
-        ],
-      },
-      {
-        id: "bookings",
-        label: text.bookingsNav,
-        icon: Calendar,
-        items: [
-          { id: "incoming", label: text.incomingNav, icon: Inbox },
-          { id: "ongoing", label: text.ongoingNav, icon: Clock3 },
-          { id: "past", label: text.pastNav, icon: Archive },
-          { id: "all-bookings", label: text.allBookingsNav, icon: CalendarDays },
-        ],
-      },
-    ],
-    [text],
-  )
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-
-    const updateViewport = () => {
-      setIsDesktopWide(window.innerWidth >= 1280)
-      if (window.innerWidth >= 768) {
-        setIsMobileNavOpen(false)
-      }
-    }
-
-    updateViewport()
-    window.addEventListener("resize", updateViewport)
-    return () => window.removeEventListener("resize", updateViewport)
-  }, [])
-
-  useEffect(() => {
-    if (typeof document === "undefined") return
-
-    const previousOverflow = document.body.style.overflow
-    if (isMobileNavOpen) {
-      document.body.style.overflow = "hidden"
-    }
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-    }
-  }, [isMobileNavOpen])
 
   useEffect(() => () => clearItemImages(), [])
 
@@ -618,200 +535,6 @@ export function LandlordEarningsDashboardClient() {
         reason: "",
       },
     }))
-
-  const handleSidebarAction = (itemId: string) => {
-    if (itemId === "add-item") {
-      openCreateItemModal()
-    } else if (itemId === "all-items") {
-      setItemsTab("all")
-      scrollToSection("items-panel")
-    } else if (itemId === "drafts") {
-      setItemsTab("drafts")
-      scrollToSection("items-panel")
-    } else if (itemId === "pricing") {
-      setItemsTab("active")
-      scrollToSection("items-panel")
-    } else if (itemId === "availability") {
-      openAvailabilityModal()
-    } else if (itemId === "analytics") {
-      scrollToSection("performance")
-    } else if (itemId === "incoming" || itemId === "ongoing" || itemId === "past") {
-      setBookingTab(itemId as DashboardBookingTab)
-      scrollToSection("bookings-panel")
-    } else if (itemId === "all-bookings") {
-      setBookingTab("incoming")
-      scrollToSection("bookings-panel")
-    }
-
-    setIsMobileNavOpen(false)
-  }
-
-  const isSidebarItemActive = (itemId: string) => {
-    if (itemId === "analytics") return true
-    if (itemId === "all-items") return itemsTab === "all"
-    if (itemId === "drafts") return itemsTab === "drafts"
-    if (itemId === "pricing") return itemsTab === "active"
-    if (itemId === "incoming" || itemId === "ongoing" || itemId === "past") return bookingTab === itemId
-    if (itemId === "all-bookings") return bookingTab === "incoming"
-    return false
-  }
-
-  const toggleGroup = (groupId: string) => {
-    if (!sidebarExpanded && !isDesktopWide) {
-      setIsTabletNavExpanded(true)
-      return
-    }
-
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [groupId]: !prev[groupId],
-    }))
-  }
-
-  const renderSidebar = (mobile = false) => {
-    const showLabels = mobile || sidebarExpanded
-    const DashboardIcon = dashboardItem.icon
-
-    return (
-      <div
-        className={`flex h-full flex-col ${
-          mobile
-            ? "mobile-sheet-panel mx-auto max-w-md p-4"
-            : "surface-panel rounded-[30px] border border-border/60 bg-card/90 p-3 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur"
-        }`}
-      >
-        <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
-          <div className={`flex items-center gap-3 ${showLabels ? "" : "justify-center"}`}>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-white shadow-sm">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            {showLabels ? (
-              <div>
-                <p className="section-label text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                  {text.navigation}
-                </p>
-                <p className="mt-1 text-base font-semibold text-foreground">Ekra Dashboard</p>
-              </div>
-            ) : null}
-          </div>
-
-          {mobile ? (
-            <button
-              type="button"
-              onClick={() => setIsMobileNavOpen(false)}
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-background/80 text-muted-foreground transition hover:bg-accent/70 hover:text-foreground"
-              aria-label={text.closeMenu}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          ) : !isDesktopWide ? (
-            <button
-              type="button"
-              onClick={() => setIsTabletNavExpanded((prev) => !prev)}
-              className="hidden h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-background/80 text-muted-foreground transition hover:bg-accent/70 hover:text-foreground md:flex xl:hidden"
-              aria-label={sidebarExpanded ? text.collapseSidebar : text.expandSidebar}
-            >
-              {sidebarExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </button>
-          ) : null}
-        </div>
-
-        {showLabels ? (
-          <div className="mt-4 rounded-[24px] border border-border/60 bg-muted/40 p-3">
-            <p className="text-sm font-medium text-foreground">{text.description}</p>
-            <div className="mt-3 flex flex-col gap-2">
-              <Button className="w-full rounded-xl" onClick={openCreateItemModal}>
-                {ui.addNewItem}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full rounded-xl"
-                onClick={() => handleSidebarAction("all-bookings")}
-              >
-                {text.manageOrders}
-              </Button>
-            </div>
-          </div>
-        ) : null}
-
-        <nav className="mt-4 flex-1 space-y-2">
-          <Link
-            href={dashboardItem.href ?? "/earnings"}
-            title={dashboardItem.label}
-            onClick={() => setIsMobileNavOpen(false)}
-            className={`flex items-center rounded-2xl px-3 py-3 text-sm font-medium transition-all ${
-              isPathActive(pathname, dashboardItem.href)
-                ? "ekra-gradient text-white shadow-[0_14px_34px_rgba(124,58,237,0.22)]"
-                : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
-            } ${showLabels ? "gap-3" : "justify-center"}`}
-          >
-            <DashboardIcon className="h-4 w-4 shrink-0" />
-            {showLabels ? <span>{dashboardItem.label}</span> : null}
-          </Link>
-
-          {navGroups.map((group) => {
-            const isGroupActive =
-              pathname === "/earnings" && group.items.some((item) => isSidebarItemActive(item.id))
-            const isGroupExpanded = expandedGroups[group.id]
-
-            return (
-              <div key={group.id} className="space-y-1">
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(group.id)}
-                  title={group.label}
-                  className={`flex w-full items-center rounded-2xl px-3 py-3 text-sm font-medium transition-all ${
-                    isGroupActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
-                  } ${showLabels ? "gap-3" : "justify-center"}`}
-                  aria-expanded={showLabels ? isGroupExpanded : false}
-                >
-                  <group.icon className="h-4 w-4 shrink-0" />
-                  {showLabels ? (
-                    <>
-                      <span className="flex-1 text-left">{group.label}</span>
-                      <ChevronDown
-                        className={`h-4 w-4 shrink-0 transition-transform ${isGroupExpanded ? "rotate-180" : ""}`}
-                      />
-                    </>
-                  ) : null}
-                </button>
-
-                {showLabels && isGroupExpanded ? (
-                  <div className="ml-4 space-y-1 border-l border-border/60 pl-3">
-                    {group.items.map((item) => {
-                      const isActive = isSidebarItemActive(item.id)
-                      const Icon = item.icon
-
-                      const itemClasses = `flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-all ${
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-[0_10px_24px_rgba(124,58,237,0.18)]"
-                          : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
-                      }`
-
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          className={itemClasses}
-                          onClick={() => handleSidebarAction(item.id)}
-                        >
-                          <Icon className="h-4 w-4 shrink-0" />
-                          <span className="flex-1 text-left">{item.label}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            )
-          })}
-        </nav>
-      </div>
-    )
-  }
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
@@ -1230,63 +953,149 @@ export function LandlordEarningsDashboardClient() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.08),_transparent_35%),linear-gradient(to_bottom,_rgba(248,250,252,0.9),_transparent)] py-5 sm:py-8">
       <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8 mobile-content">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-5 xl:gap-6">
-          <aside
-            className={`hidden md:sticky md:top-24 md:block md:shrink-0 ${
-              sidebarExpanded ? "md:w-[280px]" : "md:w-[88px]"
-            } xl:w-[280px]`}
-          >
-            {renderSidebar()}
-          </aside>
-
-          <div className="min-w-0 flex-1 rounded-[28px] border border-border/60 bg-card/95 p-4 shadow-[0_20px_80px_rgba(15,23,42,0.06)] backdrop-blur sm:rounded-[32px] sm:p-6">
-          <div className="flex flex-col gap-4 border-b border-border/60 pb-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-5 sm:gap-6">
+          {/* Top navigation / header */}
+          <div className="flex items-center justify-between gap-3 rounded-[24px] border border-border/40 bg-card/70 px-4 py-3 shadow-sm backdrop-blur sm:rounded-[28px] sm:px-5">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsMobileNavOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-background/80 text-muted-foreground transition hover:bg-accent/70 hover:text-foreground md:hidden"
-                aria-label={text.menu}
-              >
-                <Menu className="h-4 w-4" />
-              </button>
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-white shadow-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-emerald-400 text-white shadow-sm sm:h-10 sm:w-10">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                  {text.eyebrow}
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  Ekra Host
                 </p>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                  Ekra Dashboard
-                </h1>
+                <p className="text-sm font-medium text-foreground/90 sm:text-base">
+                  Premium earnings & performance workspace
+                </p>
               </div>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              <Button className="w-full rounded-xl sm:w-auto" onClick={openCreateItemModal}>
-                {ui.addNewItem}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full rounded-xl sm:w-auto"
-                onClick={() => handleSidebarAction("all-bookings")}
-              >
-                {text.manageOrders}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden rounded-xl sm:inline-flex"
-                aria-label={text.moreActions}
-                onClick={() => scrollToSection("items-panel")}
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <nav className="hidden items-center gap-3 text-sm text-muted-foreground/90 sm:flex">
+                <button
+                  type="button"
+                  className="rounded-full px-3 py-1.5 hover:bg-accent/70"
+                  onClick={() => scrollToSection("overview")}
+                >
+                  Overview
+                </button>
+                <button
+                  type="button"
+                  className="rounded-full px-3 py-1.5 hover:bg-accent/70"
+                  onClick={() => scrollToSection("performance")}
+                >
+                  Earnings
+                </button>
+                <button
+                  type="button"
+                  className="rounded-full px-3 py-1.5 hover:bg-accent/70"
+                  onClick={() => scrollToSection("items-insights")}
+                >
+                  Listings
+                </button>
+                <button
+                  type="button"
+                  className="rounded-full px-3 py-1.5 hover:bg-accent/70"
+                  onClick={() => scrollToSection("demand-signals")}
+                >
+                  Opportunities
+                </button>
+              </nav>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full border-border/70 bg-background/80"
+                  aria-label="Notifications"
+                >
+                  <Inbox className="h-4 w-4" />
+                </Button>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-slate-900 to-slate-700 text-xs font-semibold text-white shadow-sm sm:h-10 sm:w-10">
+                  {user?.username?.[0]?.toUpperCase() ?? "E"}
+                </div>
+                <Button className="hidden rounded-full px-4 sm:inline-flex" onClick={openCreateItemModal}>
+                  {ui.addNewItem}
+                </Button>
+              </div>
             </div>
           </div>
 
-          <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.18fr)_340px]">
+          <div className="min-w-0 flex-1 rounded-[28px] border border-border/60 bg-card/95 p-4 shadow-[0_20px_80px_rgba(15,23,42,0.06)] backdrop-blur sm:rounded-[32px] sm:p-6">
+          <div className="grid gap-5 border-b border-border/60 pb-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.9fr)] lg:items-center">
+            {/* Hero / welcome */}
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                {text.eyebrow}
+              </p>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-[32px]">
+                Ekra Dashboard
+              </h1>
+              <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
+                Turn your equipment into a steady income stream in Saudi Arabia. Track earnings, ranking, and what to list
+                next—all in one focused workspace.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button className="w-full rounded-full sm:w-auto" onClick={openCreateItemModal}>
+                  {ui.addNewItem}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full rounded-full border-border/70 sm:w-auto"
+                  onClick={() => scrollToSection("bookings-panel")}
+                >
+                  {text.manageOrders}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hidden rounded-full sm:inline-flex"
+                  aria-label={text.moreActions}
+                  onClick={() => scrollToSection("items-panel")}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Hero highlight card */}
+            <div className="rounded-[24px] border border-violet-500/20 bg-gradient-to-br from-violet-500/10 via-card to-emerald-400/10 p-4 sm:p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-700">
+                    This month snapshot
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+                    {formatSar(data.summary.this_month_earnings)}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    from {data.summary.rentals_count} rentals · rating {data.summary.rating.toFixed(1)}/5
+                  </p>
+                </div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-white shadow-md">
+                  <TrendingUp className="h-5 w-5" />
+                </div>
+              </div>
+              {milestone ? (
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>You’re {milestone.remainingRentals || 0} rentals away from Super Host</span>
+                    <span className="font-medium text-emerald-600">{milestone.progress}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-muted/70">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500"
+                      style={{ width: `${milestone.progress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Stay active this month to climb into the top {milestone.leaderboardPercent}% of hosts.
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.18fr)_340px]">
             <div className="space-y-4">
               <section id="overview" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
                 {statCards.map((card, index) => {
@@ -1329,6 +1138,61 @@ export function LandlordEarningsDashboardClient() {
                     </Card>
                   )
                 })}
+              </section>
+
+              {/* Quick actions */}
+              <section
+                aria-label="Quick actions"
+                className="grid gap-3 rounded-[24px] border border-border/70 bg-muted/40 p-4 sm:grid-cols-[minmax(0,1.3fr)_minmax(240px,0.7fr)] sm:p-5"
+              >
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    Quick actions
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Move faster on the things that grow your earnings: new listings, pricing, and responses.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button size="sm" className="rounded-full" onClick={openCreateItemModal}>
+                      <PlusCircle className="h-4 w-4" />
+                      {ui.addNewItem}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full border-border/70"
+                      onClick={() => scrollToSection("bookings-panel")}
+                    >
+                      <Calendar className="h-4 w-4" />
+                      {ui.bookingsWorkspace}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full border-border/70"
+                      onClick={() => scrollToSection("items-panel")}
+                    >
+                      <Package className="h-4 w-4" />
+                      {ui.itemsWorkspace}
+                    </Button>
+                  </div>
+                </div>
+                <div className="mt-3 space-y-2 sm:mt-0">
+                  <div className="flex items-center justify-between rounded-[18px] bg-card/80 px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <Clock3 className="h-4 w-4 text-emerald-500" />
+                      <span className="text-xs text-muted-foreground">Response time</span>
+                    </div>
+                    <span className="text-xs font-medium text-foreground">Under 1 hr</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-[18px] bg-card/80 px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-violet-500" />
+                      <span className="text-xs text-muted-foreground">Occupancy trend</span>
+                    </div>
+                    <span className="text-xs font-medium text-emerald-600">Healthy</span>
+                  </div>
+                </div>
               </section>
 
               <section id="performance" className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
@@ -2226,17 +2090,7 @@ export function LandlordEarningsDashboardClient() {
         </FloatingModal>
       ) : null}
 
-      {isMobileNavOpen ? (
-        <div className="mobile-sheet-backdrop fixed inset-0 z-50 flex items-end md:hidden">
-          <button
-            type="button"
-            className="absolute inset-0"
-            aria-label={text.closeMenu}
-            onClick={() => setIsMobileNavOpen(false)}
-          />
-          <div className="relative z-10 w-full">{renderSidebar(true)}</div>
-        </div>
-      ) : null}
+      {null}
     </div>
   )
 }
