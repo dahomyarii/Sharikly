@@ -651,11 +651,15 @@ export function LandlordEarningsDashboardClient() {
     ]
   }, [data])
 
-  const bookingBuckets = useMemo(() => {
+const bookingBuckets = useMemo(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    return bookings.reduce<Record<DashboardBookingTab, any[]>>(
+    const hostBookings = bookings.filter(
+      (booking) => booking.listing?.owner?.id && user?.id && booking.listing.owner.id === user.id,
+    )
+
+    return hostBookings.reduce<Record<DashboardBookingTab, any[]>>(
       (acc, booking) => {
         const start = toIsoDate(booking.start_date)
         const end = toIsoDate(booking.end_date)
@@ -680,7 +684,7 @@ export function LandlordEarningsDashboardClient() {
       },
       { incoming: [], ongoing: [], past: [], soon: [] },
     )
-  }, [bookings])
+  }, [bookings, user])
 
   const itemsSummary = useMemo(
     () => ({
@@ -956,34 +960,32 @@ export function LandlordEarningsDashboardClient() {
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <nav className="hidden items-center gap-3 text-sm text-muted-foreground/90 sm:flex">
-                <button
-                  type="button"
-                  className="rounded-full px-3 py-1.5 hover:bg-accent/70"
-                  onClick={() => scrollToSection("overview")}
-                >
-                  Overview
-                </button>
-                <button
-                  type="button"
-                  className="rounded-full px-3 py-1.5 hover:bg-accent/70"
-                  onClick={() => scrollToSection("performance")}
-                >
-                  Earnings
-                </button>
-                <button
-                  type="button"
-                  className="rounded-full px-3 py-1.5 hover:bg-accent/70"
-                  onClick={() => scrollToSection("items-insights")}
-                >
-                  Listings
-                </button>
-                <button
-                  type="button"
-                  className="rounded-full px-3 py-1.5 hover:bg-accent/70"
-                  onClick={() => scrollToSection("demand-signals")}
-                >
-                  Opportunities
-                </button>
+                {[
+                  { id: "overview", label: "Overview", href: "/host/overview" },
+                  { id: "earnings", label: "Earnings", href: "/host/earnings" },
+                  { id: "listings", label: "Listings", href: "/host/listings" },
+                  { id: "opportunities", label: "Opportunities", href: "/host/opportunities" },
+                  { id: "bookings", label: "Bookings", href: "/host/bookings" },
+                ].map((item) => {
+                  const isActive =
+                    pathname === item.href ||
+                    (item.id === "overview" && (pathname === "/earnings" || pathname === "/host")) ||
+                    (item.id === "bookings" && pathname === "/bookings")
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`rounded-full px-3 py-1.5 transition ${
+                        isActive
+                          ? "ekra-gradient text-white shadow-[0_10px_30px_rgba(124,58,237,0.35)]"
+                          : "hover:bg-accent/70"
+                      }`}
+                      onClick={() => router.push(item.href)}
+                    >
+                      {item.label}
+                    </button>
+                  )
+                })}
               </nav>
               <div className="flex items-center gap-2 sm:gap-3">
                 <Button
@@ -991,6 +993,7 @@ export function LandlordEarningsDashboardClient() {
                   size="icon"
                   className="rounded-full border-border/70 bg-background/80"
                   aria-label="Notifications"
+                  onClick={() => router.push("/notifications")}
                 >
                   <Inbox className="h-4 w-4" />
                 </Button>
@@ -1026,7 +1029,7 @@ export function LandlordEarningsDashboardClient() {
                 <Button
                   variant="outline"
                   className="w-full rounded-full border-border/70 sm:w-auto"
-                  onClick={() => scrollToSection("bookings-panel")}
+                  onClick={() => router.push("/host/bookings")}
                 >
                   {text.manageOrders}
                 </Button>
@@ -1138,7 +1141,7 @@ export function LandlordEarningsDashboardClient() {
                     Move faster on the things that grow your earnings: new listings, pricing, and responses.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Button size="sm" className="rounded-full" onClick={openCreateItemModal}>
+                  <Button size="sm" className="rounded-full" onClick={openCreateItemModal}>
                       <PlusCircle className="h-4 w-4" />
                       {ui.addNewItem}
                     </Button>
@@ -1146,7 +1149,7 @@ export function LandlordEarningsDashboardClient() {
                       size="sm"
                       variant="outline"
                       className="rounded-full border-border/70"
-                      onClick={() => scrollToSection("bookings-panel")}
+                      onClick={() => router.push("/host/bookings")}
                     >
                       <Calendar className="h-4 w-4" />
                       {ui.bookingsWorkspace}
@@ -1155,7 +1158,7 @@ export function LandlordEarningsDashboardClient() {
                       size="sm"
                       variant="outline"
                       className="rounded-full border-border/70"
-                      onClick={() => scrollToSection("items-panel")}
+                      onClick={() => router.push("/host/listings")}
                     >
                       <Package className="h-4 w-4" />
                       {ui.itemsWorkspace}
