@@ -931,6 +931,7 @@ export function LandlordEarningsDashboardClient() {
           </div>
         </div>
       </div>
+      </div>
 
       {isMobileNavOpen ? (
         <div className="mobile-sheet-backdrop fixed inset-0 z-50 flex items-end md:hidden">
