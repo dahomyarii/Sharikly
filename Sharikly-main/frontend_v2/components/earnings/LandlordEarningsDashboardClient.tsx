@@ -90,6 +90,13 @@ const copy = {
     rankFootnote: "Based on monthly earnings, rating, and rental activity.",
     localDemandHint: "Use these signals to decide what to list next.",
     noDemand: "Demand signals will appear here as the marketplace grows.",
+    statusLabel: "Status",
+    hostStatusTitle: "Host status",
+    statusQualified: "Qualified",
+    statusBuilding: "In progress",
+    chartTotalLabel: "Total",
+    chartAverageLabel: "Average",
+    chartPeakLabel: "Peak",
     navigation: "Navigation",
     menu: "Menu",
     closeMenu: "Close menu",
@@ -156,6 +163,13 @@ const copy = {
     rankFootnote: "يعتمد على أرباح الشهر والتقييم ونشاط التأجير.",
     localDemandHint: "استخدم هذه الإشارات لتحديد ما الذي يستحق إضافته لاحقًا.",
     noDemand: "ستظهر إشارات الطلب هنا مع نمو السوق.",
+    statusLabel: "الحالة",
+    hostStatusTitle: "حالة المضيف",
+    statusQualified: "مؤهل",
+    statusBuilding: "قيد التقدم",
+    chartTotalLabel: "الإجمالي",
+    chartAverageLabel: "المتوسط",
+    chartPeakLabel: "الذروة",
     navigation: "التنقل",
     menu: "القائمة",
     closeMenu: "إغلاق القائمة",
@@ -634,10 +648,17 @@ export function LandlordEarningsDashboardClient() {
           <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_290px]">
             <div className="space-y-4">
               <section id="overview" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-                {statCards.map((card) => {
+                {statCards.map((card, index) => {
                   const Icon = card.icon
                   return (
-                    <Card key={card.label} className="rounded-[24px] border-border/60 shadow-none">
+                    <Card
+                      key={card.label}
+                      className={`rounded-[24px] border-border/60 shadow-none ${
+                        index === 0
+                          ? "border-primary/15 bg-gradient-to-br from-violet-50 via-white to-emerald-50 dark:from-violet-500/10 dark:via-card dark:to-emerald-500/10"
+                          : "bg-card/90"
+                      }`}
+                    >
                       <CardContent className="p-4 sm:p-5">
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -649,9 +670,19 @@ export function LandlordEarningsDashboardClient() {
                               <p className="mt-2 text-sm font-medium text-emerald-600">{card.accent}</p>
                             ) : null}
                           </div>
-                          <div className="rounded-2xl bg-primary/10 p-2.5 text-primary">
+                          <div className="rounded-2xl bg-primary/10 p-2.5 text-primary shadow-sm">
                             <Icon className="h-4 w-4" />
                           </div>
+                        </div>
+                        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted/70">
+                          <div
+                            className={`h-full rounded-full ${
+                              index === 0
+                                ? "bg-gradient-to-r from-violet-500 to-emerald-400"
+                                : "bg-primary/60"
+                            }`}
+                            style={{ width: `${index === 0 ? 88 : index === 1 ? 72 : index === 2 ? 64 : 58}%` }}
+                          />
                         </div>
                       </CardContent>
                     </Card>
@@ -668,6 +699,9 @@ export function LandlordEarningsDashboardClient() {
                   dailyLabel={text.daily}
                   monthlyLabel={text.monthly}
                   emptyLabel={text.chartEmpty}
+                  totalLabel={text.chartTotalLabel}
+                  averageLabel={text.chartAverageLabel}
+                  peakLabel={text.chartPeakLabel}
                 />
 
                 <Card className="rounded-[28px] border-border/70 shadow-sm">
@@ -676,6 +710,22 @@ export function LandlordEarningsDashboardClient() {
                     <CardDescription>{text.rankFootnote}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-5">
+                    <div className="rounded-[24px] border border-border/60 bg-violet-50/70 p-4 dark:bg-violet-500/10">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                            {text.statusLabel}
+                          </p>
+                          <p className="mt-1 text-lg font-semibold text-foreground">{text.hostStatusTitle}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {data.super_host.qualified ? text.qualified : text.notQualified}
+                          </p>
+                        </div>
+                        <Badge variant={data.super_host.qualified ? "success" : "secondary"} className="rounded-full">
+                          {data.super_host.qualified ? text.statusQualified : text.statusBuilding}
+                        </Badge>
+                      </div>
+                    </div>
                     <div>
                       <p className="text-4xl font-bold tracking-tight text-foreground">
                         #{data.ranking.position}

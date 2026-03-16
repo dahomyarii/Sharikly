@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import {
+  Area,
   Bar,
   CartesianGrid,
   ComposedChart,
@@ -14,7 +15,7 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatSar, getBestChartPoint, type EarningsPoint, toNumber } from "@/lib/earnings"
+import { formatCompactSar, formatSar, getBestChartPoint, type EarningsPoint, toNumber } from "@/lib/earnings"
 
 type ChartMode = "daily" | "monthly"
 
@@ -26,6 +27,9 @@ interface EarningsChartProps {
   dailyLabel: string
   monthlyLabel: string
   emptyLabel: string
+  totalLabel: string
+  averageLabel: string
+  peakLabel: string
 }
 
 export function EarningsChart({
@@ -36,6 +40,9 @@ export function EarningsChart({
   dailyLabel,
   monthlyLabel,
   emptyLabel,
+  totalLabel,
+  averageLabel,
+  peakLabel,
 }: EarningsChartProps) {
   const [mode, setMode] = useState<ChartMode>("daily")
 
@@ -49,6 +56,11 @@ export function EarningsChart({
     [activeSeries],
   )
   const bestPoint = getBestChartPoint(activeSeries)
+  const totalValue = useMemo(
+    () => chartData.reduce((sum, point) => sum + point.earnings, 0),
+    [chartData],
+  )
+  const averageValue = chartData.length ? totalValue / chartData.length : 0
 
   return (
     <Card className="rounded-[28px] border-border/70 shadow-sm">
@@ -89,10 +101,30 @@ export function EarningsChart({
       <CardContent className="space-y-4">
         {chartData.length > 0 ? (
           <>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[22px] border border-border/60 bg-muted/35 p-3">
+                <p className="text-xs text-muted-foreground">{totalLabel}</p>
+                <p className="mt-1 text-lg font-semibold text-foreground">{formatCompactSar(totalValue)}</p>
+              </div>
+              <div className="rounded-[22px] border border-border/60 bg-muted/35 p-3">
+                <p className="text-xs text-muted-foreground">{averageLabel}</p>
+                <p className="mt-1 text-lg font-semibold text-foreground">{formatCompactSar(averageValue)}</p>
+              </div>
+              <div className="rounded-[22px] border border-border/60 bg-muted/35 p-3">
+                <p className="text-xs text-muted-foreground">{peakLabel}</p>
+                <p className="mt-1 text-lg font-semibold text-foreground">
+                  {bestPoint ? formatCompactSar(bestPoint.earnings) : formatCompactSar(0)}
+                </p>
+              </div>
+            </div>
             <div className="h-72 w-full" aria-label={title} role="img">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                   <defs>
+                    <linearGradient id="earningsAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.28} />
+                      <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0.02} />
+                    </linearGradient>
                     <linearGradient id="earningsBarGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.45} />
                       <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0.12} />
@@ -111,22 +143,29 @@ export function EarningsChart({
                     contentStyle={{
                       borderRadius: 16,
                       border: "1px solid var(--color-border)",
-                      background: "var(--color-card)",
+                      background: "color-mix(in oklab, var(--color-card) 92%, white 8%)",
+                      boxShadow: "0 18px 36px rgba(15,23,42,0.10)",
                     }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="earnings"
+                    fill="url(#earningsAreaGradient)"
+                    stroke="none"
                   />
                   <Bar
                     dataKey="earnings"
                     radius={[10, 10, 0, 0]}
-                    barSize={28}
+                    barSize={24}
                     fill="url(#earningsBarGradient)"
                   />
                   <Line
                     type="monotone"
                     dataKey="earnings"
                     stroke="var(--color-chart-1)"
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: "var(--color-chart-1)" }}
-                    activeDot={{ r: 5 }}
+                    strokeWidth={3}
+                    dot={{ r: 3, fill: "var(--color-chart-1)", strokeWidth: 0 }}
+                    activeDot={{ r: 6, stroke: "var(--color-card)", strokeWidth: 2 }}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
