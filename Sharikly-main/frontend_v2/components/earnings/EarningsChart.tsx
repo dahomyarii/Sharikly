@@ -117,7 +117,7 @@ export function EarningsChart({
                 </p>
               </div>
             </div>
-            <div className="h-72 w-full" aria-label={title} role="img">
+            <div className="h-[340px] w-full sm:h-[380px] xl:h-[430px]" aria-label={title} role="img">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                   <defs>
