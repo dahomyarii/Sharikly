@@ -26,7 +26,6 @@ import {
   LucideIcon,
   Menu,
   MessageCircle,
-  MoreHorizontal,
   PlusCircle,
   PlayCircle,
   PauseCircle,
@@ -332,12 +331,6 @@ type DashboardNavGroup = {
 type DashboardBookingTab = "incoming" | "ongoing" | "past" | "soon"
 type DashboardItemsTab = "all" | "active" | "drafts"
 
-const isPathActive = (pathname: string, href?: string) => {
-  if (!href) return false
-  if (href === "/") return pathname === href
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
 const toPlainNumber = (value: string | number | null | undefined) => {
   if (typeof value === "number") return value
   if (typeof value === "string") {
@@ -371,6 +364,7 @@ export function LandlordEarningsDashboardClient() {
   const [items, setItems] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [activeView, setActiveView] = useState<"dashboard" | "bookings" | "items">("dashboard")
   const [bookingTab, setBookingTab] = useState<DashboardBookingTab>("incoming")
   const [itemsTab, setItemsTab] = useState<DashboardItemsTab>("all")
   const [bookingActionId, setBookingActionId] = useState<number | null>(null)
@@ -623,36 +617,37 @@ export function LandlordEarningsDashboardClient() {
     if (itemId === "add-item") {
       openCreateItemModal()
     } else if (itemId === "all-items") {
+      setActiveView("items")
       setItemsTab("all")
-      scrollToSection("items-panel")
     } else if (itemId === "drafts") {
+      setActiveView("items")
       setItemsTab("drafts")
-      scrollToSection("items-panel")
     } else if (itemId === "pricing") {
+      setActiveView("items")
       setItemsTab("active")
-      scrollToSection("items-panel")
     } else if (itemId === "availability") {
       openAvailabilityModal()
     } else if (itemId === "analytics") {
-      scrollToSection("performance")
+      setActiveView("dashboard")
+      setTimeout(() => scrollToSection("performance"), 100)
     } else if (itemId === "incoming" || itemId === "ongoing" || itemId === "past") {
+      setActiveView("bookings")
       setBookingTab(itemId as DashboardBookingTab)
-      scrollToSection("bookings-panel")
     } else if (itemId === "all-bookings") {
+      setActiveView("bookings")
       setBookingTab("incoming")
-      scrollToSection("bookings-panel")
     }
 
     setIsMobileNavOpen(false)
   }
 
   const isSidebarItemActive = (itemId: string) => {
-    if (itemId === "analytics") return true
-    if (itemId === "all-items") return itemsTab === "all"
-    if (itemId === "drafts") return itemsTab === "drafts"
-    if (itemId === "pricing") return itemsTab === "active"
-    if (itemId === "incoming" || itemId === "ongoing" || itemId === "past") return bookingTab === itemId
-    if (itemId === "all-bookings") return bookingTab === "incoming"
+    if (itemId === "analytics") return activeView === "dashboard"
+    if (itemId === "all-items") return activeView === "items" && itemsTab === "all"
+    if (itemId === "drafts") return activeView === "items" && itemsTab === "drafts"
+    if (itemId === "pricing") return activeView === "items" && itemsTab === "active"
+    if (itemId === "incoming" || itemId === "ongoing" || itemId === "past") return activeView === "bookings" && bookingTab === itemId
+    if (itemId === "all-bookings") return activeView === "bookings"
     return false
   }
 
@@ -736,23 +731,25 @@ export function LandlordEarningsDashboardClient() {
         ) : null}
 
         <nav className="mt-4 flex-1 space-y-2">
-          <Link
-            href={dashboardItem.href ?? "/earnings"}
+          <button
+            type="button"
             title={dashboardItem.label}
-            onClick={() => setIsMobileNavOpen(false)}
-            className={`flex items-center rounded-2xl px-3 py-3 text-sm font-medium transition-all ${
-              isPathActive(pathname, dashboardItem.href)
+            onClick={() => {
+              setActiveView("dashboard")
+              setIsMobileNavOpen(false)
+            }}
+            className={`flex w-full items-center rounded-2xl px-3 py-3 text-sm font-medium transition-all ${
+              activeView === "dashboard"
                 ? "ekra-gradient text-white shadow-[0_14px_34px_rgba(124,58,237,0.22)]"
                 : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
             } ${showLabels ? "gap-3" : "justify-center"}`}
           >
             <DashboardIcon className="h-4 w-4 shrink-0" />
             {showLabels ? <span>{dashboardItem.label}</span> : null}
-          </Link>
+          </button>
 
           {navGroups.map((group) => {
-            const isGroupActive =
-              pathname === "/earnings" && group.items.some((item) => isSidebarItemActive(item.id))
+            const isGroupActive = group.items.some((item) => isSidebarItemActive(item.id))
             const isGroupExpanded = expandedGroups[group.id]
 
             return (
@@ -1262,33 +1259,42 @@ export function LandlordEarningsDashboardClient() {
                 </h1>
               </div>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              <Button className="w-full rounded-xl sm:w-auto" onClick={openCreateItemModal}>
-                {ui.addNewItem}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full rounded-xl sm:w-auto"
-                onClick={() => handleSidebarAction("all-bookings")}
-              >
-                {text.manageOrders}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden rounded-xl sm:inline-flex"
-                aria-label={text.moreActions}
-                onClick={() => scrollToSection("items-panel")}
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="hidden sm:flex sm:items-center sm:gap-1 sm:rounded-full sm:bg-muted sm:p-1">
+                {(["dashboard", "bookings", "items"] as const).map((view) => (
+                  <button
+                    key={view}
+                    type="button"
+                    onClick={() => setActiveView(view)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                      activeView === view
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {view === "dashboard" ? text.dashboardNav : view === "bookings" ? ui.bookingsWorkspace : ui.itemsWorkspace}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2 sm:ml-auto">
+                <Button className="w-full rounded-xl sm:w-auto" onClick={openCreateItemModal}>
+                  {ui.addNewItem}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl sm:w-auto"
+                  onClick={() => { setActiveView("bookings"); setBookingTab("incoming") }}
+                >
+                  {text.manageOrders}
+                </Button>
+              </div>
             </div>
           </div>
 
-          <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.18fr)_340px]">
-            <div className="space-y-4">
-              <section id="overview" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {activeView === "dashboard" ? (
+          <div className="mt-6 space-y-6">
+              <section id="overview" className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 {statCards.map((card, index) => {
                   const Icon = card.icon
                   return (
@@ -1300,22 +1306,22 @@ export function LandlordEarningsDashboardClient() {
                           : "bg-card/90"
                       }`}
                     >
-                      <CardContent className="p-4 sm:p-5">
+                      <CardContent className="p-5 sm:p-6">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-sm text-muted-foreground">{card.label}</p>
-                            <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                            <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
+                            <p className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                               {card.value}
                             </p>
                             {card.accent ? (
                               <p className="mt-2 text-sm font-medium text-emerald-600">{card.accent}</p>
                             ) : null}
                           </div>
-                          <div className="rounded-2xl bg-primary/10 p-2.5 text-primary shadow-sm">
-                            <Icon className="h-4 w-4" />
+                          <div className="rounded-2xl bg-primary/10 p-3 text-primary shadow-sm">
+                            <Icon className="h-5 w-5" />
                           </div>
                         </div>
-                        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted/70">
+                        <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted/70">
                           <div
                             className={`h-full rounded-full ${
                               index === 0
@@ -1331,7 +1337,7 @@ export function LandlordEarningsDashboardClient() {
                 })}
               </section>
 
-              <section id="performance" className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
+              <section id="performance" className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.5fr)]">
                 <EarningsChart
                   daily={data.chart.daily}
                   monthly={data.chart.monthly}
@@ -1397,7 +1403,7 @@ export function LandlordEarningsDashboardClient() {
                 </Card>
               </section>
 
-              <section id="items-insights" className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+              <section id="items-insights" className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
                 <Card className="rounded-[28px] border-border/70 shadow-sm">
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-3">
@@ -1478,7 +1484,7 @@ export function LandlordEarningsDashboardClient() {
                 </Card>
               </section>
 
-              <section id="demand-signals" className="grid gap-4 lg:grid-cols-2">
+              <section id="demand-signals" className="grid gap-6 lg:grid-cols-2">
                 <Card className="rounded-[28px] border-border/70 shadow-sm">
                   <CardHeader className="pb-2">
                     <div className="flex items-center gap-2">
@@ -1543,352 +1549,355 @@ export function LandlordEarningsDashboardClient() {
                   </CardContent>
                 </Card>
               </section>
+
+              <section className="grid gap-6 lg:grid-cols-2">
+                <Card className="rounded-[28px] border-border/70 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-xl">{text.nextMilestone}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div>
+                      <p className="text-2xl font-semibold tracking-tight text-foreground">
+                        {milestone?.remainingRentals
+                          ? `Reach ${milestone.remainingRentals} more rentals`
+                          : text.qualified}
+                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">{text.unlockSuperHost}</p>
+                    </div>
+                    <div>
+                      <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
+                        <span>{text.rentals}</span>
+                        <span>{milestone?.progress}%</span>
+                      </div>
+                      <div className="h-3 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500"
+                          style={{ width: `${milestone?.progress ?? 0}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="rounded-[24px] bg-violet-50 p-5 dark:bg-violet-500/10">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-400 to-violet-500 text-white shadow-sm">
+                          <Trophy className="h-7 w-7" />
+                        </div>
+                        <div>
+                          <p className="text-lg font-semibold text-foreground">{text.unlockSuperHost}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {data.super_host.qualified ? text.qualified : text.notQualified}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="rounded-[28px] border-border/70 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2">
+                      <Search className="h-5 w-5 text-primary" />
+                      <CardTitle className="text-xl">{text.popularSearches}</CardTitle>
+                    </div>
+                    <CardDescription>{text.popularSearchesBody}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {trendingSearches.map((searchItem) => (
+                      <div
+                        key={searchItem.label}
+                        className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 px-4 py-3.5"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-card text-emerald-600 shadow-sm">
+                            <Activity className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">{searchItem.label}</p>
+                            <p className="text-xs text-muted-foreground">{searchItem.value}</p>
+                          </div>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </section>
+          </div>
+          ) : null}
+
+          {activeView === "bookings" ? (
+          <div className="mt-6 space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">{ui.bookingsWorkspace}</h2>
+                <p className="mt-1 text-base text-muted-foreground">{ui.bookingsHint}</p>
+              </div>
+              <Badge variant="secondary" className="w-fit rounded-full px-4 py-1.5 text-base">
+                {bookings.length} {bookings.length === 1 ? "booking" : "bookings"}
+              </Badge>
             </div>
 
-            <aside id="operations-rail" className="space-y-4">
-              <Card id="bookings-panel" className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 text-xl">
-                        <Calendar className="h-5 w-5 text-primary" />
-                        {ui.bookingsWorkspace}
-                      </CardTitle>
-                      <CardDescription>{ui.bookingsHint}</CardDescription>
-                    </div>
-                    <Badge variant="secondary" className="rounded-full">
-                      {bookings.length}
-                    </Badge>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {([
-                      ["incoming", text.incomingNav],
-                      ["ongoing", text.ongoingNav],
-                      ["soon", text.soon],
-                      ["past", text.pastNav],
-                    ] as [DashboardBookingTab, string][]).map(([tabId, label]) => (
-                      <button
-                        key={tabId}
-                        type="button"
-                        onClick={() => setBookingTab(tabId)}
-                        className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-                          bookingTab === tabId
-                            ? "ekra-gradient text-white shadow-[0_12px_24px_rgba(124,58,237,0.24)]"
-                            : "border border-border/70 bg-background/80 text-muted-foreground hover:bg-accent/70"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {bookingBuckets[bookingTab].length ? (
-                    <div className="max-h-[460px] space-y-3 overflow-y-auto pr-1">
-                      {bookingBuckets[bookingTab].map((booking) => {
-                        const listingImage = getImageUrl(booking.listing?.images?.[0]?.image)
-                        return (
-                          <div key={booking.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-3.5">
-                            <div className="flex gap-3">
-                              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-background">
-                                {listingImage ? (
-                                  <img src={listingImage} alt={booking.listing?.title} className="h-full w-full object-cover" />
-                                ) : (
-                                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                    <Camera className="h-5 w-5" />
-                                  </div>
-                                )}
+            <div className="flex flex-wrap gap-2">
+              {([
+                ["incoming", text.incomingNav],
+                ["ongoing", text.ongoingNav],
+                ["soon", text.soon],
+                ["past", text.pastNav],
+              ] as [DashboardBookingTab, string][]).map(([tabId, label]) => (
+                <button
+                  key={tabId}
+                  type="button"
+                  onClick={() => setBookingTab(tabId)}
+                  className={`rounded-full px-5 py-2.5 text-sm font-medium transition ${
+                    bookingTab === tabId
+                      ? "ekra-gradient text-white shadow-[0_12px_24px_rgba(124,58,237,0.24)]"
+                      : "border border-border/70 bg-background/80 text-muted-foreground hover:bg-accent/70"
+                  }`}
+                >
+                  {label}
+                  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-xs">
+                    {bookingBuckets[tabId].length}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {bookingBuckets[bookingTab].length ? (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {bookingBuckets[bookingTab].map((booking) => {
+                  const listingImage = getImageUrl(booking.listing?.images?.[0]?.image)
+                  return (
+                    <Card key={booking.id} className="rounded-[24px] border-border/60 shadow-sm">
+                      <CardContent className="p-5">
+                        <div className="flex gap-4">
+                          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-muted">
+                            {listingImage ? (
+                              <img src={listingImage} alt={booking.listing?.title} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                <Camera className="h-6 w-6" />
                               </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-start justify-between gap-2">
-                                  <div className="min-w-0">
-                                    <p className="line-clamp-1 font-semibold text-foreground">{booking.listing?.title}</p>
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                      {formatDateRange(booking.start_date, booking.end_date)}
-                                    </p>
-                                  </div>
-                                  <Badge
-                                    variant={
-                                      booking.status === "PENDING"
-                                        ? "secondary"
-                                        : booking.status === "CONFIRMED"
-                                          ? "success"
-                                          : "outline"
-                                    }
-                                    className="rounded-full"
-                                  >
-                                    {booking.status}
-                                  </Badge>
-                                </div>
-                                <p className="mt-2 text-sm font-medium text-foreground">
-                                  {formatSar(booking.total_price)}
-                                </p>
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                  {ui.renterLabel}: {booking.renter?.username ?? "Guest"}
-                                </p>
-                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="text-base font-semibold text-foreground line-clamp-1">{booking.listing?.title}</h3>
+                              <Badge
+                                variant={
+                                  booking.status === "PENDING"
+                                    ? "secondary"
+                                    : booking.status === "CONFIRMED"
+                                      ? "success"
+                                      : "outline"
+                                }
+                                className="shrink-0 rounded-full"
+                              >
+                                {booking.status}
+                              </Badge>
                             </div>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {bookingTab === "incoming" ? (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleBookingDecision(booking.id, "accept")}
-                                    disabled={bookingActionId === booking.id}
-                                  >
-                                    {bookingActionId === booking.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                                    {ui.accept}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleBookingDecision(booking.id, "decline")}
-                                    disabled={bookingActionId === booking.id}
-                                  >
-                                    {ui.decline}
-                                  </Button>
-                                </>
-                              ) : null}
-                              {bookingTab !== "incoming" ? (
-                                <>
-                                  <Button size="sm" variant="outline" onClick={() => setDetailsBooking(booking)}>
-                                    <Eye className="h-4 w-4" />
-                                    {ui.viewDetails}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => setMessageModal({ open: true, booking, text: "", sending: false })}
-                                  >
-                                    <MessageCircle className="h-4 w-4" />
-                                    {ui.messageRenter}
-                                  </Button>
-                                </>
-                              ) : null}
+                            <p className="mt-1.5 text-sm text-muted-foreground">
+                              {formatDateRange(booking.start_date, booking.end_date)}
+                            </p>
+                            <div className="mt-2 flex items-center justify-between">
+                              <p className="text-lg font-semibold text-foreground">
+                                {formatSar(booking.total_price)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {ui.renterLabel}: {booking.renter?.username ?? "Guest"}
+                              </p>
                             </div>
                           </div>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <div className="rounded-[24px] border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                      {ui.noBookings}
-                    </div>
-                  )}
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-2 border-t border-border/50 pt-4">
+                          {bookingTab === "incoming" ? (
+                            <>
+                              <Button
+                                size="sm"
+                                className="rounded-xl"
+                                onClick={() => handleBookingDecision(booking.id, "accept")}
+                                disabled={bookingActionId === booking.id}
+                              >
+                                {bookingActionId === booking.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                                {ui.accept}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="rounded-xl"
+                                onClick={() => handleBookingDecision(booking.id, "decline")}
+                                disabled={bookingActionId === booking.id}
+                              >
+                                {ui.decline}
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setDetailsBooking(booking)}>
+                                <Eye className="h-4 w-4" />
+                                {ui.viewDetails}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="rounded-xl"
+                                onClick={() => setMessageModal({ open: true, booking, text: "", sending: false })}
+                              >
+                                <MessageCircle className="h-4 w-4" />
+                                {ui.messageRenter}
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            ) : (
+              <Card className="rounded-[24px] border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <Inbox className="h-12 w-12 text-muted-foreground/40" />
+                  <p className="mt-4 text-lg font-medium text-muted-foreground">{ui.noBookings}</p>
                 </CardContent>
               </Card>
+            )}
+          </div>
+          ) : null}
 
-              <Card id="items-panel" className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 text-xl">
-                        <Package className="h-5 w-5 text-primary" />
-                        {ui.itemsWorkspace}
-                      </CardTitle>
-                      <CardDescription>{ui.itemsHint}</CardDescription>
-                    </div>
-                    <Button size="sm" className="rounded-xl" onClick={openCreateItemModal}>
-                      <PlusCircle className="h-4 w-4" />
-                      {ui.addNewItem}
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setItemsTab("all")}
-                      className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
-                        itemsTab === "all" ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
-                      }`}
-                    >
-                      {ui.allFilter}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setItemsTab("active")}
-                      className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
-                        itemsTab === "active" ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
-                      }`}
-                    >
-                      {ui.activeFilter}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setItemsTab("drafts")}
-                      className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
-                        itemsTab === "drafts" ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
-                      }`}
-                    >
-                      {ui.draftFilter}
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="rounded-[20px] bg-muted/40 p-3">
-                      <p className="text-[11px] text-muted-foreground">{ui.allFilter}</p>
-                      <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.total}</p>
-                    </div>
-                    <div className="rounded-[20px] bg-muted/40 p-3">
-                      <p className="text-[11px] text-muted-foreground">{ui.activeFilter}</p>
-                      <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.active}</p>
-                    </div>
-                    <div className="rounded-[20px] bg-muted/40 p-3">
-                      <p className="text-[11px] text-muted-foreground">{ui.draftFilter}</p>
-                      <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.drafts}</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {visibleItems.length ? (
-                    <div className="max-h-[480px] space-y-3 overflow-y-auto pr-1">
-                      {visibleItems.slice(0, 6).map((listing) => {
-                        const imageUrl = getImageUrl(listing.images?.[0]?.image)
-                        const actionBusy = itemActionKey?.includes(String(listing.id))
-                        return (
-                          <div key={listing.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-3.5">
-                            <div className="flex gap-3">
-                              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-background">
-                                {imageUrl ? (
-                                  <img src={imageUrl} alt={listing.title} className="h-full w-full object-cover" />
-                                ) : (
-                                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                    <Camera className="h-4 w-4" />
-                                  </div>
-                                )}
+          {activeView === "items" ? (
+          <div className="mt-6 space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">{ui.itemsWorkspace}</h2>
+                <p className="mt-1 text-base text-muted-foreground">{ui.itemsHint}</p>
+              </div>
+              <Button className="rounded-xl" onClick={openCreateItemModal}>
+                <PlusCircle className="h-4 w-4" />
+                {ui.addNewItem}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 sm:grid-cols-3 lg:max-w-lg">
+              <div className="rounded-[20px] border border-border/60 bg-muted/30 p-4">
+                <p className="text-sm text-muted-foreground">{ui.allFilter}</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">{itemsSummary.total}</p>
+              </div>
+              <div className="rounded-[20px] border border-border/60 bg-muted/30 p-4">
+                <p className="text-sm text-muted-foreground">{ui.activeFilter}</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">{itemsSummary.active}</p>
+              </div>
+              <div className="rounded-[20px] border border-border/60 bg-muted/30 p-4">
+                <p className="text-sm text-muted-foreground">{ui.draftFilter}</p>
+                <p className="mt-1 text-2xl font-bold text-foreground">{itemsSummary.drafts}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              {([
+                ["all", ui.allFilter],
+                ["active", ui.activeFilter],
+                ["drafts", ui.draftFilter],
+              ] as [DashboardItemsTab, string][]).map(([tabId, label]) => (
+                <button
+                  key={tabId}
+                  type="button"
+                  onClick={() => setItemsTab(tabId)}
+                  className={`rounded-full px-5 py-2.5 text-sm font-medium transition ${
+                    itemsTab === tabId
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "border border-border/70 bg-background/80 text-muted-foreground hover:bg-accent/70"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {visibleItems.length ? (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {visibleItems.map((listing) => {
+                  const imageUrl = getImageUrl(listing.images?.[0]?.image)
+                  const actionBusy = itemActionKey?.includes(String(listing.id))
+                  return (
+                    <Card key={listing.id} className="rounded-[24px] border-border/60 shadow-sm">
+                      <CardContent className="p-5">
+                        <div className="flex gap-4">
+                          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-muted">
+                            {imageUrl ? (
+                              <img src={imageUrl} alt={listing.title} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                <Camera className="h-6 w-6" />
                               </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="min-w-0">
-                                    <p className="line-clamp-1 font-semibold text-foreground">{listing.title}</p>
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                      {formatSar(listing.price_per_day)} / day
-                                    </p>
-                                  </div>
-                                  <Badge variant={listing.is_active !== false ? "success" : "secondary"} className="rounded-full">
-                                    {listing.is_active !== false ? ui.available : ui.hidden}
-                                  </Badge>
-                                </div>
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                  <Button size="sm" variant="outline" onClick={() => openEditItemModal(listing)}>
-                                    <Edit3 className="h-4 w-4" />
-                                    {ui.editItem}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleToggleListing(listing)}
-                                    disabled={actionBusy}
-                                  >
-                                    {actionBusy ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : listing.is_active !== false ? (
-                                      <PauseCircle className="h-4 w-4" />
-                                    ) : (
-                                      <PlayCircle className="h-4 w-4" />
-                                    )}
-                                    {listing.is_active !== false ? ui.pauseListing : ui.resumeListing}
-                                  </Button>
-                                  <Button size="sm" variant="outline" onClick={() => openAvailabilityModal(String(listing.id))}>
-                                    <CalendarDays className="h-4 w-4" />
-                                    {ui.updateAvailability}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleDuplicateListing(listing)}
-                                    disabled={actionBusy}
-                                  >
-                                    <Copy className="h-4 w-4" />
-                                    {ui.duplicate}
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
+                            )}
                           </div>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <div className="rounded-[24px] border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                      {ui.noItems}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl">{text.nextMilestone}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <div>
-                    <p className="text-2xl font-semibold tracking-tight text-foreground">
-                      {milestone?.remainingRentals
-                        ? `Reach ${milestone.remainingRentals} more rentals`
-                        : text.qualified}
-                    </p>
-                    <p className="mt-2 text-sm text-muted-foreground">{text.unlockSuperHost}</p>
-                  </div>
-                  <div>
-                    <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{text.rentals}</span>
-                      <span>{milestone?.progress}%</span>
-                    </div>
-                    <div className="h-3 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500"
-                        style={{ width: `${milestone?.progress ?? 0}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="rounded-[24px] bg-violet-50 p-4 dark:bg-violet-500/10">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-400 to-violet-500 text-white shadow-sm">
-                        <Trophy className="h-7 w-7" />
-                      </div>
-                      <div>
-                        <p className="text-lg font-semibold text-foreground">{text.unlockSuperHost}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {data.super_host.qualified ? text.qualified : text.notQualified}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <Button className="w-full rounded-xl" onClick={openCreateItemModal}>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="text-base font-semibold text-foreground line-clamp-1">{listing.title}</h3>
+                              <Badge variant={listing.is_active !== false ? "success" : "secondary"} className="shrink-0 rounded-full">
+                                {listing.is_active !== false ? ui.available : ui.hidden}
+                              </Badge>
+                            </div>
+                            <p className="mt-1.5 text-sm text-muted-foreground">
+                              {formatSar(listing.price_per_day)} / day
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-2 border-t border-border/50 pt-4">
+                          <Button size="sm" variant="outline" className="rounded-xl" onClick={() => openEditItemModal(listing)}>
+                            <Edit3 className="h-4 w-4" />
+                            {ui.editItem}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-xl"
+                            onClick={() => handleToggleListing(listing)}
+                            disabled={actionBusy}
+                          >
+                            {actionBusy ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : listing.is_active !== false ? (
+                              <PauseCircle className="h-4 w-4" />
+                            ) : (
+                              <PlayCircle className="h-4 w-4" />
+                            )}
+                            {listing.is_active !== false ? ui.pauseListing : ui.resumeListing}
+                          </Button>
+                          <Button size="sm" variant="outline" className="rounded-xl" onClick={() => openAvailabilityModal(String(listing.id))}>
+                            <CalendarDays className="h-4 w-4" />
+                            {ui.updateAvailability}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-xl"
+                            onClick={() => handleDuplicateListing(listing)}
+                            disabled={actionBusy}
+                          >
+                            <Copy className="h-4 w-4" />
+                            {ui.duplicate}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            ) : (
+              <Card className="rounded-[24px] border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <Package className="h-12 w-12 text-muted-foreground/40" />
+                  <p className="mt-4 text-lg font-medium text-muted-foreground">{ui.noItems}</p>
+                  <Button className="mt-4 rounded-xl" onClick={openCreateItemModal}>
+                    <PlusCircle className="h-4 w-4" />
                     {ui.addNewItem}
                   </Button>
                 </CardContent>
               </Card>
-
-              <Card className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2">
-                    <Search className="h-5 w-5 text-primary" />
-                    <CardTitle>{text.popularSearches}</CardTitle>
-                  </div>
-                  <CardDescription>{text.popularSearchesBody}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {trendingSearches.map((searchItem) => (
-                    <div
-                      key={searchItem.label}
-                      className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 px-4 py-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-card text-emerald-600 shadow-sm">
-                          <Activity className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{searchItem.label}</p>
-                          <p className="text-xs text-muted-foreground">{searchItem.value}</p>
-                        </div>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </aside>
+            )}
           </div>
+          ) : null}
+
         </div>
       </div>
       </div>
