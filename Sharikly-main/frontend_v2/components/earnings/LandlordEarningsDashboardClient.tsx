@@ -2,14 +2,25 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   Activity,
   ArrowRight,
+  Archive,
+  Calendar,
+  CalendarDays,
   Camera,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Crown,
   Flame,
+  Inbox,
+  LayoutDashboard,
+  LucideIcon,
+  Menu,
   MoreHorizontal,
+  PlusCircle,
   Package,
   Search,
   ShieldCheck,
@@ -17,6 +28,9 @@ import {
   TrendingUp,
   Trophy,
   Wallet,
+  X,
+  FileText,
+  Clock3,
 } from "lucide-react"
 
 import axiosInstance from "@/lib/axios"
@@ -76,6 +90,25 @@ const copy = {
     rankFootnote: "Based on monthly earnings, rating, and rental activity.",
     localDemandHint: "Use these signals to decide what to list next.",
     noDemand: "Demand signals will appear here as the marketplace grows.",
+    navigation: "Navigation",
+    menu: "Menu",
+    closeMenu: "Close menu",
+    collapseSidebar: "Collapse sidebar",
+    expandSidebar: "Expand sidebar",
+    dashboardNav: "Dashboard",
+    myItemsNav: "My Items",
+    bookingsNav: "Bookings",
+    allItemsNav: "All Items",
+    addNewItemNav: "Add New Item",
+    draftsNav: "Drafts",
+    availabilityNav: "Availability / Calendar",
+    pricingNav: "Pricing",
+    analyticsNav: "Performance / Analytics",
+    incomingNav: "Incoming",
+    ongoingNav: "Ongoing",
+    pastNav: "Past",
+    allBookingsNav: "All Bookings",
+    soon: "Soon",
   },
   ar: {
     eyebrow: "لوحة المؤجر",
@@ -123,15 +156,308 @@ const copy = {
     rankFootnote: "يعتمد على أرباح الشهر والتقييم ونشاط التأجير.",
     localDemandHint: "استخدم هذه الإشارات لتحديد ما الذي يستحق إضافته لاحقًا.",
     noDemand: "ستظهر إشارات الطلب هنا مع نمو السوق.",
+    navigation: "التنقل",
+    menu: "القائمة",
+    closeMenu: "إغلاق القائمة",
+    collapseSidebar: "تصغير الشريط الجانبي",
+    expandSidebar: "توسيع الشريط الجانبي",
+    dashboardNav: "لوحة التحكم",
+    myItemsNav: "عناصري",
+    bookingsNav: "الحجوزات",
+    allItemsNav: "كل العناصر",
+    addNewItemNav: "إضافة عنصر جديد",
+    draftsNav: "المسودات",
+    availabilityNav: "التوفر / التقويم",
+    pricingNav: "التسعير",
+    analyticsNav: "الأداء / التحليلات",
+    incomingNav: "الواردة",
+    ongoingNav: "الجارية",
+    pastNav: "السابقة",
+    allBookingsNav: "كل الحجوزات",
+    soon: "قريبًا",
   },
 } as const
 
+type DashboardNavLeaf = {
+  id: string
+  label: string
+  icon: LucideIcon
+  href?: string
+  soon?: boolean
+}
+
+type DashboardNavGroup = {
+  id: string
+  label: string
+  icon: LucideIcon
+  items: DashboardNavLeaf[]
+}
+
+const isPathActive = (pathname: string, href?: string) => {
+  if (!href) return false
+  if (href === "/") return pathname === href
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
+
 export function LandlordEarningsDashboardClient() {
   const router = useRouter()
+  const pathname = usePathname()
   const { lang } = useLocale()
   const text = copy[lang]
   const [data, setData] = useState<LandlordEarningsDashboard | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const [isTabletNavExpanded, setIsTabletNavExpanded] = useState(false)
+  const [isDesktopWide, setIsDesktopWide] = useState(false)
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+    items: true,
+    bookings: true,
+  })
+
+  const sidebarExpanded = isDesktopWide || isTabletNavExpanded
+
+  const dashboardItem = useMemo<DashboardNavLeaf>(
+    () => ({
+      id: "dashboard",
+      label: text.dashboardNav,
+      icon: LayoutDashboard,
+      href: "/earnings",
+    }),
+    [text],
+  )
+
+  const navGroups = useMemo<DashboardNavGroup[]>(
+    () => [
+      {
+        id: "items",
+        label: text.myItemsNav,
+        icon: Package,
+        items: [
+          { id: "all-items", label: text.allItemsNav, icon: Package, href: "/profile" },
+          { id: "add-item", label: text.addNewItemNav, icon: PlusCircle, href: "/listings/new" },
+          { id: "drafts", label: text.draftsNav, icon: FileText, soon: true },
+          { id: "availability", label: text.availabilityNav, icon: CalendarDays, soon: true },
+          { id: "pricing", label: text.pricingNav, icon: Wallet, soon: true },
+          { id: "analytics", label: text.analyticsNav, icon: TrendingUp, href: "/earnings#performance" },
+        ],
+      },
+      {
+        id: "bookings",
+        label: text.bookingsNav,
+        icon: Calendar,
+        items: [
+          { id: "incoming", label: text.incomingNav, icon: Inbox, soon: true },
+          { id: "ongoing", label: text.ongoingNav, icon: Clock3, soon: true },
+          { id: "past", label: text.pastNav, icon: Archive, soon: true },
+          { id: "all-bookings", label: text.allBookingsNav, icon: CalendarDays, href: "/bookings" },
+        ],
+      },
+    ],
+    [text],
+  )
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const updateViewport = () => {
+      setIsDesktopWide(window.innerWidth >= 1280)
+      if (window.innerWidth >= 768) {
+        setIsMobileNavOpen(false)
+      }
+    }
+
+    updateViewport()
+    window.addEventListener("resize", updateViewport)
+    return () => window.removeEventListener("resize", updateViewport)
+  }, [])
+
+  useEffect(() => {
+    if (typeof document === "undefined") return
+
+    const previousOverflow = document.body.style.overflow
+    if (isMobileNavOpen) {
+      document.body.style.overflow = "hidden"
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isMobileNavOpen])
+
+  const toggleGroup = (groupId: string) => {
+    if (!sidebarExpanded && !isDesktopWide) {
+      setIsTabletNavExpanded(true)
+      return
+    }
+
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }))
+  }
+
+  const renderSidebar = (mobile = false) => {
+    const showLabels = mobile || sidebarExpanded
+    const DashboardIcon = dashboardItem.icon
+
+    return (
+      <div
+        className={`flex h-full flex-col ${
+          mobile
+            ? "mobile-sheet-panel mx-auto max-w-md p-4"
+            : "surface-panel rounded-[30px] border border-border/60 bg-card/90 p-3 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
+          <div className={`flex items-center gap-3 ${showLabels ? "" : "justify-center"}`}>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-white shadow-sm">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            {showLabels ? (
+              <div>
+                <p className="section-label text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                  {text.navigation}
+                </p>
+                <p className="mt-1 text-base font-semibold text-foreground">Ekra Dashboard</p>
+              </div>
+            ) : null}
+          </div>
+
+          {mobile ? (
+            <button
+              type="button"
+              onClick={() => setIsMobileNavOpen(false)}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-background/80 text-muted-foreground transition hover:bg-accent/70 hover:text-foreground"
+              aria-label={text.closeMenu}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          ) : !isDesktopWide ? (
+            <button
+              type="button"
+              onClick={() => setIsTabletNavExpanded((prev) => !prev)}
+              className="hidden h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-background/80 text-muted-foreground transition hover:bg-accent/70 hover:text-foreground md:flex xl:hidden"
+              aria-label={sidebarExpanded ? text.collapseSidebar : text.expandSidebar}
+            >
+              {sidebarExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </button>
+          ) : null}
+        </div>
+
+        {showLabels ? (
+          <div className="mt-4 rounded-[24px] border border-border/60 bg-muted/40 p-3">
+            <p className="text-sm font-medium text-foreground">{text.description}</p>
+            <div className="mt-3 flex flex-col gap-2">
+              <Button asChild className="w-full rounded-xl">
+                <Link href="/listings/new" onClick={() => setIsMobileNavOpen(false)}>
+                  {text.listProduct}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full rounded-xl">
+                <Link href="/bookings" onClick={() => setIsMobileNavOpen(false)}>
+                  {text.manageOrders}
+                </Link>
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        <nav className="mt-4 flex-1 space-y-2">
+          <Link
+            href={dashboardItem.href ?? "/earnings"}
+            title={dashboardItem.label}
+            onClick={() => setIsMobileNavOpen(false)}
+            className={`flex items-center rounded-2xl px-3 py-3 text-sm font-medium transition-all ${
+              isPathActive(pathname, dashboardItem.href)
+                ? "ekra-gradient text-white shadow-[0_14px_34px_rgba(124,58,237,0.22)]"
+                : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+            } ${showLabels ? "gap-3" : "justify-center"}`}
+          >
+            <DashboardIcon className="h-4 w-4 shrink-0" />
+            {showLabels ? <span>{dashboardItem.label}</span> : null}
+          </Link>
+
+          {navGroups.map((group) => {
+            const isGroupActive = group.items.some((item) => isPathActive(pathname, item.href))
+            const isGroupExpanded = expandedGroups[group.id]
+
+            return (
+              <div key={group.id} className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.id)}
+                  title={group.label}
+                  className={`flex w-full items-center rounded-2xl px-3 py-3 text-sm font-medium transition-all ${
+                    isGroupActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+                  } ${showLabels ? "gap-3" : "justify-center"}`}
+                  aria-expanded={showLabels ? isGroupExpanded : false}
+                >
+                  <group.icon className="h-4 w-4 shrink-0" />
+                  {showLabels ? (
+                    <>
+                      <span className="flex-1 text-left">{group.label}</span>
+                      <ChevronDown
+                        className={`h-4 w-4 shrink-0 transition-transform ${isGroupExpanded ? "rotate-180" : ""}`}
+                      />
+                    </>
+                  ) : null}
+                </button>
+
+                {showLabels && isGroupExpanded ? (
+                  <div className="ml-4 space-y-1 border-l border-border/60 pl-3">
+                    {group.items.map((item) => {
+                      const isActive = isPathActive(pathname, item.href)
+                      const Icon = item.icon
+
+                      const itemClasses = `flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-all ${
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-[0_10px_24px_rgba(124,58,237,0.18)]"
+                          : item.soon
+                            ? "cursor-default text-muted-foreground/80 hover:bg-accent/50"
+                            : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+                      }`
+
+                      if (item.href) {
+                        return (
+                          <Link
+                            key={item.id}
+                            href={item.href}
+                            onClick={() => setIsMobileNavOpen(false)}
+                            className={itemClasses}
+                          >
+                            <Icon className="h-4 w-4 shrink-0" />
+                            <span className="flex-1">{item.label}</span>
+                            {item.soon ? (
+                              <Badge variant="secondary" className="rounded-full px-2 py-0 text-[10px]">
+                                {text.soon}
+                              </Badge>
+                            ) : null}
+                          </Link>
+                        )
+                      }
+
+                      return (
+                        <button key={item.id} type="button" className={itemClasses} aria-disabled="true">
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="flex-1 text-left">{item.label}</span>
+                          <Badge variant="secondary" className="rounded-full px-2 py-0 text-[10px]">
+                            {text.soon}
+                          </Badge>
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : null}
+              </div>
+            )
+          })}
+        </nav>
+      </div>
+    )
+  }
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
@@ -256,10 +582,27 @@ export function LandlordEarningsDashboardClient() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.08),_transparent_35%),linear-gradient(to_bottom,_rgba(248,250,252,0.9),_transparent)] py-5 sm:py-8">
-      <div className="mx-auto max-w-[1280px] px-3 sm:px-6 lg:px-8 mobile-content">
-        <div className="rounded-[28px] border border-border/60 bg-card/95 p-4 shadow-[0_20px_80px_rgba(15,23,42,0.06)] backdrop-blur sm:rounded-[32px] sm:p-6">
+      <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8 mobile-content">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-5 xl:gap-6">
+          <aside
+            className={`hidden md:sticky md:top-24 md:block md:shrink-0 ${
+              sidebarExpanded ? "md:w-[280px]" : "md:w-[88px]"
+            } xl:w-[280px]`}
+          >
+            {renderSidebar()}
+          </aside>
+
+          <div className="min-w-0 flex-1 rounded-[28px] border border-border/60 bg-card/95 p-4 shadow-[0_20px_80px_rgba(15,23,42,0.06)] backdrop-blur sm:rounded-[32px] sm:p-6">
           <div className="flex flex-col gap-4 border-b border-border/60 pb-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsMobileNavOpen(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-background/80 text-muted-foreground transition hover:bg-accent/70 hover:text-foreground md:hidden"
+                aria-label={text.menu}
+              >
+                <Menu className="h-4 w-4" />
+              </button>
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-white shadow-sm">
                 <ShieldCheck className="h-5 w-5" />
               </div>
@@ -290,7 +633,7 @@ export function LandlordEarningsDashboardClient() {
 
           <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_290px]">
             <div className="space-y-4">
-              <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+              <section id="overview" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
                 {statCards.map((card) => {
                   const Icon = card.icon
                   return (
@@ -316,7 +659,7 @@ export function LandlordEarningsDashboardClient() {
                 })}
               </section>
 
-              <section className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
+              <section id="performance" className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
                 <EarningsChart
                   daily={data.chart.daily}
                   monthly={data.chart.monthly}
@@ -363,7 +706,7 @@ export function LandlordEarningsDashboardClient() {
                 </Card>
               </section>
 
-              <section className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+              <section id="items-insights" className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
                 <Card className="rounded-[28px] border-border/70 shadow-sm">
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-3">
@@ -444,7 +787,7 @@ export function LandlordEarningsDashboardClient() {
                 </Card>
               </section>
 
-              <section className="grid gap-4 lg:grid-cols-2">
+              <section id="demand-signals" className="grid gap-4 lg:grid-cols-2">
                 <Card className="rounded-[28px] border-border/70 shadow-sm">
                   <CardHeader className="pb-2">
                     <div className="flex items-center gap-2">
@@ -511,7 +854,7 @@ export function LandlordEarningsDashboardClient() {
               </section>
             </div>
 
-            <aside className="space-y-4">
+            <aside id="milestone" className="space-y-4">
               <Card className="rounded-[28px] border-border/70 shadow-sm">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-xl">{text.nextMilestone}</CardTitle>
@@ -588,6 +931,18 @@ export function LandlordEarningsDashboardClient() {
           </div>
         </div>
       </div>
+
+      {isMobileNavOpen ? (
+        <div className="mobile-sheet-backdrop fixed inset-0 z-50 flex items-end md:hidden">
+          <button
+            type="button"
+            className="absolute inset-0"
+            aria-label={text.closeMenu}
+            onClick={() => setIsMobileNavOpen(false)}
+          />
+          <div className="relative z-10 w-full">{renderSidebar(true)}</div>
+        </div>
+      ) : null}
     </div>
   )
 }
