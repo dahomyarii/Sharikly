@@ -11,9 +11,6 @@ import {
   CalendarDays,
   Camera,
   Check,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Copy,
   Crown,
   Edit3,
@@ -21,10 +18,7 @@ import {
   Flame,
   ImagePlus,
   Inbox,
-  LayoutDashboard,
   Loader2,
-  LucideIcon,
-  Menu,
   MessageCircle,
   MoreHorizontal,
   PlusCircle,
@@ -375,13 +369,6 @@ export function LandlordEarningsDashboardClient() {
   const [itemsTab, setItemsTab] = useState<DashboardItemsTab>("all")
   const [bookingActionId, setBookingActionId] = useState<number | null>(null)
   const [itemActionKey, setItemActionKey] = useState<string | null>(null)
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
-  const [isTabletNavExpanded, setIsTabletNavExpanded] = useState(false)
-  const [isDesktopWide, setIsDesktopWide] = useState(false)
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    items: true,
-    bookings: true,
-  })
   const [itemModal, setItemModal] = useState<{
     open: boolean
     mode: "create" | "edit"
@@ -442,76 +429,6 @@ export function LandlordEarningsDashboardClient() {
   }>({ open: false, booking: null, text: "", sending: false })
   const [detailsBooking, setDetailsBooking] = useState<any | null>(null)
   const [itemImages, setItemImages] = useState<Array<{ id: string; file: File; preview: string }>>([])
-
-  const sidebarExpanded = isDesktopWide || isTabletNavExpanded
-
-  const dashboardItem = useMemo<DashboardNavLeaf>(
-    () => ({
-      id: "dashboard",
-      label: text.dashboardNav,
-      icon: LayoutDashboard,
-      href: "/earnings",
-    }),
-    [text],
-  )
-
-  const navGroups = useMemo<DashboardNavGroup[]>(
-    () => [
-      {
-        id: "items",
-        label: text.myItemsNav,
-        icon: Package,
-        items: [
-          { id: "all-items", label: text.allItemsNav, icon: Package },
-          { id: "add-item", label: text.addNewItemNav, icon: PlusCircle },
-          { id: "drafts", label: text.draftsNav, icon: FileText },
-          { id: "availability", label: text.availabilityNav, icon: CalendarDays },
-          { id: "pricing", label: text.pricingNav, icon: Wallet },
-          { id: "analytics", label: text.analyticsNav, icon: TrendingUp },
-        ],
-      },
-      {
-        id: "bookings",
-        label: text.bookingsNav,
-        icon: Calendar,
-        items: [
-          { id: "incoming", label: text.incomingNav, icon: Inbox },
-          { id: "ongoing", label: text.ongoingNav, icon: Clock3 },
-          { id: "past", label: text.pastNav, icon: Archive },
-          { id: "all-bookings", label: text.allBookingsNav, icon: CalendarDays },
-        ],
-      },
-    ],
-    [text],
-  )
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-
-    const updateViewport = () => {
-      setIsDesktopWide(window.innerWidth >= 1280)
-      if (window.innerWidth >= 768) {
-        setIsMobileNavOpen(false)
-      }
-    }
-
-    updateViewport()
-    window.addEventListener("resize", updateViewport)
-    return () => window.removeEventListener("resize", updateViewport)
-  }, [])
-
-  useEffect(() => {
-    if (typeof document === "undefined") return
-
-    const previousOverflow = document.body.style.overflow
-    if (isMobileNavOpen) {
-      document.body.style.overflow = "hidden"
-    }
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-    }
-  }, [isMobileNavOpen])
 
   useEffect(() => () => clearItemImages(), [])
 
@@ -618,200 +535,6 @@ export function LandlordEarningsDashboardClient() {
         reason: "",
       },
     }))
-
-  const handleSidebarAction = (itemId: string) => {
-    if (itemId === "add-item") {
-      openCreateItemModal()
-    } else if (itemId === "all-items") {
-      setItemsTab("all")
-      scrollToSection("items-panel")
-    } else if (itemId === "drafts") {
-      setItemsTab("drafts")
-      scrollToSection("items-panel")
-    } else if (itemId === "pricing") {
-      setItemsTab("active")
-      scrollToSection("items-panel")
-    } else if (itemId === "availability") {
-      openAvailabilityModal()
-    } else if (itemId === "analytics") {
-      scrollToSection("performance")
-    } else if (itemId === "incoming" || itemId === "ongoing" || itemId === "past") {
-      setBookingTab(itemId as DashboardBookingTab)
-      scrollToSection("bookings-panel")
-    } else if (itemId === "all-bookings") {
-      setBookingTab("incoming")
-      scrollToSection("bookings-panel")
-    }
-
-    setIsMobileNavOpen(false)
-  }
-
-  const isSidebarItemActive = (itemId: string) => {
-    if (itemId === "analytics") return true
-    if (itemId === "all-items") return itemsTab === "all"
-    if (itemId === "drafts") return itemsTab === "drafts"
-    if (itemId === "pricing") return itemsTab === "active"
-    if (itemId === "incoming" || itemId === "ongoing" || itemId === "past") return bookingTab === itemId
-    if (itemId === "all-bookings") return bookingTab === "incoming"
-    return false
-  }
-
-  const toggleGroup = (groupId: string) => {
-    if (!sidebarExpanded && !isDesktopWide) {
-      setIsTabletNavExpanded(true)
-      return
-    }
-
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [groupId]: !prev[groupId],
-    }))
-  }
-
-  const renderSidebar = (mobile = false) => {
-    const showLabels = mobile || sidebarExpanded
-    const DashboardIcon = dashboardItem.icon
-
-    return (
-      <div
-        className={`flex h-full flex-col ${
-          mobile
-            ? "mobile-sheet-panel mx-auto max-w-md p-4"
-            : "surface-panel rounded-[30px] border border-border/60 bg-card/90 p-3 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur"
-        }`}
-      >
-        <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
-          <div className={`flex items-center gap-3 ${showLabels ? "" : "justify-center"}`}>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-white shadow-sm">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            {showLabels ? (
-              <div>
-                <p className="section-label text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                  {text.navigation}
-                </p>
-                <p className="mt-1 text-base font-semibold text-foreground">Ekra Dashboard</p>
-              </div>
-            ) : null}
-          </div>
-
-          {mobile ? (
-            <button
-              type="button"
-              onClick={() => setIsMobileNavOpen(false)}
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-background/80 text-muted-foreground transition hover:bg-accent/70 hover:text-foreground"
-              aria-label={text.closeMenu}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          ) : !isDesktopWide ? (
-            <button
-              type="button"
-              onClick={() => setIsTabletNavExpanded((prev) => !prev)}
-              className="hidden h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-background/80 text-muted-foreground transition hover:bg-accent/70 hover:text-foreground md:flex xl:hidden"
-              aria-label={sidebarExpanded ? text.collapseSidebar : text.expandSidebar}
-            >
-              {sidebarExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </button>
-          ) : null}
-        </div>
-
-        {showLabels ? (
-          <div className="mt-4 rounded-[24px] border border-border/60 bg-muted/40 p-3">
-            <p className="text-sm font-medium text-foreground">{text.description}</p>
-            <div className="mt-3 flex flex-col gap-2">
-              <Button className="w-full rounded-xl" onClick={openCreateItemModal}>
-                {ui.addNewItem}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full rounded-xl"
-                onClick={() => handleSidebarAction("all-bookings")}
-              >
-                {text.manageOrders}
-              </Button>
-            </div>
-          </div>
-        ) : null}
-
-        <nav className="mt-4 flex-1 space-y-2">
-          <Link
-            href={dashboardItem.href ?? "/earnings"}
-            title={dashboardItem.label}
-            onClick={() => setIsMobileNavOpen(false)}
-            className={`flex items-center rounded-2xl px-3 py-3 text-sm font-medium transition-all ${
-              isPathActive(pathname, dashboardItem.href)
-                ? "ekra-gradient text-white shadow-[0_14px_34px_rgba(124,58,237,0.22)]"
-                : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
-            } ${showLabels ? "gap-3" : "justify-center"}`}
-          >
-            <DashboardIcon className="h-4 w-4 shrink-0" />
-            {showLabels ? <span>{dashboardItem.label}</span> : null}
-          </Link>
-
-          {navGroups.map((group) => {
-            const isGroupActive =
-              pathname === "/earnings" && group.items.some((item) => isSidebarItemActive(item.id))
-            const isGroupExpanded = expandedGroups[group.id]
-
-            return (
-              <div key={group.id} className="space-y-1">
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(group.id)}
-                  title={group.label}
-                  className={`flex w-full items-center rounded-2xl px-3 py-3 text-sm font-medium transition-all ${
-                    isGroupActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
-                  } ${showLabels ? "gap-3" : "justify-center"}`}
-                  aria-expanded={showLabels ? isGroupExpanded : false}
-                >
-                  <group.icon className="h-4 w-4 shrink-0" />
-                  {showLabels ? (
-                    <>
-                      <span className="flex-1 text-left">{group.label}</span>
-                      <ChevronDown
-                        className={`h-4 w-4 shrink-0 transition-transform ${isGroupExpanded ? "rotate-180" : ""}`}
-                      />
-                    </>
-                  ) : null}
-                </button>
-
-                {showLabels && isGroupExpanded ? (
-                  <div className="ml-4 space-y-1 border-l border-border/60 pl-3">
-                    {group.items.map((item) => {
-                      const isActive = isSidebarItemActive(item.id)
-                      const Icon = item.icon
-
-                      const itemClasses = `flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-all ${
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-[0_10px_24px_rgba(124,58,237,0.18)]"
-                          : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
-                      }`
-
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          className={itemClasses}
-                          onClick={() => handleSidebarAction(item.id)}
-                        >
-                          <Icon className="h-4 w-4 shrink-0" />
-                          <span className="flex-1 text-left">{item.label}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            )
-          })}
-        </nav>
-      </div>
-    )
-  }
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
@@ -1230,26 +953,10 @@ export function LandlordEarningsDashboardClient() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.08),_transparent_35%),linear-gradient(to_bottom,_rgba(248,250,252,0.9),_transparent)] py-5 sm:py-8">
       <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8 mobile-content">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-5 xl:gap-6">
-          <aside
-            className={`hidden md:sticky md:top-24 md:block md:shrink-0 ${
-              sidebarExpanded ? "md:w-[280px]" : "md:w-[88px]"
-            } xl:w-[280px]`}
-          >
-            {renderSidebar()}
-          </aside>
-
+        <div className="flex flex-col gap-4">
           <div className="min-w-0 flex-1 rounded-[28px] border border-border/60 bg-card/95 p-4 shadow-[0_20px_80px_rgba(15,23,42,0.06)] backdrop-blur sm:rounded-[32px] sm:p-6">
           <div className="flex flex-col gap-4 border-b border-border/60 pb-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsMobileNavOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border/60 bg-background/80 text-muted-foreground transition hover:bg-accent/70 hover:text-foreground md:hidden"
-                aria-label={text.menu}
-              >
-                <Menu className="h-4 w-4" />
-              </button>
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-white shadow-sm">
                 <ShieldCheck className="h-5 w-5" />
               </div>
@@ -2226,17 +1933,7 @@ export function LandlordEarningsDashboardClient() {
         </FloatingModal>
       ) : null}
 
-      {isMobileNavOpen ? (
-        <div className="mobile-sheet-backdrop fixed inset-0 z-50 flex items-end md:hidden">
-          <button
-            type="button"
-            className="absolute inset-0"
-            aria-label={text.closeMenu}
-            onClick={() => setIsMobileNavOpen(false)}
-          />
-          <div className="relative z-10 w-full">{renderSidebar(true)}</div>
-        </div>
-      ) : null}
+      {null}
     </div>
   )
 }
