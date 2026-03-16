@@ -308,21 +308,6 @@ const workspaceCopy = {
   },
 } as const
 
-type DashboardNavLeaf = {
-  id: string
-  label: string
-  icon: LucideIcon
-  href?: string
-  soon?: boolean
-}
-
-type DashboardNavGroup = {
-  id: string
-  label: string
-  icon: LucideIcon
-  items: DashboardNavLeaf[]
-}
-
 type DashboardBookingTab = "incoming" | "ongoing" | "past" | "soon"
 type DashboardItemsTab = "all" | "active" | "drafts"
 
