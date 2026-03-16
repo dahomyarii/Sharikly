@@ -98,26 +98,26 @@ export function EarningsChart({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         {chartData.length > 0 ? (
           <>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[22px] border border-border/60 bg-muted/35 p-3">
-                <p className="text-xs text-muted-foreground">{totalLabel}</p>
-                <p className="mt-1 text-lg font-semibold text-foreground">{formatCompactSar(totalValue)}</p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-[22px] border border-border/60 bg-muted/35 p-4">
+                <p className="text-sm text-muted-foreground">{totalLabel}</p>
+                <p className="mt-1.5 text-2xl font-bold text-foreground">{formatCompactSar(totalValue)}</p>
               </div>
-              <div className="rounded-[22px] border border-border/60 bg-muted/35 p-3">
-                <p className="text-xs text-muted-foreground">{averageLabel}</p>
-                <p className="mt-1 text-lg font-semibold text-foreground">{formatCompactSar(averageValue)}</p>
+              <div className="rounded-[22px] border border-border/60 bg-muted/35 p-4">
+                <p className="text-sm text-muted-foreground">{averageLabel}</p>
+                <p className="mt-1.5 text-2xl font-bold text-foreground">{formatCompactSar(averageValue)}</p>
               </div>
-              <div className="rounded-[22px] border border-border/60 bg-muted/35 p-3">
-                <p className="text-xs text-muted-foreground">{peakLabel}</p>
-                <p className="mt-1 text-lg font-semibold text-foreground">
+              <div className="rounded-[22px] border border-border/60 bg-muted/35 p-4">
+                <p className="text-sm text-muted-foreground">{peakLabel}</p>
+                <p className="mt-1.5 text-2xl font-bold text-foreground">
                   {bestPoint ? formatCompactSar(bestPoint.earnings) : formatCompactSar(0)}
                 </p>
               </div>
             </div>
-            <div className="h-[340px] w-full sm:h-[380px] xl:h-[430px]" aria-label={title} role="img">
+            <div className="h-[360px] w-full sm:h-[400px] xl:h-[460px]" aria-label={title} role="img">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                   <defs>

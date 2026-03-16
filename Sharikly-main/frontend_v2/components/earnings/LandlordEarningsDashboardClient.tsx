@@ -1229,18 +1229,21 @@ export function LandlordEarningsDashboardClient() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.08),_transparent_35%),linear-gradient(to_bottom,_rgba(248,250,252,0.9),_transparent)] py-5 sm:py-8">
-      <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8 mobile-content">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-5 xl:gap-6">
+      <div className="mx-auto max-w-[1600px] px-3 sm:px-6 lg:px-8 mobile-content">
+        <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-5 xl:gap-6">
+
+          {/* ─── Left navigation sidebar ─── */}
           <aside
             className={`hidden md:sticky md:top-24 md:block md:shrink-0 ${
-              sidebarExpanded ? "md:w-[280px]" : "md:w-[88px]"
-            } xl:w-[280px]`}
+              sidebarExpanded ? "md:w-[272px]" : "md:w-[84px]"
+            } xl:w-[272px]`}
           >
             {renderSidebar()}
           </aside>
 
-          <div className="min-w-0 flex-1 rounded-[28px] border border-border/60 bg-card/95 p-4 shadow-[0_20px_80px_rgba(15,23,42,0.06)] backdrop-blur sm:rounded-[32px] sm:p-6">
-          <div className="flex flex-col gap-4 border-b border-border/60 pb-5 lg:flex-row lg:items-center lg:justify-between">
+          {/* ─── Center: analytics card ─── */}
+          <div className="min-w-0 flex-1 rounded-[28px] border border-border/60 bg-card/95 p-5 shadow-[0_20px_80px_rgba(15,23,42,0.06)] backdrop-blur sm:rounded-[32px] sm:p-7">
+          <div className="flex flex-col gap-4 border-b border-border/60 pb-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -1286,9 +1289,9 @@ export function LandlordEarningsDashboardClient() {
             </div>
           </div>
 
-          <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.18fr)_340px]">
-            <div className="space-y-4">
-              <section id="overview" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <div className="mt-6 space-y-6">
+            <div className="space-y-6">
+              <section id="overview" className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 {statCards.map((card, index) => {
                   const Icon = card.icon
                   return (
@@ -1300,22 +1303,22 @@ export function LandlordEarningsDashboardClient() {
                           : "bg-card/90"
                       }`}
                     >
-                      <CardContent className="p-4 sm:p-5">
+                      <CardContent className="p-5 sm:p-6">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-sm text-muted-foreground">{card.label}</p>
-                            <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                            <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
+                            <p className="mt-2.5 text-3xl font-bold tracking-tight text-foreground">
                               {card.value}
                             </p>
                             {card.accent ? (
-                              <p className="mt-2 text-sm font-medium text-emerald-600">{card.accent}</p>
+                              <p className="mt-2 text-sm font-semibold text-emerald-600">{card.accent}</p>
                             ) : null}
                           </div>
-                          <div className="rounded-2xl bg-primary/10 p-2.5 text-primary shadow-sm">
-                            <Icon className="h-4 w-4" />
+                          <div className="rounded-2xl bg-primary/10 p-3 text-primary shadow-sm">
+                            <Icon className="h-5 w-5" />
                           </div>
                         </div>
-                        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted/70">
+                        <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-muted/70">
                           <div
                             className={`h-full rounded-full ${
                               index === 0
@@ -1331,7 +1334,7 @@ export function LandlordEarningsDashboardClient() {
                 })}
               </section>
 
-              <section id="performance" className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
+              <section id="performance" className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.5fr)]">
                 <EarningsChart
                   daily={data.chart.daily}
                   monthly={data.chart.monthly}
@@ -1397,7 +1400,7 @@ export function LandlordEarningsDashboardClient() {
                 </Card>
               </section>
 
-              <section id="items-insights" className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+              <section id="items-insights" className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
                 <Card className="rounded-[28px] border-border/70 shadow-sm">
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-3">
@@ -1478,7 +1481,7 @@ export function LandlordEarningsDashboardClient() {
                 </Card>
               </section>
 
-              <section id="demand-signals" className="grid gap-4 lg:grid-cols-2">
+              <section id="demand-signals" className="grid gap-5 lg:grid-cols-2">
                 <Card className="rounded-[28px] border-border/70 shadow-sm">
                   <CardHeader className="pb-2">
                     <div className="flex items-center gap-2">
@@ -1544,23 +1547,29 @@ export function LandlordEarningsDashboardClient() {
                 </Card>
               </section>
             </div>
+          </div>
+          </div>
 
-            <aside id="operations-rail" className="space-y-4">
+          {/* ─── Right operations sidebar ─── */}
+          <aside
+            id="operations-rail"
+            className="w-full space-y-5 md:sticky md:top-24 md:w-[380px] md:shrink-0 md:self-start lg:w-[420px]"
+          >
               <Card id="bookings-panel" className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <CardTitle className="flex items-center gap-2 text-xl">
-                        <Calendar className="h-5 w-5 text-primary" />
+                      <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+                        <Calendar className="h-6 w-6 text-primary" />
                         {ui.bookingsWorkspace}
                       </CardTitle>
-                      <CardDescription>{ui.bookingsHint}</CardDescription>
+                      <CardDescription className="mt-1 text-sm">{ui.bookingsHint}</CardDescription>
                     </div>
-                    <Badge variant="secondary" className="rounded-full">
+                    <Badge variant="secondary" className="rounded-full px-3 py-1 text-sm">
                       {bookings.length}
                     </Badge>
                   </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2">
                     {([
                       ["incoming", text.incomingNav],
                       ["ongoing", text.ongoingNav],
@@ -1571,7 +1580,7 @@ export function LandlordEarningsDashboardClient() {
                         key={tabId}
                         type="button"
                         onClick={() => setBookingTab(tabId)}
-                        className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                        className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                           bookingTab === tabId
                             ? "ekra-gradient text-white shadow-[0_12px_24px_rgba(124,58,237,0.24)]"
                             : "border border-border/70 bg-background/80 text-muted-foreground hover:bg-accent/70"
@@ -1582,27 +1591,27 @@ export function LandlordEarningsDashboardClient() {
                     ))}
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-5 pb-5">
                   {bookingBuckets[bookingTab].length ? (
-                    <div className="max-h-[460px] space-y-3 overflow-y-auto pr-1">
+                    <div className="max-h-[560px] space-y-4 overflow-y-auto pr-1">
                       {bookingBuckets[bookingTab].map((booking) => {
                         const listingImage = getImageUrl(booking.listing?.images?.[0]?.image)
                         return (
-                          <div key={booking.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-3.5">
-                            <div className="flex gap-3">
-                              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-background">
+                          <div key={booking.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-5">
+                            <div className="flex gap-4">
+                              <div className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-background shadow-sm">
                                 {listingImage ? (
                                   <img src={listingImage} alt={booking.listing?.title} className="h-full w-full object-cover" />
                                 ) : (
                                   <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                    <Camera className="h-5 w-5" />
+                                    <Camera className="h-7 w-7" />
                                   </div>
                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-start justify-between gap-2">
                                   <div className="min-w-0">
-                                    <p className="line-clamp-1 font-semibold text-foreground">{booking.listing?.title}</p>
+                                    <p className="line-clamp-1 text-base font-semibold text-foreground">{booking.listing?.title}</p>
                                     <p className="mt-1 text-sm text-muted-foreground">
                                       {formatDateRange(booking.start_date, booking.end_date)}
                                     </p>
@@ -1615,24 +1624,24 @@ export function LandlordEarningsDashboardClient() {
                                           ? "success"
                                           : "outline"
                                     }
-                                    className="rounded-full"
+                                    className="rounded-full px-3 py-1 text-xs font-semibold"
                                   >
                                     {booking.status}
                                   </Badge>
                                 </div>
-                                <p className="mt-2 text-sm font-medium text-foreground">
+                                <p className="mt-2.5 text-lg font-bold text-foreground">
                                   {formatSar(booking.total_price)}
                                 </p>
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                  {ui.renterLabel}: {booking.renter?.username ?? "Guest"}
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                  {ui.renterLabel}: <span className="font-medium text-foreground">{booking.renter?.username ?? "Guest"}</span>
                                 </p>
                               </div>
                             </div>
-                            <div className="mt-3 flex flex-wrap gap-2">
+                            <div className="mt-4 flex flex-wrap gap-2">
                               {bookingTab === "incoming" ? (
                                 <>
                                   <Button
-                                    size="sm"
+                                    className="flex-1"
                                     onClick={() => handleBookingDecision(booking.id, "accept")}
                                     disabled={bookingActionId === booking.id}
                                   >
@@ -1640,8 +1649,8 @@ export function LandlordEarningsDashboardClient() {
                                     {ui.accept}
                                   </Button>
                                   <Button
-                                    size="sm"
                                     variant="outline"
+                                    className="flex-1"
                                     onClick={() => handleBookingDecision(booking.id, "decline")}
                                     disabled={bookingActionId === booking.id}
                                   >
@@ -1651,12 +1660,12 @@ export function LandlordEarningsDashboardClient() {
                               ) : null}
                               {bookingTab !== "incoming" ? (
                                 <>
-                                  <Button size="sm" variant="outline" onClick={() => setDetailsBooking(booking)}>
+                                  <Button className="flex-1" variant="outline" onClick={() => setDetailsBooking(booking)}>
                                     <Eye className="h-4 w-4" />
                                     {ui.viewDetails}
                                   </Button>
                                   <Button
-                                    size="sm"
+                                    className="flex-1"
                                     variant="outline"
                                     onClick={() => setMessageModal({ open: true, booking, text: "", sending: false })}
                                   >
@@ -1671,7 +1680,7 @@ export function LandlordEarningsDashboardClient() {
                       })}
                     </div>
                   ) : (
-                    <div className="rounded-[24px] border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                    <div className="rounded-[24px] border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
                       {ui.noBookings}
                     </div>
                   )}
@@ -1679,26 +1688,42 @@ export function LandlordEarningsDashboardClient() {
               </Card>
 
               <Card id="items-panel" className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <CardTitle className="flex items-center gap-2 text-xl">
-                        <Package className="h-5 w-5 text-primary" />
+                      <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+                        <Package className="h-6 w-6 text-primary" />
                         {ui.itemsWorkspace}
                       </CardTitle>
-                      <CardDescription>{ui.itemsHint}</CardDescription>
+                      <CardDescription className="mt-1 text-sm">{ui.itemsHint}</CardDescription>
                     </div>
-                    <Button size="sm" className="rounded-xl" onClick={openCreateItemModal}>
+                    <Button className="rounded-xl" onClick={openCreateItemModal}>
                       <PlusCircle className="h-4 w-4" />
                       {ui.addNewItem}
                     </Button>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
+                  {/* Stats row */}
+                  <div className="mt-3 grid grid-cols-3 gap-3">
+                    <div className="rounded-[20px] bg-muted/40 p-4 text-center">
+                      <p className="text-xs font-medium text-muted-foreground">{ui.allFilter}</p>
+                      <p className="mt-1.5 text-2xl font-bold text-foreground">{itemsSummary.total}</p>
+                    </div>
+                    <div className="rounded-[20px] bg-emerald-50 p-4 text-center dark:bg-emerald-500/10">
+                      <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">{ui.activeFilter}</p>
+                      <p className="mt-1.5 text-2xl font-bold text-emerald-700 dark:text-emerald-400">{itemsSummary.active}</p>
+                    </div>
+                    <div className="rounded-[20px] bg-muted/40 p-4 text-center">
+                      <p className="text-xs font-medium text-muted-foreground">{ui.draftFilter}</p>
+                      <p className="mt-1.5 text-2xl font-bold text-foreground">{itemsSummary.drafts}</p>
+                    </div>
+                  </div>
+                  {/* Tab filters */}
+                  <div className="mt-3 flex gap-2">
                     <button
                       type="button"
                       onClick={() => setItemsTab("all")}
-                      className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
-                        itemsTab === "all" ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
+                      className={`flex-1 rounded-2xl py-2.5 text-sm font-semibold transition ${
+                        itemsTab === "all" ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted/50 text-muted-foreground hover:bg-muted/80"
                       }`}
                     >
                       {ui.allFilter}
@@ -1706,8 +1731,8 @@ export function LandlordEarningsDashboardClient() {
                     <button
                       type="button"
                       onClick={() => setItemsTab("active")}
-                      className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
-                        itemsTab === "active" ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
+                      className={`flex-1 rounded-2xl py-2.5 text-sm font-semibold transition ${
+                        itemsTab === "active" ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted/50 text-muted-foreground hover:bg-muted/80"
                       }`}
                     >
                       {ui.activeFilter}
@@ -1715,66 +1740,55 @@ export function LandlordEarningsDashboardClient() {
                     <button
                       type="button"
                       onClick={() => setItemsTab("drafts")}
-                      className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
-                        itemsTab === "drafts" ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
+                      className={`flex-1 rounded-2xl py-2.5 text-sm font-semibold transition ${
+                        itemsTab === "drafts" ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted/50 text-muted-foreground hover:bg-muted/80"
                       }`}
                     >
                       {ui.draftFilter}
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="rounded-[20px] bg-muted/40 p-3">
-                      <p className="text-[11px] text-muted-foreground">{ui.allFilter}</p>
-                      <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.total}</p>
-                    </div>
-                    <div className="rounded-[20px] bg-muted/40 p-3">
-                      <p className="text-[11px] text-muted-foreground">{ui.activeFilter}</p>
-                      <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.active}</p>
-                    </div>
-                    <div className="rounded-[20px] bg-muted/40 p-3">
-                      <p className="text-[11px] text-muted-foreground">{ui.draftFilter}</p>
-                      <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.drafts}</p>
-                    </div>
-                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-5 pb-5">
                   {visibleItems.length ? (
-                    <div className="max-h-[480px] space-y-3 overflow-y-auto pr-1">
+                    <div className="max-h-[560px] space-y-4 overflow-y-auto pr-1">
                       {visibleItems.slice(0, 6).map((listing) => {
                         const imageUrl = getImageUrl(listing.images?.[0]?.image)
                         const actionBusy = itemActionKey?.includes(String(listing.id))
                         return (
-                          <div key={listing.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-3.5">
-                            <div className="flex gap-3">
-                              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-background">
+                          <div key={listing.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-5">
+                            <div className="flex gap-4">
+                              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-background shadow-sm">
                                 {imageUrl ? (
                                   <img src={imageUrl} alt={listing.title} className="h-full w-full object-cover" />
                                 ) : (
                                   <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                    <Camera className="h-4 w-4" />
+                                    <Camera className="h-6 w-6" />
                                   </div>
                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="min-w-0">
-                                    <p className="line-clamp-1 font-semibold text-foreground">{listing.title}</p>
-                                    <p className="mt-1 text-sm text-muted-foreground">
+                                    <p className="line-clamp-1 text-base font-semibold text-foreground">{listing.title}</p>
+                                    <p className="mt-1 text-sm font-medium text-muted-foreground">
                                       {formatSar(listing.price_per_day)} / day
                                     </p>
                                   </div>
-                                  <Badge variant={listing.is_active !== false ? "success" : "secondary"} className="rounded-full">
+                                  <Badge
+                                    variant={listing.is_active !== false ? "success" : "secondary"}
+                                    className="rounded-full px-3 py-1 text-xs font-semibold"
+                                  >
                                     {listing.is_active !== false ? ui.available : ui.hidden}
                                   </Badge>
                                 </div>
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                  <Button size="sm" variant="outline" onClick={() => openEditItemModal(listing)}>
+                                <div className="mt-3 grid grid-cols-2 gap-2">
+                                  <Button variant="outline" className="w-full" onClick={() => openEditItemModal(listing)}>
                                     <Edit3 className="h-4 w-4" />
                                     {ui.editItem}
                                   </Button>
                                   <Button
-                                    size="sm"
                                     variant="outline"
+                                    className="w-full"
                                     onClick={() => handleToggleListing(listing)}
                                     disabled={actionBusy}
                                   >
@@ -1787,13 +1801,13 @@ export function LandlordEarningsDashboardClient() {
                                     )}
                                     {listing.is_active !== false ? ui.pauseListing : ui.resumeListing}
                                   </Button>
-                                  <Button size="sm" variant="outline" onClick={() => openAvailabilityModal(String(listing.id))}>
+                                  <Button variant="outline" className="w-full" onClick={() => openAvailabilityModal(String(listing.id))}>
                                     <CalendarDays className="h-4 w-4" />
                                     {ui.updateAvailability}
                                   </Button>
                                   <Button
-                                    size="sm"
                                     variant="outline"
+                                    className="w-full"
                                     onClick={() => handleDuplicateListing(listing)}
                                     disabled={actionBusy}
                                   >
@@ -1808,7 +1822,7 @@ export function LandlordEarningsDashboardClient() {
                       })}
                     </div>
                   ) : (
-                    <div className="rounded-[24px] border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                    <div className="rounded-[24px] border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
                       {ui.noItems}
                     </div>
                   )}
@@ -1817,11 +1831,11 @@ export function LandlordEarningsDashboardClient() {
 
               <Card className="rounded-[28px] border-border/70 shadow-sm">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-xl">{text.nextMilestone}</CardTitle>
+                  <CardTitle className="text-2xl font-bold">{text.nextMilestone}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-5">
+                <CardContent className="space-y-5 px-5 pb-5">
                   <div>
-                    <p className="text-2xl font-semibold tracking-tight text-foreground">
+                    <p className="text-2xl font-bold tracking-tight text-foreground">
                       {milestone?.remainingRentals
                         ? `Reach ${milestone.remainingRentals} more rentals`
                         : text.qualified}
@@ -1860,25 +1874,25 @@ export function LandlordEarningsDashboardClient() {
               </Card>
 
               <Card className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
                     <Search className="h-5 w-5 text-primary" />
-                    <CardTitle>{text.popularSearches}</CardTitle>
+                    <CardTitle className="text-xl font-bold">{text.popularSearches}</CardTitle>
                   </div>
-                  <CardDescription>{text.popularSearchesBody}</CardDescription>
+                  <CardDescription className="text-sm">{text.popularSearchesBody}</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3 px-5 pb-5">
                   {trendingSearches.map((searchItem) => (
                     <div
                       key={searchItem.label}
-                      className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 px-4 py-3"
+                      className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 px-4 py-4"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-card text-emerald-600 shadow-sm">
-                          <Activity className="h-4 w-4" />
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-card text-emerald-600 shadow-sm">
+                          <Activity className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{searchItem.label}</p>
+                          <p className="text-sm font-semibold text-foreground">{searchItem.label}</p>
                           <p className="text-xs text-muted-foreground">{searchItem.value}</p>
                         </div>
                       </div>
@@ -1887,10 +1901,8 @@ export function LandlordEarningsDashboardClient() {
                   ))}
                 </CardContent>
               </Card>
-            </aside>
-          </div>
+          </aside>
         </div>
-      </div>
       </div>
 
       {itemModal.open ? (
