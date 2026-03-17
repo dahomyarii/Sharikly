@@ -1097,11 +1097,11 @@ const bookingBuckets = useMemo(() => {
                           : "bg-card/90"
                       }`}
                     >
-                      <CardContent className="p-4 sm:p-5">
+                      <CardContent className="p-2 sm:p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-sm text-muted-foreground">{card.label}</p>
-                            <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                          <p className="text-xs text-muted-foreground">{card.label}</p>
+                            <p className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
                               {card.value}
                             </p>
                             {card.accent ? (
