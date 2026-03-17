@@ -63,7 +63,7 @@ export function EarningsChart({
   const averageValue = chartData.length ? totalValue / chartData.length : 0
 
   return (
-    <Card className="rounded-[28px] border-border/70 shadow-sm">
+    <Card className="rounded-[28px] border-border/70 shadow-sm h-[520px]">
       <CardHeader className="gap-4 pb-2">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

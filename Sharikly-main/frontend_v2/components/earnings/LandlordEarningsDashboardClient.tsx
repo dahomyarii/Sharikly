@@ -660,6 +660,8 @@ export function LandlordEarningsDashboardClient() {
     ]
   }, [data])
 
+  const [performanceView, setPerformanceView] = useState<"earnings" | "bookings" | "items">("earnings")
+
 const bookingBuckets = useMemo(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -1053,42 +1055,7 @@ const bookingBuckets = useMemo(() => {
               </div>
             </div>
 
-            {/* Hero highlight card */}
-            <div className="rounded-[24px] border border-violet-500/20 bg-gradient-to-br from-violet-500/10 via-card to-emerald-400/10 p-4 sm:p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-700">
-                    This month snapshot
-                  </p>
-                  <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-                    {formatSar(data.summary.this_month_earnings)}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    from {data.summary.rentals_count} rentals · rating {data.summary.rating.toFixed(1)}/5
-                  </p>
-                </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-emerald-400 text-white shadow-md">
-                  <TrendingUp className="h-5 w-5" />
-                </div>
-              </div>
-              {milestone ? (
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>You’re {milestone.remainingRentals || 0} rentals away from Super Host</span>
-                    <span className="font-medium text-emerald-600">{milestone.progress}%</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-muted/70">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500"
-                      style={{ width: `${milestone.progress}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Stay active this month to climb into the top {milestone.leaderboardPercent}% of hosts.
-                  </p>
-                </div>
-              ) : null}
-            </div>
+            
           </div>
 
           <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.18fr)_340px]">
@@ -1149,24 +1116,29 @@ const bookingBuckets = useMemo(() => {
                     Move faster on the things that grow your earnings: new listings, pricing, and responses.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                  <Button size="sm" className="rounded-full" onClick={openCreateItemModal}>
-                      <PlusCircle className="h-4 w-4" />
-                      {ui.addNewItem}
+                    <Button
+                      size="sm"
+                      className="rounded-full"
+                      variant={performanceView === "earnings" ? "default" : "outline"}
+                      onClick={() => setPerformanceView("earnings")}
+                    >
+                      <Activity className="h-4 w-4" />
+                      {text.chartTitle}
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
                       className="rounded-full border-border/70"
-                      onClick={() => router.push("/host/bookings")}
+                      variant={performanceView === "bookings" ? "default" : "outline"}
+                      onClick={() => setPerformanceView("bookings")}
                     >
                       <Calendar className="h-4 w-4" />
                       {ui.bookingsWorkspace}
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
                       className="rounded-full border-border/70"
-                      onClick={() => router.push("/host/listings")}
+                      variant={performanceView === "items" ? "default" : "outline"}
+                      onClick={() => setPerformanceView("items")}
                     >
                       <Package className="h-4 w-4" />
                       {ui.itemsWorkspace}
@@ -1192,20 +1164,309 @@ const bookingBuckets = useMemo(() => {
               </section>
 
               <section id="performance" className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
-                <EarningsChart
-                  daily={data.chart.daily}
-                  monthly={data.chart.monthly}
-                  title={text.chartTitle}
-                  description={text.chartDescription}
-                  dailyLabel={text.daily}
-                  monthlyLabel={text.monthly}
-                  emptyLabel={text.chartEmpty}
-                  totalLabel={text.chartTotalLabel}
-                  averageLabel={text.chartAverageLabel}
-                  peakLabel={text.chartPeakLabel}
-                />
-
-                <Card className="rounded-[28px] border-border/70 shadow-sm">
+                {performanceView === "earnings" && (
+                  <EarningsChart
+                    daily={data.chart.daily}
+                    monthly={data.chart.monthly}
+                    title={text.chartTitle}
+                    description={text.chartDescription}
+                    dailyLabel={text.daily}
+                    monthlyLabel={text.monthly}
+                    emptyLabel={text.chartEmpty}
+                    totalLabel={text.chartTotalLabel}
+                    averageLabel={text.chartAverageLabel}
+                    peakLabel={text.chartPeakLabel}
+                  />
+                )}
+                {performanceView === "bookings" && (
+                  <Card className="rounded-[28px] border-border/70 shadow-sm h-[520px]">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <CardTitle className="flex items-center gap-2 text-xl">
+                            <Calendar className="h-5 w-5 text-primary" />
+                            {ui.bookingsWorkspace}
+                          </CardTitle>
+                          <CardDescription>{ui.bookingsHint}</CardDescription>
+                        </div>
+                        <Badge variant="secondary" className="rounded-full">
+                          {bookings.length}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {([
+                          ["incoming", text.incomingNav],
+                          ["ongoing", text.ongoingNav],
+                          ["soon", text.soon],
+                          ["past", text.pastNav],
+                        ] as [DashboardBookingTab, string][]).map(([tabId, label]) => (
+                          <button
+                            key={tabId}
+                            type="button"
+                            onClick={() => setBookingTab(tabId)}
+                            className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                              bookingTab === tabId
+                                ? "ekra-gradient text-white shadow-[0_12px_24px_rgba(124,58,237,0.24)]"
+                                : "border border-border/70 bg-background/80 text-muted-foreground hover:bg-accent/70"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {bookingBuckets[bookingTab].length ? (
+                        <div className="max-h-[460px] space-y-3 overflow-y-auto pr-1">
+                          {bookingBuckets[bookingTab].map((booking) => {
+                            const listingImage = getImageUrl(booking.listing?.images?.[0]?.image)
+                            return (
+                              <div key={booking.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-3.5">
+                                <div className="flex gap-3">
+                                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-background">
+                                    {listingImage ? (
+                                      <img src={listingImage} alt={booking.listing?.title} className="h-full w-full object-cover" />
+                                    ) : (
+                                      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                        <Camera className="h-5 w-5" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex flex-wrap items-start justify-between gap-2">
+                                      <div className="min-w-0">
+                                        <p className="line-clamp-1 font-semibold text-foreground">{booking.listing?.title}</p>
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                          {formatDateRange(booking.start_date, booking.end_date)}
+                                        </p>
+                                      </div>
+                                      <Badge
+                                        variant={
+                                          booking.status === "PENDING"
+                                            ? "secondary"
+                                            : booking.status === "CONFIRMED"
+                                              ? "success"
+                                              : "outline"
+                                        }
+                                        className="rounded-full"
+                                      >
+                                        {booking.status}
+                                      </Badge>
+                                    </div>
+                                    <p className="mt-2 text-sm font-medium text-foreground">
+                                      {formatSar(booking.total_price)}
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                      {ui.renterLabel}: {booking.renter?.username ?? "Guest"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  {bookingTab === "incoming" ? (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleBookingDecision(booking.id, "accept")}
+                                        disabled={bookingActionId === booking.id}
+                                      >
+                                        {bookingActionId === booking.id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Check className="h-4 w-4" />
+                                        )}
+                                        {ui.accept}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleBookingDecision(booking.id, "decline")}
+                                        disabled={bookingActionId === booking.id}
+                                      >
+                                        {ui.decline}
+                                      </Button>
+                                    </>
+                                  ) : null}
+                                  {bookingTab !== "incoming" ? (
+                                    <>
+                                      <Button size="sm" variant="outline" onClick={() => setDetailsBooking(booking)}>
+                                        <Eye className="h-4 w-4" />
+                                        {ui.viewDetails}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() =>
+                                          setMessageModal({ open: true, booking, text: "", sending: false })
+                                        }
+                                      >
+                                        <MessageCircle className="h-4 w-4" />
+                                        {ui.messageRenter}
+                                      </Button>
+                                    </>
+                                  ) : null}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="rounded-[24px] border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                          {ui.noBookings}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+                {performanceView === "items" && (
+                  <Card className="rounded-[28px] border-border/70 shadow-sm h-[520px]">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <CardTitle className="flex items-center gap-2 text-xl">
+                            <Package className="h-5 w-5 text-primary" />
+                            {ui.itemsWorkspace}
+                          </CardTitle>
+                          <CardDescription>{ui.itemsHint}</CardDescription>
+                        </div>
+                        <Button size="sm" className="rounded-xl" onClick={openCreateItemModal}>
+                          <PlusCircle className="h-4 w-4" />
+                          {ui.addNewItem}
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setItemsTab("all")}
+                          className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
+                            itemsTab === "all" ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
+                          }`}
+                        >
+                          {ui.allFilter}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setItemsTab("active")}
+                          className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
+                            itemsTab === "active"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted/50 text-muted-foreground"
+                          }`}
+                        >
+                          {ui.activeFilter}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setItemsTab("drafts")}
+                          className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
+                            itemsTab === "drafts"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted/50 text-muted-foreground"
+                          }`}
+                        >
+                          {ui.draftFilter}
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="rounded-[20px] bg-muted/40 p-3">
+                          <p className="text-[11px] text-muted-foreground">{ui.allFilter}</p>
+                          <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.total}</p>
+                        </div>
+                        <div className="rounded-[20px] bg-muted/40 p-3">
+                          <p className="text-[11px] text-muted-foreground">{ui.activeFilter}</p>
+                          <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.active}</p>
+                        </div>
+                        <div className="rounded-[20px] bg-muted/40 p-3">
+                          <p className="text-[11px] text-muted-foreground">{ui.draftFilter}</p>
+                          <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.drafts}</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {visibleItems.length ? (
+                        <div className="max-h-[480px] space-y-3 overflow-y-auto pr-1">
+                          {visibleItems.slice(0, 6).map((listing) => {
+                            const imageUrl = getImageUrl(listing.images?.[0]?.image)
+                            const actionBusy = itemActionKey?.includes(String(listing.id))
+                            return (
+                              <div key={listing.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-3.5">
+                                <div className="flex gap-3">
+                                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-background">
+                                    {imageUrl ? (
+                                      <img src={imageUrl} alt={listing.title} className="h-full w-full object-cover" />
+                                    ) : (
+                                      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                        <Camera className="h-4 w-4" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="min-w-0">
+                                        <p className="line-clamp-1 font-semibold text-foreground">{listing.title}</p>
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                          {formatSar(listing.price_per_day)} / day
+                                        </p>
+                                      </div>
+                                      <Badge
+                                        variant={listing.is_active !== false ? "success" : "secondary"}
+                                        className="rounded-full"
+                                      >
+                                        {listing.is_active !== false ? ui.available : ui.hidden}
+                                      </Badge>
+                                    </div>
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                      <Button size="sm" variant="outline" onClick={() => openEditItemModal(listing)}>
+                                        <Edit3 className="h-4 w-4" />
+                                        {ui.editItem}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleToggleListing(listing)}
+                                        disabled={actionBusy}
+                                      >
+                                        {actionBusy ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : listing.is_active !== false ? (
+                                          <PauseCircle className="h-4 w-4" />
+                                        ) : (
+                                          <PlayCircle className="h-4 w-4" />
+                                        )}
+                                        {listing.is_active !== false ? ui.pauseListing : ui.resumeListing}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => openAvailabilityModal(String(listing.id))}
+                                      >
+                                        <CalendarDays className="h-4 w-4" />
+                                        {ui.updateAvailability}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleDuplicateListing(listing)}
+                                        disabled={actionBusy}
+                                      >
+                                        <Copy className="h-4 w-4" />
+                                        {ui.duplicate}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="rounded-[24px] border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                          {ui.noItems}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+                <Card className="rounded-[28px] border-border/70 shadow-sm h-[520px]">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xl">{text.rankingTitle}</CardTitle>
                     <CardDescription>{text.rankFootnote}</CardDescription>
@@ -1245,13 +1506,13 @@ const bookingBuckets = useMemo(() => {
                       />
                     </div>
                     <div className="rounded-2xl bg-muted/60 p-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Star className="h-4 w-4 text-amber-500" />
+                        <span>{data.summary.rating.toFixed(1)} rating</span>
+                        <span className="text-border">•</span>
+                        <span>{data.summary.rentals_count} rentals</span>
+                      </div>
                       {data.ranking.hint}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Star className="h-4 w-4 text-amber-500" />
-                      <span>{data.summary.rating.toFixed(1)} rating</span>
-                      <span className="text-border">•</span>
-                      <span>{data.summary.rentals_count} rentals</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -1376,169 +1637,11 @@ const bookingBuckets = useMemo(() => {
                     )}
                   </CardContent>
                 </Card>
-
-                <Card className="rounded-[28px] border-border/70 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5 text-primary" />
-                      <CardTitle>{text.superHostTitle}</CardTitle>
-                    </div>
-                    <CardDescription>{text.superHostDescription}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {data.super_host.requirements.map((requirement) => (
-                      <div
-                        key={requirement.label}
-                        className="flex items-start justify-between gap-3 rounded-2xl border border-border/60 p-4"
-                      >
-                        <div>
-                          <p className="font-medium text-foreground">{requirement.label}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">{requirement.detail}</p>
-                        </div>
-                        <Badge variant={requirement.met ? "default" : "outline"} className="shrink-0 rounded-full">
-                          {requirement.met ? "Met" : "Open"}
-                        </Badge>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
               </section>
             </div>
 
             <aside id="operations-rail" className="space-y-4">
-              <Card id="bookings-panel" className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 text-xl">
-                        <Calendar className="h-5 w-5 text-primary" />
-                        {ui.bookingsWorkspace}
-                      </CardTitle>
-                      <CardDescription>{ui.bookingsHint}</CardDescription>
-                    </div>
-                    <Badge variant="secondary" className="rounded-full">
-                      {bookings.length}
-                    </Badge>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {([
-                      ["incoming", text.incomingNav],
-                      ["ongoing", text.ongoingNav],
-                      ["soon", text.soon],
-                      ["past", text.pastNav],
-                    ] as [DashboardBookingTab, string][]).map(([tabId, label]) => (
-                      <button
-                        key={tabId}
-                        type="button"
-                        onClick={() => setBookingTab(tabId)}
-                        className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-                          bookingTab === tabId
-                            ? "ekra-gradient text-white shadow-[0_12px_24px_rgba(124,58,237,0.24)]"
-                            : "border border-border/70 bg-background/80 text-muted-foreground hover:bg-accent/70"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {bookingBuckets[bookingTab].length ? (
-                    <div className="max-h-[460px] space-y-3 overflow-y-auto pr-1">
-                      {bookingBuckets[bookingTab].map((booking) => {
-                        const listingImage = getImageUrl(booking.listing?.images?.[0]?.image)
-                        return (
-                          <div key={booking.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-3.5">
-                            <div className="flex gap-3">
-                              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-background">
-                                {listingImage ? (
-                                  <img src={listingImage} alt={booking.listing?.title} className="h-full w-full object-cover" />
-                                ) : (
-                                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                    <Camera className="h-5 w-5" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-start justify-between gap-2">
-                                  <div className="min-w-0">
-                                    <p className="line-clamp-1 font-semibold text-foreground">{booking.listing?.title}</p>
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                      {formatDateRange(booking.start_date, booking.end_date)}
-                                    </p>
-                                  </div>
-                                  <Badge
-                                    variant={
-                                      booking.status === "PENDING"
-                                        ? "secondary"
-                                        : booking.status === "CONFIRMED"
-                                          ? "success"
-                                          : "outline"
-                                    }
-                                    className="rounded-full"
-                                  >
-                                    {booking.status}
-                                  </Badge>
-                                </div>
-                                <p className="mt-2 text-sm font-medium text-foreground">
-                                  {formatSar(booking.total_price)}
-                                </p>
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                  {ui.renterLabel}: {booking.renter?.username ?? "Guest"}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {bookingTab === "incoming" ? (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleBookingDecision(booking.id, "accept")}
-                                    disabled={bookingActionId === booking.id}
-                                  >
-                                    {bookingActionId === booking.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                                    {ui.accept}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleBookingDecision(booking.id, "decline")}
-                                    disabled={bookingActionId === booking.id}
-                                  >
-                                    {ui.decline}
-                                  </Button>
-                                </>
-                              ) : null}
-                              {bookingTab !== "incoming" ? (
-                                <>
-                                  <Button size="sm" variant="outline" onClick={() => setDetailsBooking(booking)}>
-                                    <Eye className="h-4 w-4" />
-                                    {ui.viewDetails}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => setMessageModal({ open: true, booking, text: "", sending: false })}
-                                  >
-                                    <MessageCircle className="h-4 w-4" />
-                                    {ui.messageRenter}
-                                  </Button>
-                                </>
-                              ) : null}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <div className="rounded-[24px] border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                      {ui.noBookings}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card id="items-panel" className="rounded-[28px] border-border/70 shadow-sm">
+              <Card id="items-panel" className="rounded-[28px] border-border/70 shadow-sm h-[520px]">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -1676,10 +1779,34 @@ const bookingBuckets = useMemo(() => {
               </Card>
 
               <Card className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl">{text.nextMilestone}</CardTitle>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-primary" />
+                    <CardTitle>{text.superHostTitle}</CardTitle>
+                  </div>
+                  <CardDescription>{text.superHostDescription}</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-5">
+                <CardContent className="space-y-3">
+                  {data.super_host.requirements.map((requirement) => (
+                    <div
+                      key={requirement.label}
+                      className="flex items-start justify-between gap-3 rounded-2xl border border-border/60 p-4"
+                    >
+                      <div>
+                        <p className="font-medium text-foreground">{requirement.label}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{requirement.detail}</p>
+                      </div>
+                      <Badge variant={requirement.met ? "default" : "outline"} className="shrink-0 rounded-full">
+                        {requirement.met ? "Met" : "Open"}
+                      </Badge>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-[28px] border-border/70 shadow-sm justify-start h-[360px]">
+                <CardTitle className="text-xl w-[316px] text-center">{text.nextMilestone}</CardTitle>
+                <CardContent className="space-y-5 h-[316px]">
                   <div>
                     <p className="text-2xl font-semibold tracking-tight text-foreground">
                       {milestone?.remainingRentals
@@ -1713,9 +1840,6 @@ const bookingBuckets = useMemo(() => {
                       </div>
                     </div>
                   </div>
-                  <Button className="w-full rounded-xl" onClick={openCreateItemModal}>
-                    {ui.addNewItem}
-                  </Button>
                 </CardContent>
               </Card>
 
