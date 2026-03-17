@@ -205,6 +205,10 @@ const workspaceCopy = {
     bookingsHint: "Keep requests, active rentals, and booking details inside the same page.",
     itemsWorkspace: "My Items",
     itemsHint: "Manage visibility, pricing, duplication, and quick edits without leaving earnings.",
+    heroTitle: "Ekra Dashboard",
+    heroSubtitle: "Start earning by your items on Ekra. Turn equipment and cameras into passive income by renting them out.",
+    primaryCta: "Start Earning Today",
+    secondaryCta: "View bookings",
     addNewItem: "Add new item",
     viewDetails: "View details",
     messageRenter: "Message renter",
@@ -1015,15 +1019,14 @@ const bookingBuckets = useMemo(() => {
                 {text.eyebrow}
               </p>
               <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-[32px]">
-                Ekra Dashboard
+                {ui.heroTitle}
               </h1>
               <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
-                Turn your equipment into a steady income stream in Saudi Arabia. Track earnings, ranking, and what to list
-                next—all in one focused workspace.
+                {ui.heroSubtitle}
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 <Button className="w-full rounded-full sm:w-auto" onClick={openCreateItemModal}>
-                  {ui.addNewItem}
+                  {ui.primaryCta}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
                 <Button
@@ -1031,7 +1034,7 @@ const bookingBuckets = useMemo(() => {
                   className="w-full rounded-full border-border/70 sm:w-auto"
                   onClick={() => router.push("/host/bookings")}
                 >
-                  {text.manageOrders}
+                  {ui.secondaryCta}
                 </Button>
                 <Button
                   variant="ghost"
