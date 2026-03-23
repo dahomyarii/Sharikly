@@ -1,30 +1,26 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import {
-  Activity,
   ArrowRight,
-  Archive,
   Calendar,
   CalendarDays,
   Camera,
   Check,
+  ChevronRight,
   Copy,
-  Crown,
   Edit3,
-  Eye,
   Flame,
   ImagePlus,
-  Inbox,
   Loader2,
   MessageCircle,
   MoreHorizontal,
-  PlusCircle,
-  PlayCircle,
-  PauseCircle,
   Package,
+  PauseCircle,
+  PlayCircle,
+  PlusCircle,
   Search,
   ShieldCheck,
   Star,
@@ -32,313 +28,20 @@ import {
   Trophy,
   Wallet,
   X,
-  FileText,
-  Clock3,
 } from "lucide-react"
 
 import axiosInstance from "@/lib/axios"
-import { EarningsChart } from "@/components/earnings/EarningsChart"
-import LocationPicker from "@/components/LocationPicker"
-import FloatingModal from "@/components/FloatingModal"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/toast"
-import { formatCompactSar, formatSar, type LandlordEarningsDashboard } from "@/lib/earnings"
+import { formatSar, formatCompactSar, type LandlordEarningsDashboard, type EarningsPoint } from "@/lib/earnings"
 import { useLocale } from "@/components/LocaleProvider"
+import FloatingModal from "@/components/FloatingModal"
+import LocationPicker from "@/components/LocationPicker"
 
 const API = process.env.NEXT_PUBLIC_API_BASE
-
-const copy = {
-  en: {
-    eyebrow: "Landlord dashboard",
-    title: "Earnings Dashboard",
-    description:
-      "Turn your landlord account into a small business inside the platform with live earnings, rankings, and growth hints.",
-    loginPrompt: "Log in to see your earnings dashboard.",
-    loginAction: "Go to login",
-    totalEarnings: "Total earnings",
-    monthEarnings: "This month's earnings",
-    rentals: "Number of rentals",
-    rating: "Rating",
-    topItem: "Your highest earning item",
-    chartTitle: "Earnings chart",
-    chartDescription: "Track daily and monthly gross earnings from paid rentals.",
-    daily: "Daily earnings",
-    monthly: "Monthly earnings",
-    chartEmpty: "Paid rentals will appear here once your earnings start coming in.",
-    topHosts: "Top hosts this month",
-    topRenters: "Top renters this month",
-    rankingTitle: "Your ranking this month",
-    rankingDescription: "See where you stand among active lessors on the platform.",
-    superHostTitle: "Super Host title requirements",
-    superHostDescription: "Unlock a gold badge, stronger trust, and better visibility in search.",
-    qualified: "You qualify for Super Host",
-    notQualified: "Keep going. You are building momentum.",
-    benefits: "When you earn the title, you receive",
-    listProduct: "Add another product",
-    manageOrders: "Manage orders",
-    noItem: "No earning item yet",
-    rentersSpent: "Spent",
-    unrated: "No public rating yet",
-    nextMilestone: "Next milestone",
-    unlockSuperHost: "Unlock SUPER HOST badge",
-    topPercentage: "You are in the top",
-    highestItemSubtitle: "earned",
-    promoteItem: "Promote this item",
-    topHostsCompact: "Top hosts",
-    rentalDemand: "Rental demand signals",
-    popularSearches: "Trending searches on Ekra",
-    popularSearchesBody:
-      "People are searching for these items on the platform. Add similar listings to improve your chances of getting rentals.",
-    hostBadge: "hosts",
-    moreActions: "More actions",
-    rankFootnote: "Based on monthly earnings, rating, and rental activity.",
-    localDemandHint: "Use these signals to decide what to list next.",
-    noDemand: "Demand signals will appear here as the marketplace grows.",
-    statusLabel: "Status",
-    hostStatusTitle: "Host status",
-    statusQualified: "Qualified",
-    statusBuilding: "In progress",
-    chartTotalLabel: "Total",
-    chartAverageLabel: "Average",
-    chartPeakLabel: "Peak",
-    navigation: "Navigation",
-    menu: "Menu",
-    closeMenu: "Close menu",
-    collapseSidebar: "Collapse sidebar",
-    expandSidebar: "Expand sidebar",
-    dashboardNav: "Dashboard",
-    myItemsNav: "My Items",
-    bookingsNav: "Bookings",
-    allItemsNav: "All Items",
-    addNewItemNav: "Add New Item",
-    draftsNav: "Drafts",
-    availabilityNav: "Availability / Calendar",
-    pricingNav: "Pricing",
-    analyticsNav: "Performance / Analytics",
-    incomingNav: "Incoming",
-    ongoingNav: "Ongoing",
-    pastNav: "Past",
-    allBookingsNav: "All Bookings",
-    soon: "Soon",
-  },
-  ar: {
-    eyebrow: "لوحة المؤجر",
-    title: "لوحة الأرباح",
-    description:
-      "حوّل حساب المؤجر إلى مشروع صغير داخل المنصة من خلال الأرباح المباشرة والترتيب الشهري وفرص النمو.",
-    loginPrompt: "سجّل الدخول لعرض لوحة الأرباح.",
-    loginAction: "الذهاب لتسجيل الدخول",
-    totalEarnings: "إجمالي الأرباح",
-    monthEarnings: "أرباح هذا الشهر",
-    rentals: "عدد التأجيرات",
-    rating: "التقييم",
-    topItem: "العنصر الأعلى ربحًا",
-    chartTitle: "مخطط الأرباح",
-    chartDescription: "تابع الأرباح اليومية والشهرية من التأجيرات المدفوعة.",
-    daily: "الأرباح اليومية",
-    monthly: "الأرباح الشهرية",
-    chartEmpty: "ستظهر التأجيرات المدفوعة هنا عندما تبدأ أرباحك بالوصول.",
-    topHosts: "أفضل المضيفين هذا الشهر",
-    topRenters: "أفضل المستأجرين هذا الشهر",
-    rankingTitle: "ترتيبك هذا الشهر",
-    rankingDescription: "اعرف موقعك بين المؤجرين النشطين على المنصة.",
-    superHostTitle: "متطلبات لقب المضيف المميز",
-    superHostDescription: "احصل على شارة ذهبية وثقة أكبر وظهور أفضل في نتائج البحث.",
-    qualified: "أنت مؤهل للقب المضيف المميز",
-    notQualified: "استمر. أنت تبني زخمًا قويًا.",
-    benefits: "عند حصولك على اللقب ستتلقى",
-    listProduct: "أضف منتجًا جديدًا",
-    manageOrders: "إدارة الطلبات",
-    noItem: "لا يوجد عنصر رابح بعد",
-    rentersSpent: "الإنفاق",
-    unrated: "لا يوجد تقييم عام بعد",
-    nextMilestone: "الهدف القادم",
-    unlockSuperHost: "افتح شارة المضيف المميز",
-    topPercentage: "أنت ضمن أفضل",
-    highestItemSubtitle: "تم ربحه",
-    promoteItem: "روّج لهذا العنصر",
-    topHostsCompact: "أفضل المضيفين",
-    rentalDemand: "إشارات الطلب",
-    popularSearches: "البحثات الرائجة على إكرا",
-    popularSearchesBody:
-      "الناس يبحثون عن هذه العناصر على المنصة. أضف عروضًا مشابهة لزيادة فرص حصولك على تأجيرات.",
-    hostBadge: "مضيف",
-    moreActions: "مزيد من الخيارات",
-    rankFootnote: "يعتمد على أرباح الشهر والتقييم ونشاط التأجير.",
-    localDemandHint: "استخدم هذه الإشارات لتحديد ما الذي يستحق إضافته لاحقًا.",
-    noDemand: "ستظهر إشارات الطلب هنا مع نمو السوق.",
-    statusLabel: "الحالة",
-    hostStatusTitle: "حالة المضيف",
-    statusQualified: "مؤهل",
-    statusBuilding: "قيد التقدم",
-    chartTotalLabel: "الإجمالي",
-    chartAverageLabel: "المتوسط",
-    chartPeakLabel: "الذروة",
-    navigation: "التنقل",
-    menu: "القائمة",
-    closeMenu: "إغلاق القائمة",
-    collapseSidebar: "تصغير الشريط الجانبي",
-    expandSidebar: "توسيع الشريط الجانبي",
-    dashboardNav: "لوحة التحكم",
-    myItemsNav: "عناصري",
-    bookingsNav: "الحجوزات",
-    allItemsNav: "كل العناصر",
-    addNewItemNav: "إضافة عنصر جديد",
-    draftsNav: "المسودات",
-    availabilityNav: "التوفر / التقويم",
-    pricingNav: "التسعير",
-    analyticsNav: "الأداء / التحليلات",
-    incomingNav: "الواردة",
-    ongoingNav: "الجارية",
-    pastNav: "السابقة",
-    allBookingsNav: "كل الحجوزات",
-    soon: "قريبًا",
-  },
-} as const
-
-const workspaceCopy = {
-  en: {
-    bookingsWorkspace: "Bookings",
-    bookingsHint: "Keep requests, active rentals, and booking details inside the same page.",
-    itemsWorkspace: "My Items",
-    itemsHint: "Manage visibility, pricing, duplication, and quick edits without leaving earnings.",
-    heroTitle: "Ekra Dashboard",
-    heroSubtitle: "Start earning by your items on Ekra. Turn equipment and cameras into passive income by renting them out.",
-    primaryCta: "Start Earning Today",
-    secondaryCta: "View bookings",
-    addNewItem: "Add new item",
-    viewDetails: "View details",
-    messageRenter: "Message renter",
-    accept: "Accept",
-    decline: "Decline",
-    noBookings: "Your booking activity will appear here.",
-    noItems: "Your items will appear here once you start listing.",
-    allFilter: "All",
-    activeFilter: "Active",
-    draftFilter: "Drafts",
-    available: "Available",
-    hidden: "Draft",
-    editItem: "Edit",
-    pauseListing: "Pause",
-    resumeListing: "Resume",
-    duplicate: "Duplicate",
-    updateAvailability: "Update availability",
-    createItem: "Create item",
-    editListing: "Edit listing",
-    titleLabel: "Title",
-    descriptionLabel: "Description",
-    categoryLabel: "Category",
-    cityLabel: "City",
-    pricePerDayLabel: "Price per day",
-    pickupRadiusLabel: "Pickup radius (m)",
-    publishNow: "Publish now",
-    selectCategory: "Select category",
-    cancel: "Cancel",
-    save: "Save",
-    sendMessage: "Send message",
-    writeMessage: "Write a quick message",
-    availabilityTitle: "Update availability",
-    startDate: "Start date",
-    endDate: "End date",
-    reason: "Reason",
-    selectItem: "Select item",
-    bookingDetails: "Booking details",
-    renterLabel: "Renter",
-    statusLabelShort: "Status",
-    paymentLabel: "Payment",
-    listingSaved: "Listing saved.",
-    listingCreated: "Listing created.",
-    draftCreated: "Draft created.",
-    listingDuplicated: "Draft copy created.",
-    listingPaused: "Listing visibility updated.",
-    availabilitySaved: "Availability updated.",
-    messageSent: "Message sent.",
-  },
-  ar: {
-    bookingsWorkspace: "الحجوزات",
-    bookingsHint: "أدر الطلبات والتأجيرات النشطة وتفاصيل الحجز من نفس الصفحة.",
-    itemsWorkspace: "عناصري",
-    itemsHint: "تحكم في الظهور والتسعير والنسخ والتعديل السريع بدون مغادرة صفحة الأرباح.",
-    heroTitle: "لوحة تحكم إكرا",
-    heroSubtitle:
-      "ابدأ في تحقيق الدخل من عناصرِك على إكرا. حوّل المعدات والكاميرات إلى دخل شبه ثابت من خلال تأجيرها.",
-    primaryCta: "ابدأ الربح اليوم",
-    secondaryCta: "عرض الحجوزات",
-    addNewItem: "إضافة عنصر جديد",
-    viewDetails: "عرض التفاصيل",
-    messageRenter: "مراسلة المستأجر",
-    accept: "قبول",
-    decline: "رفض",
-    noBookings: "ستظهر حجوزاتك هنا.",
-    noItems: "ستظهر عناصرك هنا عندما تبدأ في الإضافة.",
-    allFilter: "الكل",
-    activeFilter: "النشطة",
-    draftFilter: "المسودات",
-    available: "منشور",
-    hidden: "مسودة",
-    editItem: "تعديل",
-    pauseListing: "إيقاف",
-    resumeListing: "استئناف",
-    duplicate: "نسخ",
-    updateAvailability: "تحديث التوفر",
-    createItem: "إنشاء عنصر",
-    editListing: "تعديل العرض",
-    titleLabel: "العنوان",
-    descriptionLabel: "الوصف",
-    categoryLabel: "الفئة",
-    cityLabel: "المدينة",
-    pricePerDayLabel: "السعر اليومي",
-    pickupRadiusLabel: "نطاق الاستلام (م)",
-    publishNow: "نشر الآن",
-    selectCategory: "اختر فئة",
-    cancel: "إلغاء",
-    save: "حفظ",
-    sendMessage: "إرسال رسالة",
-    writeMessage: "اكتب رسالة سريعة",
-    availabilityTitle: "تحديث التوفر",
-    startDate: "تاريخ البداية",
-    endDate: "تاريخ النهاية",
-    reason: "السبب",
-    selectItem: "اختر عنصرًا",
-    bookingDetails: "تفاصيل الحجز",
-    renterLabel: "المستأجر",
-    statusLabelShort: "الحالة",
-    paymentLabel: "الدفع",
-    listingSaved: "تم حفظ العرض.",
-    listingCreated: "تم إنشاء العرض.",
-    draftCreated: "تم إنشاء المسودة.",
-    listingDuplicated: "تم إنشاء نسخة مسودة.",
-    listingPaused: "تم تحديث ظهور العرض.",
-    availabilitySaved: "تم تحديث التوفر.",
-    messageSent: "تم إرسال الرسالة.",
-  },
-} as const
-
-type DashboardBookingTab = "incoming" | "ongoing" | "past" | "soon"
-type DashboardItemsTab = "all" | "active" | "drafts"
-
-const isPathActive = (pathname: string, href?: string) => {
-  if (!href) return false
-  if (href === "/") return pathname === href
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
-const toPlainNumber = (value: string | number | null | undefined) => {
-  if (typeof value === "number") return value
-  if (typeof value === "string") {
-    const parsed = Number.parseFloat(value)
-    return Number.isFinite(parsed) ? parsed : 0
-  }
-  return 0
-}
-
-const toIsoDate = (value: string) => new Date(`${value}T00:00:00`)
-
-const formatDateRange = (start: string, end: string) =>
-  `${toIsoDate(start).toLocaleDateString()} - ${toIsoDate(end).toLocaleDateString()}`
 
 const getImageUrl = (image?: string | null) => {
   if (!image) return null
@@ -346,22 +49,145 @@ const getImageUrl = (image?: string | null) => {
   return `${API?.replace("/api", "")}${image}`
 }
 
+interface LocalRequest {
+  id: number
+  title: string
+  price_per_day: string
+  city: string
+  category: string | null
+  image: string | null
+  booking_count: number
+}
+
+interface TrendingSearch {
+  id: number
+  name: string
+  icon: string
+  booking_count: number
+}
+
+// Simple SVG chart from real monthly data
+function EarningsSVGChart({ points }: { points: EarningsPoint[] }) {
+  const data = points.slice(-6) // last 6 months
+  if (!data.length) {
+    return (
+      <div className="flex h-48 items-center justify-center text-sm text-slate-400">
+        No earnings data yet
+      </div>
+    )
+  }
+
+  const values = data.map((p) => parseFloat(p.earnings) || 0)
+  const maxVal = Math.max(...values, 1)
+  const minVal = 0
+
+  const width = 400
+  const height = 140
+  const pad = { top: 10, right: 20, bottom: 20, left: 50 }
+  const chartW = width - pad.left - pad.right
+  const chartH = height - pad.top - pad.bottom
+
+  const xStep = chartW / Math.max(data.length - 1, 1)
+  const yScale = (v: number) => chartH - ((v - minVal) / (maxVal - minVal)) * chartH + pad.top
+
+  const pathPoints = data.map((p, i) => ({
+    x: pad.left + i * xStep,
+    y: yScale(parseFloat(p.earnings) || 0),
+    label: p.label,
+    value: parseFloat(p.earnings) || 0,
+  }))
+
+  const linePath = pathPoints
+    .map((pt, i) => `${i === 0 ? "M" : "L"}${pt.x},${pt.y}`)
+    .join(" ")
+
+  const areaPath = `${linePath} L${pathPoints[pathPoints.length - 1].x},${height - pad.bottom} L${pad.left},${height - pad.bottom} Z`
+
+  // Y-axis labels
+  const yLabels = [maxVal, maxVal * 0.66, maxVal * 0.33, 0].map((v) => ({
+    value: v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toFixed(0),
+    y: yScale(v),
+  }))
+
+  const lastGrowth = data.length >= 2
+    ? Math.round(((values[values.length - 1] - values[values.length - 2]) / Math.max(values[values.length - 2], 1)) * 100)
+    : null
+
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-foreground">Earnings Chart</h3>
+        {lastGrowth !== null && (
+          <span className={`text-sm font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full ${lastGrowth >= 0 ? "text-emerald-600 bg-emerald-50" : "text-red-500 bg-red-50"}`}>
+            {lastGrowth >= 0 ? "▲" : "▼"} {Math.abs(lastGrowth)}%
+          </span>
+        )}
+      </div>
+      <div className="relative w-full overflow-x-auto">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-48" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="earningsGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.01" />
+            </linearGradient>
+          </defs>
+          {/* Grid lines */}
+          {yLabels.map((yl, i) => (
+            <g key={i}>
+              <line x1={pad.left} y1={yl.y} x2={width - pad.right} y2={yl.y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4,4" />
+              <text x={pad.left - 6} y={yl.y + 4} textAnchor="end" fontSize="9" fill="#94a3b8">{yl.value}</text>
+            </g>
+          ))}
+          {/* Bars */}
+          {pathPoints.map((pt, i) => {
+            const barW = Math.max(10, xStep * 0.4)
+            const barH = height - pad.bottom - pt.y
+            return (
+              <rect
+                key={i}
+                x={pt.x - barW / 2}
+                y={pt.y}
+                width={barW}
+                height={Math.max(0, barH)}
+                fill="#ede9fe"
+                rx="3"
+              />
+            )
+          })}
+          {/* Area fill */}
+          <path d={areaPath} fill="url(#earningsGrad)" />
+          {/* Line */}
+          <path d={linePath} fill="none" stroke="#8b5cf6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Dots */}
+          {pathPoints.map((pt, i) => (
+            <circle key={i} cx={pt.x} cy={pt.y} r="4" fill={i === pathPoints.length - 1 ? "#8b5cf6" : "#10b981"} stroke="white" strokeWidth="2" />
+          ))}
+          {/* X-axis labels */}
+          {pathPoints.map((pt, i) => (
+            <text key={i} x={pt.x} y={height - 4} textAnchor="middle" fontSize="9" fill="#94a3b8">{pt.label}</text>
+          ))}
+        </svg>
+      </div>
+    </div>
+  )
+}
+
 export function LandlordEarningsDashboardClient() {
   const router = useRouter()
   const pathname = usePathname()
   const { lang } = useLocale()
-  const text = copy[lang]
-  const ui = workspaceCopy[lang]
   const { showToast } = useToast()
+
   const [data, setData] = useState<LandlordEarningsDashboard | null>(null)
   const [user, setUser] = useState<any>(null)
-  const [bookings, setBookings] = useState<any[]>([])
   const [items, setItems] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
+  const [localRequests, setLocalRequests] = useState<LocalRequest[]>([])
+  const [trendingSearches, setTrendingSearches] = useState<TrendingSearch[]>([])
+  const [activeBookings, setActiveBookings] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
-  const [bookingTab, setBookingTab] = useState<DashboardBookingTab>("incoming")
-  const [itemsTab, setItemsTab] = useState<DashboardItemsTab>("all")
-  const [bookingActionId, setBookingActionId] = useState<number | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
   const [itemActionKey, setItemActionKey] = useState<string | null>(null)
   const [itemModal, setItemModal] = useState<{
     open: boolean
@@ -391,444 +217,58 @@ export function LandlordEarningsDashboardClient() {
       city: "",
       category_id: "",
       is_active: true,
-      latitude: "",
-      longitude: "",
+      latitude: "24.7136",
+      longitude: "46.6753",
       pickup_radius_m: "300",
     },
   })
-  const [availabilityModal, setAvailabilityModal] = useState<{
-    open: boolean
-    saving: boolean
-    form: {
-      listingId: string
-      start_date: string
-      end_date: string
-      reason: string
-    }
-  }>({
-    open: false,
-    saving: false,
-    form: {
-      listingId: "",
-      start_date: "",
-      end_date: "",
-      reason: "",
-    },
-  })
-  const [messageModal, setMessageModal] = useState<{
-    open: boolean
-    booking: any | null
-    text: string
-    sending: boolean
-  }>({ open: false, booking: null, text: "", sending: false })
-  const [detailsBooking, setDetailsBooking] = useState<any | null>(null)
+
   const [itemImages, setItemImages] = useState<Array<{ id: string; file: File; preview: string }>>([])
 
-  useEffect(() => () => clearItemImages(), [])
-
-  const scrollToSection = (sectionId: string) => {
-    if (typeof document === "undefined") return
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" })
-  }
-
-  const clearItemImages = () => {
-    setItemImages((prev) => {
-      prev.forEach((image) => URL.revokeObjectURL(image.preview))
-      return []
-    })
-  }
-
-  const closeItemModal = () =>
-    (clearItemImages(),
-    setItemModal({
-      open: false,
-      mode: "create",
-      saving: false,
-      listingId: null,
-      form: {
-        title: "",
-        description: "",
-        price_per_day: "",
-        city: "",
-        category_id: "",
-        is_active: true,
-        latitude: "",
-        longitude: "",
-        pickup_radius_m: "300",
-      },
-    }))
-
-  const openCreateItemModal = () =>
-    (clearItemImages(),
-    setItemModal({
-      open: true,
-      mode: "create",
-      saving: false,
-      listingId: null,
-      form: {
-        title: "",
-        description: "",
-        price_per_day: "",
-        city: "",
-        category_id: categories[0]?.id ? String(categories[0].id) : "",
-        is_active: true,
-        latitude: "24.7136",
-        longitude: "46.6753",
-        pickup_radius_m: "300",
-      },
-    }))
-
-  const openEditItemModal = (listing: any) =>
-    (clearItemImages(),
-    setItemModal({
-      open: true,
-      mode: "edit",
-      saving: false,
-      listingId: listing.id,
-      form: {
-        title: listing.title ?? "",
-        description: listing.description ?? "",
-        price_per_day: String(listing.price_per_day ?? ""),
-        city: listing.city ?? "",
-        category_id: listing.category?.id ? String(listing.category.id) : "",
-        is_active: listing.is_active !== false,
-        latitude: listing.latitude != null ? String(listing.latitude) : "",
-        longitude: listing.longitude != null ? String(listing.longitude) : "",
-        pickup_radius_m: String(listing.pickup_radius_m ?? 300),
-      },
-    }))
-
-  const addItemImages = (files: FileList | File[]) => {
-    const nextFiles = Array.from(files)
-      .filter((file) => file.type.startsWith("image/"))
-      .slice(0, Math.max(0, 8 - itemImages.length))
-      .map((file) => ({
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        file,
-        preview: URL.createObjectURL(file),
-      }))
-
-    setItemImages((prev) => [...prev, ...nextFiles])
-  }
-
-  const removeItemImage = (imageId: string) =>
-    setItemImages((prev) => {
-      const target = prev.find((image) => image.id === imageId)
-      if (target) URL.revokeObjectURL(target.preview)
-      return prev.filter((image) => image.id !== imageId)
-    })
-
-  const openAvailabilityModal = (listingId?: string) =>
-    setAvailabilityModal((prev) => ({
-      ...prev,
-      open: true,
-      form: {
-        listingId: listingId ?? prev.form.listingId ?? (items[0]?.id ? String(items[0].id) : ""),
-        start_date: "",
-        end_date: "",
-        reason: "",
-      },
-    }))
-
-  useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
-    const storedUser = typeof window !== "undefined" ? localStorage.getItem("user") : null
-
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch {
-        setUser(null)
-      }
-    }
-
-    if (!token || !API) {
-      setIsLoading(false)
-      return
-    }
-
-    const headers = { Authorization: `Bearer ${token}` }
-
-    Promise.allSettled([
-      axiosInstance.get(`${API}/auth/me/`, { headers }),
-      axiosInstance.get<LandlordEarningsDashboard>(`${API}/earnings/dashboard/`, { headers }),
-      axiosInstance.get(`${API}/bookings/`, { headers }),
-      axiosInstance.get(`${API}/listings/?mine=1`, { headers }),
-      axiosInstance.get(`${API}/categories/`, { headers }),
-    ])
-      .then(([userRes, dashboardRes, bookingsRes, itemsRes, categoriesRes]) => {
-        if (userRes.status === "fulfilled") {
-          setUser(userRes.value.data)
-        }
-
-        if (dashboardRes.status === "fulfilled") {
-          setData(dashboardRes.value.data)
-        } else {
-          console.error("Failed to load earnings dashboard", dashboardRes.reason)
-          setData(null)
-        }
-
-        if (bookingsRes.status === "fulfilled") {
-          const bookingData = bookingsRes.value.data
-          const bookingList = Array.isArray(bookingData) ? bookingData : bookingData?.results ?? []
-          setBookings(Array.isArray(bookingList) ? bookingList : [])
-        }
-
-        if (itemsRes.status === "fulfilled") {
-          const listingData = itemsRes.value.data
-          const listingList = Array.isArray(listingData) ? listingData : listingData?.results ?? []
-          setItems(Array.isArray(listingList) ? listingList : [])
-        }
-
-        if (categoriesRes.status === "fulfilled") {
-          const categoryData = categoriesRes.value.data
-          const categoryList = Array.isArray(categoryData) ? categoryData : categoryData?.results ?? []
-          setCategories(Array.isArray(categoryList) ? categoryList : [])
-        }
-      })
-      .finally(() => setIsLoading(false))
+  useEffect(() => () => {
+    itemImages.forEach((img) => URL.revokeObjectURL(img.preview))
   }, [])
 
-  const statCards = useMemo(() => {
-    if (!data) return []
+  const clearItemImages = useCallback(() => {
+    setItemImages((prev) => {
+      prev.forEach((img) => URL.revokeObjectURL(img.preview))
+      return []
+    })
+  }, [])
 
-    const monthlySeries = data.chart.monthly
-    const latestMonth = monthlySeries[monthlySeries.length - 1]
-    const previousMonth = monthlySeries[monthlySeries.length - 2]
-    const previousValue = previousMonth ? Number(previousMonth.earnings) : 0
-    const latestValue = latestMonth ? Number(latestMonth.earnings) : 0
-    const growth =
-      previousValue > 0 ? Math.round(((latestValue - previousValue) / previousValue) * 100) : null
+  const closeItemModal = useCallback(() => {
+    clearItemImages()
+    setItemModal({
+      open: false, mode: "create", saving: false, listingId: null,
+      form: { title: "", description: "", price_per_day: "", city: "", category_id: "", is_active: true, latitude: "24.7136", longitude: "46.6753", pickup_radius_m: "300" },
+    })
+  }, [clearItemImages])
 
-    return [
-      {
-        label: text.totalEarnings,
-        value: formatSar(data.summary.total_earnings),
-        icon: Wallet,
-        accent: null,
-      },
-      {
-        label: text.monthEarnings,
-        value: formatSar(data.summary.this_month_earnings),
-        icon: TrendingUp,
-        accent: growth && growth > 0 ? `▲ ${growth}%` : null,
-      },
-      {
-        label: text.rentals,
-        value: `${data.summary.rentals_count}`,
-        icon: Package,
-        accent: null,
-      },
-      {
-        label: text.rating,
-        value: `${data.summary.rating.toFixed(1)}/5`,
-        icon: Star,
-        accent: null,
-      },
-    ]
-  }, [data, text])
+  const openCreateItemModal = useCallback(() => {
+    clearItemImages()
+    setItemModal({
+      open: true, mode: "create", saving: false, listingId: null,
+      form: { title: "", description: "", price_per_day: "", city: "", category_id: categories[0]?.id ? String(categories[0].id) : "", is_active: true, latitude: "24.7136", longitude: "46.6753", pickup_radius_m: "300" },
+    })
+  }, [categories, clearItemImages])
 
-  const milestone = useMemo(() => {
-    if (!data) return null
-    const milestoneTarget = 20
-    const remainingRentals = Math.max(0, milestoneTarget - data.summary.rentals_count)
-    const progress = Math.min(100, Math.round((data.summary.rentals_count / milestoneTarget) * 100))
-    const leaderboardPercent = data.ranking.total_lessors
-      ? Math.max(
-          1,
-          Math.round(
-            ((data.ranking.total_lessors - data.ranking.position + 1) / data.ranking.total_lessors) * 100,
-          ),
-        )
-      : 0
+  const addItemImages = useCallback((files: FileList | File[]) => {
+    const next = Array.from(files)
+      .filter((f) => f.type.startsWith("image/"))
+      .slice(0, Math.max(0, 8 - itemImages.length))
+      .map((f) => ({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, file: f, preview: URL.createObjectURL(f) }))
+    setItemImages((prev) => [...prev, ...next])
+  }, [itemImages.length])
 
-    return {
-      remainingRentals,
-      progress,
-      leaderboardPercent,
-    }
-  }, [data])
+  const removeItemImage = useCallback((id: string) => {
+    setItemImages((prev) => {
+      const target = prev.find((img) => img.id === id)
+      if (target) URL.revokeObjectURL(target.preview)
+      return prev.filter((img) => img.id !== id)
+    })
+  }, [])
 
-  const trendingSearches = useMemo(() => {
-    if (!data) return []
-
-    const highestItem = data.summary.highest_earning_item?.title ?? "Camera"
-    return [
-      { label: highestItem, value: `${Math.max(15, data.summary.rentals_count * 3)} days` },
-      { label: "Camping Tent", value: "135 days" },
-      { label: "Lighting Kit", value: "98 days" },
-    ]
-  }, [data])
-
-  const [performanceView, setPerformanceView] = useState<"earnings" | "bookings" | "items">("earnings")
-
-const bookingBuckets = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    const hostBookings = bookings.filter(
-      (booking) => booking.listing?.owner?.id && user?.id && booking.listing.owner.id === user.id,
-    )
-
-    return hostBookings.reduce<Record<DashboardBookingTab, any[]>>(
-      (acc, booking) => {
-        const start = toIsoDate(booking.start_date)
-        const end = toIsoDate(booking.end_date)
-
-        if (booking.status === "PENDING") {
-          acc.incoming.push(booking)
-          return acc
-        }
-
-        if (booking.status === "CONFIRMED" && start > today) {
-          acc.soon.push(booking)
-          return acc
-        }
-
-        if (booking.status === "CONFIRMED" && end >= today) {
-          acc.ongoing.push(booking)
-          return acc
-        }
-
-        acc.past.push(booking)
-        return acc
-      },
-      { incoming: [], ongoing: [], past: [], soon: [] },
-    )
-  }, [bookings, user])
-
-  const itemsSummary = useMemo(
-    () => ({
-      total: items.length,
-      active: items.filter((item) => item.is_active !== false).length,
-      drafts: items.filter((item) => item.is_active === false).length,
-    }),
-    [items],
-  )
-
-  const visibleItems = useMemo(() => {
-    const sorted = [...items].sort(
-      (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
-    )
-
-    if (itemsTab === "active") {
-      return sorted.filter((item) => item.is_active !== false)
-    }
-
-    if (itemsTab === "drafts") {
-      return sorted.filter((item) => item.is_active === false)
-    }
-
-    return sorted
-  }, [items, itemsTab])
-
-  const handleBookingDecision = async (bookingId: number, action: "accept" | "decline") => {
-    const token = localStorage.getItem("access_token")
-    if (!token || !API) return
-
-    setBookingActionId(bookingId)
-    try {
-      const response = await axiosInstance.post(
-        `${API}/bookings/${bookingId}/${action}/`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      setBookings((prev) => prev.map((booking) => (booking.id === bookingId ? response.data : booking)))
-    } catch (error) {
-      console.error(`Failed to ${action} booking`, error)
-      showToast(`Failed to ${action} booking.`, "error")
-    } finally {
-      setBookingActionId(null)
-    }
-  }
-
-  const handleSendMessage = async () => {
-    const token = localStorage.getItem("access_token")
-    const booking = messageModal.booking
-
-    if (!token || !API || !booking || !messageModal.text.trim()) return
-
-    setMessageModal((prev) => ({ ...prev, sending: true }))
-    try {
-      const ownerView = booking.listing?.owner?.id === user?.id
-      const participantId = ownerView ? booking.renter?.id : booking.listing?.owner?.id
-      if (!participantId) return
-
-      const headers = { Authorization: `Bearer ${token}` }
-      const roomRes = await axiosInstance.post(
-        `${API}/chat/rooms/get-or-create/`,
-        { participant_id: participantId, listing_id: booking.listing?.id },
-        { headers },
-      )
-      await axiosInstance.post(
-        `${API}/chat/messages/`,
-        { room: roomRes.data.id, text: messageModal.text.trim() },
-        { headers },
-      )
-      showToast(ui.messageSent, "success")
-      setMessageModal({ open: false, booking: null, text: "", sending: false })
-    } catch (error) {
-      console.error("Failed to send message", error)
-      showToast("Failed to send message.", "error")
-      setMessageModal((prev) => ({ ...prev, sending: false }))
-    }
-  }
-
-  const handleToggleListing = async (listing: any) => {
-    const token = localStorage.getItem("access_token")
-    if (!token || !API) return
-
-    setItemActionKey(`toggle-${listing.id}`)
-    try {
-      await axiosInstance.patch(
-        `${API}/listings/${listing.id}/`,
-        { is_active: !listing.is_active },
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      setItems((prev) =>
-        prev.map((item) => (item.id === listing.id ? { ...item, is_active: !item.is_active } : item)),
-      )
-      showToast(ui.listingPaused, "success")
-    } catch (error) {
-      console.error("Failed to update listing", error)
-      showToast("Failed to update listing.", "error")
-    } finally {
-      setItemActionKey(null)
-    }
-  }
-
-  const handleDuplicateListing = async (listing: any) => {
-    const token = localStorage.getItem("access_token")
-    if (!token || !API) return
-
-    setItemActionKey(`duplicate-${listing.id}`)
-    try {
-      const response = await axiosInstance.post(
-        `${API}/listings/`,
-        {
-          title: `${listing.title} Copy`,
-          description: listing.description,
-          price_per_day: listing.price_per_day,
-          city: listing.city,
-          category_id: listing.category?.id,
-          is_active: false,
-          latitude: listing.latitude,
-          longitude: listing.longitude,
-          pickup_radius_m: listing.pickup_radius_m ?? 300,
-        },
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      setItems((prev) => [response.data, ...prev])
-      showToast(ui.listingDuplicated, "success")
-    } catch (error) {
-      console.error("Failed to duplicate listing", error)
-      showToast("Failed to duplicate listing.", "error")
-    } finally {
-      setItemActionKey(null)
-    }
-  }
-
-  const handleSaveItem = async () => {
+  const handleSaveItem = useCallback(async () => {
     const token = localStorage.getItem("access_token")
     if (!token || !API) return
 
@@ -836,7 +276,6 @@ const bookingBuckets = useMemo(() => {
       showToast("Please complete the item form.", "warning")
       return
     }
-
     if (itemModal.mode === "create" && itemImages.length === 0) {
       showToast("Please add at least one image.", "warning")
       return
@@ -844,6 +283,7 @@ const bookingBuckets = useMemo(() => {
 
     setItemModal((prev) => ({ ...prev, saving: true }))
     try {
+      const headers = { Authorization: `Bearer ${token}` }
       if (itemModal.mode === "edit" && itemModal.listingId) {
         const payload = {
           title: itemModal.form.title,
@@ -856,13 +296,9 @@ const bookingBuckets = useMemo(() => {
           longitude: itemModal.form.longitude ? Number(itemModal.form.longitude) : null,
           pickup_radius_m: itemModal.form.pickup_radius_m ? Number(itemModal.form.pickup_radius_m) : 300,
         }
-        const response = await axiosInstance.patch(`${API}/listings/${itemModal.listingId}/`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        setItems((prev) =>
-          prev.map((item) => (item.id === itemModal.listingId ? response.data : item)),
-        )
-        showToast(ui.listingSaved, "success")
+        const res = await axiosInstance.patch(`${API}/listings/${itemModal.listingId}/`, payload, { headers })
+        setItems((prev) => prev.map((item) => (item.id === itemModal.listingId ? res.data : item)))
+        showToast("Listing saved.", "success")
       } else {
         const formData = new FormData()
         formData.append("title", itemModal.form.title)
@@ -874,980 +310,578 @@ const bookingBuckets = useMemo(() => {
         formData.append("latitude", itemModal.form.latitude || "24.7136")
         formData.append("longitude", itemModal.form.longitude || "46.6753")
         formData.append("pickup_radius_m", itemModal.form.pickup_radius_m || "300")
-        itemImages.forEach((image) => formData.append("images", image.file))
-
-        const response = await axiosInstance.post(`${API}/listings/`, formData, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        setItems((prev) => [response.data, ...prev])
-        showToast(itemModal.form.is_active ? ui.listingCreated : ui.draftCreated, "success")
+        itemImages.forEach((img) => formData.append("images", img.file))
+        const res = await axiosInstance.post(`${API}/listings/`, formData, { headers })
+        setItems((prev) => [res.data, ...prev])
+        showToast(itemModal.form.is_active ? "Listing created." : "Draft created.", "success")
       }
-
       closeItemModal()
-    } catch (error) {
-      console.error("Failed to save listing", error)
+    } catch (err) {
+      console.error("Failed to save listing", err)
       showToast("Failed to save listing.", "error")
       setItemModal((prev) => ({ ...prev, saving: false }))
     }
-  }
+  }, [itemModal, itemImages, closeItemModal, showToast])
 
-  const handleAvailabilitySave = async () => {
+  const handleToggleListing = useCallback(async (listing: any) => {
     const token = localStorage.getItem("access_token")
-    if (!token || !API || !availabilityModal.form.listingId) return
-
-    setAvailabilityModal((prev) => ({ ...prev, saving: true }))
+    if (!token || !API) return
+    setItemActionKey(`toggle-${listing.id}`)
     try {
-      await axiosInstance.post(
-        `${API}/listings/${availabilityModal.form.listingId}/availability-blocks/`,
-        {
-          start_date: availabilityModal.form.start_date,
-          end_date: availabilityModal.form.end_date,
-          reason: availabilityModal.form.reason,
-        },
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      showToast(ui.availabilitySaved, "success")
-      setAvailabilityModal({
-        open: false,
-        saving: false,
-        form: { listingId: "", start_date: "", end_date: "", reason: "" },
-      })
-    } catch (error) {
-      console.error("Failed to save availability", error)
-      showToast("Failed to update availability.", "error")
-      setAvailabilityModal((prev) => ({ ...prev, saving: false }))
+      await axiosInstance.patch(`${API}/listings/${listing.id}/`, { is_active: !listing.is_active }, { headers: { Authorization: `Bearer ${token}` } })
+      setItems((prev) => prev.map((item) => (item.id === listing.id ? { ...item, is_active: !item.is_active } : item)))
+      showToast("Listing visibility updated.", "success")
+    } catch {
+      showToast("Failed to update listing.", "error")
+    } finally {
+      setItemActionKey(null)
     }
-  }
+  }, [showToast])
+
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    const storedUser = typeof window !== "undefined" ? localStorage.getItem("user") : null
+
+    if (storedUser) {
+      try { setUser(JSON.parse(storedUser)) } catch { setUser(null) }
+    }
+
+    if (!token || !API) {
+      setIsLoading(false)
+      return
+    }
+
+    setIsLoggedIn(true)
+    const headers = { Authorization: `Bearer ${token}` }
+
+    Promise.allSettled([
+      axiosInstance.get(`${API}/auth/me/`, { headers }),
+      axiosInstance.get<LandlordEarningsDashboard>(`${API}/earnings/dashboard/`, { headers }),
+      axiosInstance.get(`${API}/listings/?mine=1`, { headers }),
+      axiosInstance.get(`${API}/categories/`, { headers }),
+      axiosInstance.get(`${API}/earnings/local-requests/`, { headers }),
+      axiosInstance.get(`${API}/earnings/trending-searches/`),
+      axiosInstance.get(`${API}/earnings/active-bookings/`, { headers }),
+    ]).then(([userRes, dashRes, itemsRes, catsRes, localRes, trendRes, activeRes]) => {
+      if (userRes.status === "fulfilled") setUser(userRes.value.data)
+      if (dashRes.status === "fulfilled") setData(dashRes.value.data)
+      if (itemsRes.status === "fulfilled") {
+        const d = itemsRes.value.data
+        setItems(Array.isArray(d) ? d : d?.results ?? [])
+      }
+      if (catsRes.status === "fulfilled") {
+        const d = catsRes.value.data
+        setCategories(Array.isArray(d) ? d : d?.results ?? [])
+      }
+      if (localRes.status === "fulfilled") setLocalRequests(localRes.value.data ?? [])
+      if (trendRes.status === "fulfilled") setTrendingSearches(trendRes.value.data ?? [])
+      if (activeRes.status === "fulfilled") setActiveBookings(activeRes.value.data?.active_bookings ?? 0)
+    }).finally(() => setIsLoading(false))
+  }, [])
+
+  const statCards = useMemo(() => {
+    if (!data) return []
+    const monthlySeries = data.chart.monthly
+    const latestMonth = monthlySeries[monthlySeries.length - 1]
+    const prevMonth = monthlySeries[monthlySeries.length - 2]
+    const latestV = latestMonth ? parseFloat(latestMonth.earnings) : 0
+    const prevV = prevMonth ? parseFloat(prevMonth.earnings) : 0
+    const growth = prevV > 0 ? Math.round(((latestV - prevV) / prevV) * 100) : null
+
+    return [
+      {
+        label: "Rentals",
+        value: `${data.summary.rentals_count.toLocaleString()}`,
+        icon: Camera,
+        iconBg: "bg-emerald-500/10",
+        iconColor: "text-emerald-500",
+        accent: null,
+      },
+      {
+        label: "Monthly",
+        value: formatCompactSar(data.summary.this_month_earnings),
+        icon: Wallet,
+        iconBg: "bg-emerald-500/10",
+        iconColor: "text-emerald-500",
+        accent: growth !== null ? `${growth >= 0 ? "▲" : "▼"} ${Math.abs(growth)}%` : null,
+        accentColor: growth !== null && growth >= 0 ? "text-emerald-500" : "text-red-500",
+      },
+      {
+        label: "Active bookings",
+        value: `${activeBookings}`,
+        icon: CalendarDays,
+        iconBg: "bg-violet-500/10",
+        iconColor: "text-violet-500",
+        accent: null,
+      },
+      {
+        label: "Rating",
+        value: `${data.summary.rating.toFixed(1)}`,
+        icon: Star,
+        iconBg: "bg-amber-500/10",
+        iconColor: "text-amber-500",
+        accent: null,
+        star: true,
+      },
+    ]
+  }, [data, activeBookings])
+
+  const milestone = useMemo(() => {
+    if (!data) return null
+    const milestoneTarget = 20
+    const remaining = Math.max(0, milestoneTarget - data.summary.rentals_count)
+    const progress = Math.min(100, Math.round((data.summary.rentals_count / milestoneTarget) * 100))
+    return { remaining, progress }
+  }, [data])
+
+  const topItems = useMemo(() => {
+    if (!items.length) return []
+    return items
+      .filter((item) => item.is_active !== false)
+      .slice(0, 2)
+  }, [items])
+
+  const tabs = [
+    { label: "Overview", href: "/host/overview" },
+    { label: "Earnings", href: "/host/earnings" },
+    { label: "Listings", href: "/host/listings" },
+    { label: "Bookings", href: "/host/bookings" },
+    { label: "Opportunities", href: "/host/opportunities" },
+  ]
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background py-8">
-        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 mobile-content">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Card key={index} className="h-32 rounded-3xl animate-pulse bg-muted/60" />
+      <div className="min-h-screen bg-[#f3edff] py-8">
+        <div className="mx-auto max-w-[1000px] px-3 sm:px-6 lg:px-8">
+          {/* Skeleton */}
+          <div className="grid grid-cols-4 gap-4 mb-6 mt-16">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-24 rounded-3xl bg-white/60 animate-pulse" />
             ))}
+          </div>
+          <div className="grid grid-cols-[1.8fr_1fr] gap-4 mb-6">
+            <div className="h-64 rounded-3xl bg-white/60 animate-pulse" />
+            <div className="h-64 rounded-3xl bg-white/60 animate-pulse" />
+          </div>
+          <div className="grid grid-cols-[1.8fr_1fr] gap-4">
+            <div className="space-y-4">
+              <div className="h-32 rounded-3xl bg-white/60 animate-pulse" />
+              <div className="h-32 rounded-3xl bg-white/60 animate-pulse" />
+            </div>
+            <div className="space-y-4">
+              <div className="h-40 rounded-3xl bg-white/60 animate-pulse" />
+              <div className="h-40 rounded-3xl bg-white/60 animate-pulse" />
+            </div>
           </div>
         </div>
       </div>
     )
   }
 
-  if (!data) {
+  if (!isLoggedIn || !data) {
     return (
-      <div className="min-h-screen bg-background py-10">
-        <div className="mx-auto max-w-3xl px-3 sm:px-6 lg:px-8 mobile-content">
-          <Card className="rounded-3xl border-border/70 text-center shadow-sm">
-            <CardContent className="p-8">
-              <p className="text-muted-foreground">{text.loginPrompt}</p>
-              <Button className="mt-4" onClick={() => router.push("/auth/login")}>
-                {text.loginAction}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="min-h-screen bg-[#f3edff] flex items-center justify-center">
+        <Card className="rounded-3xl border-none shadow-lg bg-white/90 max-w-sm w-full mx-4">
+          <CardContent className="p-8 text-center">
+            <ShieldCheck className="h-12 w-12 text-violet-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-foreground mb-2">Sign in to view your dashboard</h2>
+            <p className="text-sm text-muted-foreground mb-6">Track your earnings, bookings, and ranking in one place.</p>
+            <Button className="w-full rounded-xl bg-violet-500 hover:bg-violet-600" onClick={() => router.push("/auth/login")}>
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.08),_transparent_35%),linear-gradient(to_bottom,_rgba(248,250,252,0.9),_transparent)] py-5 sm:py-8">
-      <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8 mobile-content">
-        <div className="flex flex-col gap-5 sm:gap-6">
-          {/* Top navigation / header */}
-          <div className="flex items-center justify-between gap-3 rounded-[24px] border border-border/40 bg-card/70 px-4 py-3 shadow-sm backdrop-blur sm:rounded-[28px] sm:px-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-emerald-400 text-white shadow-sm sm:h-10 sm:w-10">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                  Ekra Host
-                </p>
-                <p className="text-sm font-medium text-foreground/90 sm:text-base">
-                  Premium earnings & performance workspace
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <nav className="hidden items-center gap-3 text-sm text-muted-foreground/90 sm:flex">
-                {[
-                  { id: "overview", label: "Overview", href: "/host/overview" },
-                  { id: "earnings", label: "Earnings", href: "/host/earnings" },
-                  { id: "listings", label: "Listings", href: "/host/listings" },
-                  { id: "opportunities", label: "Opportunities", href: "/host/opportunities" },
-                  { id: "bookings", label: "Bookings", href: "/host/bookings" },
-                ].map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    (item.id === "overview" && (pathname === "/earnings" || pathname === "/host")) ||
-                    (item.id === "bookings" && pathname === "/bookings")
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={`rounded-full px-3 py-1.5 transition ${
-                        isActive
-                          ? "ekra-gradient text-white shadow-[0_10px_30px_rgba(124,58,237,0.35)]"
-                          : "hover:bg-accent/70"
-                      }`}
-                      onClick={() => router.push(item.href)}
-                    >
-                      {item.label}
-                    </button>
-                  )
-                })}
-              </nav>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full border-border/70 bg-background/80"
-                  aria-label="Notifications"
-                  onClick={() => router.push("/notifications")}
-                >
-                  <Inbox className="h-4 w-4" />
-                </Button>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-slate-900 to-slate-700 text-xs font-semibold text-white shadow-sm sm:h-10 sm:w-10">
-                  {user?.username?.[0]?.toUpperCase() ?? "E"}
-                </div>
-                <Button className="hidden rounded-full px-4 sm:inline-flex" onClick={openCreateItemModal}>
-                  {ui.addNewItem}
-                </Button>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#f3edff] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_60%)] py-5 sm:py-8 font-sans pb-20">
+      <div className="mx-auto max-w-[1000px] px-3 sm:px-6 lg:px-8">
 
-          <div className="min-w-0 flex-1 rounded-[28px] border border-border/60 bg-card/95 p-4 shadow-[0_20px_80px_rgba(15,23,42,0.06)] backdrop-blur sm:rounded-[32px] sm:p-6">
-          <div className="grid gap-5 border-b border-border/60 pb-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.9fr)] lg:items-center">
-            {/* Hero / welcome */}
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                {text.eyebrow}
-              </p>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-[32px]">
-                {ui.heroTitle}
-              </h1>
-              <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
-                {ui.heroSubtitle}
-              </p>
-              <div className="flex flex-wrap gap-2 pt-1">
-                <Button className="w-full rounded-full sm:w-auto" onClick={openCreateItemModal}>
-                  {ui.primaryCta}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full rounded-full border-border/70 sm:w-auto"
-                  onClick={() => router.push("/host/bookings")}
-                >
-                  {ui.secondaryCta}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hidden rounded-full sm:inline-flex"
-                  aria-label={text.moreActions}
-                  onClick={() => scrollToSection("items-panel")}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            
-          </div>
-
-          <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.18fr)_340px]">
-            <div className="space-y-4">
-              <section id="overview" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-                {statCards.map((card, index) => {
-                  const Icon = card.icon
-                  return (
-                    <Card
-                      key={card.label}
-                      className={`rounded-[24px] border-border/60 shadow-none ${
-                        index === 0
-                          ? "border-primary/15 bg-gradient-to-br from-violet-50 via-white to-emerald-50 dark:from-violet-500/10 dark:via-card dark:to-emerald-500/10"
-                          : "bg-card/90"
-                      }`}
-                    >
-                      <CardContent className="p-2 sm:p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                          <p className="text-xs text-muted-foreground">{card.label}</p>
-                            <p className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-                              {card.value}
-                            </p>
-                            {card.accent ? (
-                              <p className="mt-2 text-sm font-medium text-emerald-600">{card.accent}</p>
-                            ) : null}
-                          </div>
-                          <div className="rounded-2xl bg-primary/10 p-2.5 text-primary shadow-sm">
-                            <Icon className="h-4 w-4" />
-                          </div>
-                        </div>
-                        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted/70">
-                          <div
-                            className={`h-full rounded-full ${
-                              index === 0
-                                ? "bg-gradient-to-r from-violet-500 to-emerald-400"
-                                : "bg-primary/60"
-                            }`}
-                            style={{ width: `${index === 0 ? 88 : index === 1 ? 72 : index === 2 ? 64 : 58}%` }}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </section>
-
-              {/* Quick actions */}
-              <section
-                aria-label="Quick actions"
-                className="grid gap-3 rounded-[24px] border border-border/70 bg-muted/40 p-4 sm:grid-cols-[minmax(0,1.3fr)_minmax(240px,0.7fr)] sm:p-5"
+        {/* Tabs */}
+        <div className="flex items-center justify-center gap-1 sm:gap-5 mb-10 text-sm font-medium overflow-x-auto pb-1 flex-wrap">
+          {tabs.map((tab) => {
+            const isActive = pathname === tab.href || (tab.href === "/host/overview" && (pathname === "/earnings" || pathname === "/host"))
+            return (
+              <button
+                key={tab.href}
+                type="button"
+                onClick={() => router.push(tab.href)}
+                className={`whitespace-nowrap pb-2 px-2 border-b-[3px] transition-colors ${isActive ? "text-violet-900 border-violet-400 font-semibold" : "text-muted-foreground border-transparent hover:text-foreground"}`}
               >
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                    Quick actions
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Move faster on the things that grow your earnings: new listings, pricing, and responses.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      className="rounded-full"
-                      variant={performanceView === "earnings" ? "default" : "outline"}
-                      onClick={() => setPerformanceView("earnings")}
-                    >
-                      <Activity className="h-4 w-4" />
-                      {text.chartTitle}
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="rounded-full border-border/70"
-                      variant={performanceView === "bookings" ? "default" : "outline"}
-                      onClick={() => setPerformanceView("bookings")}
-                    >
-                      <Calendar className="h-4 w-4" />
-                      {ui.bookingsWorkspace}
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="rounded-full border-border/70"
-                      variant={performanceView === "items" ? "default" : "outline"}
-                      onClick={() => setPerformanceView("items")}
-                    >
-                      <Package className="h-4 w-4" />
-                      {ui.itemsWorkspace}
-                    </Button>
-                  </div>
-                </div>
-                <div className="mt-3 space-y-2 sm:mt-0">
-                  <div className="flex items-center justify-between rounded-[18px] bg-card/80 px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <Clock3 className="h-4 w-4 text-emerald-500" />
-                      <span className="text-xs text-muted-foreground">Response time</span>
-                    </div>
-                    <span className="text-xs font-medium text-foreground">Under 1 hr</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-[18px] bg-card/80 px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <Activity className="h-4 w-4 text-violet-500" />
-                      <span className="text-xs text-muted-foreground">Occupancy trend</span>
-                    </div>
-                    <span className="text-xs font-medium text-emerald-600">Healthy</span>
-                  </div>
-                </div>
-              </section>
+                {tab.label}
+              </button>
+            )
+          })}
+          <button type="button" className="text-muted-foreground pb-2 px-1 border-b-[3px] border-transparent">
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+        </div>
 
-              <section id="performance" className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
-                {performanceView === "earnings" && (
-                  <EarningsChart
-                    daily={data.chart.daily}
-                    monthly={data.chart.monthly}
-                    title={text.chartTitle}
-                    description={text.chartDescription}
-                    dailyLabel={text.daily}
-                    monthlyLabel={text.monthly}
-                    emptyLabel={text.chartEmpty}
-                    totalLabel={text.chartTotalLabel}
-                    averageLabel={text.chartAverageLabel}
-                    peakLabel={text.chartPeakLabel}
+        {/* Hero Section */}
+        <div className="grid gap-6 md:grid-cols-[1.2fr_1fr] mb-6 items-center">
+          <div className="flex flex-col justify-center pr-4">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2 mb-2">
+              Ekra <span className="text-violet-500 font-medium">Dashboard</span>
+            </h1>
+            <h2 className="text-2xl text-foreground font-medium mb-3">
+              Start earning by <span className="font-bold">Your Items</span> on Ekra
+            </h2>
+            <p className="text-muted-foreground max-w-sm mb-5 leading-relaxed text-sm">
+              Turn your items and equipment into passive income by renting them out.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                className="rounded-xl bg-violet-500 hover:bg-violet-600 text-white px-6 py-5 shadow-lg shadow-violet-500/25 text-base"
+                onClick={openCreateItemModal}
+              >
+                Start Earning Today <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Ranking Card */}
+          <Card className="rounded-[24px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.05)] bg-white/80 backdrop-blur">
+            <CardContent className="p-6 relative">
+              <div className="absolute top-4 right-4 text-emerald-400">
+                <TrendingUp className="h-8 w-8" strokeWidth={3} />
+              </div>
+              <p className="text-sm text-foreground font-medium">Your ranking this month</p>
+              <div className="flex items-baseline gap-2 mt-1 mb-4">
+                <p className="text-3xl font-bold text-foreground">#{data.ranking.position}</p>
+                <p className="text-sm text-muted-foreground">of {data.ranking.total_lessors} hosts</p>
+              </div>
+              <div className="h-2.5 bg-[#e2e8f0] rounded-full w-3/4 mb-4 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-300 to-emerald-500 transition-all"
+                  style={{
+                    width: `${data.ranking.total_lessors > 0
+                      ? Math.max(5, Math.round(((data.ranking.total_lessors - data.ranking.position + 1) / data.ranking.total_lessors) * 100))
+                      : 10}%`
+                  }}
+                />
+              </div>
+              {/* Mini chart from monthly data */}
+              {data.chart.monthly.length > 1 ? (
+                <div className="mt-3">
+                  <svg viewBox="0 0 200 50" className="w-full h-[60px] text-violet-500" preserveAspectRatio="none">
+                    {(() => {
+                      const pts = data.chart.monthly.slice(-5)
+                      const vals = pts.map((p) => parseFloat(p.earnings) || 0)
+                      const maxV = Math.max(...vals, 1)
+                      const xStep = 190 / Math.max(pts.length - 1, 1)
+                      const coordPts = pts.map((p, i) => ({
+                        x: 5 + i * xStep,
+                        y: 5 + (1 - (parseFloat(p.earnings) || 0) / maxV) * 35,
+                      }))
+                      const path = coordPts.map((pt, i) => `${i === 0 ? "M" : "L"}${pt.x},${pt.y}`).join(" ")
+                      const area = `${path} L${coordPts[coordPts.length - 1].x},45 L5,45 Z`
+                      return (
+                        <>
+                          <defs>
+                            <linearGradient id="rg" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.2" />
+                              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
+                            </linearGradient>
+                          </defs>
+                          <path d={area} fill="url(#rg)" />
+                          <path d={path} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          {coordPts.map((pt, i) => (
+                            <circle key={i} cx={pt.x} cy={pt.y} r="3" fill="currentColor" stroke="white" strokeWidth="1.5" />
+                          ))}
+                        </>
+                      )
+                    })()}
+                  </svg>
+                  <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                    {data.chart.monthly.slice(-5).map((p, i) => (
+                      <span key={i}>{p.label.split(" ")[0]}</span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-3">{data.ranking.hint}</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 4 Stat Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          {statCards.map((card, idx) => {
+            const Icon = card.icon
+            return (
+              <Card key={idx} className="rounded-[20px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div className={`p-2 rounded-xl ${card.iconBg} ${card.iconColor}`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-lg font-bold text-foreground">{card.value}</span>
+                      {card.star && <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />}
+                      {card.accent && (
+                        <span className={`text-[11px] font-semibold ${(card as any).accentColor}`}>{card.accent}</span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium">{card.label}</p>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+
+        {/* Chart and Milestone */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-4 mb-5">
+          <Card className="rounded-[24px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur">
+            <CardContent className="p-6">
+              <EarningsSVGChart points={data.chart.monthly} />
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-[24px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur">
+            <CardContent className="p-6 flex flex-col justify-between h-full gap-4">
+              <div className="w-full">
+                <h3 className="text-base font-semibold text-foreground mb-1">Next Milestone</h3>
+                <p className="text-sm text-foreground">
+                  {milestone?.remaining
+                    ? `Reach ${milestone.remaining} more ${milestone.remaining === 1 ? "rental" : "rentals"}`
+                    : "You qualify for Super Host!"}
+                </p>
+                <div className="mt-3 bg-[#e2e8f0] h-2.5 rounded-full overflow-hidden w-full">
+                  <div
+                    className="bg-gradient-to-r from-emerald-300 to-emerald-500 h-full transition-all duration-700"
+                    style={{ width: `${milestone?.progress ?? 0}%` }}
                   />
-                )}
-                {performanceView === "bookings" && (
-                  <Card className="rounded-[28px] border-border/70 shadow-sm h-[520px]">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <CardTitle className="flex items-center gap-2 text-xl">
-                            <Calendar className="h-5 w-5 text-primary" />
-                            {ui.bookingsWorkspace}
-                          </CardTitle>
-                          <CardDescription>{ui.bookingsHint}</CardDescription>
-                        </div>
-                        <Badge variant="secondary" className="rounded-full">
-                          {bookings.length}
-                        </Badge>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {([
-                          ["incoming", text.incomingNav],
-                          ["ongoing", text.ongoingNav],
-                          ["soon", text.soon],
-                          ["past", text.pastNav],
-                        ] as [DashboardBookingTab, string][]).map(([tabId, label]) => (
-                          <button
-                            key={tabId}
-                            type="button"
-                            onClick={() => setBookingTab(tabId)}
-                            className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-                              bookingTab === tabId
-                                ? "ekra-gradient text-white shadow-[0_12px_24px_rgba(124,58,237,0.24)]"
-                                : "border border-border/70 bg-background/80 text-muted-foreground hover:bg-accent/70"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {bookingBuckets[bookingTab].length ? (
-                        <div className="max-h-[460px] space-y-3 overflow-y-auto pr-1">
-                          {bookingBuckets[bookingTab].map((booking) => {
-                            const listingImage = getImageUrl(booking.listing?.images?.[0]?.image)
-                            return (
-                              <div key={booking.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-3.5">
-                                <div className="flex gap-3">
-                                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-background">
-                                    {listingImage ? (
-                                      <img src={listingImage} alt={booking.listing?.title} className="h-full w-full object-cover" />
-                                    ) : (
-                                      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                        <Camera className="h-5 w-5" />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex flex-wrap items-start justify-between gap-2">
-                                      <div className="min-w-0">
-                                        <p className="line-clamp-1 font-semibold text-foreground">{booking.listing?.title}</p>
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                          {formatDateRange(booking.start_date, booking.end_date)}
-                                        </p>
-                                      </div>
-                                      <Badge
-                                        variant={
-                                          booking.status === "PENDING"
-                                            ? "secondary"
-                                            : booking.status === "CONFIRMED"
-                                              ? "success"
-                                              : "outline"
-                                        }
-                                        className="rounded-full"
-                                      >
-                                        {booking.status}
-                                      </Badge>
-                                    </div>
-                                    <p className="mt-2 text-sm font-medium text-foreground">
-                                      {formatSar(booking.total_price)}
-                                    </p>
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                      {ui.renterLabel}: {booking.renter?.username ?? "Guest"}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                  {bookingTab === "incoming" ? (
-                                    <>
-                                      <Button
-                                        size="sm"
-                                        onClick={() => handleBookingDecision(booking.id, "accept")}
-                                        disabled={bookingActionId === booking.id}
-                                      >
-                                        {bookingActionId === booking.id ? (
-                                          <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                          <Check className="h-4 w-4" />
-                                        )}
-                                        {ui.accept}
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleBookingDecision(booking.id, "decline")}
-                                        disabled={bookingActionId === booking.id}
-                                      >
-                                        {ui.decline}
-                                      </Button>
-                                    </>
-                                  ) : null}
-                                  {bookingTab !== "incoming" ? (
-                                    <>
-                                      <Button size="sm" variant="outline" onClick={() => setDetailsBooking(booking)}>
-                                        <Eye className="h-4 w-4" />
-                                        {ui.viewDetails}
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() =>
-                                          setMessageModal({ open: true, booking, text: "", sending: false })
-                                        }
-                                      >
-                                        <MessageCircle className="h-4 w-4" />
-                                        {ui.messageRenter}
-                                      </Button>
-                                    </>
-                                  ) : null}
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ) : (
-                        <div className="rounded-[24px] border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                          {ui.noBookings}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-                {performanceView === "items" && (
-                  <Card className="rounded-[28px] border-border/70 shadow-sm h-[520px]">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <CardTitle className="flex items-center gap-2 text-xl">
-                            <Package className="h-5 w-5 text-primary" />
-                            {ui.itemsWorkspace}
-                          </CardTitle>
-                          <CardDescription>{ui.itemsHint}</CardDescription>
-                        </div>
-                        <Button size="sm" className="rounded-xl" onClick={openCreateItemModal}>
-                          <PlusCircle className="h-4 w-4" />
-                          {ui.addNewItem}
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setItemsTab("all")}
-                          className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
-                            itemsTab === "all" ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
-                          }`}
-                        >
-                          {ui.allFilter}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setItemsTab("active")}
-                          className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
-                            itemsTab === "active"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted/50 text-muted-foreground"
-                          }`}
-                        >
-                          {ui.activeFilter}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setItemsTab("drafts")}
-                          className={`rounded-2xl px-3 py-2 text-sm font-medium transition ${
-                            itemsTab === "drafts"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted/50 text-muted-foreground"
-                          }`}
-                        >
-                          {ui.draftFilter}
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="rounded-[20px] bg-muted/40 p-3">
-                          <p className="text-[11px] text-muted-foreground">{ui.allFilter}</p>
-                          <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.total}</p>
-                        </div>
-                        <div className="rounded-[20px] bg-muted/40 p-3">
-                          <p className="text-[11px] text-muted-foreground">{ui.activeFilter}</p>
-                          <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.active}</p>
-                        </div>
-                        <div className="rounded-[20px] bg-muted/40 p-3">
-                          <p className="text-[11px] text-muted-foreground">{ui.draftFilter}</p>
-                          <p className="mt-1 text-xl font-semibold text-foreground">{itemsSummary.drafts}</p>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {visibleItems.length ? (
-                        <div className="max-h-[480px] space-y-3 overflow-y-auto pr-1">
-                          {visibleItems.slice(0, 6).map((listing) => {
-                            const imageUrl = getImageUrl(listing.images?.[0]?.image)
-                            const actionBusy = itemActionKey?.includes(String(listing.id))
-                            return (
-                              <div key={listing.id} className="rounded-[24px] border border-border/60 bg-muted/30 p-3.5">
-                                <div className="flex gap-3">
-                                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-background">
-                                    {imageUrl ? (
-                                      <img src={imageUrl} alt={listing.title} className="h-full w-full object-cover" />
-                                    ) : (
-                                      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                        <Camera className="h-4 w-4" />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="min-w-0">
-                                        <p className="line-clamp-1 font-semibold text-foreground">{listing.title}</p>
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                          {formatSar(listing.price_per_day)} / day
-                                        </p>
-                                      </div>
-                                      <Badge
-                                        variant={listing.is_active !== false ? "success" : "secondary"}
-                                        className="rounded-full"
-                                      >
-                                        {listing.is_active !== false ? ui.available : ui.hidden}
-                                      </Badge>
-                                    </div>
-                                    <div className="mt-3 flex flex-wrap gap-2">
-                                      <Button size="sm" variant="outline" onClick={() => openEditItemModal(listing)}>
-                                        <Edit3 className="h-4 w-4" />
-                                        {ui.editItem}
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleToggleListing(listing)}
-                                        disabled={actionBusy}
-                                      >
-                                        {actionBusy ? (
-                                          <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : listing.is_active !== false ? (
-                                          <PauseCircle className="h-4 w-4" />
-                                        ) : (
-                                          <PlayCircle className="h-4 w-4" />
-                                        )}
-                                        {listing.is_active !== false ? ui.pauseListing : ui.resumeListing}
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => openAvailabilityModal(String(listing.id))}
-                                      >
-                                        <CalendarDays className="h-4 w-4" />
-                                        {ui.updateAvailability}
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleDuplicateListing(listing)}
-                                        disabled={actionBusy}
-                                      >
-                                        <Copy className="h-4 w-4" />
-                                        {ui.duplicate}
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ) : (
-                        <div className="rounded-[24px] border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                          {ui.noItems}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-                <Card className="rounded-[28px] border-border/70 shadow-sm h-[520px]">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xl">{text.rankingTitle}</CardTitle>
-                    <CardDescription>{text.rankFootnote}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-5">
-                    <div className="rounded-[24px] border border-border/60 bg-violet-50/70 p-4 dark:bg-violet-500/10">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                            {text.statusLabel}
-                          </p>
-                          <p className="mt-1 text-lg font-semibold text-foreground">{text.hostStatusTitle}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {data.super_host.qualified ? text.qualified : text.notQualified}
-                          </p>
-                        </div>
-                        <Badge variant={data.super_host.qualified ? "success" : "secondary"} className="rounded-full">
-                          {data.super_host.qualified ? text.statusQualified : text.statusBuilding}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-4xl font-bold tracking-tight text-foreground">
-                        #{data.ranking.position}
-                        <span className="ml-2 text-xl font-medium text-muted-foreground">
-                          of {data.ranking.total_lessors} {text.hostBadge}
-                        </span>
-                      </p>
-                      <p className="mt-3 text-sm text-muted-foreground">
-                        {text.topPercentage} {milestone?.leaderboardPercent}%
-                      </p>
-                    </div>
-                    <div className="h-3 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500"
-                        style={{ width: `${milestone?.leaderboardPercent ?? 0}%` }}
-                      />
-                    </div>
-                    <div className="rounded-2xl bg-muted/60 p-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Star className="h-4 w-4 text-amber-500" />
-                        <span>{data.summary.rating.toFixed(1)} rating</span>
-                        <span className="text-border">•</span>
-                        <span>{data.summary.rentals_count} rentals</span>
-                      </div>
-                      {data.ranking.hint}
-                    </div>
-                  </CardContent>
-                </Card>
-              </section>
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-1 text-right">
+                  {data.summary.rentals_count} of 20 rentals
+                </div>
+              </div>
 
-              <section id="items-insights" className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
-                <Card className="rounded-[28px] border-border/70 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <CardTitle className="text-xl">{text.topItem}</CardTitle>
-                        <CardDescription>{text.description}</CardDescription>
-                      </div>
-                      {data.summary.highest_earning_item ? (
-                        <Button asChild size="sm" className="rounded-xl">
-                          <Link href={`/listings/${data.summary.highest_earning_item.id}`}>
-                            {text.promoteItem}
-                          </Link>
-                        </Button>
-                      ) : null}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {data.summary.highest_earning_item ? (
-                      <div className="flex flex-col gap-4 rounded-[24px] border border-border/60 bg-muted/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="rounded-[16px] bg-[#fbf9ff] border border-violet-100 p-4 flex items-start gap-3 shadow-sm">
+                <div className="h-10 w-10 shrink-0 bg-gradient-to-br from-amber-300 to-yellow-400 rounded-full flex items-center justify-center shadow-sm">
+                  <Trophy className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[13px] text-foreground mb-0.5">Unlock SUPER HOST badge</p>
+                  <p className="text-[11px] text-muted-foreground leading-snug">
+                    {data.super_host.qualified
+                      ? "🎉 You've qualified! Keep it up."
+                      : "Keep going! You're building momentum."}
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                className="w-full rounded-[14px] bg-violet-500 hover:bg-violet-600 text-white shadow-md py-5 font-semibold"
+                onClick={openCreateItemModal}
+              >
+                <PlusCircle className="h-4 w-4 mr-2" /> Add Item
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-4">
+          {/* Top Items */}
+          <div className="flex flex-col gap-4">
+            {(topItems.length > 0 ? topItems : [null, null]).map((item, idx) => {
+              const imageUrl = item ? getImageUrl(item.images?.[0]?.image) : null
+              return (
+                <Card key={idx} className="rounded-[24px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur overflow-hidden h-[120px]">
+                  <CardContent className="p-5 h-full flex flex-col justify-center">
+                    <h3 className="text-xs font-medium text-slate-500 mb-3">Your Highest Earning Item</h3>
+                    {item ? (
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-card text-primary shadow-sm">
-                            <Camera className="h-8 w-8" />
+                          <div className="w-[56px] h-[44px] bg-slate-800 rounded-xl overflow-hidden relative shrink-0">
+                            {imageUrl ? (
+                              <img src={imageUrl} alt={item.title} className="h-full w-full object-cover" />
+                            ) : (
+                              <Camera className="text-white h-5 w-5 absolute inset-0 m-auto opacity-40" />
+                            )}
                           </div>
                           <div>
-                            <p className="text-xl font-semibold text-foreground">
-                              {data.summary.highest_earning_item.title}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {formatSar(data.summary.highest_earning_item.total_earnings)} {text.highestItemSubtitle}
+                            <p className="font-semibold text-foreground text-[14px] line-clamp-1">{item.title}</p>
+                            <p className="text-[12px] text-slate-500">
+                              {formatSar(item.price_per_day)}/day
                             </p>
                           </div>
                         </div>
-                        <div className="text-left sm:text-right">
-                          <p className="text-3xl font-semibold tracking-tight text-foreground">
-                            {formatCompactSar(data.summary.highest_earning_item.total_earnings)}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {data.summary.highest_earning_item.rentals_count} rentals
-                          </p>
-                        </div>
+                        {idx === 0 && data.summary.highest_earning_item && (
+                          <Button
+                            size="sm"
+                            className="rounded-[10px] bg-violet-500 text-white hover:bg-violet-600 text-xs px-3 h-8 shrink-0"
+                            onClick={() => router.push(`/listings/${data.summary.highest_earning_item!.id}`)}
+                          >
+                            Promote Item
+                          </Button>
+                        )}
                       </div>
                     ) : (
-                      <div className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-                        {text.noItem}
-                      </div>
+                      <button
+                        type="button"
+                        onClick={openCreateItemModal}
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-violet-500 transition-colors"
+                      >
+                        <PlusCircle className="h-4 w-4" /> Add your first item to start earning
+                      </button>
                     )}
                   </CardContent>
                 </Card>
+              )
+            })}
+          </div>
 
-                <Card className="rounded-[28px] border-border/70 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-2">
-                      <Crown className="h-5 w-5 text-amber-500" />
-                      <CardTitle>{text.topHostsCompact}</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {data.leaderboards.top_lessors_this_month.map((host, index) => (
-                      <div
-                        key={host.id}
-                        className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 px-4 py-3"
-                      >
+          {/* Right Column */}
+          <div className="flex flex-col gap-4">
+            {/* Local Rental Requests */}
+            <Card className="rounded-[24px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur">
+              <CardContent className="p-5">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-4 pb-2 border-b border-slate-100">
+                  Local Rental Requests <Flame className="h-4 w-4 text-orange-400 fill-orange-400" />
+                </h3>
+                {localRequests.length > 0 ? (
+                  <div className="space-y-3.5">
+                    {localRequests.map((req, idx) => (
+                      <div key={req.id} className="flex items-center justify-between group">
                         <div className="flex items-center gap-3">
-                          <Badge variant={index === 0 ? "default" : "secondary"} className="rounded-full">
-                            #{index + 1}
-                          </Badge>
+                          <div className="p-1.5 rounded-lg bg-violet-100 text-violet-600">
+                            <Camera className="h-3.5 w-3.5" />
+                          </div>
                           <div>
-                            <p className="font-medium text-foreground">{host.username}</p>
-                            <p className="text-xs text-muted-foreground">{host.rating.toFixed(1)}/5</p>
+                            <p className="text-[13px] font-medium text-slate-700 line-clamp-1">{req.title}</p>
+                            {idx === 0 && (
+                              <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                                <CalendarDays className="h-3 w-3" /> SAR {parseFloat(req.price_per_day).toFixed(0)}/day
+                              </p>
+                            )}
                           </div>
                         </div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {formatSar(host.monthly_earnings)}
-                        </p>
+                        {idx > 0 && <TrendingUp className="h-5 w-5 text-emerald-400 shrink-0" strokeWidth={2.5} />}
                       </div>
                     ))}
-                  </CardContent>
-                </Card>
-              </section>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No local requests yet. The marketplace is growing!
+                  </p>
+                )}
+              </CardContent>
+            </Card>
 
-              <section id="demand-signals" className="grid gap-4 lg:grid-cols-2">
-                <Card className="rounded-[28px] border-border/70 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-2">
-                      <Flame className="h-5 w-5 text-orange-500" />
-                      <CardTitle>{text.rentalDemand}</CardTitle>
-                    </div>
-                    <CardDescription>{text.localDemandHint}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {data.leaderboards.top_renters_this_month.length ? (
-                      data.leaderboards.top_renters_this_month.map((renter) => (
-                        <div
-                          key={renter.id}
-                          className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 p-4"
-                        >
-                          <div>
-                            <p className="font-medium text-foreground">{renter.username}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {renter.rentals_count} rentals ·{" "}
-                              {renter.rating ? `${renter.rating.toFixed(1)}/5` : text.unrated}
-                            </p>
+            {/* Trending Searches */}
+            <Card className="rounded-[24px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur">
+              <CardContent className="p-5 pt-4">
+                <h3 className="text-[13px] font-semibold text-foreground flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                  Trending Searches on Ekra
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                </h3>
+                {trendingSearches.length > 0 ? (
+                  <div className="space-y-3">
+                    {trendingSearches.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => router.push(`/listings?category=${item.id}`)}
+                        className="flex items-center justify-between text-slate-600 cursor-pointer hover:bg-slate-50 p-1.5 -mx-1.5 rounded-lg transition-colors w-full text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="h-7 w-7 bg-slate-100 rounded-md flex items-center justify-center text-base">
+                            {item.icon || "🔍"}
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm font-semibold text-foreground">
-                              {formatSar(renter.total_spent)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{text.rentersSpent}</p>
-                          </div>
+                          <p className="text-[13px] font-medium">{item.name}</p>
                         </div>
-                      ))
-                    ) : (
-                      <div className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-                        {text.noDemand}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </section>
-            </div>
-
-            <aside id="operations-rail" className="space-y-4">
-              <Card className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-primary" />
-                    <CardTitle>{text.superHostTitle}</CardTitle>
+                        <ChevronRight className="h-3.5 w-3.5 text-slate-300 shrink-0" />
+                      </button>
+                    ))}
                   </div>
-                  <CardDescription>{text.superHostDescription}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {data.super_host.requirements.map((requirement) => (
-                    <div
-                      key={requirement.label}
-                      className="flex items-start justify-between gap-3 rounded-2xl border border-border/60 p-4"
-                    >
-                      <div>
-                        <p className="font-medium text-foreground">{requirement.label}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">{requirement.detail}</p>
-                      </div>
-                      <Badge variant={requirement.met ? "default" : "outline"} className="shrink-0 rounded-full">
-                        {requirement.met ? "Met" : "Open"}
-                      </Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-[28px] border-border/70 shadow-sm justify-start h-[360px]">
-                <CardTitle className="text-xl w-[316px] text-center">{text.nextMilestone}</CardTitle>
-                <CardContent className="space-y-5 h-[316px]">
-                  <div>
-                    <p className="text-2xl font-semibold tracking-tight text-foreground">
-                      {milestone?.remainingRentals
-                        ? `Reach ${milestone.remainingRentals} more rentals`
-                        : text.qualified}
-                    </p>
-                    <p className="mt-2 text-sm text-muted-foreground">{text.unlockSuperHost}</p>
-                  </div>
-                  <div>
-                    <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{text.rentals}</span>
-                      <span>{milestone?.progress}%</span>
-                    </div>
-                    <div className="h-3 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500"
-                        style={{ width: `${milestone?.progress ?? 0}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="rounded-[24px] bg-violet-50 p-4 dark:bg-violet-500/10">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-400 to-violet-500 text-white shadow-sm">
-                        <Trophy className="h-7 w-7" />
-                      </div>
-                      <div>
-                        <p className="text-lg font-semibold text-foreground">{text.unlockSuperHost}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {data.super_host.qualified ? text.qualified : text.notQualified}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-[28px] border-border/70 shadow-sm">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2">
-                    <Search className="h-5 w-5 text-primary" />
-                    <CardTitle>{text.popularSearches}</CardTitle>
-                  </div>
-                  <CardDescription>{text.popularSearchesBody}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {trendingSearches.map((searchItem) => (
-                    <div
-                      key={searchItem.label}
-                      className="flex items-center justify-between gap-3 rounded-2xl bg-muted/50 px-4 py-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-card text-emerald-600 shadow-sm">
-                          <Activity className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{searchItem.label}</p>
-                          <p className="text-xs text-muted-foreground">{searchItem.value}</p>
-                        </div>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </aside>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-3">Loading trending data…</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
-      </div>
 
-      {itemModal.open ? (
+      {/* Create / Edit Item Modal */}
+      {itemModal.open && (
         <FloatingModal onClose={closeItemModal}>
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-xl font-semibold text-foreground">
-                {itemModal.mode === "edit" ? ui.editListing : ui.createItem}
+                {itemModal.mode === "edit" ? "Edit Listing" : "Create New Item"}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">{ui.itemsHint}</p>
+              <p className="mt-1 text-sm text-muted-foreground">Fill in the details to list your item for renting.</p>
             </div>
             <button type="button" onClick={closeItemModal} className="rounded-2xl p-2 text-muted-foreground hover:bg-accent/70">
               <X className="h-4 w-4" />
             </button>
           </div>
+
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {itemModal.mode === "create" ? (
+            {itemModal.mode === "create" && (
               <div className="sm:col-span-2">
                 <label className="mb-1.5 block text-sm font-medium text-foreground">Photos</label>
-                <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[24px] border border-dashed border-border/70 bg-muted/20 px-4 py-8 text-center">
+                <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[24px] border border-dashed border-border/70 bg-muted/20 px-4 py-6 text-center">
                   <ImagePlus className="h-6 w-6 text-primary" />
                   <span className="text-sm font-medium text-foreground">Upload listing images</span>
-                  <span className="text-xs text-muted-foreground">Add up to 8 photos for the new item.</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files?.length) addItemImages(e.target.files)
-                    }}
-                  />
+                  <span className="text-xs text-muted-foreground">Add up to 8 photos</span>
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { if (e.target.files?.length) addItemImages(e.target.files) }} />
                 </label>
-                {itemImages.length ? (
-                  <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {itemImages.map((image) => (
-                      <div key={image.id} className="relative overflow-hidden rounded-[20px] border border-border/60 bg-muted/30">
-                        <img src={image.preview} alt="Listing preview" className="h-24 w-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeItemImage(image.id)}
-                          className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white"
-                        >
+                {itemImages.length > 0 && (
+                  <div className="mt-3 grid grid-cols-4 gap-2">
+                    {itemImages.map((img) => (
+                      <div key={img.id} className="relative overflow-hidden rounded-[16px] border border-border/60">
+                        <img src={img.preview} alt="Preview" className="h-20 w-full object-cover" />
+                        <button type="button" onClick={() => removeItemImage(img.id)} className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white">
                           <X className="h-3 w-3" />
                         </button>
                       </div>
                     ))}
                   </div>
-                ) : null}
+                )}
               </div>
-            ) : null}
+            )}
+
             <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.titleLabel}</label>
-              <Input
-                value={itemModal.form.title}
-                onChange={(e) => setItemModal((prev) => ({ ...prev, form: { ...prev.form, title: e.target.value } }))}
-              />
+              <label className="mb-1.5 block text-sm font-medium text-foreground">Title</label>
+              <Input value={itemModal.form.title} onChange={(e) => setItemModal((p) => ({ ...p, form: { ...p.form, title: e.target.value } }))} />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.categoryLabel}</label>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">Category</label>
               <select
                 value={itemModal.form.category_id}
-                onChange={(e) => setItemModal((prev) => ({ ...prev, form: { ...prev.form, category_id: e.target.value } }))}
+                onChange={(e) => setItemModal((p) => ({ ...p, form: { ...p.form, category_id: e.target.value } }))}
                 className="h-11 w-full rounded-2xl border border-input bg-background/90 px-4 text-sm shadow-sm"
               >
-                <option value="">{ui.selectCategory}</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
+                <option value="">Select category</option>
+                {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.pricePerDayLabel}</label>
-              <Input
-                type="number"
-                min="0"
-                value={itemModal.form.price_per_day}
-                onChange={(e) =>
-                  setItemModal((prev) => ({ ...prev, form: { ...prev.form, price_per_day: e.target.value } }))
-                }
-              />
+              <label className="mb-1.5 block text-sm font-medium text-foreground">Price per day (SAR)</label>
+              <Input type="number" min="0" value={itemModal.form.price_per_day} onChange={(e) => setItemModal((p) => ({ ...p, form: { ...p.form, price_per_day: e.target.value } }))} />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.cityLabel}</label>
-              <Input
-                value={itemModal.form.city}
-                onChange={(e) => setItemModal((prev) => ({ ...prev, form: { ...prev.form, city: e.target.value } }))}
-              />
+              <label className="mb-1.5 block text-sm font-medium text-foreground">City</label>
+              <Input value={itemModal.form.city} onChange={(e) => setItemModal((p) => ({ ...p, form: { ...p.form, city: e.target.value } }))} />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.pickupRadiusLabel}</label>
-              <Input
-                type="number"
-                min="100"
-                value={itemModal.form.pickup_radius_m}
-                onChange={(e) =>
-                  setItemModal((prev) => ({ ...prev, form: { ...prev.form, pickup_radius_m: e.target.value } }))
-                }
-              />
+              <label className="mb-1.5 block text-sm font-medium text-foreground">Pickup radius (m)</label>
+              <Input type="number" min="100" value={itemModal.form.pickup_radius_m} onChange={(e) => setItemModal((p) => ({ ...p, form: { ...p.form, pickup_radius_m: e.target.value } }))} />
             </div>
             <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.descriptionLabel}</label>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">Description</label>
               <textarea
                 value={itemModal.form.description}
-                onChange={(e) =>
-                  setItemModal((prev) => ({ ...prev, form: { ...prev.form, description: e.target.value } }))
-                }
-                className="min-h-[110px] w-full rounded-2xl border border-input bg-background/90 px-4 py-3 text-sm shadow-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+                onChange={(e) => setItemModal((p) => ({ ...p, form: { ...p.form, description: e.target.value } }))}
+                className="min-h-[100px] w-full rounded-2xl border border-input bg-background/90 px-4 py-3 text-sm shadow-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
               />
             </div>
             <div className="sm:col-span-2 overflow-hidden rounded-[24px] border border-border/60">
@@ -1856,224 +890,29 @@ const bookingBuckets = useMemo(() => {
                 initialLng={Number(itemModal.form.longitude || 46.6753)}
                 initialRadius={Number(itemModal.form.pickup_radius_m || 300)}
                 onLocationChange={(lat, lng, radius) =>
-                  setItemModal((prev) => ({
-                    ...prev,
-                    form: {
-                      ...prev.form,
-                      latitude: String(lat),
-                      longitude: String(lng),
-                      pickup_radius_m: String(radius),
-                    },
-                  }))
+                  setItemModal((p) => ({ ...p, form: { ...p.form, latitude: String(lat), longitude: String(lng), pickup_radius_m: String(radius) } }))
                 }
               />
             </div>
-            <label className="sm:col-span-2 flex items-center gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-foreground">
+            <label className="sm:col-span-2 flex items-center gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-foreground cursor-pointer">
               <input
                 type="checkbox"
                 checked={itemModal.form.is_active}
-                onChange={(e) =>
-                  setItemModal((prev) => ({ ...prev, form: { ...prev.form, is_active: e.target.checked } }))
-                }
+                onChange={(e) => setItemModal((p) => ({ ...p, form: { ...p.form, is_active: e.target.checked } }))}
               />
-              {ui.publishNow}
+              Publish now
             </label>
           </div>
+
           <div className="mt-5 flex flex-wrap justify-end gap-2">
-            <Button variant="outline" onClick={closeItemModal}>
-              {ui.cancel}
-            </Button>
+            <Button variant="outline" onClick={closeItemModal}>Cancel</Button>
             <Button onClick={handleSaveItem} disabled={itemModal.saving}>
-              {itemModal.saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {ui.save}
+              {itemModal.saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Save
             </Button>
           </div>
         </FloatingModal>
-      ) : null}
-
-      {availabilityModal.open ? (
-        <FloatingModal
-          onClose={() =>
-            setAvailabilityModal({
-              open: false,
-              saving: false,
-              form: { listingId: "", start_date: "", end_date: "", reason: "" },
-            })
-          }
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">{ui.availabilityTitle}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{ui.itemsHint}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                setAvailabilityModal({
-                  open: false,
-                  saving: false,
-                  form: { listingId: "", start_date: "", end_date: "", reason: "" },
-                })
-              }
-              className="rounded-2xl p-2 text-muted-foreground hover:bg-accent/70"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="mt-5 space-y-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.selectItem}</label>
-              <select
-                value={availabilityModal.form.listingId}
-                onChange={(e) =>
-                  setAvailabilityModal((prev) => ({ ...prev, form: { ...prev.form, listingId: e.target.value } }))
-                }
-                className="h-11 w-full rounded-2xl border border-input bg-background/90 px-4 text-sm shadow-sm"
-              >
-                <option value="">{ui.selectItem}</option>
-                {items.map((listing) => (
-                  <option key={listing.id} value={listing.id}>
-                    {listing.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.startDate}</label>
-                <Input
-                  type="date"
-                  value={availabilityModal.form.start_date}
-                  onChange={(e) =>
-                    setAvailabilityModal((prev) => ({ ...prev, form: { ...prev.form, start_date: e.target.value } }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.endDate}</label>
-                <Input
-                  type="date"
-                  value={availabilityModal.form.end_date}
-                  onChange={(e) =>
-                    setAvailabilityModal((prev) => ({ ...prev, form: { ...prev.form, end_date: e.target.value } }))
-                  }
-                />
-              </div>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.reason}</label>
-              <textarea
-                value={availabilityModal.form.reason}
-                onChange={(e) =>
-                  setAvailabilityModal((prev) => ({ ...prev, form: { ...prev.form, reason: e.target.value } }))
-                }
-                className="min-h-[100px] w-full rounded-2xl border border-input bg-background/90 px-4 py-3 text-sm shadow-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
-              />
-            </div>
-          </div>
-          <div className="mt-5 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() =>
-                setAvailabilityModal({
-                  open: false,
-                  saving: false,
-                  form: { listingId: "", start_date: "", end_date: "", reason: "" },
-                })
-              }
-            >
-              {ui.cancel}
-            </Button>
-            <Button
-              onClick={handleAvailabilitySave}
-              disabled={
-                availabilityModal.saving ||
-                !availabilityModal.form.listingId ||
-                !availabilityModal.form.start_date ||
-                !availabilityModal.form.end_date
-              }
-            >
-              {availabilityModal.saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {ui.save}
-            </Button>
-          </div>
-        </FloatingModal>
-      ) : null}
-
-      {messageModal.open && messageModal.booking ? (
-        <FloatingModal onClose={() => setMessageModal({ open: false, booking: null, text: "", sending: false })}>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">{ui.sendMessage}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{messageModal.booking.listing?.title}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setMessageModal({ open: false, booking: null, text: "", sending: false })}
-              className="rounded-2xl p-2 text-muted-foreground hover:bg-accent/70"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="mt-5">
-            <label className="mb-1.5 block text-sm font-medium text-foreground">{ui.writeMessage}</label>
-            <textarea
-              value={messageModal.text}
-              onChange={(e) => setMessageModal((prev) => ({ ...prev, text: e.target.value }))}
-              className="min-h-[140px] w-full rounded-2xl border border-input bg-background/90 px-4 py-3 text-sm shadow-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
-            />
-          </div>
-          <div className="mt-5 flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setMessageModal({ open: false, booking: null, text: "", sending: false })}>
-              {ui.cancel}
-            </Button>
-            <Button onClick={handleSendMessage} disabled={messageModal.sending || !messageModal.text.trim()}>
-              {messageModal.sending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {ui.sendMessage}
-            </Button>
-          </div>
-        </FloatingModal>
-      ) : null}
-
-      {detailsBooking ? (
-        <FloatingModal onClose={() => setDetailsBooking(null)}>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">{ui.bookingDetails}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{detailsBooking.listing?.title}</p>
-            </div>
-            <button type="button" onClick={() => setDetailsBooking(null)} className="rounded-2xl p-2 text-muted-foreground hover:bg-accent/70">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="mt-5 space-y-3 rounded-[24px] border border-border/60 bg-muted/20 p-4 text-sm">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">{ui.renterLabel}</span>
-              <span className="font-medium text-foreground">{detailsBooking.renter?.username ?? "Guest"}</span>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">{ui.statusLabelShort}</span>
-              <span className="font-medium text-foreground">{detailsBooking.status}</span>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">{ui.paymentLabel}</span>
-              <span className="font-medium text-foreground">{detailsBooking.payment_status ?? "-"}</span>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">{text.rentals}</span>
-              <span className="font-medium text-foreground">
-                {formatDateRange(detailsBooking.start_date, detailsBooking.end_date)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">{text.totalEarnings}</span>
-              <span className="font-medium text-foreground">{formatSar(detailsBooking.total_price)}</span>
-            </div>
-          </div>
-        </FloatingModal>
-      ) : null}
-
-      {null}
+      )}
     </div>
   )
 }
