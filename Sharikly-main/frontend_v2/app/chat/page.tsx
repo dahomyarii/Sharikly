@@ -36,6 +36,58 @@ interface ChatRoom {
   } | null
 }
 
+interface BookingRequestPayload {
+  greeting: string
+  dates: string
+  duration: string
+  pricePerDay: string
+  total: string
+  message: string
+}
+
+const parseBookingRequest = (text?: string): BookingRequestPayload | null => {
+  if (!text) return null
+  if (!text.startsWith('BOOKING_REQUEST')) return null
+
+  const body = text.replace(/^BOOKING_REQUEST\s*/u, '')
+
+  const makeFieldRegex = (label: string) =>
+    new RegExp(
+      `${label}:\\s*([\\s\\S]*?)(?=\\s*(?:Dates|Duration|Price per day|Total|Message from guest):|$)`,
+      'i'
+    )
+
+  const greetingMatch = body.match(
+    /^(.*?)(?=Dates:|Duration:|Price per day:|Total:|Message from guest:|$)/i
+  )
+  const greeting = greetingMatch ? greetingMatch[1].trim() : ''
+
+  const datesMatch = body.match(makeFieldRegex('Dates'))
+  const durationMatch = body.match(makeFieldRegex('Duration'))
+  const pricePerDayMatch = body.match(makeFieldRegex('Price per day'))
+  const totalMatch = body.match(makeFieldRegex('Total'))
+  const messageMatch = body.match(makeFieldRegex('Message from guest'))
+
+  const dates = datesMatch?.[1].trim() || ''
+  const duration = durationMatch?.[1].trim() || ''
+  const pricePerDay = pricePerDayMatch?.[1].trim() || ''
+  const total = totalMatch?.[1].trim() || ''
+  const message = (messageMatch?.[1] || '').trim()
+
+  if (!dates || !duration || !pricePerDay || !total) {
+    return null
+  }
+
+  return {
+    greeting: greeting || "Hi! I'd like to book this item.",
+    dates,
+    duration,
+    pricePerDay,
+    total,
+    message,
+  }
+}
+
 export default function ChatPage() {
   const router = useRouter()
   const [rooms, setRooms] = useState<ChatRoom[]>([])
@@ -244,7 +296,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100svh-5rem-var(--safe-area-inset-bottom))] bg-background overflow-hidden pb-[calc(5.5rem+var(--safe-area-inset-bottom))] md:h-screen md:min-h-0 md:pb-0">
+    <div className="flex h-[100svh] w-full bg-background overflow-hidden">
       {/* Sidebar - Show on mobile when no room selected, always on desktop */}
       <div className={`${!currentRoom || showSidebar ? 'flex' : 'hidden'} md:flex w-full md:w-80 bg-card border-r border-border flex-col min-w-0 absolute md:relative z-10 h-full`}>
         {/* Header */}
@@ -406,6 +458,66 @@ export default function ChatPage() {
               ) : (
                 messages.map((msg) => {
                   const isOwn = msg.sender.id === user.id
+                  const booking = parseBookingRequest(msg.text)
+                  
+                  if (booking) {
+                    return (
+                      <div key={msg.id} className="flex justify-center w-full my-4 px-2">
+                        <div className="max-w-sm w-full rounded-[24px] bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] p-5">
+                          <div className="flex items-center justify-center mb-4">
+                            <span className="px-3.5 py-1 bg-purple-100/80 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-[10px] uppercase tracking-wider font-bold rounded-full">
+                              Booking Request
+                            </span>
+                          </div>
+                          
+                          <p className="text-sm font-medium text-slate-800 dark:text-slate-200 text-center mb-4">
+                            {booking.greeting}
+                          </p>
+
+                          <div className="overflow-hidden rounded-2xl border border-slate-200/70 dark:border-slate-700/60 bg-white/50 dark:bg-slate-950/50 mb-5">
+                            <table className="w-full text-[13px] text-left">
+                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                <tr>
+                                  <th className="px-4 py-3 font-semibold text-slate-500 w-[35%]">Dates</th>
+                                  <td className="px-4 py-3 text-slate-900 dark:text-slate-100 font-medium">{booking.dates}</td>
+                                </tr>
+                                <tr className="bg-slate-50/50 dark:bg-slate-900/30">
+                                  <th className="px-4 py-3 font-semibold text-slate-500">Duration</th>
+                                  <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{booking.duration}</td>
+                                </tr>
+                                <tr>
+                                  <th className="px-4 py-3 font-semibold text-slate-500">Price / day</th>
+                                  <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{booking.pricePerDay}</td>
+                                </tr>
+                                <tr className="bg-purple-50/40 dark:bg-purple-900/20">
+                                  <th className="px-4 py-3 font-bold text-slate-700 dark:text-slate-300">Total</th>
+                                  <td className="px-4 py-3 font-bold text-purple-700 dark:text-purple-400 text-sm">{booking.total}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {booking.message && (
+                            <div className="px-2 mb-2">
+                              <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-1.5">
+                                Message from guest
+                              </p>
+                              <p className="text-[13px] leading-relaxed text-slate-700 dark:text-slate-300 italic whitespace-pre-wrap">
+                                "{booking.message}"
+                              </p>
+                            </div>
+                          )}
+                          
+                          <div className="mt-3 flex justify-center">
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                              {formatTime(msg.created_at)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+
                   return (
                 <div
                   key={msg.id}

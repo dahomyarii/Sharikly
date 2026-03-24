@@ -13,20 +13,29 @@ export default function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const hideFooter = pathname.startsWith("/chat/");
-  const mainClassName = hideFooter
-    ? "flex-1 min-h-[50vh]"
-    : "flex-1 min-h-[50vh] main-mobile-pb";
+  
+  const isChatFullscreen = pathname === "/chat" || pathname.startsWith("/chat/");
+  if (isChatFullscreen) {
+    return (
+      <LocaleProvider>
+        <Providers>
+          <main id="main-content" className="flex-1 h-[100svh] overflow-hidden bg-background" tabIndex={-1}>
+            {children}
+          </main>
+        </Providers>
+      </LocaleProvider>
+    );
+  }
 
   return (
     <LocaleProvider>
       <Providers>
         <Header />
         <EmailVerificationBanner />
-        <main id="main-content" className={mainClassName} tabIndex={-1}>
+        <main id="main-content" className="flex-1 min-h-[50vh] main-mobile-pb" tabIndex={-1}>
           {children}
         </main>
-        {!hideFooter && <Footer />}
+        <Footer />
       </Providers>
     </LocaleProvider>
   );
