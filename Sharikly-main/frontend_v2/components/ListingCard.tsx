@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import useSWR from "swr";
 import { Star, Bookmark } from "lucide-react";
 import { useLocale } from "./LocaleProvider";
 
@@ -15,6 +16,16 @@ export default function ListingCard({
 }: { listing: any; compact?: boolean; highlighted?: boolean }) {
   const [isFavorited, setIsFavorited] = useState(
     listing?.is_favorited || false,
+  );
+  
+  const ownerId = typeof listing.owner === "object" ? listing.owner?.id : listing.owner_id || listing.owner;
+  const { data: ownerProfile } = useSWR(
+    ownerId && API ? `${API}/users/${ownerId}/` : null,
+    async (url) => {
+      const res = await axios.get(url);
+      return res.data;
+    },
+    { revalidateOnFocus: false, dedupingInterval: 600000 }
   );
   const [token, setToken] = useState<string>("");
   const hasRatingFromListing =
@@ -101,7 +112,7 @@ export default function ListingCard({
   };
 
   const getAvatarUrl = () => {
-    const avatar = listing?.owner?.avatar || listing?.owner_avatar;
+    const avatar = ownerProfile?.avatar || listing?.owner?.avatar || listing?.owner_avatar;
     if (!avatar) return null;
     if (avatar.startsWith("http")) return avatar;
     return `${API?.replace("/api", "")}${avatar}`;
@@ -109,6 +120,7 @@ export default function ListingCard({
 
   const imageUrl = getImageUrl();
   const avatarUrl = getAvatarUrl();
+  const ownerName = ownerProfile?.username || ownerProfile?.first_name || listing?.owner?.username || "U";
   const currency = listing?.currency || "SAR";
   
   // Calculate how many stars to fill. If new, default to 5 for aesthetics if desired, but 0 is accurate. Let's use actual rating or 5 if new to match screenshot vibe.
@@ -169,7 +181,7 @@ export default function ListingCard({
             </div>
           ) : (
              <div className="absolute right-3 bottom-3 z-10 h-[36px] w-[36px] sm:h-[40px] sm:w-[40px] rounded-full overflow-hidden shadow-md bg-[#553399] flex items-center justify-center text-white font-bold text-[14px]">
-               {listing?.owner?.username?.charAt(0).toUpperCase() || "U"}
+               {ownerName.charAt(0).toUpperCase()}
              </div>
           )}
         </div>
