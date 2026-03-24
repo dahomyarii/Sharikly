@@ -228,12 +228,7 @@ export default function HomePage() {
                   and get paid securely.
                 </p>
                 
-                <div className="mt-4 grid gap-2.5 sm:mt-5 sm:grid-cols-2 sm:gap-3">
-                  <div className="rounded-[20px] bg-white/70 backdrop-blur p-3 shadow-sm sm:rounded-[24px] sm:p-4 border border-white/40">
-                    <p className="text-xs text-muted-foreground sm:text-sm font-medium">Estimated earnings</p>
-                    <p className="mt-1 text-[1.8rem] font-black text-emerald-600 sm:text-4xl">SAR 2,300</p>
-                    <p className="text-xs text-muted-foreground sm:text-sm">/ month</p>
-                  </div>
+                <div className="mt-4">
                   <div className="rounded-[20px] border border-white/50 bg-white/40 p-3 backdrop-blur sm:rounded-[24px] sm:p-4 shadow-sm">
                     <p className="text-xs font-semibold text-slate-900 sm:text-sm">Fast payouts</p>
                     <p className="mt-1.5 text-[12px] leading-5 text-slate-800 sm:mt-2 sm:text-sm sm:leading-6">
@@ -378,6 +373,13 @@ export default function HomePage() {
                   ))}
                 </div>
               </div>
+              
+              <div className="rounded-[22px] bg-white/90 p-3.5 shadow-sm border border-slate-100">
+                <p className="text-xs text-muted-foreground sm:text-sm font-medium">Estimated monthly earnings</p>
+                <p className="mt-1 text-[1.8rem] font-black text-emerald-600 sm:text-3xl">SAR 2,300</p>
+                <p className="text-xs text-muted-foreground sm:text-sm">average based on active hosts</p>
+              </div>
+
               <div className="flex flex-wrap gap-2">
                 <Link href="/listings/new">
                   <Button size="lg" className="h-11 rounded-full px-5 text-sm font-semibold">
