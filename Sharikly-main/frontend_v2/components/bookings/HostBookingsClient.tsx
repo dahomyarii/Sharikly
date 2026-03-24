@@ -520,7 +520,6 @@ export function HostBookingsClient() {
                     </div>
                     <div>
                       <p className="font-semibold text-[15px] text-slate-800">{selectedBooking.renter?.username || 'User'}</p>
-                      <p className="text-[12px] text-slate-400 font-medium tracking-wide">x DX2025APR{selectedBooking.id}</p>
                     </div>
                   </div>
                   
