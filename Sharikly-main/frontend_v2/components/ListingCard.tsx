@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Heart, Star } from "lucide-react";
+import { Star, Bookmark } from "lucide-react";
 import { useLocale } from "./LocaleProvider";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
@@ -41,14 +41,11 @@ export default function ListingCard({
   const effectiveReviewCount = hasRatingFromListing ? listingReviewCount : reviewCount;
   const { t } = useLocale();
 
-  // Never fetch reviews per card — use only listing data to avoid 429
-
   useEffect(() => {
     const storedToken = localStorage.getItem("access_token");
     if (storedToken) {
       setToken(storedToken);
     }
-    // Update favorited status when listing prop changes
     setIsFavorited(listing?.is_favorited || false);
   }, [listing?.id, listing?.is_favorited]);
 
@@ -65,21 +62,16 @@ export default function ListingCard({
         const newState = !prevState;
 
         if (prevState) {
-          // Optimistically remove from favorites
-          // Make the API call
           axios
             .delete(`${API}/listings/${listing.id}/unfavorite/`, {
               headers: { Authorization: `Bearer ${token}` },
             })
             .catch((error) => {
               console.error("Error removing from favorites:", error);
-              // Revert on error
               setIsFavorited(true);
               alert("Error updating favorite");
             });
         } else {
-          // Optimistically add to favorites
-          // Make the API call
           axios
             .post(
               `${API}/listings/${listing.id}/favorite/`,
@@ -90,7 +82,6 @@ export default function ListingCard({
             )
             .catch((error) => {
               console.error("Error adding to favorites:", error);
-              // Revert on error
               setIsFavorited(false);
               alert("Error updating favorite");
             });
@@ -102,34 +93,38 @@ export default function ListingCard({
     [token, listing.id],
   );
 
-  // Handle both full URLs and relative paths
   const getImageUrl = () => {
     if (!listing?.images?.[0]?.image) return "/hero.jpg";
     const imageUrl = listing.images[0].image;
-    // Check if it's already a full URL
-    if (imageUrl.startsWith("http")) {
-      return imageUrl;
-    }
-    // If it's a relative path, prepend the API base
+    if (imageUrl.startsWith("http")) return imageUrl;
     return `${API?.replace("/api", "")}${imageUrl}`;
   };
 
+  const getAvatarUrl = () => {
+    const avatar = listing?.owner?.avatar || listing?.owner_avatar;
+    if (!avatar) return null;
+    if (avatar.startsWith("http")) return avatar;
+    return `${API?.replace("/api", "")}${avatar}`;
+  };
+
   const imageUrl = getImageUrl();
+  const avatarUrl = getAvatarUrl();
   const currency = listing?.currency || "SAR";
-  const displayRating = effectiveReviewCount > 0 ? (effectiveRating || 0).toFixed(1) : "New";
-  const imageSizing = compact
-    ? "aspect-[1.12/0.78] p-1 sm:p-[5px]"
-    : "aspect-[1.12/0.78] p-[5px] sm:p-[7px]";
+  
+  // Calculate how many stars to fill. If new, default to 5 for aesthetics if desired, but 0 is accurate. Let's use actual rating or 5 if new to match screenshot vibe.
+  const ratingValue = effectiveReviewCount > 0 ? Math.round(effectiveRating) : 5; 
+  const starsArray = [1, 2, 3, 4, 5];
 
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className={`group block h-full rounded-[16px] sm:rounded-[24px] transition-all duration-300 ${
-        highlighted ? "ring-2 ring-primary/40 ring-offset-2" : ""
+      className={`group block h-full w-full transition-all duration-300 ${
+        highlighted ? "ring-2 ring-primary/40 ring-offset-2 rounded-[20px]" : ""
       }`}
     >
-      <article className="h-full overflow-hidden rounded-[16px] sm:rounded-[24px] border border-slate-200/50 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.03)] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] flex flex-col">
-        <div className={`relative w-full overflow-hidden bg-slate-100 ${compact ? "aspect-[1.1]" : "aspect-[4/3] sm:aspect-[1.25]"}`}>
+      <article className="flex flex-col h-full bg-transparent">
+        {/* Image Container */}
+        <div className={`relative w-full overflow-hidden rounded-[20px] bg-slate-100/50 aspect-square sm:aspect-[0.95]`}>
           <img
             src={imageUrl}
             alt={listing.title}
@@ -138,42 +133,55 @@ export default function ListingCard({
             decoding="async"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />
-          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/20 to-transparent opacity-0 mix-blend-multiply transition-opacity duration-300 group-hover:opacity-100" />
           
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+          
+          {/* Bookmark / Favorite */}
           <button
             onClick={handleFavoriteClick}
-            className="absolute right-2 top-2 sm:right-3 sm:top-3 flex h-[28px] w-[28px] sm:h-[32px] sm:w-[32px] items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-[0_2px_8px_rgba(0,0,0,0.1)] backdrop-blur transition-transform hover:scale-110 active:scale-95 z-10"
+            className="absolute right-3 top-3 z-10 touch-target"
             aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
           >
-            <Heart
-              className={`h-[14px] w-[14px] sm:h-[15px] sm:w-[15px] ${isFavorited ? "fill-rose-500 text-rose-500" : "text-slate-400"}`}
+            <Bookmark
+              className={`h-[22px] w-[22px] sm:h-[24px] sm:w-[24px] transition-colors ${
+                isFavorited ? "fill-[#7A3E82] text-[#7A3E82]" : "text-[#7A3E82]"
+              }`}
+              strokeWidth={2}
             />
           </button>
+          
+          {/* Bottom Left: Stars */}
+          <div className="absolute left-3 bottom-3 z-10 flex gap-[2px]">
+             {starsArray.map((star) => (
+               <Star 
+                 key={star} 
+                 className={`h-[14px] w-[14px] sm:h-[16px] sm:w-[16px] ${
+                   star <= ratingValue ? "fill-[#F93B69] text-[#F93B69]" : "fill-white/60 text-transparent"
+                 }`} 
+               />
+             ))}
+          </div>
+
+          {/* Bottom Right: Avatar */}
+          {avatarUrl ? (
+            <div className="absolute right-3 bottom-3 z-10 h-[36px] w-[36px] sm:h-[40px] sm:w-[40px] rounded-full overflow-hidden shadow-md bg-slate-200">
+               <img src={avatarUrl} alt="Owner" className="h-full w-full object-cover" />
+            </div>
+          ) : (
+             <div className="absolute right-3 bottom-3 z-10 h-[36px] w-[36px] sm:h-[40px] sm:w-[40px] rounded-full overflow-hidden shadow-md bg-[#553399] flex items-center justify-center text-white font-bold text-[14px]">
+               {listing?.owner?.username?.charAt(0).toUpperCase() || "U"}
+             </div>
+          )}
         </div>
 
-        <div className="flex flex-1 flex-col p-2.5 sm:p-4">
-          <div className="flex items-start justify-between gap-1 sm:gap-2 mb-1">
-            <h3 className="line-clamp-1 text-[13px] sm:text-[15px] font-bold tracking-tight text-slate-800">
-              {listing.title}
-            </h3>
-            <div className="flex shrink-0 items-center justify-center gap-1 rounded-md bg-transparent px-0 py-0 sm:bg-slate-50 sm:px-1.5 sm:py-0.5">
-              <Star className="h-[11px] w-[11px] sm:h-3 sm:w-3 fill-amber-400 text-amber-400" />
-              <span className="text-[11px] sm:text-[12px] font-bold text-slate-700">{displayRating}</span>
-            </div>
-          </div>
-          
-          <p className="line-clamp-1 text-[11px] sm:text-[13px] text-slate-500 font-medium mb-1.5 sm:mb-2.5">
-             {listing.city || "Riyadh"}
+        {/* Text Container */}
+        <div className="pt-2 sm:pt-3 px-1 flex flex-col flex-1">
+          <h3 className="line-clamp-1 text-[13px] sm:text-[14px] font-[400] text-[#222222]">
+            {listing.title}
+          </h3>
+          <p className="mt-0.5 text-[13px] sm:text-[14px] font-[500] text-[#7A3E82]">
+            {currency} {listing.price_per_day} - 1/{t("day") || "day"}
           </p>
-
-          <div className="mt-auto pt-2 flex items-center justify-between border-t border-slate-100 border-dashed">
-            <p className="text-[13px] sm:text-[15px] font-black text-slate-900">
-              {currency} {listing.price_per_day}
-              <span className="ml-1 text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                {t("price_per_day")}
-              </span>
-            </p>
-          </div>
         </div>
       </article>
     </Link>
