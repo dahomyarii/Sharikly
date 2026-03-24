@@ -124,48 +124,55 @@ export default function ListingCard({
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className={`group block h-full rounded-[10px] transition-all duration-200 sm:rounded-[12px] ${
-        highlighted ? "ring-2 ring-primary/35" : ""
+      className={`group block h-full rounded-[16px] sm:rounded-[24px] transition-all duration-300 ${
+        highlighted ? "ring-2 ring-primary/40 ring-offset-2" : ""
       }`}
     >
-      <article className="h-full overflow-hidden rounded-[10px] border border-slate-200/80 bg-white shadow-[0_4px_14px_rgba(15,23,42,0.05)] transition group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(15,23,42,0.08)] sm:rounded-[12px]">
-        <div className={`relative ${imageSizing}`}>
+      <article className="h-full overflow-hidden rounded-[16px] sm:rounded-[24px] border border-slate-200/50 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.03)] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] flex flex-col">
+        <div className={`relative w-full overflow-hidden bg-slate-100 ${compact ? "aspect-[1.1]" : "aspect-[4/3] sm:aspect-[1.25]"}`}>
           <img
             src={imageUrl}
             alt={listing.title}
-            className="h-full w-full rounded-[6px] object-contain bg-white transition duration-300 group-hover:scale-[1.02] sm:rounded-[8px]"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
             decoding="async"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />
-          {!compact && (
-            <button
-              onClick={handleFavoriteClick}
-              className="absolute right-1 top-1 flex h-6.5 w-6.5 items-center justify-center rounded-full bg-white/92 text-slate-700 shadow-sm touch-target sm:right-[6px] sm:top-[6px] sm:h-7.5 sm:w-7.5"
-              aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
-            >
-              <Heart
-                className={`h-[10px] w-[10px] sm:h-[11px] sm:w-[11px] ${isFavorited ? "fill-red-500 text-red-500" : "text-slate-600"}`}
-              />
-            </button>
-          )}
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/20 to-transparent opacity-0 mix-blend-multiply transition-opacity duration-300 group-hover:opacity-100" />
+          
+          <button
+            onClick={handleFavoriteClick}
+            className="absolute right-2 top-2 sm:right-3 sm:top-3 flex h-[28px] w-[28px] sm:h-[32px] sm:w-[32px] items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-[0_2px_8px_rgba(0,0,0,0.1)] backdrop-blur transition-transform hover:scale-110 active:scale-95 z-10"
+            aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
+          >
+            <Heart
+              className={`h-[14px] w-[14px] sm:h-[15px] sm:w-[15px] ${isFavorited ? "fill-rose-500 text-rose-500" : "text-slate-400"}`}
+            />
+          </button>
         </div>
 
-        <div className="px-2 pb-2 pt-0 sm:px-[10px] sm:pb-[10px]">
-          <h3 className="line-clamp-1 text-[10px] font-semibold leading-[1.15] text-slate-800 sm:text-[11.5px]">
-            {listing.title}
-          </h3>
-          <div className="mt-0.5 flex items-center justify-between gap-1 sm:gap-1.5">
-            <p className="whitespace-nowrap text-[10.5px] font-bold leading-none text-amber-500 sm:text-[11.5px]">
+        <div className="flex flex-1 flex-col p-2.5 sm:p-4">
+          <div className="flex items-start justify-between gap-1 sm:gap-2 mb-1">
+            <h3 className="line-clamp-1 text-[13px] sm:text-[15px] font-bold tracking-tight text-slate-800">
+              {listing.title}
+            </h3>
+            <div className="flex shrink-0 items-center justify-center gap-1 rounded-md bg-transparent px-0 py-0 sm:bg-slate-50 sm:px-1.5 sm:py-0.5">
+              <Star className="h-[11px] w-[11px] sm:h-3 sm:w-3 fill-amber-400 text-amber-400" />
+              <span className="text-[11px] sm:text-[12px] font-bold text-slate-700">{displayRating}</span>
+            </div>
+          </div>
+          
+          <p className="line-clamp-1 text-[11px] sm:text-[13px] text-slate-500 font-medium mb-1.5 sm:mb-2.5">
+             {listing.city || "Riyadh"}
+          </p>
+
+          <div className="mt-auto pt-2 flex items-center justify-between border-t border-slate-100 border-dashed">
+            <p className="text-[13px] sm:text-[15px] font-black text-slate-900">
               {currency} {listing.price_per_day}
-              <span className="ml-0.5 text-[8.5px] font-medium text-slate-500 sm:text-[9.5px]">
+              <span className="ml-1 text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                 {t("price_per_day")}
               </span>
             </p>
-            <div className="flex shrink-0 items-center gap-0.5 text-[9px] font-semibold leading-none text-slate-700 sm:text-[10px]">
-              <span>{displayRating}</span>
-              <Star className="h-[10px] w-[10px] fill-amber-400 text-amber-400 sm:h-[11px] sm:w-[11px]" />
-            </div>
           </div>
         </div>
       </article>
