@@ -114,28 +114,31 @@ export default function HomePage() {
   return (
     <div className="pb-8">
       <section className="marketplace-shell pt-4 sm:pt-6">
-        <div className="grid gap-2.5 lg:grid-cols-[1.32fr_0.78fr]">
-          <div className="surface-panel relative overflow-hidden rounded-[30px] px-3.5 py-4 sm:rounded-[34px] sm:px-6 sm:py-6 lg:px-8 lg:py-7">
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: "url(/image.jpeg)", backgroundPosition: "left center" }}
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.28),rgba(255,255,255,0.14),rgba(255,255,255,0.08))]" />
-            <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/15" />
-            <div className="floating-orb bottom-[-2rem] right-[-1rem] h-20 w-20 bg-emerald-300/25" />
-            <div className="relative z-10">
+        <div className="surface-panel relative overflow-hidden rounded-[30px] sm:rounded-[34px] lg:rounded-[36px]">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url(/image.jpeg)", backgroundPosition: "center" }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.4),rgba(255,255,255,0.25),rgba(25,17,52,0.15))]" />
+          <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/15" />
+          <div className="floating-orb bottom-[-2rem] right-[-1rem] h-20 w-20 bg-emerald-300/25" />
+          
+          <div className="relative z-10 grid gap-8 lg:grid-cols-[1.32fr_0.78fr] px-4 py-5 sm:px-7 sm:py-7 lg:px-9 lg:py-8">
+            
+            {/* Left Column Area */}
+            <div>
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/80 sm:text-xs">
                 Ekra marketplace
               </p>
               <h1 className="max-w-2xl text-[2.1rem] font-black leading-[1.02] tracking-tight text-foreground sm:text-[3.25rem] lg:text-[4rem]">
                 Rent <span className="text-primary">Anything</span> from People Near You
               </h1>
-              <p className="mt-2.5 max-w-xl text-[13px] font-medium leading-5 text-slate-900 sm:mt-3 sm:text-[15px] sm:leading-6">
+              <p className="mt-2.5 max-w-xl text-[13px] font-medium leading-5 text-slate-800 sm:mt-3 sm:text-[15px] sm:leading-6">
                 Search trusted local rentals, book in minutes, and start earning from the gear
                 you already own.
               </p>
 
-              <div className="glass-panel mt-4 rounded-[22px] p-1.5 sm:mt-5 sm:rounded-[26px] sm:p-2">
+              <div className="glass-panel mt-4 rounded-[22px] p-1.5 sm:mt-5 sm:rounded-[26px] sm:p-2 border border-white/40 shadow-sm bg-white/40">
                 <div className="grid gap-2 md:grid-cols-[1.7fr_1fr_1fr_auto]">
                   <div className="relative">
                     <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -144,13 +147,13 @@ export default function HomePage() {
                       onChange={(e) => setHeroSearch(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                       placeholder="Search items or location..."
-                      className="h-11 w-full rounded-[18px] border border-transparent bg-white/95 pl-11 pr-4 text-sm outline-none sm:h-12 sm:rounded-[20px]"
+                      className="h-11 w-full rounded-[18px] border border-transparent bg-white/80 backdrop-blur pl-11 pr-4 text-sm outline-none sm:h-12 sm:rounded-[20px]"
                     />
                   </div>
                   <select
                     value={heroCategory}
                     onChange={(e) => setHeroCategory(e.target.value)}
-                    className="h-11 rounded-[18px] border border-transparent bg-white/95 px-4 text-sm outline-none sm:h-12 sm:rounded-[20px]"
+                    className="h-11 rounded-[18px] border border-transparent bg-white/80 backdrop-blur px-4 text-sm outline-none sm:h-12 sm:rounded-[20px]"
                   >
                     <option value="">{t("all_categories")}</option>
                     {categories.map((category: any) => (
@@ -165,7 +168,7 @@ export default function HomePage() {
                       value={heroCity}
                       onChange={(e) => setHeroCity(e.target.value)}
                       placeholder="Select city"
-                      className="h-11 w-full rounded-[18px] border border-transparent bg-white/95 pl-11 pr-4 text-sm outline-none sm:h-12 sm:rounded-[20px]"
+                      className="h-11 w-full rounded-[18px] border border-transparent bg-white/80 backdrop-blur pl-11 pr-4 text-sm outline-none sm:h-12 sm:rounded-[20px]"
                     />
                   </div>
                   <Button
@@ -186,7 +189,7 @@ export default function HomePage() {
                       key={category.id}
                       type="button"
                       onClick={() => handleCategoryOpen(category.id)}
-                      className="flex min-w-max items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3 py-1.5 text-[11px] font-medium text-foreground shadow-sm sm:px-3.5 sm:py-2 sm:text-sm"
+                      className="flex min-w-max items-center gap-2 rounded-full border border-white/50 bg-white/60 backdrop-blur px-3 py-1.5 text-[11px] font-medium text-foreground shadow-sm hover:bg-white/80 transition-colors sm:px-3.5 sm:py-2 sm:text-sm"
                     >
                       <Icon className="h-4 w-4 text-primary" />
                       {category.name}
@@ -202,7 +205,7 @@ export default function HomePage() {
                   ].map(([label, Icon]: any) => (
                     <span
                       key={label}
-                      className="flex min-w-max items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3 py-1.5 text-[11px] font-medium text-foreground shadow-sm sm:px-3.5 sm:py-2 sm:text-sm"
+                      className="flex min-w-max items-center gap-2 rounded-full border border-white/50 bg-white/60 backdrop-blur px-3 py-1.5 text-[11px] font-medium text-foreground shadow-sm sm:px-3.5 sm:py-2 sm:text-sm"
                     >
                       <Icon className="h-4 w-4 text-primary" />
                       {label}
@@ -210,35 +213,28 @@ export default function HomePage() {
                   ))}
               </div>
             </div>
-          </div>
 
-          <div className="surface-panel relative overflow-hidden rounded-[28px] border border-white/70 p-2.5 sm:rounded-[32px] sm:p-4">
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: "url(/image.jpeg)", backgroundPosition: "right center" }}
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.14),rgba(25,17,52,0.28))]" />
-            <div className="relative z-10 flex min-h-[220px] flex-col justify-between p-2.5 sm:min-h-[300px] sm:p-4">
+            {/* Right Column Area */}
+            <div className="flex min-h-[220px] flex-col justify-between sm:min-h-[300px] sm:pl-4 lg:pl-6 border-t border-white/30 pt-4 sm:pt-6 lg:border-t-0 lg:border-l lg:pt-0">
               <div>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                    Start earning
-                  </p>
-                  <h2 className="mt-2.5 text-[1.5rem] font-black leading-tight text-foreground sm:mt-3 sm:text-[2rem]">
-                    Turn your items into monthly income
-                  </h2>
-                  <p className="mt-2 text-[13px] font-medium leading-5 text-slate-900 sm:mt-3 sm:text-sm sm:leading-6">
-                    List your camera gear, gaming devices, tools, and more. Meet renters nearby
-                    and get paid securely.
-                  </p>
-                </div>
-                <div className="mt-3 grid gap-2.5 sm:mt-4 sm:grid-cols-2 sm:gap-3">
-                  <div className="rounded-[20px] bg-white/88 p-3 shadow-sm sm:rounded-[24px] sm:p-4">
-                    <p className="text-xs text-muted-foreground sm:text-sm">Estimated earnings</p>
-                    <p className="mt-1 text-[1.8rem] font-black text-emerald-500 sm:text-4xl">SAR 2,300</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  Start earning
+                </p>
+                <h2 className="mt-2.5 text-[1.5rem] font-black leading-tight text-foreground sm:mt-3 sm:text-[2rem]">
+                  Turn your items into monthly income
+                </h2>
+                <p className="mt-2 text-[13px] font-medium leading-5 text-slate-800 sm:mt-3 sm:text-sm sm:leading-6">
+                  List your camera gear, gaming devices, tools, and more. Meet renters nearby
+                  and get paid securely.
+                </p>
+                
+                <div className="mt-4 grid gap-2.5 sm:mt-5 sm:grid-cols-2 sm:gap-3">
+                  <div className="rounded-[20px] bg-white/70 backdrop-blur p-3 shadow-sm sm:rounded-[24px] sm:p-4 border border-white/40">
+                    <p className="text-xs text-muted-foreground sm:text-sm font-medium">Estimated earnings</p>
+                    <p className="mt-1 text-[1.8rem] font-black text-emerald-600 sm:text-4xl">SAR 2,300</p>
                     <p className="text-xs text-muted-foreground sm:text-sm">/ month</p>
                   </div>
-                  <div className="rounded-[20px] border border-white/60 bg-white/28 p-3 backdrop-blur-md sm:rounded-[24px] sm:p-4">
+                  <div className="rounded-[20px] border border-white/50 bg-white/40 p-3 backdrop-blur sm:rounded-[24px] sm:p-4 shadow-sm">
                     <p className="text-xs font-semibold text-slate-900 sm:text-sm">Fast payouts</p>
                     <p className="mt-1.5 text-[12px] leading-5 text-slate-800 sm:mt-2 sm:text-sm sm:leading-6">
                       Verified renters, secure bookings, and simple listing management.
@@ -246,15 +242,16 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
-              <div>
+              <div className="mt-5">
                 <Link href="/listings/new">
-                  <Button size="lg" className="h-10 w-full justify-center rounded-full text-sm sm:h-12 sm:text-base">
-                    <Plus className="h-4 w-4" />
+                  <Button size="lg" className="h-10 w-full lg:w-3/4 justify-center rounded-full text-sm sm:h-12 sm:text-base shadow-sm">
+                    <Plus className="h-4 w-4 mr-1" />
                     List Your Item
                   </Button>
                 </Link>
               </div>
             </div>
+
           </div>
         </div>
       </section>
