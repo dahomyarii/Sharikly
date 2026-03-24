@@ -180,8 +180,8 @@ export default function ListingCard({
                <img src={avatarUrl} alt="Owner" className="h-full w-full object-cover" />
             </div>
           ) : (
-             <div className="absolute right-3 bottom-3 z-10 h-[36px] w-[36px] sm:h-[40px] sm:w-[40px] rounded-full overflow-hidden shadow-md bg-[#553399] flex items-center justify-center text-white font-bold text-[14px]">
-               {ownerName.charAt(0).toUpperCase()}
+             <div className="absolute right-3 bottom-3 z-10 h-[36px] w-[36px] sm:h-[40px] sm:w-[40px] rounded-full overflow-hidden shadow-md bg-white border border-slate-100 flex items-center justify-center">
+               <img src="/logo.png" alt="EKRA" className="h-2/3 w-2/3 object-contain" />
              </div>
           )}
         </div>

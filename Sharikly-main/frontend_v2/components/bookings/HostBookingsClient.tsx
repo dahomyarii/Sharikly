@@ -209,15 +209,15 @@ export function HostBookingsClient() {
              <Button className="rounded-[14px] bg-violet-500 hover:bg-violet-600 shadow-md text-white h-[42px] px-5 flex items-center gap-2 font-medium" onClick={() => {}}>
                <Plus className="h-4 w-4" /> Add Item
              </Button>
-             {user?.avatar ? (
-               <div className="w-[42px] h-[42px] rounded-full border border-violet-100 overflow-hidden shrink-0 shadow-sm cursor-pointer hover:opacity-90 transition">
-                  <img src={getImageUrl(user.avatar) || ""} alt="User" className="w-full h-full object-cover" />
-               </div>
-             ) : (
-                <div className="w-[42px] h-[42px] rounded-full bg-slate-200 border border-violet-100 flex items-center justify-center text-slate-500 shadow-sm">
-                  {user?.username?.charAt(0).toUpperCase() || "U"}
-                </div>
-             )}
+             <div className="w-[42px] h-[42px] rounded-full border border-violet-100 overflow-hidden shrink-0 shadow-sm cursor-pointer hover:opacity-90 transition">
+               {user?.avatar ? (
+                  <img src={getImageUrl(user.avatar) || undefined} alt="Profile" className="h-full w-full object-cover" />
+               ) : (
+                  <div className="h-full w-full bg-white flex items-center justify-center">
+                    <img src="/logo.png" alt="EKRA" className="h-2/3 w-2/3 object-contain" />
+                  </div>
+               )}
+             </div>
           </div>
         </div>
 
@@ -325,6 +325,7 @@ export function HostBookingsClient() {
                   const isConfirmed = booking.status === "CONFIRMED"
                   const imageUrl = getImageUrl(booking.listing?.images?.[0]?.image)
                   const renterName = booking.renter?.username || booking.renter?.email?.split('@')[0] || "User"
+                  const renterAvatar = booking.renter?.avatar
                   const isSelected = selectedBookingId === booking.id
                   
                   return (
@@ -382,15 +383,15 @@ export function HostBookingsClient() {
                                 <div className="flex flex-col gap-2">
                                   {isIncoming || isConfirmed ? (
                                     <div className="flex items-center gap-2.5">
-                                      <div className="h-7 w-7 rounded-full bg-slate-200 overflow-hidden shrink-0">
-                                        {booking.renter?.avatar ? (
-                                          <img src={getImageUrl(booking.renter.avatar) || undefined} className="h-full w-full object-cover" />
-                                        ) : (
-                                          <div className="w-full h-full flex items-center justify-center text-[12px] font-semibold text-slate-500">
-                                            {renterName.charAt(0).toUpperCase()}
-                                          </div>
-                                        )}
-                                      </div>
+                                        <div className="h-7 w-7 rounded-full bg-slate-200 overflow-hidden shrink-0">
+                                          {renterAvatar ? (
+                                            <img src={getImageUrl(renterAvatar) || undefined} alt={renterName} className="h-full w-full object-cover" />
+                                          ) : (
+                                            <div className="h-full w-full flex items-center justify-center bg-white">
+                                              <img src="/logo.png" alt="EKRA" className="h-2/3 w-2/3 object-contain" />
+                                            </div>
+                                          )}
+                                        </div>
                                       <span className="text-[15px] font-medium text-slate-700">{renterName}</span>
                                       <CheckCircle2 className="h-[16px] w-[16px] text-[#329875]" fill="currentColor" stroke="white" />
                                     </div>
@@ -509,12 +510,12 @@ export function HostBookingsClient() {
                   
                   {/* Profile */}
                   <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100/80">
-                    <div className="h-[42px] w-[42px] rounded-full bg-slate-200 overflow-hidden shrink-0 shadow-sm border border-white">
+                    <div className="h-[42px] w-[42px] rounded-full bg-white overflow-hidden shrink-0 shadow-sm border border-slate-100">
                       {selectedBooking.renter?.avatar ? (
                          <img src={getImageUrl(selectedBooking.renter.avatar) || undefined} className="h-full w-full object-cover" />
                       ) : (
-                         <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">
-                           {selectedBooking.renter?.username?.charAt(0).toUpperCase() || "U"}
+                         <div className="w-full h-full flex items-center justify-center bg-white">
+                           <img src="/logo.png" alt="EKRA" className="h-2/3 w-2/3 object-contain" />
                          </div>
                       )}
                     </div>
@@ -600,12 +601,12 @@ export function HostBookingsClient() {
                     <h3 className="text-[14px] font-semibold text-slate-800 mb-2.5">Renter Information</h3>
                     <div className="bg-[#fcfaf9] p-3 rounded-[16px] border border-slate-100 flex items-center justify-between shadow-[0_2px_10px_rgb(0,0,0,0.01)] mb-2.5">
                        <div className="flex items-center gap-3">
-                         <div className="h-10 w-10 bg-slate-200 rounded-full overflow-hidden border border-white shadow-sm">
+                         <div className="w-10 h-10 rounded-full bg-white overflow-hidden shrink-0 shadow-sm border border-slate-100">
                            {selectedBooking.renter?.avatar ? (
                              <img src={getImageUrl(selectedBooking.renter.avatar) || undefined} className="h-full w-full object-cover" />
                            ) : (
-                             <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">
-                               {selectedBooking.renter?.username?.charAt(0).toUpperCase() || "U"}
+                             <div className="w-full h-full flex items-center justify-center bg-white">
+                               <img src="/logo.png" alt="EKRA" className="h-2/3 w-2/3 object-contain" />
                              </div>
                            )}
                          </div>
