@@ -1878,3 +1878,133 @@ class SavedSearchDetailView(generics.RetrieveDestroyAPIView):
 
     def get_queryset(self):
         return SavedSearch.objects.filter(user=self.request.user)
+
+
+# --- DASHBOARD EXTRA VIEWS ---
+
+class LocalRentalRequestsView(APIView):
+    """
+    GET: Returns up to 5 active listings near the host's city (other users' listings).
+    These represent local rental demand signals that the host can capitalize on.
+    Requires authentication.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from django.db.models import Q, Avg, Count
+
+        user = request.user
+        # Find cities used by the current user's listings
+        user_cities = list(
+            Listing.objects.filter(owner=user, city__isnull=False)
+            .values_list("city", flat=True)
+            .distinct()[:3]
+        )
+
+        # Base queryset: active listings from OTHER users
+        qs = Listing.objects.filter(is_active=True).exclude(owner=user)
+
+        # Filter by city match if user has listings with city; else return global popular
+        if user_cities:
+            city_filter = Q()
+            for city in user_cities:
+                city_filter |= Q(city__icontains=city)
+            qs = qs.filter(city_filter)
+
+        qs = qs.select_related("category").prefetch_related("images").annotate(
+            booking_count=Count("bookings")
+        ).order_by("-booking_count", "-created_at")[:5]
+
+        results = []
+        for listing in qs:
+            image = listing.images.first()
+            image_url = None
+            if image and image.image:
+                try:
+                    image_url = request.build_absolute_uri(image.image.url)
+                except Exception:
+                    image_url = None
+            results.append({
+                "id": listing.id,
+                "title": listing.title,
+                "price_per_day": str(listing.price_per_day),
+                "city": listing.city or "",
+                "category": listing.category.name if listing.category else None,
+                "image": image_url,
+                "booking_count": listing.booking_count,
+            })
+
+        return Response(results, status=status.HTTP_200_OK)
+
+
+class TrendingSearchesView(APIView):
+    """
+    GET: Returns the top 5 most-booked categories in the last 30 days.
+    Public endpoint — used for trending search signals on the dashboard.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        from django.db.models import Count
+        from django.utils import timezone
+        from datetime import timedelta
+
+        since = timezone.now() - timedelta(days=30)
+
+        # Count bookings per category in the last 30 days
+        top_categories = (
+            Booking.objects.filter(created_at__gte=since)
+            .select_related("listing__category")
+            .values("listing__category__id", "listing__category__name", "listing__category__icon")
+            .annotate(booking_count=Count("id"))
+            .order_by("-booking_count")[:5]
+        )
+
+        results = []
+        for row in top_categories:
+            cat_name = row.get("listing__category__name")
+            if cat_name:
+                results.append({
+                    "id": row.get("listing__category__id"),
+                    "name": cat_name,
+                    "icon": row.get("listing__category__icon") or "",
+                    "booking_count": row.get("booking_count", 0),
+                })
+
+        # If not enough data, fill with top categories by listing count
+        if len(results) < 3:
+            fallback_cats = (
+                Category.objects.annotate(listing_count=Count("listings"))
+                .order_by("-listing_count")
+                .values("id", "name", "icon")[:5]
+            )
+            seen_ids = {r["id"] for r in results}
+            for cat in fallback_cats:
+                if cat["id"] not in seen_ids and len(results) < 5:
+                    results.append({
+                        "id": cat["id"],
+                        "name": cat["name"],
+                        "icon": cat.get("icon") or "",
+                        "booking_count": 0,
+                    })
+
+        return Response(results, status=status.HTTP_200_OK)
+
+
+class DashboardActiveBookingsView(APIView):
+    """
+    GET: Returns the count of CONFIRMED bookings for the current user's listings
+    that are currently active (today falls within start_date..end_date).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from django.utils import timezone
+        today = timezone.localdate()
+        count = Booking.objects.filter(
+            listing__owner=request.user,
+            status=Booking.Status.CONFIRMED,
+            start_date__lte=today,
+            end_date__gte=today,
+        ).count()
+        return Response({"active_bookings": count}, status=status.HTTP_200_OK)

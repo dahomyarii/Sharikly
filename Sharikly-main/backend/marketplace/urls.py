@@ -77,6 +77,10 @@ urlpatterns = [
     path("earnings/dashboard/", views.LandlordEarningsDashboardView.as_view(), name="earnings_dashboard"),
     path("earnings/public/", views.PublicCommunityEarningsView.as_view(), name="earnings_public"),
     path("earnings/calculator/", views.EarningsCalculatorView.as_view(), name="earnings_calculator"),
+    path("earnings/local-requests/", views.LocalRentalRequestsView.as_view(), name="earnings_local_requests"),
+    path("earnings/trending-searches/", views.TrendingSearchesView.as_view(), name="earnings_trending_searches"),
+    path("earnings/active-bookings/", views.DashboardActiveBookingsView.as_view(), name="earnings_active_bookings"),
+
     # Favorites
     path("favorites/", views.UserFavoritesListView.as_view(), name="user_favorites"),
     path(
