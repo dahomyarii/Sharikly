@@ -5,13 +5,10 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useLocale } from "./LocaleProvider";
 import Link from "next/link";
-import LanguageSwitcher from "./LanguageSwitcher";
-import { ThemeToggle } from "./ThemeToggle";
 import axiosInstance from "@/lib/axios";
 import {
   Bell,
   Compass,
-  Heart,
   Home,
   Menu,
   MessageCircle,
@@ -304,17 +301,8 @@ export default function Header() {
           </nav>
 
           <div className="hidden items-center gap-2 md:flex">
-            <ThemeToggle />
-            <LanguageSwitcher />
             {user && (
               <>
-                <Link
-                  href="/favorites"
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/80 text-muted-foreground shadow-sm transition hover:bg-accent/70 hover:text-foreground"
-                  aria-label={t("favorites")}
-                >
-                  <Heart className="h-4 w-4" />
-                </Link>
                 <Link
                   href="/chat"
                   className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/80 text-muted-foreground shadow-sm transition hover:bg-accent/70 hover:text-foreground"
@@ -415,7 +403,7 @@ export default function Header() {
                   href="/listings/new"
                   className="ekra-gradient inline-flex min-h-[44px] items-center justify-center rounded-full px-5 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)]"
                 >
-                  Become a Host
+                  List an Item
                 </Link>
                 <Link
                   href="/profile"
@@ -444,7 +432,7 @@ export default function Header() {
                   onClick={() => setShowSignup(true)}
                   className="ekra-gradient rounded-full px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)]"
                 >
-                  Become a Host
+                  List an Item
                 </button>
               </>
             )}
@@ -722,7 +710,7 @@ export default function Header() {
                   }}
                   className="ekra-gradient w-full rounded-full px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)]"
                 >
-                  Become a Host
+                  List an Item
                 </button>
               </div>
             </div>

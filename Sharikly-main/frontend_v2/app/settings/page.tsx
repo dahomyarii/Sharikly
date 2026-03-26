@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { useToast } from '@/components/ui/toast'
 import { useLocale } from '@/components/LocaleProvider'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import {
   User,
   Lock,
@@ -663,6 +664,19 @@ export default function SettingsPage() {
         <p className="text-sm text-muted-foreground mt-1">
           Customize your experience and how we contact you.
         </p>
+      </div>
+
+      {/* Theme */}
+      <div className="border border-border/70 bg-card/40 rounded-2xl p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-foreground">Dark mode</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Toggle between light and dark appearance.
+            </p>
+          </div>
+          <ThemeToggle className="border-border bg-background/90" />
+        </div>
       </div>
 
       {/* Language */}

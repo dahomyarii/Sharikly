@@ -6,15 +6,15 @@ import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'luc
 
 export default function Footer() {
   return (
-    <footer className="pb-[calc(7rem+env(safe-area-inset-bottom))] pt-8 md:pb-14 md:pt-10">
+    <footer className="pb-[calc(6rem+env(safe-area-inset-bottom))] pt-6 md:pb-10 md:pt-8">
       <div className="marketplace-shell">
-        <div className="surface-panel overflow-hidden rounded-[32px] border border-white/65 bg-card/95 p-5 sm:rounded-[36px] sm:p-8 lg:p-10">
-          <div className="mb-6 flex flex-col gap-5 border-b border-border pb-6 sm:mb-8 sm:gap-6 sm:pb-8 lg:flex-row lg:items-center lg:justify-between">
+        <div className="surface-panel overflow-hidden rounded-[28px] border border-white/65 bg-card/95 p-4 sm:rounded-[32px] sm:p-6 lg:p-8">
+          <div className="mb-5 flex flex-col gap-4 border-b border-border pb-5 sm:mb-6 sm:gap-5 sm:pb-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl">
-              <div className="mb-4 flex items-center gap-3">
-                <img src="/logo.png" alt="EKRA" className="h-11 w-11" />
+              <div className="mb-3 flex items-center gap-3">
+                <img src="/logo.png" alt="EKRA" className="h-10 w-10" />
                 <div>
-                  <h2 className="text-2xl font-black tracking-tight text-foreground">
+                  <h2 className="text-xl font-black tracking-tight text-foreground">
                     Ekra
                   </h2>
                   <p className="text-sm text-muted-foreground">
@@ -22,16 +22,16 @@ export default function Footer() {
                   </p>
                 </div>
               </div>
-              <p className="text-sm leading-7 text-muted-foreground">
+              <p className="text-sm leading-6 text-muted-foreground">
                 Discover trusted rentals near you, book with confidence, and turn unused items
                 into steady income for your community.
               </p>
             </div>
-            <div className="glass-panel rounded-[28px] px-5 py-4">
+            <div className="glass-panel rounded-[24px] px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                 Contact
               </p>
-              <div className="mt-3 space-y-3 text-sm text-foreground">
+              <div className="mt-2.5 space-y-2.5 text-sm text-foreground">
                 <a href="mailto:support@ekra.com" className="flex items-center gap-3 hover:text-primary">
                   <Mail className="h-4 w-4 text-primary" />
                   support@ekra.com
@@ -87,23 +87,23 @@ export default function Footer() {
                 Follow us
               </h3>
               <div className="flex flex-wrap gap-3">
-                <Link href="#" className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
+                <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
                   <Facebook className="h-4 w-4" />
                 </Link>
-                <Link href="#" className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
+                <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
                   <Twitter className="h-4 w-4" />
                 </Link>
-                <Link href="#" className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
+                <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
                   <Instagram className="h-4 w-4" />
                 </Link>
-                <Link href="#" className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
+                <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
                   <Linkedin className="h-4 w-4" />
                 </Link>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 flex flex-col gap-3 border-t border-border pt-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <div className="mt-6 flex flex-col gap-2 border-t border-border pt-5 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
             <p>&copy; 2026 EKRA. All rights reserved.</p>
             <p>Built for trusted local renting across Saudi Arabia.</p>
           </div>

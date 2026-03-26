@@ -18,6 +18,7 @@ import {
   Star,
   Calendar,
   ArrowRight,
+  Heart,
 } from "lucide-react";
 import ListingCard from "@/components/ListingCard";
 import SkeletonLoader from "@/components/SkeletonLoader";
@@ -484,6 +485,32 @@ export default function ProfilePage() {
             </Button>
           </div>
         </Card>
+
+        {/* Favorites */}
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+            <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
+            Favorites
+          </h2>
+          <Card className="flex flex-col gap-4 rounded-2xl border-2 border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div>
+              <p className="text-muted-foreground mb-1">
+                View items you&apos;ve saved for later.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Keep track of the listings you like and come back anytime.
+              </p>
+            </div>
+            <Button
+              onClick={() => router.push("/favorites")}
+              className="flex items-center gap-2 shrink-0"
+              variant="outline"
+            >
+              View Favorites
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Card>
+        </div>
 
         {/* My Bookings — separate section */}
         <div className="mb-6 sm:mb-8">

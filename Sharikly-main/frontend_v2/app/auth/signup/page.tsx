@@ -84,7 +84,7 @@ export default function SignupPage({ onClose }: { onClose?: () => void }) {
       </button>
       <div className="mb-6 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.26em] text-primary/80">
-          Become a host
+          List an item
         </p>
         <h1 className="mt-3 text-3xl font-black tracking-tight text-foreground">
           {t("create_account")}

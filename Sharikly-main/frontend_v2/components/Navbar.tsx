@@ -2,7 +2,6 @@
 "use client";
 import Link from "next/link";
 import React from "react";
-import LanguageSwitcher from "./LanguageSwitcher";
 import { useLocale } from "./LocaleProvider";
 import { useRouter } from "next/navigation";
 
@@ -93,7 +92,6 @@ export default function Navbar() {
               </Link>
             </>
           )}
-          <LanguageSwitcher />
         </div>
       </div>
     </header>
