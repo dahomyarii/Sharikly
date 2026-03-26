@@ -1157,7 +1157,7 @@ export default function ListingDetail() {
                   <Button
                     variant="outline"
                     onClick={scrollToSimilar}
-                    className="w-full gap-2 rounded-2xl"
+                    className="mt-3 w-full gap-2 rounded-2xl"
                   >
                     <List className="h-4 w-4" />
                     View similar listings
