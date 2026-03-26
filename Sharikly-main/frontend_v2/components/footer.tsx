@@ -8,9 +8,7 @@ export default function Footer() {
   return (
     <footer className="pb-[calc(6rem+env(safe-area-inset-bottom))] pt-6 md:pb-10 md:pt-8">
       <div className="marketplace-shell">
-        <div className="surface-panel relative overflow-hidden rounded-[26px] border border-border/60 bg-gradient-to-br from-card/95 via-card/90 to-background/70 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.10)] ring-1 ring-white/10 sm:rounded-[30px] sm:p-6 lg:p-8">
-          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.12),transparent_45%)]" />
-          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(59,130,246,0.10),transparent_55%)]" />
+        <div className="surface-panel overflow-hidden rounded-[22px] border border-white/65 bg-card/95 p-3 shadow-[0_10px_30px_rgba(15,23,42,0.10)] sm:rounded-[26px] sm:p-5 lg:p-6">
           <div className="mb-5 flex flex-col gap-4 border-b border-border pb-5 sm:mb-6 sm:gap-5 sm:pb-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl">
               <div className="mb-3 flex items-center gap-3">
