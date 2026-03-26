@@ -378,7 +378,7 @@ export default function EditListingPage() {
                     onSelect={setNewBlockRange}
                     numberOfMonths={1}
                     disabled={{ before: new Date() }}
-                    className="border border-border rounded-xl p-2 bg-background"
+                    className="border border-border rounded-xl p-2 bg-background shadow-[0_4px_12px_rgba(0,0,0,0.15)] w-full sm:w-[350px]"
                   />
                   <div className="mt-3 space-y-1.5">
                     <label className="block text-sm font-medium text-foreground">
@@ -390,7 +390,7 @@ export default function EditListingPage() {
                       onChange={(e) => setNewBlockReason(e.target.value)}
                       maxLength={200}
                       placeholder="e.g. On holiday, personal use, in repair"
-                      className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
+                      className="w-full sm:w-[280px] border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
                     />
                   </div>
                   <Button

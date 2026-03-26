@@ -751,6 +751,17 @@ export default function ListingDetail() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-1 sm:gap-2 flex-shrink-0">
+                  {isOwner && (
+                    <Button
+                      onClick={() => router.push(`/listings/${id}/edit`)}
+                      variant="ghost"
+                      size="sm"
+                      className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
+                    >
+                      <Pencil className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Edit</span>
+                    </Button>
+                  )}
                   <Button
                     onClick={handleShare}
                     variant="ghost"
