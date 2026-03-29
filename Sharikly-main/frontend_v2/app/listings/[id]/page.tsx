@@ -33,7 +33,7 @@ import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { useToast } from "@/components/ui/toast";
-import { safeFormatDate } from "@/lib/utils";
+import { countInclusiveRentalDays, formatLocalYMD, safeFormatDate } from "@/lib/utils";
 import ListingCard from "@/components/ListingCard";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
@@ -281,10 +281,10 @@ export default function ListingDetail() {
     let url = `/listings/${id}/request_booking`
     if (dateRange?.from && dateRange?.to) {
       const params = new URLSearchParams({
-        from: dateRange.from.toISOString(),
-        to: dateRange.to.toISOString()
-      })
-      url += `?${params.toString()}`
+        from: formatLocalYMD(dateRange.from),
+        to: formatLocalYMD(dateRange.to),
+      });
+      url += `?${params.toString()}`;
     }
     router.push(url);
   };
@@ -1102,16 +1102,15 @@ export default function ListingDetail() {
 
               {/* Price Breakdown */}
               {dateRange?.from && dateRange?.to && (() => {
-                const msPerDay = 1000 * 60 * 60 * 24;
-                const nights = Math.max(1, Math.round((dateRange.to!.getTime() - dateRange.from!.getTime()) / msPerDay));
+                const days = countInclusiveRentalDays(dateRange.from!, dateRange.to!);
                 const pricePerDay = parseFloat(data.price_per_day) || 0;
-                const subtotal = pricePerDay * nights;
+                const subtotal = pricePerDay * days;
                 const serviceFee = Math.round(subtotal * 0.1 * 100) / 100;
                 const total = Math.round((subtotal + serviceFee) * 100) / 100;
                 return (
                   <div className="space-y-3 border-t border-border pt-4">
                     <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>SAR {pricePerDay.toFixed(2)} &times; {nights} day{nights !== 1 ? "s" : ""}</span>
+                      <span>SAR {pricePerDay.toFixed(2)} &times; {days} day{days !== 1 ? "s" : ""}</span>
                       <span>SAR {subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm text-muted-foreground">
@@ -1386,9 +1385,9 @@ export default function ListingDetail() {
           )}
 
           {!similarLoading && similarListings.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-5">
               {similarListings.map((item: any) => (
-                <ListingCard key={item.id} listing={item} />
+                <ListingCard key={item.id} listing={item} compact />
               ))}
             </div>
           )}
@@ -1491,24 +1490,17 @@ export default function ListingDetail() {
 
             {/* Mobile price breakdown */}
             {dateRange?.from && dateRange?.to && (() => {
-              const msPerDay = 1000 * 60 * 60 * 24;
-              const nights = Math.max(
-                1,
-                Math.round(
-                  (dateRange.to!.getTime() - dateRange.from!.getTime()) /
-                    msPerDay
-                )
-              );
+              const days = countInclusiveRentalDays(dateRange.from!, dateRange.to!);
               const pricePerDay = parseFloat(data.price_per_day) || 0;
-              const subtotal = pricePerDay * nights;
+              const subtotal = pricePerDay * days;
               const serviceFee = Math.round(subtotal * 0.1 * 100) / 100;
               const total = Math.round((subtotal + serviceFee) * 100) / 100;
               return (
                 <div className="mt-4 space-y-2 text-sm text-gray-700">
                   <div className="flex justify-between">
                     <span>
-                      ${pricePerDay.toFixed(2)} × {nights} day
-                      {nights !== 1 ? "s" : ""}
+                      ${pricePerDay.toFixed(2)} × {days} day
+                      {days !== 1 ? "s" : ""}
                     </span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>

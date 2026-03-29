@@ -7,8 +7,41 @@ import { Card } from '@/components/ui/card'
 import Link from 'next/link'
 import { ArrowLeft, Clock, MapPin, User, Check } from 'lucide-react'
 import type { DateRange } from 'react-day-picker'
+import { countInclusiveRentalDays, formatLocalYMD, parseLocalYMD } from '@/lib/utils'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
+
+function getStoredAccessToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return (
+    localStorage.getItem('access_token') ||
+    localStorage.getItem('access') ||
+    localStorage.getItem('token')
+  )
+}
+
+function formatBookingApiError(data: unknown): string {
+  if (!data || typeof data !== 'object') return 'Failed to send request. Please try again.'
+  const d = data as Record<string, unknown>
+  const detail = d.detail
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail) && detail.length) {
+    const first = detail[0]
+    if (typeof first === 'string') return first
+  }
+  const parts: string[] = []
+  for (const [key, val] of Object.entries(d)) {
+    if (key === 'detail') continue
+    if (Array.isArray(val) && val.length) {
+      const msg = val.map((x) => String(x)).join(', ')
+      parts.push(`${key}: ${msg}`)
+    } else if (typeof val === 'string') {
+      parts.push(`${key}: ${val}`)
+    }
+  }
+  if (parts.length) return parts.join(' | ')
+  return 'Failed to send request. Please try again.'
+}
 
 export default function RequestBookingPage() {
   const params = useParams()
@@ -46,19 +79,24 @@ export default function RequestBookingPage() {
     fetchListing()
   }, [listingId])
 
-  // Get dates from URL search params
+  // Get dates from URL search params (prefer local YYYY-MM-DD; fallback legacy ISO)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search)
-      const fromDate = params.get('from')
-      const toDate = params.get('to')
-      
-      if (fromDate && toDate) {
-        setDateRange({
-          from: new Date(fromDate),
-          to: new Date(toDate)
-        })
-      }
+    if (typeof window === 'undefined') return
+    const sp = new URLSearchParams(window.location.search)
+    const fromRaw = sp.get('from')
+    const toRaw = sp.get('to')
+    if (!fromRaw || !toRaw) return
+
+    const fromParsed = parseLocalYMD(fromRaw)
+    const toParsed = parseLocalYMD(toRaw)
+    if (fromParsed && toParsed) {
+      setDateRange({ from: fromParsed, to: toParsed })
+      return
+    }
+    const fromLegacy = new Date(fromRaw)
+    const toLegacy = new Date(toRaw)
+    if (!Number.isNaN(fromLegacy.getTime()) && !Number.isNaN(toLegacy.getTime())) {
+      setDateRange({ from: fromLegacy, to: toLegacy })
     }
   }, [])
 
@@ -80,14 +118,13 @@ export default function RequestBookingPage() {
 
   const calculateDays = () => {
     if (!dateRange?.from || !dateRange?.to) return 0
-    const diff = dateRange.to.getTime() - dateRange.from.getTime()
-    return Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1
+    return countInclusiveRentalDays(dateRange.from, dateRange.to)
   }
 
   const calculateTotal = () => {
     const days = calculateDays()
     if (!listing.price_per_day || days === 0) return 0
-    return days * parseFloat(listing.price_per_day)
+    return days * parseFloat(String(listing.price_per_day))
   }
 
   const wrapMessageForChat = (text: string) => {
@@ -138,9 +175,15 @@ export default function RequestBookingPage() {
       return
     }
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    if (dateRange.from < today) {
+    const startDay = new Date(
+      dateRange.from.getFullYear(),
+      dateRange.from.getMonth(),
+      dateRange.from.getDate()
+    )
+    const todayDay = new Date()
+    todayDay.setHours(0, 0, 0, 0)
+    const todayLocal = new Date(todayDay.getFullYear(), todayDay.getMonth(), todayDay.getDate())
+    if (startDay < todayLocal) {
       setError('Start date cannot be in the past.')
       return
     }
@@ -154,7 +197,7 @@ export default function RequestBookingPage() {
       return
     }
 
-    const token = localStorage.getItem('access_token')
+    const token = getStoredAccessToken()
     if (!token) {
       setError('You are not logged in properly')
       return
@@ -166,8 +209,8 @@ export default function RequestBookingPage() {
 
     try {
       // 1) Create booking (primary action)
-      const startStr = dateRange.from!.toISOString().slice(0, 10)
-      const endStr = dateRange.to!.toISOString().slice(0, 10)
+      const startStr = formatLocalYMD(dateRange.from!)
+      const endStr = formatLocalYMD(dateRange.to!)
       const total = calculateTotal()
 
       await axiosInstance.post(
@@ -233,8 +276,7 @@ export default function RequestBookingPage() {
       router.push('/bookings')
     } catch (err: any) {
       console.error(err.response || err)
-      const detail = err.response?.data?.detail
-      setError(typeof detail === 'string' ? detail : 'Failed to send request. Please try again.')
+      setError(formatBookingApiError(err.response?.data))
     } finally {
       setLoading(false)
     }
