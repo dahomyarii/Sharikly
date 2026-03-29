@@ -381,9 +381,6 @@ export default function RequestBookingPage() {
                         <th className="px-3 py-2 text-left text-muted-foreground">Total</th>
                         <td className="px-3 py-2">
                           <div className="inline-flex items-baseline justify-end w-full rounded-full bg-gradient-to-r from-purple-600 via-purple-500 to-fuchsia-500 text-white px-3 py-1.5 shadow-[0_12px_30px_rgba(147,51,234,0.6)]">
-                            <span className="text-xs font-medium uppercase tracking-wide mr-2 text-purple-100/90">
-                              Total
-                            </span>
                             <span className="text-lg font-semibold">
                               ${calculateTotal().toFixed(2)}
                             </span>

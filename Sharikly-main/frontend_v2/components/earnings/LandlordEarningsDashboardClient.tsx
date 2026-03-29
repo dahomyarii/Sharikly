@@ -443,10 +443,8 @@ export function LandlordEarningsDashboardClient() {
 
   const tabs = [
     { label: "Overview", href: "/host/overview" },
-    { label: "Earnings", href: "/host/earnings" },
     { label: "Listings", href: "/host/listings" },
     { label: "Bookings", href: "/host/bookings" },
-    { label: "Opportunities", href: "/host/opportunities" },
   ]
 
   if (isLoading) {

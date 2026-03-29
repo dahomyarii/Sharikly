@@ -34,6 +34,7 @@ import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { useToast } from "@/components/ui/toast";
 import { safeFormatDate } from "@/lib/utils";
+import ListingCard from "@/components/ListingCard";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -1386,44 +1387,9 @@ export default function ListingDetail() {
 
           {!similarLoading && similarListings.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-              {similarListings.map((item: any) => {
-                const imgUrl =
-                  item.images?.[0]?.image?.startsWith("http")
-                    ? item.images[0].image
-                    : item.images?.[0]?.image
-                      ? `${API}${item.images[0].image}`
-                      : "/hero.jpg";
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/listings/${item.id}`}
-                    className="group block rounded-xl overflow-hidden bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200"
-                  >
-                    <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
-                      <img
-                        src={imgUrl}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="p-3">
-                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider line-clamp-1">
-                        {item.category?.name || "Listing"}
-                      </span>
-                      <h3 className="font-semibold text-gray-900 mt-0.5 line-clamp-2 group-hover:text-gray-700">
-                        {item.title}
-                      </h3>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="text-lg font-bold text-blue-600">
-                          ${item.price_per_day}
-                        </span>
-                        <span className="text-xs text-gray-500">/day</span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+              {similarListings.map((item: any) => (
+                <ListingCard key={item.id} listing={item} />
+              ))}
             </div>
           )}
         </section>
