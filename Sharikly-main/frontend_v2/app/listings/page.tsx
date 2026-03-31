@@ -9,7 +9,7 @@ import { Suspense, useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Camera, ChevronLeft, ChevronRight, Gamepad2, Headphones, Home, MapPin, MoreHorizontal, Search, SlidersHorizontal, Sparkles, Tent, X } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, Gamepad2, Headphones, Home, MoreHorizontal, Search, SlidersHorizontal, Sparkles, Tent, X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
 const ListingsMap = dynamic(() => import("@/components/ListingsMap"), { ssr: false });
@@ -31,7 +31,6 @@ const fetcher = (url: string) => axiosInstance.get(url).then((res) => res.data);
 function buildListingsUrl(params: {
   search: string;
   category: string;
-  city: string;
   min_price: string;
   max_price: string;
   rating_min: string;
@@ -43,7 +42,6 @@ function buildListingsUrl(params: {
   const sp = new URLSearchParams();
   if (params.search) sp.set("search", params.search);
   if (params.category) sp.set("category", params.category);
-  if (params.city) sp.set("city", params.city);
   if (params.min_price) sp.set("min_price", params.min_price);
   if (params.max_price) sp.set("max_price", params.max_price);
   if (params.rating_min) sp.set("rating_min", params.rating_min);
@@ -83,7 +81,6 @@ function ListingsPageContent() {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-  const [city, setCity] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [ratingMin, setRatingMin] = useState("");
@@ -92,16 +89,24 @@ function ListingsPageContent() {
   const [order, setOrder] = useState("newest");
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [draftCategory, setDraftCategory] = useState("");
+  const [draftMinPrice, setDraftMinPrice] = useState("");
+  const [draftMaxPrice, setDraftMaxPrice] = useState("");
+  const [draftRatingMin, setDraftRatingMin] = useState("");
+  const [draftAvailableFrom, setDraftAvailableFrom] = useState("");
+  const [draftAvailableTo, setDraftAvailableTo] = useState("");
+  const [draftOrder, setDraftOrder] = useState("newest");
   const [mobileView, setMobileView] = useState<"list" | "map">("list");
   const [selectedListingId, setSelectedListingId] = useState<number | null>(null);
   const [urlReady, setUrlReady] = useState(false);
+  const filtersPanelRef = useRef<HTMLDivElement>(null);
   const hasSyncedFromUrl = useRef(false);
   const lastGoodData = useRef<{ listings: unknown[]; totalCount: number; hasNext: boolean; hasPrevious: boolean } | null>(null);
   const [showSuggest, setShowSuggest] = useState(false);
   const [canUseSavedSearches, setCanUseSavedSearches] = useState(false);
 
   const debouncedSearch = useDebounce(search, DEBOUNCE_MS);
-  const debouncedCity = useDebounce(city, DEBOUNCE_MS);
   const debouncedMinPrice = useDebounce(minPrice, DEBOUNCE_MS);
   const debouncedMaxPrice = useDebounce(maxPrice, DEBOUNCE_MS);
   const debouncedRatingMin = useDebounce(ratingMin, DEBOUNCE_MS);
@@ -120,7 +125,6 @@ function ListingsPageContent() {
     hasSyncedFromUrl.current = true;
     const q = searchParams.get("search") ?? "";
     const cat = searchParams.get("category") ?? "";
-    const c = searchParams.get("city") ?? "";
     const min = searchParams.get("min_price") ?? "";
     const max = searchParams.get("max_price") ?? "";
     const rmin = searchParams.get("rating_min") ?? "";
@@ -130,7 +134,6 @@ function ListingsPageContent() {
     const p = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
     setSearch(q);
     setCategory(cat);
-    setCity(c);
     setMinPrice(min);
     setMaxPrice(max);
     setRatingMin(rmin);
@@ -146,7 +149,6 @@ function ListingsPageContent() {
     const sp = new URLSearchParams();
     if (search) sp.set("search", search);
     if (category) sp.set("category", category);
-    if (city) sp.set("city", city);
     if (minPrice) sp.set("min_price", minPrice);
     if (maxPrice) sp.set("max_price", maxPrice);
     if (ratingMin) sp.set("rating_min", ratingMin);
@@ -156,14 +158,55 @@ function ListingsPageContent() {
     if (page > 1) sp.set("page", String(page));
     const qs = sp.toString();
     window.history.replaceState(null, "", qs ? `/listings?${qs}` : "/listings");
-  }, [urlReady, search, category, city, minPrice, maxPrice, ratingMin, availableFrom, availableTo, order, page]);
+  }, [urlReady, search, category, minPrice, maxPrice, ratingMin, availableFrom, availableTo, order, page]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const syncViewport = () => setIsMobileViewport(window.innerWidth < 768);
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+    return () => window.removeEventListener("resize", syncViewport);
+  }, []);
+
+  useEffect(() => {
+    if (!showFilters || !isMobileViewport) return;
+    setDraftCategory(category);
+    setDraftMinPrice(minPrice);
+    setDraftMaxPrice(maxPrice);
+    setDraftRatingMin(ratingMin);
+    setDraftAvailableFrom(availableFrom);
+    setDraftAvailableTo(availableTo);
+    setDraftOrder(order);
+  }, [showFilters, isMobileViewport, category, minPrice, maxPrice, ratingMin, availableFrom, availableTo, order]);
+
+  useEffect(() => {
+    if (!showFilters) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (filtersPanelRef.current && !filtersPanelRef.current.contains(e.target as Node)) {
+        setShowFilters(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [showFilters]);
+
+  const applyDraftFilters = () => {
+    setCategory(draftCategory);
+    setMinPrice(draftMinPrice);
+    setMaxPrice(draftMaxPrice);
+    setRatingMin(draftRatingMin);
+    setAvailableFrom(draftAvailableFrom);
+    setAvailableTo(draftAvailableTo);
+    setOrder(draftOrder);
+    setPage(1);
+    setShowFilters(false);
+  };
 
   const listingsUrl = useMemo(
     () =>
       buildListingsUrl({
         search: debouncedSearch,
         category,
-        city: debouncedCity,
         min_price: debouncedMinPrice,
         max_price: debouncedMaxPrice,
         rating_min: debouncedRatingMin,
@@ -172,7 +215,7 @@ function ListingsPageContent() {
         order,
         page,
       }),
-    [debouncedSearch, category, debouncedCity, debouncedMinPrice, debouncedMaxPrice, debouncedRatingMin, availableFrom, availableTo, order, page]
+    [debouncedSearch, category, debouncedMinPrice, debouncedMaxPrice, debouncedRatingMin, availableFrom, availableTo, order, page]
   );
 
   const { data: rawData, error, isLoading } = useSWR(urlReady ? listingsUrl : null, fetcher, {
@@ -193,9 +236,8 @@ function ListingsPageContent() {
     fetcher
   );
   const titles: string[] = Array.isArray(suggestData?.titles) ? suggestData.titles : [];
-  const citiesSuggest: string[] = Array.isArray(suggestData?.cities) ? suggestData.cities : [];
   const categoriesSuggest: Array<{ id: number; name: string }> = Array.isArray(suggestData?.categories) ? suggestData.categories : [];
-  const hasSuggest = titles.length + citiesSuggest.length + categoriesSuggest.length > 0;
+  const hasSuggest = titles.length + categoriesSuggest.length > 0;
 
   const listings = Array.isArray(rawData) ? rawData : rawData?.results ?? [];
   const totalCount = typeof rawData?.count === "number" ? rawData.count : listings.length;
@@ -271,7 +313,7 @@ function ListingsPageContent() {
               </Button>
               <Button
                 variant="outline"
-                disabled={!canUseSavedSearches || (!search && !category && !city && !minPrice && !maxPrice && !ratingMin && !availableFrom && !availableTo)}
+                disabled={!canUseSavedSearches || (!search && !category && !minPrice && !maxPrice && !ratingMin && !availableFrom && !availableTo)}
                 onClick={async () => {
                   if (!canUseSavedSearches || typeof window === "undefined") return;
                   const qs = window.location.search || "";
@@ -287,8 +329,8 @@ function ListingsPageContent() {
             </div>
           </div>
 
-          <div className="glass-panel rounded-[30px] p-2 sm:p-3">
-            <div className="grid gap-2 lg:grid-cols-[1.8fr_1fr_1fr_auto]">
+          <div className="glass-panel relative rounded-[30px] p-2 sm:p-3" ref={filtersPanelRef}>
+            <div className="grid gap-2 lg:grid-cols-[1fr_auto_auto]">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
@@ -322,24 +364,6 @@ function ListingsPageContent() {
                           ))}
                         </div>
                       )}
-                      {citiesSuggest.length > 0 && (
-                        <div className="border-t border-border py-2">
-                          <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                            Cities
-                          </div>
-                          {citiesSuggest.map((v) => (
-                            <button
-                              key={`c-${v}`}
-                              type="button"
-                              onMouseDown={(e) => e.preventDefault()}
-                              onClick={() => { setCity(v); setShowFilters(true); setPage(1); setShowSuggest(false); }}
-                              className="w-full px-4 py-2.5 text-left text-sm transition hover:bg-accent/60"
-                            >
-                              {v}
-                            </button>
-                          ))}
-                        </div>
-                      )}
                       {categoriesSuggest.length > 0 && (
                         <div className="border-t border-border py-2">
                           <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -362,38 +386,41 @@ function ListingsPageContent() {
                   </div>
                 )}
               </div>
-              <div className="relative">
-                <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => { setCity(e.target.value); setPage(1); }}
-                  placeholder={t("city")}
-                  className="w-full rounded-[22px] border border-transparent bg-white/95 pl-11 pr-4 min-h-[52px] text-sm outline-none"
-                />
-              </div>
               <select
-                value={order}
-                onChange={(e) => { setOrder(e.target.value); setPage(1); }}
+                value={isMobileViewport ? draftOrder : order}
+                onChange={(e) => {
+                  if (isMobileViewport) {
+                    setDraftOrder(e.target.value);
+                  } else {
+                    setOrder(e.target.value);
+                    setPage(1);
+                  }
+                }}
                 className="min-h-[52px] rounded-[22px] border border-transparent bg-white/95 px-4 text-sm outline-none"
               >
                 <option value="newest">{t("sort_newest")}</option>
                 <option value="price_asc">{t("sort_price_low")}</option>
                 <option value="price_desc">{t("sort_price_high")}</option>
               </select>
-              <Button size="lg" className="min-h-[52px] px-6" onClick={() => setShowFilters(true)}>
-                Search
+              <Button size="lg" className="min-h-[52px] px-6" onClick={() => setShowFilters((v) => !v)}>
+                {showFilters ? "Close" : "Customize"}
               </Button>
             </div>
-          </div>
 
-          {showFilters && (
-            <div className="mt-4 grid gap-3 rounded-[30px] bg-white/60 p-4 sm:grid-cols-2 xl:grid-cols-6">
+            {showFilters && (
+              <div className="surface-panel absolute left-0 right-0 z-20 mt-2.5 grid gap-3 rounded-[26px] bg-popover/95 p-4 sm:grid-cols-2 xl:grid-cols-6">
               <div>
                 <label className={labelClasses}>{t("category")}</label>
                 <select
-                  value={category}
-                  onChange={(e) => { setCategory(e.target.value); setPage(1); }}
+                  value={isMobileViewport ? draftCategory : category}
+                  onChange={(e) => {
+                    if (isMobileViewport) {
+                      setDraftCategory(e.target.value);
+                    } else {
+                      setCategory(e.target.value);
+                      setPage(1);
+                    }
+                  }}
                   className={`${selectClasses} w-full`}
                 >
                   <option value="">{t("all_categories")}</option>
@@ -408,8 +435,15 @@ function ListingsPageContent() {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={minPrice}
-                  onChange={(e) => { setMinPrice(e.target.value); setPage(1); }}
+                  value={isMobileViewport ? draftMinPrice : minPrice}
+                  onChange={(e) => {
+                    if (isMobileViewport) {
+                      setDraftMinPrice(e.target.value);
+                    } else {
+                      setMinPrice(e.target.value);
+                      setPage(1);
+                    }
+                  }}
                   placeholder="0"
                   className={inputClasses}
                 />
@@ -420,8 +454,15 @@ function ListingsPageContent() {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={maxPrice}
-                  onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }}
+                  value={isMobileViewport ? draftMaxPrice : maxPrice}
+                  onChange={(e) => {
+                    if (isMobileViewport) {
+                      setDraftMaxPrice(e.target.value);
+                    } else {
+                      setMaxPrice(e.target.value);
+                      setPage(1);
+                    }
+                  }}
                   placeholder="—"
                   className={inputClasses}
                 />
@@ -429,8 +470,15 @@ function ListingsPageContent() {
               <div>
                 <label className={labelClasses}>Min rating</label>
                 <select
-                  value={ratingMin}
-                  onChange={(e) => { setRatingMin(e.target.value); setPage(1); }}
+                  value={isMobileViewport ? draftRatingMin : ratingMin}
+                  onChange={(e) => {
+                    if (isMobileViewport) {
+                      setDraftRatingMin(e.target.value);
+                    } else {
+                      setRatingMin(e.target.value);
+                      setPage(1);
+                    }
+                  }}
                   className={`${selectClasses} w-full`}
                 >
                   <option value="">Any</option>
@@ -443,8 +491,15 @@ function ListingsPageContent() {
                 <label className={labelClasses}>Available from</label>
                 <input
                   type="date"
-                  value={availableFrom}
-                  onChange={(e) => { setAvailableFrom(e.target.value); setPage(1); }}
+                  value={isMobileViewport ? draftAvailableFrom : availableFrom}
+                  onChange={(e) => {
+                    if (isMobileViewport) {
+                      setDraftAvailableFrom(e.target.value);
+                    } else {
+                      setAvailableFrom(e.target.value);
+                      setPage(1);
+                    }
+                  }}
                   className={inputClasses}
                 />
               </div>
@@ -452,13 +507,41 @@ function ListingsPageContent() {
                 <label className={labelClasses}>Available to</label>
                 <input
                   type="date"
-                  value={availableTo}
-                  onChange={(e) => { setAvailableTo(e.target.value); setPage(1); }}
+                  value={isMobileViewport ? draftAvailableTo : availableTo}
+                  onChange={(e) => {
+                    if (isMobileViewport) {
+                      setDraftAvailableTo(e.target.value);
+                    } else {
+                      setAvailableTo(e.target.value);
+                      setPage(1);
+                    }
+                  }}
                   className={inputClasses}
                 />
               </div>
-            </div>
-          )}
+                {isMobileViewport && (
+                  <div className="sm:col-span-2 xl:col-span-6 flex justify-end gap-2 pt-1">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setDraftCategory(category);
+                        setDraftMinPrice(minPrice);
+                        setDraftMaxPrice(maxPrice);
+                        setDraftRatingMin(ratingMin);
+                        setDraftAvailableFrom(availableFrom);
+                        setDraftAvailableTo(availableTo);
+                        setDraftOrder(order);
+                        setShowFilters(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={applyDraftFilters}>Apply</Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {Array.isArray(categories) && categories.slice(0, 8).map((cat: any) => {
@@ -483,13 +566,12 @@ function ListingsPageContent() {
                 </button>
               );
             })}
-            {(search || category || city || minPrice || maxPrice || ratingMin || availableFrom || availableTo) && (
+            {(search || category || minPrice || maxPrice || ratingMin || availableFrom || availableTo) && (
               <button
                 type="button"
                 onClick={() => {
                   setSearch("");
                   setCategory("");
-                  setCity("");
                   setMinPrice("");
                   setMaxPrice("");
                   setRatingMin("");
@@ -557,7 +639,7 @@ function ListingsPageContent() {
                   Try adjusting your filters or browse all listings.
                 </p>
                 <div className="flex flex-col justify-center gap-2 sm:flex-row">
-                  {(debouncedSearch || category || debouncedCity || debouncedMinPrice || debouncedMaxPrice) && (
+                  {(debouncedSearch || category || debouncedMinPrice || debouncedMaxPrice) && (
                     <Link
                       href="/listings"
                       className="inline-flex items-center justify-center min-h-[44px] rounded-full border border-primary px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10"

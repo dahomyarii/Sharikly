@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useLocale } from "./LocaleProvider";
 import Link from "next/link";
+import { ThemeToggle } from "./ThemeToggle";
 import axiosInstance from "@/lib/axios";
 import {
   Bell,
@@ -34,12 +35,14 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [notificationsUnreadCount, setNotificationsUnreadCount] = useState(0);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const notificationsDropdownRef = useRef<HTMLDivElement>(null);
   const notificationsBellRef = useRef<HTMLButtonElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -88,6 +91,21 @@ export default function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showNotificationsDropdown]);
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    if (!showProfileMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(e.target as Node)
+      ) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showProfileMenu]);
 
   const unreadCount = notificationsUnreadCount || notifications.filter((n) => !n.read).length;
 
@@ -315,13 +333,6 @@ export default function Header() {
                     </span>
                   )}
                 </Link>
-                <Link
-                  href="/settings"
-                  className="flex h-10 items-center gap-2 rounded-full border border-white/60 bg-white/80 px-4 text-sm font-medium text-muted-foreground shadow-sm transition hover:bg-accent/70 hover:text-foreground"
-                >
-                  <Settings2 className="h-4 w-4" />
-                  {t("settings")}
-                </Link>
               </>
             )}
             <div className="relative" ref={notificationsDropdownRef}>
@@ -398,28 +409,77 @@ export default function Header() {
               )}
             </div>
             {user ? (
-              <>
+              <div className="flex items-center gap-2">
                 <Link
                   href="/listings/new"
                   className="ekra-gradient inline-flex min-h-[44px] items-center justify-center rounded-full px-5 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)]"
                 >
                   List an Item
                 </Link>
-                <Link
-                  href="/profile"
-                  className="flex h-11 min-w-[44px] items-center justify-center rounded-full border border-white/60 bg-white/85 px-3 text-sm font-semibold text-foreground shadow-sm"
-                >
-                  {user?.avatar ? (
-                    <img
-                      src={user.avatar.startsWith("http") ? user.avatar : `/api${user.avatar}`}
-                      alt=""
-                      className="h-8 w-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <UserIcon className="h-4 w-4" />
+                <div className="relative" ref={profileMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileMenu((v) => !v)}
+                    className="flex h-11 min-w-[44px] items-center justify-center rounded-full border border-white/60 bg-white/85 px-1.5 text-sm font-semibold text-foreground shadow-sm hover:bg-accent/70"
+                    aria-haspopup="menu"
+                    aria-expanded={showProfileMenu}
+                  >
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar.startsWith("http") ? user.avatar : `/api${user.avatar}`}
+                        alt=""
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <UserIcon className="h-4 w-4" />
+                    )}
+                  </button>
+                  {showProfileMenu && (
+                    <div className="surface-panel absolute right-0 top-[120%] z-40 w-60 overflow-hidden rounded-[22px] border border-border bg-popover/95 shadow-lg">
+                      <div className="border-b border-border px-4 py-3">
+                        <p className="text-sm font-semibold text-foreground truncate">
+                          {user.username || user.email}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                      <div className="px-2 py-2 space-y-1">
+                        <Link
+                          href="/profile"
+                          className="flex items-center gap-2 rounded-[18px] px-3 py-2 text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <UserIcon className="h-4 w-4" />
+                          <span>Profile</span>
+                        </Link>
+                        <Link
+                          href="/settings"
+                          className="flex items-center gap-2 rounded-[18px] px-3 py-2 text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <Settings2 className="h-4 w-4" />
+                          <span>{t("settings")}</span>
+                        </Link>
+                        <div className="mt-1 flex items-center justify-between rounded-[18px] bg-background/90 px-3 py-2 text-sm text-muted-foreground">
+                          <span>Dark mode</span>
+                          <ThemeToggle />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          handleLogout();
+                        }}
+                        className="flex w-full items-center justify-center border-t border-border px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10"
+                      >
+                        {t("logout")}
+                      </button>
+                    </div>
                   )}
-                </Link>
-              </>
+                </div>
+              </div>
             ) : (
               <>
                 <button

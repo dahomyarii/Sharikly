@@ -760,7 +760,7 @@ export default function ListingDetail() {
                       className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                     >
                       <Pencil className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Edit</span>
+                      <span className="hidden sm:inline"></span>
                     </Button>
                   )}
                   <Button
@@ -770,7 +770,7 @@ export default function ListingDetail() {
                     className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                   >
                     <Share2 className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">Share</span>
+                    <span className="hidden sm:inline"></span>
                   </Button>
                   {similarListings.length > 0 && (
                     <Button
@@ -780,7 +780,7 @@ export default function ListingDetail() {
                       className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                     >
                       <List className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Similar</span>
+                      <span className="hidden sm:inline"></span>
                     </Button>
                   )}
                   <Button
