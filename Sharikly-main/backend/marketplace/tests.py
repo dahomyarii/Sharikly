@@ -93,3 +93,67 @@ class BookingsAPITestCase(TestCase):
         self.assertIsInstance(response.data, dict)
         self.assertIn("results", response.data)
         self.assertIsInstance(response.data["results"], list)
+
+    def test_bookings_list_role_renter_excludes_host_rows(self):
+        from marketplace.models import Booking, Listing
+
+        owner = User.objects.create_user(
+            email="owner@example.com",
+            username="owner",
+            password=TEST_AUTH_STRING,
+            is_email_verified=True,
+        )
+        renter = User.objects.create_user(
+            email="renteronly@example.com",
+            username="renteronly",
+            password=TEST_AUTH_STRING,
+            is_email_verified=True,
+        )
+        listing = Listing.objects.create(
+            owner=owner,
+            title="Host item",
+            description="d",
+            price_per_day="10.00",
+            city="Riyadh",
+        )
+        Booking.objects.create(
+            listing=listing,
+            renter=renter,
+            start_date="2026-04-01",
+            end_date="2026-04-02",
+            total_price="20.00",
+        )
+        self.client.force_authenticate(user=owner)
+        r_all = self.client.get("/api/bookings/")
+        self.assertEqual(r_all.status_code, status.HTTP_200_OK)
+        results_all = (
+            r_all.data
+            if isinstance(r_all.data, list)
+            else r_all.data.get("results", [])
+        )
+        self.assertEqual(len(results_all), 1)
+
+        r_renter = self.client.get("/api/bookings/", {"role": "renter"})
+        results_r = (
+            r_renter.data
+            if isinstance(r_renter.data, list)
+            else r_renter.data.get("results", [])
+        )
+        self.assertEqual(len(results_r), 0)
+
+        self.client.force_authenticate(user=renter)
+        r_host = self.client.get("/api/bookings/", {"role": "host"})
+        results_h = (
+            r_host.data
+            if isinstance(r_host.data, list)
+            else r_host.data.get("results", [])
+        )
+        self.assertEqual(len(results_h), 0)
+
+        r_renter2 = self.client.get("/api/bookings/", {"role": "renter"})
+        results_r2 = (
+            r_renter2.data
+            if isinstance(r_renter2.data, list)
+            else r_renter2.data.get("results", [])
+        )
+        self.assertEqual(len(results_r2), 1)

@@ -72,17 +72,12 @@ export function HostBookingsClient() {
       const headers = { Authorization: `Bearer ${token}` }
       const [uRes, bRes] = await Promise.all([
         axiosInstance.get(`${API}/auth/me/`, { headers }),
-        axiosInstance.get(`${API}/bookings/`, { headers }),
+        axiosInstance.get(`${API}/bookings/`, { headers, params: { role: "host" } }),
       ])
       const currentUser = uRes.data
       setUser(currentUser)
       
-      const allBookings = Array.isArray(bRes.data) ? bRes.data : (bRes.data?.results || [])
-      // Filter strictly for host bookings (where user is the owner of the listing)
-      const hostV = allBookings.filter((b: any) => {
-        const ownerId = typeof b.listing?.owner === "object" ? b.listing.owner.id : b.listing?.owner_id || b.listing?.owner
-        return ownerId === currentUser.id
-      })
+      const hostV = Array.isArray(bRes.data) ? bRes.data : (bRes.data?.results || [])
       setBookings(hostV)
     } catch (err) {
       console.error(err)

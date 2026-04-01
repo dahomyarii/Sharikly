@@ -9,7 +9,9 @@ import { ThemeToggle } from "./ThemeToggle";
 import axiosInstance from "@/lib/axios";
 import {
   Bell,
+  Calendar,
   Compass,
+  Heart,
   Home,
   Menu,
   MessageCircle,
@@ -454,6 +456,22 @@ export default function Header() {
                           <span>Profile</span>
                         </Link>
                         <Link
+                          href="/favorites"
+                          className="flex items-center gap-2 rounded-[18px] px-3 py-2 text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <Heart className="h-4 w-4" />
+                          <span>{t("favorites")}</span>
+                        </Link>
+                        <Link
+                          href="/bookings"
+                          className="flex items-center gap-2 rounded-[18px] px-3 py-2 text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <Calendar className="h-4 w-4" />
+                          <span>{t("my_bookings")}</span>
+                        </Link>
+                        <Link
                           href="/settings"
                           className="flex items-center gap-2 rounded-[18px] px-3 py-2 text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground"
                           onClick={() => setShowProfileMenu(false)}
@@ -575,7 +593,16 @@ export default function Header() {
                 className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
+                <Calendar className="w-5 h-5 text-muted-foreground" />
                 {t("my_bookings")}
+              </Link>
+              <Link
+                href="/favorites"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Heart className="w-5 h-5 text-muted-foreground" />
+                {t("favorites")}
               </Link>
               <Link
                 href="/notifications"

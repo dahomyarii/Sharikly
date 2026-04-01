@@ -407,7 +407,7 @@ export function LandlordEarningsDashboardClient() {
         accentColor: growth !== null && growth >= 0 ? "text-emerald-500" : "text-red-500",
       },
       {
-        label: "Active bookings",
+        label: "Bookings on your items",
         value: `${activeBookings}`,
         icon: CalendarDays,
         iconBg: "bg-violet-500/10",
@@ -527,7 +527,9 @@ export function LandlordEarningsDashboardClient() {
               Start earning by <span className="font-bold">Your Items</span> on Ekra
             </h2>
             <p className="text-muted-foreground max-w-sm mb-5 leading-relaxed text-sm">
-              Turn your items and equipment into passive income by renting them out.
+              Turn your items and equipment into passive income by renting them out. This dashboard
+              shows earnings and activity when others book your listings—not items you rent from
+              others.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button

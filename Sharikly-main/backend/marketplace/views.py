@@ -885,10 +885,18 @@ class BookingListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return (
-            Booking.objects.filter(renter=user)
-            | Booking.objects.filter(listing__owner=user)
-        ).order_by("-created_at").distinct()
+        role = (self.request.query_params.get("role") or "").strip().lower()
+        base = Booking.objects.all()
+        if role == "renter":
+            qs = base.filter(renter=user)
+        elif role in ("host", "owner", "lender"):
+            qs = base.filter(listing__owner=user)
+        else:
+            qs = (
+                base.filter(renter=user)
+                | base.filter(listing__owner=user)
+            )
+        return qs.order_by("-created_at").distinct()
 
     def create(self, request, *args, **kwargs):
         listing_id = request.data.get("listing")

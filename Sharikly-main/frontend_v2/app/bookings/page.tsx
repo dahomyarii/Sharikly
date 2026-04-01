@@ -68,7 +68,7 @@ function BookingsPageContent() {
       try {
         const res = await axiosInstance.get(`${API}/bookings/`, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { page },
+          params: { page, role: "renter" },
         })
         const data = res.data
         const list = Array.isArray(data) ? data : data?.results ?? []
@@ -100,7 +100,7 @@ function BookingsPageContent() {
       setPage(1)
       const token = localStorage.getItem('access_token')
       if (token) {
-        axiosInstance.get(`${API}/bookings/`, { headers: { Authorization: `Bearer ${token}` }, params: { page: 1 } })
+        axiosInstance.get(`${API}/bookings/`, { headers: { Authorization: `Bearer ${token}` }, params: { page: 1, role: "renter" } })
           .then((res) => {
             const data = res.data
             const list = Array.isArray(data) ? data : data?.results ?? []
@@ -117,10 +117,7 @@ function BookingsPageContent() {
     }
   }, [searchParams, user, router])
 
-  const isOwner = (booking: any) =>
-    booking.listing?.owner?.id === user?.id
-
-  const getCancellationCopy = (booking: any, ownerView: boolean) => {
+  const getCancellationCopy = (booking: any) => {
     const paid = booking.payment_status === 'PAID'
     const declinedOrCancelled = booking.status === 'DECLINED' || booking.status === 'CANCELLED'
 
@@ -128,53 +125,11 @@ function BookingsPageContent() {
       return 'This booking is no longer active.'
     }
 
-    if (ownerView) {
-      return 'As the owner, you can cancel pending or confirmed bookings here. The renter will be notified automatically.'
-    }
-
     if (!paid) {
       return 'You can cancel pending requests or unpaid confirmed bookings here at any time. For already paid bookings, contact support if you need a refund.'
     }
 
     return 'Paid bookings cannot be cancelled from here. Please contact support if you need help.'
-  }
-
-  const handleAccept = async (bookingId: number) => {
-    setActionId(bookingId)
-    const token = localStorage.getItem('access_token')
-    try {
-      const res = await axiosInstance.post(
-        `${API}/bookings/${bookingId}/accept/`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      setBookings((prev) =>
-        prev.map((b) => (b.id === bookingId ? res.data : b))
-      )
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setActionId(null)
-    }
-  }
-
-  const handleDecline = async (bookingId: number) => {
-    setActionId(bookingId)
-    const token = localStorage.getItem('access_token')
-    try {
-      const res = await axiosInstance.post(
-        `${API}/bookings/${bookingId}/decline/`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      setBookings((prev) =>
-        prev.map((b) => (b.id === bookingId ? res.data : b))
-      )
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setActionId(null)
-    }
   }
 
   const handlePayNow = async (bookingId: number) => {
@@ -220,26 +175,6 @@ function BookingsPageContent() {
     }
   }
 
-  const handleRefund = async (bookingId: number) => {
-    if (!confirm('Mark this booking as refunded? (Use after processing refund in your payment dashboard.)')) return
-    setActionId(bookingId)
-    const token = localStorage.getItem('access_token')
-    try {
-      const res = await axiosInstance.post(
-        `${API}/bookings/${bookingId}/refund/`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      setBookings((prev) =>
-        prev.map((b) => (b.id === bookingId ? res.data : b))
-      )
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setActionId(null)
-    }
-  }
-
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -259,9 +194,14 @@ function BookingsPageContent() {
           >
             <ArrowLeft className="h-5 w-5 text-muted-foreground" />
           </button>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-            {t('my_bookings')}
-          </h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              {t('my_bookings')}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Items you&apos;re renting from others. To manage requests on your own listings, use the earnings dashboard.
+            </p>
+          </div>
         </div>
 
         {payError && (
@@ -294,20 +234,27 @@ function BookingsPageContent() {
             <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground mb-2">No bookings yet</p>
             <p className="text-sm text-muted-foreground mb-6">
-              When you request to book an item, it will show up here.
+              When you request to rent an item, it will show up here. Hosting activity lives under Earnings.
             </p>
-            <Link
-              href="/listings"
-              className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-            >
-              Browse listings
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/listings"
+                className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+              >
+                Browse listings
+              </Link>
+              <Link
+                href="/earnings"
+                className="inline-block px-4 py-2 rounded-lg border border-border text-foreground hover:bg-accent"
+              >
+                Earnings dashboard
+              </Link>
+            </div>
           </div>
         ) : (
           <ul className="space-y-4">
             {bookings.map((booking) => {
               const listing = booking.listing
-              const ownerView = isOwner(booking)
               const pending = booking.status === 'PENDING'
               const statusLabel =
                 booking.status === 'PENDING'
@@ -327,9 +274,7 @@ function BookingsPageContent() {
               const canCancel =
                 booking.status !== 'CANCELLED' &&
                 booking.status !== 'DECLINED' &&
-                (ownerView
-                  ? (booking.status === 'PENDING' || booking.status === 'CONFIRMED')
-                  : booking.status === 'PENDING' || (booking.status === 'CONFIRMED' && booking.payment_status !== 'PAID'))
+                (booking.status === 'PENDING' || (booking.status === 'CONFIRMED' && booking.payment_status !== 'PAID'))
 
               return (
                 <li
@@ -358,9 +303,7 @@ function BookingsPageContent() {
                         {listing?.title}
                       </Link>
                       <p className="text-sm text-gray-500 mt-0.5">
-                        {ownerView
-                          ? `Request from ${booking.renter?.username || booking.renter?.email}`
-                          : `${listing?.owner?.username || 'Owner'}`}
+                        Owner: {listing?.owner?.username || 'Owner'}
                       </p>
                       <p className="text-sm text-gray-600 mt-1">
                         {new Date(booking.start_date).toLocaleDateString()} –{' '}
@@ -444,46 +387,7 @@ function BookingsPageContent() {
                           ${Number(booking.total_price).toFixed(2)}
                         </span>
                       </div>
-                      {ownerView && pending && (
-                        <div className="flex gap-2 mt-3">
-                          <button
-                            onClick={() => handleAccept(booking.id)}
-                            disabled={actionId !== null}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50"
-                          >
-                            {actionId === booking.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Check className="h-4 w-4" />
-                            )}
-                            Accept
-                          </button>
-                          <button
-                            onClick={() => handleDecline(booking.id)}
-                            disabled={actionId !== null}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50"
-                          >
-                            {actionId === booking.id ? null : <X className="h-4 w-4" />}
-                            Decline
-                          </button>
-                        </div>
-                      )}
-                      {ownerView && booking.status === 'CONFIRMED' && booking.payment_status === 'PAID' && (
-                        <div className="mt-3">
-                          <button
-                            onClick={() => handleRefund(booking.id)}
-                            disabled={actionId !== null}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
-                          >
-                            {actionId === booking.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : null}
-                            Mark as refunded
-                          </button>
-                        </div>
-                      )}
-                      {!ownerView &&
-                        booking.status === 'CONFIRMED' &&
+                      {booking.status === 'CONFIRMED' &&
                         booking.payment_status !== 'PAID' && (
                           <div className="mt-3">
                             <button
@@ -518,8 +422,8 @@ function BookingsPageContent() {
                       )}
                       <div className="mt-3 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
                         <p className="text-[11px] sm:text-xs text-gray-600 leading-snug">
-                          {getCancellationCopy(booking, ownerView)}
-                          {!ownerView && !declinedOrCancelled && (
+                          {getCancellationCopy(booking)}
+                          {!declinedOrCancelled && (
                             <>
                               {' '}
                               Need different dates? Cancel this request here and send a new one from the listing page.

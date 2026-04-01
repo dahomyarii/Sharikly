@@ -112,8 +112,18 @@ export default function ProfilePage() {
       if (!token) return;
       const response = await axiosInstance.get(`${API}/bookings/`, {
         headers: { Authorization: `Bearer ${token}` },
+        params: { role: "renter", page_size: 1 },
       });
-      setBookingsCount(Array.isArray(response.data) ? response.data.length : 0);
+      const data = response.data;
+      const n =
+        typeof data?.count === "number"
+          ? data.count
+          : Array.isArray(data)
+            ? data.length
+            : Array.isArray(data?.results)
+              ? data.results.length
+              : 0;
+      setBookingsCount(n);
     } catch {
       setBookingsCount(0);
     }
@@ -447,7 +457,7 @@ export default function ProfilePage() {
             <div className="text-xl font-black text-foreground sm:text-2xl">
               {bookingsCount ?? "—"}
             </div>
-            <div className="text-xs text-muted-foreground sm:text-sm">Bookings</div>
+            <div className="text-xs text-muted-foreground sm:text-sm">My rentals</div>
           </Card>
           <Card className="rounded-[28px] p-3 text-center sm:p-4">
             <div className="text-xl font-black text-foreground sm:text-2xl">
@@ -522,11 +532,11 @@ export default function ProfilePage() {
             <div>
               <p className="text-muted-foreground mb-1">
                 {bookingsCount !== null
-                  ? `You have ${bookingsCount} booking${bookingsCount !== 1 ? "s" : ""} (as renter or owner).`
-                  : "View and manage your booking requests."}
+                  ? `You have ${bookingsCount} rental booking${bookingsCount !== 1 ? "s" : ""} (items you're renting).`
+                  : "View and manage items you're renting from others."}
               </p>
               <p className="text-sm text-muted-foreground">
-                Accept or decline requests on your listings, or pay for confirmed bookings.
+                To manage bookings on your own listings, open the earnings dashboard.
               </p>
             </div>
             <Button
