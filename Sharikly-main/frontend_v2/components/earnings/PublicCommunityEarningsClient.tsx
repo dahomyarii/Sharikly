@@ -18,9 +18,9 @@ const copy = {
     title: "How much do lessors earn on the platform?",
     description:
       "Strong social proof helps future lessors picture themselves building a business through EKRA.",
-    total: "Total lessor earnings",
-    average: "Average lessor income",
-    topHosts: "Highest earning landlords",
+    total: "Total landlord earnings",
+    average: "Average landlord income",
+    topHosts: "Top hosts this month",
     cta: "Start earning from your equipment",
     loading: "Loading public earnings...",
     monthly: "per month",

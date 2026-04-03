@@ -15,7 +15,6 @@ import {
   Home,
   Menu,
   MessageCircle,
-  Plus,
   Search,
   Settings2,
   TrendingUp as TrendingUpIcon,
@@ -860,11 +859,15 @@ export default function Header() {
           })}
 
           <Link
-            href="/listings/new"
-            className="-mt-8 flex h-16 w-16 items-center justify-center rounded-[24px] ekra-gradient text-primary-foreground shadow-[0_16px_35px_rgba(124,58,237,0.42)]"
-            title="List item"
+            href="/favorites"
+            className={`-mt-8 flex h-16 w-16 items-center justify-center rounded-[24px] ekra-gradient text-primary-foreground shadow-[0_16px_35px_rgba(124,58,237,0.42)] transition ${
+              pathname.startsWith("/favorites") ? "ring-4 ring-primary/35 ring-offset-2 ring-offset-background" : ""
+            }`}
+            title="Saved items"
+            aria-label="Saved items"
+            aria-current={pathname.startsWith("/favorites") ? "page" : undefined}
           >
-            <Plus className="h-7 w-7" />
+            <Heart className="h-7 w-7" strokeWidth={2.25} />
           </Link>
 
           {mobileNavItems.slice(2).map((item) => {

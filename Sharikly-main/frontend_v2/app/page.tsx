@@ -8,7 +8,6 @@ import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import ListingCard from "@/components/ListingCard";
-import { CommunityEarningsSection } from "@/components/earnings/CommunityEarningsSection";
 import { useLocale } from "@/components/LocaleProvider";
 import { buildListingsQuery, toListingsArray } from "@/lib/listingsUtils";
 import {
@@ -47,7 +46,7 @@ function getCategoryIcon(categoryName: string) {
 function HostEarningsHighlightsCard({ className = "" }: { className?: string }) {
   return (
     <div className={`surface-panel rounded-[28px] p-3.5 sm:p-4 ${className}`.trim()}>
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
             Host highlights
@@ -55,48 +54,25 @@ function HostEarningsHighlightsCard({ className = "" }: { className?: string }) 
           <h2 className="mt-1.5 text-lg font-black tracking-tight text-foreground sm:text-xl">
             Earn with your items
           </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            List gear and see live totals, averages, and top hosts on the community earnings page.
+          </p>
         </div>
-        <Sparkles className="h-5 w-5 text-primary" />
+        <Sparkles className="h-5 w-5 shrink-0 text-primary" />
       </div>
-      <div className="grid gap-3">
-        <div className="rounded-[22px] bg-white/90 p-3.5 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-semibold text-foreground">Top hosts this month</span>
-            <span className="success-chip rounded-full px-3 py-1 text-xs font-semibold">Growing</span>
-          </div>
-          <div className="space-y-2 text-sm">
-            {[
-              ["Ahmed", "SAR 18,200"],
-              ["Khalid", "SAR 14,400"],
-              ["Saud", "SAR 11,900"],
-            ].map(([name, earnings]) => (
-              <div key={name} className="flex items-center justify-between">
-                <span className="font-medium text-foreground">{name}</span>
-                <span className="font-semibold text-emerald-500">{earnings}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-[22px] bg-white/90 p-3.5 shadow-sm border border-slate-100">
-          <p className="text-xs text-muted-foreground sm:text-sm font-medium">Estimated monthly earnings</p>
-          <p className="mt-1 text-[1.8rem] font-black text-emerald-600 sm:text-3xl">SAR 2,300</p>
-          <p className="text-xs text-muted-foreground sm:text-sm">average based on active hosts</p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Link href="/listings/new">
-            <Button size="lg" className="h-11 rounded-full px-5 text-sm font-semibold">
-              <Plus className="h-4 w-4" />
-              List your item
-            </Button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <Link href="/listings/new">
+          <Button size="lg" className="h-11 w-full rounded-full px-5 text-sm font-semibold sm:w-auto">
+            <Plus className="h-4 w-4" />
+            List your item
+          </Button>
+        </Link>
+        <Button variant="ghost" size="sm" className="h-auto w-fit p-0 text-primary hover:bg-transparent hover:text-primary/90" asChild>
+          <Link href="/community-earnings" className="inline-flex items-center gap-1 font-semibold underline-offset-4 hover:underline">
+            Community earnings
+            <ChevronRight className="h-4 w-4" />
           </Link>
-          <Link href="/community-earnings">
-            <Button variant="outline" size="lg" className="h-11 rounded-full px-5 text-sm font-semibold">
-              View earnings
-            </Button>
-          </Link>
-        </div>
+        </Button>
       </div>
     </div>
   );
@@ -440,10 +416,6 @@ export default function HomePage() {
       <section className="marketplace-shell mt-7 lg:hidden" aria-label="Host earning highlights">
         <HostEarningsHighlightsCard />
       </section>
-
-      <div className="mt-10">
-        <CommunityEarningsSection />
-      </div>
     </div>
   );
 }
