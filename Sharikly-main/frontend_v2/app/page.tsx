@@ -103,14 +103,6 @@ export default function HomePage() {
   const visibleCategories = categories.slice(0, 6);
   const exploreListings = listings.slice(4, 7);
   const exploreShowcase = exploreListings.length > 0 ? exploreListings : popularListings.slice(0, 3);
-  const averageDailyRate = useMemo(() => {
-    const prices = listings
-      .map((listing: any) => Number(listing?.price_per_day))
-      .filter((value) => Number.isFinite(value) && value > 0);
-    if (prices.length === 0) return 190;
-    return Math.round(prices.reduce((sum, value) => sum + value, 0) / prices.length);
-  }, [listings]);
-  const estimatedMonthlyEarnings = averageDailyRate * 12;
 
   useEffect(() => {
     try {
@@ -248,37 +240,9 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Column Area */}
-            <div className="flex min-h-[220px] flex-col justify-between sm:min-h-[300px] sm:pl-4 lg:pl-6 border-t border-white/30 pt-4 sm:pt-6 lg:border-t-0 lg:border-l lg:pt-0">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                  Start earning
-                </p>
-                <h2 className="mt-2.5 text-[1.5rem] font-black leading-tight text-foreground sm:mt-3 sm:text-[2rem]">
-                  Turn your items into monthly income
-                </h2>
-                <p className="mt-2 text-[13px] font-medium leading-5 text-slate-800 sm:mt-3 sm:text-sm sm:leading-6">
-                  List your camera gear, gaming devices, tools, and more. Meet renters nearby
-                  and get paid securely.
-                </p>
-                
-                <div className="mt-4">
-                  <div className="rounded-[20px] border border-white/50 bg-white/40 p-3 backdrop-blur sm:rounded-[24px] sm:p-4 shadow-sm">
-                    <p className="text-xs font-semibold text-slate-900 sm:text-sm">Fast payouts</p>
-                    <p className="mt-1.5 text-[12px] leading-5 text-slate-800 sm:mt-2 sm:text-sm sm:leading-6">
-                      Verified renters, secure bookings, and simple listing management.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-5">
-                <Link href="/listings/new">
-                  <Button size="lg" className="h-10 w-full lg:w-3/4 justify-center rounded-full text-sm sm:h-12 sm:text-base shadow-sm">
-                    <Plus className="h-4 w-4 mr-1" />
-                    List Your Item
-                  </Button>
-                </Link>
-              </div>
+            {/* Right column (desktop): same host highlights card as mobile sees below */}
+            <div className="hidden min-h-[260px] flex-col justify-between lg:flex lg:pl-6 lg:border-l lg:border-white/30 lg:pt-0">
+              <HostEarningsHighlightsCard className="border-white/40 bg-white/35 shadow-sm backdrop-blur-sm" />
             </div>
 
           </div>
@@ -308,8 +272,7 @@ export default function HomePage() {
       </section>
 
       <section className="marketplace-shell mt-7">
-        <div className="grid gap-3 lg:grid-cols-[1fr_0.92fr]">
-          <div className="surface-panel rounded-[28px] p-3.5 sm:p-4">
+        <div className="surface-panel rounded-[28px] p-3.5 sm:p-4">
             <div className="mb-3 flex items-end justify-between">
               <div>
                 <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
@@ -373,26 +336,6 @@ export default function HomePage() {
               })}
             </div>
           </div>
-
-          <HostEarningsHighlightsCard className="hidden lg:block" />
-        </div>
-      </section>
-
-      <section className="marketplace-shell mt-6">
-        <div className="overflow-hidden rounded-[24px] bg-[#241d48] px-5 py-4 text-white shadow-[0_18px_50px_rgba(25,17,52,0.18)]">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-lg font-black tracking-tight sm:text-xl">
-                Start Earning Today <span className="font-medium text-white/80">Turn Your Items into Income!</span>
-              </p>
-            </div>
-            <Link href="/listings/new">
-              <Button variant="soft" size="lg" className="min-h-[44px] rounded-full px-5 text-sm font-semibold">
-                + List Your Item Now
-              </Button>
-            </Link>
-          </div>
-        </div>
       </section>
 
       {recentlyViewedListings.length > 0 && !listingsLoading && (

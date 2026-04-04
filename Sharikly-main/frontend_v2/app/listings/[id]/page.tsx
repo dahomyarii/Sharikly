@@ -800,14 +800,15 @@ export default function ListingDetail() {
                   <Button
                     onClick={toggleFavorite}
                     variant="ghost"
-                    size="icon"
-                    className="min-h-[44px] min-w-[44px] rounded-full border border-border bg-background/80 touch-target hover:bg-accent/70"
+                    size="sm"
+                    className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                   >
                     <Heart
-                      className={`h-6 w-6 transition-all ${
+                      className={`h-4 w-4 sm:mr-1 transition-all ${
                         isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"
                       }`}
                     />
+                    <span className="hidden sm:inline"></span>
                   </Button>
                 </div>
               </div>
