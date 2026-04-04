@@ -17,7 +17,6 @@ import {
   MessageCircle,
   Search,
   Settings2,
-  Star,
   TrendingUp as TrendingUpIcon,
   User as UserIcon,
   X,
@@ -837,7 +836,7 @@ export default function Header() {
           paddingRight: "max(0.75rem, var(--safe-area-inset-right))",
         }}
       >
-        <div className="mx-auto mb-2 flex max-w-sm items-end justify-between rounded-[32px] border border-white/60 bg-background/95 px-3.5 py-3 shadow-[0_-12px_45px_rgba(124,58,237,0.22)] backdrop-blur-xl">
+        <div className="mx-auto mb-2 flex max-w-sm items-center justify-between rounded-[32px] border border-white/60 bg-background/95 px-3.5 py-3 shadow-[0_-12px_45px_rgba(124,58,237,0.22)] backdrop-blur-xl">
           {mobileNavItems.slice(0, 2).map((item) => {
             const Icon = item.icon;
             return (
@@ -861,14 +860,20 @@ export default function Header() {
 
           <Link
             href="/favorites"
-            className={`-mt-8 flex h-16 w-16 items-center justify-center rounded-[24px] ekra-gradient text-primary-foreground shadow-[0_16px_35px_rgba(124,58,237,0.42)] transition active:scale-[0.98] ${
-              pathname.startsWith("/favorites") ? "brightness-[1.06]" : ""
+            className={`flex min-h-[52px] min-w-[58px] flex-col items-center justify-center rounded-2xl px-2 py-1.5 transition active:scale-[0.98] ${
+              pathname.startsWith("/favorites") ? "text-primary" : "text-muted-foreground"
             }`}
             title="Saved items"
             aria-label="Saved items"
             aria-current={pathname.startsWith("/favorites") ? "page" : undefined}
           >
-            <Star className="h-7 w-7" strokeWidth={2.25} />
+            <span
+              className={`flex h-11 w-11 items-center justify-center rounded-full ekra-gradient text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)] transition hover:opacity-95 ${
+                pathname.startsWith("/favorites") ? "brightness-[1.06]" : ""
+              }`}
+            >
+              <Heart className="h-5 w-5" strokeWidth={2.25} />
+            </span>
           </Link>
 
           {mobileNavItems.slice(2).map((item) => {
