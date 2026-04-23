@@ -325,6 +325,47 @@ class VerifyEmailView(generics.GenericAPIView):
         )
 
 
+class ResendVerificationView(APIView):
+    """POST email -> resends the verification email if the user exists and isn't verified yet."""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        if not email:
+            return Response(
+                {"detail": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        user = User.objects.filter(email__iexact=email).first()
+        if not user:
+            # Return ok to avoid email enumeration
+            return Response(
+                {"detail": "If your account exists and is unverified, a verification email has been sent."},
+                status=status.HTTP_200_OK
+            )
+            
+        if user.is_email_verified:
+            return Response(
+                {"detail": "This email is already verified. You can log in."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            send_verification_email(user)
+        except Exception as e:
+            logger.error(f"Email delivery failed in resend verification: {e}")
+            return Response(
+                {"detail": "Failed to send verification email. Please try again later."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            
+        return Response(
+            {"detail": "Verification email has been resent."},
+            status=status.HTTP_200_OK
+        )
+
+
 # --- Password Reset (Forgot Password) ---
 class PasswordResetRequestView(APIView):
     """POST email -> send reset link. Always return 200 to avoid email enumeration."""

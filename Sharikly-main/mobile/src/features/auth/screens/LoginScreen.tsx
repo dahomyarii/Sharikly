@@ -188,13 +188,15 @@ export function LoginScreen(): React.ReactElement {
               </View>
             </View>
 
-            {/* Forgot password */}
-            <Pressable
-              style={styles.forgotWrap}
-              onPress={() => navigation.navigate("ForgotPassword")}
-            >
-              <Text style={styles.forgotText}>Forgot password?</Text>
-            </Pressable>
+            {/* Forgot password & Resend verification */}
+            <View style={styles.linksRow}>
+              <Pressable onPress={() => navigation.navigate("ResendVerification")}>
+                <Text style={styles.secondaryLink}>Resend verification</Text>
+              </Pressable>
+              <Pressable onPress={() => navigation.navigate("ForgotPassword")}>
+                <Text style={styles.forgotText}>Forgot password?</Text>
+              </Pressable>
+            </View>
 
             {/* Login button */}
             <PrimaryButton
@@ -312,9 +314,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.textPrimary,
   },
-  forgotWrap: {
-    alignSelf: "flex-end",
+  linksRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: spacing.lg,
+  },
+  secondaryLink: {
+    fontSize: 13,
+    color: colors.mutedForeground,
+    fontWeight: "500",
   },
   forgotText: {
     fontSize: 13,
