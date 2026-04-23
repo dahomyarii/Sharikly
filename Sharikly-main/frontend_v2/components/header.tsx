@@ -276,7 +276,7 @@ export default function Header() {
     },
     {
       href: user ? "/profile" : "/auth/login",
-      label: user ? "My items" : "Account",
+      label: user ? "Profile" : "Account",
       icon: UserIcon,
       active: pathname === "/profile" || pathname === "/auth/login",
     },
@@ -294,17 +294,9 @@ export default function Header() {
         <div className="marketplace-shell flex min-h-[80px] items-center justify-between gap-3 py-3">
           <Link
             href="/"
-            className="flex items-center gap-3 rounded-full px-1.5 py-1.5 transition hover:bg-white/40"
+            className="flex items-center rounded-full px-1.5 py-1.5 transition hover:bg-white/40"
           >
-            <img src="/logo.png" alt="EKRA" className="h-10 w-10 flex-shrink-0" />
-            <div className="min-w-0">
-              <span className="block truncate text-xl font-black tracking-tight text-foreground">
-                Ekra
-              </span>
-              <span className="hidden text-xs text-muted-foreground sm:block">
-                Rent Anything Nearby
-              </span>
-            </div>
+            <img src="/logo.png" alt="Ekra logo" className="h-12 w-12 flex-shrink-0 object-contain" />
           </Link>
 
           <nav className="hidden items-center gap-1 rounded-full border border-white/60 bg-white/70 p-1 shadow-sm lg:flex">
@@ -826,31 +818,42 @@ export default function Header() {
         />
       )}
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation — Premium Edition */}
       {!hideMobileBottomNav && !isMobileMenuOpen && (
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-bottom-nav-enter"
         style={{
           paddingBottom: "var(--safe-area-inset-bottom)",
-          paddingLeft: "max(0.75rem, var(--safe-area-inset-left))",
-          paddingRight: "max(0.75rem, var(--safe-area-inset-right))",
+          paddingLeft: "max(0.5rem, var(--safe-area-inset-left))",
+          paddingRight: "max(0.5rem, var(--safe-area-inset-right))",
         }}
       >
-        <div className="mx-auto mb-2 flex max-w-sm items-center justify-between rounded-[32px] border border-white/60 bg-background/95 px-3.5 py-3 shadow-[0_-12px_45px_rgba(124,58,237,0.22)] backdrop-blur-xl">
+        <div className="mx-auto mb-2.5 flex max-w-[380px] items-end justify-between rounded-[30px] border border-white/65 bg-background/96 px-2 py-2.5 shadow-[0_-8px_32px_rgba(124,58,237,0.18),0_2px_8px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
+          {/* First two nav items */}
           {mobileNavItems.slice(0, 2).map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.label}
                 href={item.href}
-                className={`relative flex min-h-[52px] min-w-[58px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1.5 text-[11px] font-medium transition ${
-                  item.active ? "text-primary" : "text-muted-foreground"
+                className={`mobile-nav-item tap-highlight relative flex min-h-[52px] min-w-[62px] flex-col items-center justify-center gap-[2px] rounded-[18px] px-1.5 text-[10px] font-semibold transition-colors duration-200 ${
+                  item.active
+                    ? "active text-primary bg-primary/8"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                 }`}
               >
-                <Icon className={`h-5 w-5 ${item.active ? "scale-105" : ""}`} />
-                <span>{item.label}</span>
+                <Icon
+                  className={`mobile-nav-icon h-[22px] w-[22px] ${
+                    item.active ? "text-primary" : ""
+                  }`}
+                  strokeWidth={item.active ? 2.5 : 2}
+                />
+                <span className={`tracking-wide ${item.active ? "text-primary font-bold" : ""}`}>
+                  {item.label}
+                </span>
+                <span className={`mobile-nav-dot ${item.active ? "active" : ""}`} />
                 {item.badge ? (
-                  <span className="absolute right-2 top-0 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold text-primary-foreground">
+                  <span className="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground shadow-sm">
                     {item.badge > 99 ? "99+" : item.badge}
                   </span>
                 ) : null}
@@ -858,38 +861,51 @@ export default function Header() {
             );
           })}
 
+          {/* Center FAB — List an Item */}
           <Link
-            href="/favorites"
-            className={`flex min-h-[52px] min-w-[58px] flex-col items-center justify-center rounded-2xl px-2 py-1.5 transition active:scale-[0.98] ${
-              pathname.startsWith("/favorites") ? "text-primary" : "text-muted-foreground"
-            }`}
-            title="Saved items"
-            aria-label="Saved items"
-            aria-current={pathname.startsWith("/favorites") ? "page" : undefined}
+            href="/listings/new"
+            className="mobile-fab ekra-gradient tap-highlight"
+            title="List an item"
+            aria-label="List an item"
+            aria-current={pathname === "/listings/new" ? "page" : undefined}
           >
-            <span
-              className={`flex h-11 w-11 items-center justify-center rounded-full ekra-gradient text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)] transition hover:opacity-95 ${
-                pathname.startsWith("/favorites") ? "brightness-[1.06]" : ""
-              }`}
+            <svg
+              className="h-[26px] w-[26px] text-white"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              viewBox="0 0 24 24"
             >
-              <Heart className="h-5 w-5" strokeWidth={2.25} />
-            </span>
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
           </Link>
 
+          {/* Last two nav items */}
           {mobileNavItems.slice(2).map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.label}
                 href={item.href}
-                className={`relative flex min-h-[52px] min-w-[58px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-1.5 text-[11px] font-medium transition ${
-                  item.active ? "text-primary" : "text-muted-foreground"
+                className={`mobile-nav-item tap-highlight relative flex min-h-[52px] min-w-[62px] flex-col items-center justify-center gap-[2px] rounded-[18px] px-1.5 text-[10px] font-semibold transition-colors duration-200 ${
+                  item.active
+                    ? "active text-primary bg-primary/8"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                 }`}
               >
-                <Icon className={`h-5 w-5 ${item.active ? "scale-105" : ""}`} />
-                <span>{item.label}</span>
+                <Icon
+                  className={`mobile-nav-icon h-[22px] w-[22px] ${
+                    item.active ? "text-primary" : ""
+                  }`}
+                  strokeWidth={item.active ? 2.5 : 2}
+                />
+                <span className={`tracking-wide ${item.active ? "text-primary font-bold" : ""}`}>
+                  {item.label}
+                </span>
+                <span className={`mobile-nav-dot ${item.active ? "active" : ""}`} />
                 {item.badge ? (
-                  <span className="absolute right-2 top-0 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold text-primary-foreground">
+                  <span className="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground shadow-sm">
                     {item.badge > 99 ? "99+" : item.badge}
                   </span>
                 ) : null}

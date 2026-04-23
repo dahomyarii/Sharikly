@@ -130,7 +130,7 @@ export default function ListingCard({
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className={`group block h-full w-full transition-all duration-300 ${
+      className={`listing-card-press tap-highlight group block h-full w-full transition-all duration-300 ${
         highlighted ? "ring-2 ring-primary/40 ring-offset-2 rounded-[20px]" : ""
       }`}
     >
@@ -146,29 +146,30 @@ export default function ListingCard({
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />
           
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+          {/* Richer bottom gradient for text legibility */}
+          <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/40 via-black/15 to-transparent pointer-events-none" />
           
-          {/* Bookmark / Favorite */}
+          {/* Bookmark / Favorite — frosted glass pill on mobile */}
           <button
             onClick={handleFavoriteClick}
-            className="absolute right-3 top-3 z-10 touch-target"
+            className="absolute right-2.5 top-2.5 z-10 touch-target flex h-[34px] w-[34px] items-center justify-center rounded-full bg-black/25 backdrop-blur-sm border border-white/25 transition-all active:scale-90 active:bg-black/40 sm:h-auto sm:w-auto sm:bg-transparent sm:border-0 sm:backdrop-blur-none sm:active:bg-transparent"
             aria-label={isFavorited ? t("remove_favorite") : t("add_favorite")}
           >
             <Bookmark
-              className={`h-[22px] w-[22px] sm:h-[24px] sm:w-[24px] transition-colors ${
-                isFavorited ? "fill-[#7A3E82] text-[#7A3E82]" : "text-[#7A3E82]"
+              className={`h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] transition-colors drop-shadow-sm ${
+                isFavorited ? "fill-[#7A3E82] text-[#7A3E82]" : "text-white sm:text-[#7A3E82]"
               }`}
               strokeWidth={2}
             />
           </button>
           
           {/* Bottom Left: Stars */}
-          <div className="absolute left-3 bottom-3 z-10 flex gap-[2px]">
+          <div className="absolute left-2.5 bottom-2.5 z-10 flex gap-[2px] drop-shadow-sm">
              {starsArray.map((star) => (
                <Star 
                  key={star} 
-                 className={`h-[14px] w-[14px] sm:h-[16px] sm:w-[16px] ${
-                   star <= ratingValue ? "fill-[#F93B69] text-[#F93B69]" : "fill-white/60 text-transparent"
+                 className={`h-[13px] w-[13px] sm:h-[15px] sm:w-[15px] ${
+                   star <= ratingValue ? "fill-[#F93B69] text-[#F93B69]" : "fill-white/50 text-transparent"
                  }`} 
                />
              ))}
@@ -176,23 +177,23 @@ export default function ListingCard({
 
           {/* Bottom Right: Avatar */}
           {avatarUrl ? (
-            <div className="absolute right-3 bottom-3 z-10 h-[36px] w-[36px] sm:h-[40px] sm:w-[40px] rounded-full overflow-hidden shadow-md bg-slate-200">
+            <div className="absolute right-2.5 bottom-2.5 z-10 h-[34px] w-[34px] sm:h-[38px] sm:w-[38px] rounded-full overflow-hidden shadow-md bg-slate-200 ring-2 ring-white/70">
                <img src={avatarUrl} alt="Owner" className="h-full w-full object-cover" />
             </div>
           ) : (
-             <div className="absolute right-3 bottom-3 z-10 h-[36px] w-[36px] sm:h-[40px] sm:w-[40px] rounded-full overflow-hidden shadow-md bg-white border border-slate-100 flex items-center justify-center">
+             <div className="absolute right-2.5 bottom-2.5 z-10 h-[34px] w-[34px] sm:h-[38px] sm:w-[38px] rounded-full overflow-hidden shadow-md bg-white border border-slate-100 flex items-center justify-center ring-2 ring-white/70">
                <img src="/logo.png" alt="EKRA" className="h-2/3 w-2/3 object-contain" />
              </div>
           )}
         </div>
 
         {/* Text Container */}
-        <div className="pt-2 sm:pt-3 px-1 flex flex-col flex-1">
-          <h3 className="line-clamp-1 text-[13px] sm:text-[14px] font-[400] text-[#222222]">
+        <div className="pt-2 sm:pt-2.5 px-0.5 flex flex-col flex-1">
+          <h3 className="line-clamp-1 text-[13px] sm:text-[14px] font-[400] text-[#222222] leading-snug">
             {listing.title}
           </h3>
-          <p className="mt-0.5 text-[13px] sm:text-[14px] font-[500] text-[#7A3E82]">
-            {currency} {listing.price_per_day} - 1/{t("day") || "day"}
+          <p className="mt-0.5 text-[13px] sm:text-[14px] font-[600] text-[#7A3E82] leading-snug">
+            {currency} {listing.price_per_day}<span className="font-[400] text-[11px] sm:text-[12px] text-muted-foreground"> / {t("day") || "day"}</span>
           </p>
         </div>
       </article>

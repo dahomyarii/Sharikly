@@ -53,3 +53,37 @@ jobs:
 
       - name: Test
         run: npm run test:run
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install mobile dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        env:
+          CI: "true"
+        run: npm test -- --ci
+
+      - name: Expo config validation
+        env:
+          CI: "true"
+        run: npm run build:check

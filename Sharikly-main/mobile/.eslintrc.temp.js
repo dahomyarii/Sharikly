@@ -1,0 +1,1 @@
+module.exports = { parser: "@typescript-eslint/parser", plugins: ["react"], rules: { "react/jsx-no-undef": ["error", { allowGlobals: false }] } };

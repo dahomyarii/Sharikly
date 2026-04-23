@@ -164,7 +164,21 @@ export default function HomePage() {
                 you already own.
               </p>
 
-              <div className="glass-panel mt-4 rounded-[22px] p-1.5 sm:mt-5 sm:rounded-[26px] sm:p-2 border border-white/40 shadow-sm bg-white/40">
+              {/* Mobile-only: compact single-line search pill */}
+              <div className="block md:hidden mobile-search-float">
+                <button
+                  type="button"
+                  onClick={() => router.push("/listings")}
+                  className="tap-highlight flex w-full items-center gap-3 rounded-full border border-white/50 bg-white/80 backdrop-blur-md px-4 py-3 shadow-sm transition-all active:scale-[0.98] active:bg-white/90"
+                >
+                  <Search className="h-4 w-4 shrink-0 text-primary" />
+                  <span className="flex-1 text-left text-sm text-muted-foreground">Search items or location...</span>
+                  <span className="shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">Search</span>
+                </button>
+              </div>
+
+              {/* Desktop: full search bar */}
+              <div className="hidden md:block glass-panel mt-4 rounded-[22px] p-1.5 sm:mt-5 sm:rounded-[26px] sm:p-2 border border-white/40 shadow-sm bg-white/40">
                 <div className="grid gap-2 md:grid-cols-[1.7fr_1fr_1fr_auto]">
                   <div className="relative">
                     <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -207,7 +221,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide sm:mt-4">
+              <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide scroll-smooth-momentum scroll-snap-x sm:mt-4">
                 {(visibleCategories.length > 0 ? visibleCategories : []).map((category: any) => {
                   const Icon = getCategoryIcon(category.name);
                   return (
@@ -215,7 +229,7 @@ export default function HomePage() {
                       key={category.id}
                       type="button"
                       onClick={() => handleCategoryOpen(category.id)}
-                      className="flex min-w-max items-center gap-2 rounded-full border border-white/50 bg-white/60 backdrop-blur px-3 py-1.5 text-[11px] font-medium text-foreground shadow-sm hover:bg-white/80 transition-colors sm:px-3.5 sm:py-2 sm:text-sm"
+                      className="tap-highlight scroll-snap-item flex min-w-max items-center gap-2 rounded-full border border-white/50 bg-white/60 backdrop-blur px-3 py-1.5 text-[11px] font-medium text-foreground shadow-sm hover:bg-white/80 active:scale-95 transition-all sm:px-3.5 sm:py-2 sm:text-sm"
                     >
                       <Icon className="h-4 w-4 text-primary" />
                       {category.name}
@@ -251,12 +265,15 @@ export default function HomePage() {
 
       <section className="marketplace-shell mt-7">
         <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
-            Popular Items
-          </h2>
+          <div>
+            <p className="hidden sm:block text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground mb-1">Discover</p>
+            <h2 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+              Popular Items
+            </h2>
+          </div>
           <Link
             href="/listings"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/80 px-3.5 py-1.5 text-sm font-semibold text-primary shadow-sm backdrop-blur-sm transition hover:bg-accent/70"
           >
             View all <ChevronRight className="h-4 w-4" />
           </Link>

@@ -558,7 +558,7 @@
 
 /* Main content padding above mobile bottom nav + safe area */
 .main-mobile-pb {
-  padding-bottom: calc(6rem + var(--safe-area-inset-bottom));
+  padding-bottom: calc(6.5rem + var(--safe-area-inset-bottom));
 }
 @media (min-width: 768px) {
   .main-mobile-pb {
@@ -620,6 +620,153 @@
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+/* ============================================================
+   PREMIUM MOBILE NAV — active dot indicator
+   ============================================================ */
+.mobile-nav-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--primary);
+  margin-top: 3px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+  transform: scale(0);
+  opacity: 0;
+}
+.mobile-nav-dot.active {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Nav item icon animation */
+.mobile-nav-icon {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+}
+.mobile-nav-item.active .mobile-nav-icon {
+  transform: translateY(-2px) scale(1.12);
+}
+.mobile-nav-item:active .mobile-nav-icon {
+  transform: scale(0.88);
+  transition: transform 0.1s ease;
+}
+
+/* ============================================================
+   CENTER FLOATING ACTION BUTTON
+   ============================================================ */
+.mobile-fab {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 20px;
+  margin-top: -20px;
+  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.45), 0 0 0 4px color-mix(in oklab, var(--primary) 18%, transparent);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+.mobile-fab:hover {
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 16px 38px rgba(124, 58, 237, 0.55), 0 0 0 4px color-mix(in oklab, var(--primary) 25%, transparent);
+}
+.mobile-fab:active {
+  transform: scale(0.92);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35);
+  transition: transform 0.1s ease;
+}
+
+/* ============================================================
+   NATIVE-FEEL TOUCH FEEDBACK
+   ============================================================ */
+.tap-highlight {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.tap-scale:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+.tap-scale-sm:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Card press effect on mobile */
+@media (max-width: 768px) {
+  .listing-card-press:active {
+    transform: scale(0.975);
+    transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .listing-card-press {
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+
+/* ============================================================
+   SCROLL PHYSICS - MOMENTUM & SNAP
+   ============================================================ */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: scroll;
+}
+.scroll-snap-item {
+  scroll-snap-align: start;
+}
+.scroll-smooth-momentum {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+}
+
+/* ============================================================
+   SEARCH BAR FLOAT ANIMATION
+   ============================================================ */
+.mobile-search-float {
+  animation: searchFloat 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes searchFloat {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   SHIMMER SKELETON LOADING
+   ============================================================ */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--muted) 100%, transparent) 0%,
+    color-mix(in oklab, var(--muted) 60%, white 40%) 50%,
+    color-mix(in oklab, var(--muted) 100%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* ============================================================
+   BOTTOM SHEET DRAG HANDLE
+   ============================================================ */
+.drag-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--border) 100%, transparent);
+  margin: 0.5rem auto 0;
+  flex-shrink: 0;
 }
 
 /* Mobile listing CTA (above bottom nav) */

@@ -1,7 +1,6 @@
+# accounts/urls.py
+# NOTE: All auth API routes are registered in marketplace/urls.py
+# (verify-email, register, token, etc. are all under api/ prefix there)
 from django.urls import path
-from .views import verify_email
 
-urlpatterns = [
-    path("verify-email/", verify_email, name="verify-email"),
-]
-
+urlpatterns = []
