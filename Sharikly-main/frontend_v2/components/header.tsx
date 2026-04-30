@@ -15,6 +15,7 @@ import {
   Home,
   Menu,
   MessageCircle,
+  Plus,
   Search,
   Settings2,
   TrendingUp as TrendingUpIcon,
@@ -861,24 +862,27 @@ export default function Header() {
             );
           })}
 
-          {/* Center FAB — List an Item */}
+          {/* Center Item — List an Item */}
           <Link
             href="/listings/new"
-            className="mobile-fab ekra-gradient tap-highlight"
+            className={`mobile-nav-item tap-highlight relative flex min-h-[52px] min-w-[62px] flex-col items-center justify-center gap-[2px] rounded-[18px] px-1.5 text-[10px] font-semibold transition-colors duration-200 ${
+              pathname === "/listings/new"
+                ? "active text-primary bg-primary/8"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+            }`}
             title="List an item"
             aria-label="List an item"
-            aria-current={pathname === "/listings/new" ? "page" : undefined}
           >
-            <svg
-              className="h-[26px] w-[26px] text-white"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              viewBox="0 0 24 24"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
+            <Plus
+              className={`mobile-nav-icon h-[22px] w-[22px] ${
+                pathname === "/listings/new" ? "text-primary" : ""
+              }`}
+              strokeWidth={pathname === "/listings/new" ? 2.5 : 2}
+            />
+            <span className={`tracking-wide ${pathname === "/listings/new" ? "text-primary font-bold" : ""}`}>
+              List
+            </span>
+            <span className={`mobile-nav-dot ${pathname === "/listings/new" ? "active" : ""}`} />
           </Link>
 
           {/* Last two nav items */}
