@@ -11,7 +11,8 @@ urlpatterns = [
     # Public website pages
     path("privacy-policy/", privacy_policy, name="privacy_policy"),
     # Email verification — served directly by Django (no Next.js needed)
-    path("verify-email/", verify_email_page, name="verify_email_page"),
+    path("verify-email", verify_email_page, name="verify_email_page"),
+    path("verify-email/", verify_email_page, name="verify_email_page_slash"),
     # API endpoints
     path("api/", include("accounts.urls")),
     path("api/", include("marketplace.urls")),

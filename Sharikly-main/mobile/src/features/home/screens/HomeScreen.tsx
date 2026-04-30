@@ -6,6 +6,7 @@ import { SkeletonGrid } from "@/components/ui/SkeletonCard";
 import { colors, radii, shadows, spacing, layout } from "@/core/theme/tokens";
 import type { HomeStackParamList, MainTabParamList } from "@/navigation/types";
 import { getCategories, getListings } from "@/services/api/endpoints/listings";
+import { getTrendingSearches } from "@/services/api/endpoints/earnings";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import type { CompositeNavigationProp } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
@@ -103,6 +104,12 @@ export function HomeScreen(): React.ReactElement {
 
   const popularListings = listings.slice(0, 6);
   const exploreListings = listings.slice(6, 9);
+
+  const trendingQ = useQuery({
+    queryKey: ["earnings", "trending"],
+    queryFn: () => getTrendingSearches(),
+  });
+  const trending: any[] = Array.isArray(trendingQ.data) ? trendingQ.data : [];
 
   const handleSearch = () => {
     navigation.navigate("ExploreTab", {
@@ -282,28 +289,22 @@ export function HomeScreen(): React.ReactElement {
         )}
 
         {/* ─── PEOPLE ARE LOOKING FOR ─── */}
+        {trending.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>People are looking for</Text>
           <View style={styles.requestsCard}>
             <View style={styles.requestsList}>
-              <View style={styles.requestItem}>
-                <Camera size={16} color={colors.primary} />
-                <Text style={styles.requestText}>
-                  <Text style={styles.requestTextBold}>Camera Needed</Text> · 25 requests today
-                </Text>
-              </View>
-              <View style={styles.requestItem}>
-                <Tent size={16} color={colors.primary} />
-                <Text style={styles.requestText}>
-                  <Text style={styles.requestTextBold}>Tent Needed</Text> · 18 requests
-                </Text>
-              </View>
-              <View style={styles.requestItem}>
-                <Sparkles size={16} color={colors.primary} />
-                <Text style={styles.requestText}>
-                  <Text style={styles.requestTextBold}>Drone Needed</Text> · 12 requests
-                </Text>
-              </View>
+              {trending.slice(0, 3).map((item: any, i: number) => {
+                  const Icon = getCategoryIcon(item.name || "");
+                  return (
+                    <View key={item.id ?? i} style={styles.requestItem}>
+                      <Icon size={16} color={colors.primary} />
+                      <Text style={styles.requestText}>
+                        <Text style={styles.requestTextBold}>{item.name}</Text> · {item.booking_count ?? 0} requests
+                      </Text>
+                    </View>
+                  );
+                })}
             </View>
             <View style={styles.requestBtnWrap}>
               <PrimaryButton
@@ -314,6 +315,7 @@ export function HomeScreen(): React.ReactElement {
             </View>
           </View>
         </View>
+        )}
 
         {/* ─── BOTTOM PROMO HERO ─── */}
         <View style={styles.section}>

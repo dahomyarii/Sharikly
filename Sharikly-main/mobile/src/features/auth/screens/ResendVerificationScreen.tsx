@@ -31,11 +31,9 @@ export function ResendVerificationScreen(): React.ReactElement {
   const mut = useMutation({
     mutationFn: () => postResendVerification(email),
     onSuccess: () => {
-      Alert.alert(
-        "Verification Email Sent",
-        "Please check your inbox and click the verification link.",
-        [{ text: "OK", onPress: () => navigation.navigate("Login") }]
-      );
+      navigation.navigate("Login", {
+        message: "Verification email sent. Please check your inbox and click the link.",
+      });
     },
     onError: (e: any) =>
       setError(e?.response?.data?.detail ?? e?.message ?? "Failed to resend verification."),

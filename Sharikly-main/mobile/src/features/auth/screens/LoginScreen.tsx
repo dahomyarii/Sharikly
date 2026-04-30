@@ -3,10 +3,10 @@ import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
 import { bootstrapApiClient } from "@/services/api/client";
 import type { AuthStackParamList } from "@/navigation/types";
 import { useAuthStore } from "@/store/authStore";
-import { useNavigation } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
-import * as SecureStore from "expo-secure-store";
+import { persistTokens } from "@/services/storage/tokenStore";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import React, { useState } from "react";
 import {
@@ -27,6 +27,7 @@ const API = process.env.EXPO_PUBLIC_API_BASE ?? "";
 
 export function LoginScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
+  const route = useRoute<RouteProp<AuthStackParamList, "Login">>();
   const setHasSession = useAuthStore((s) => s.setHasSession);
 
   const [email, setEmail] = useState("");
@@ -34,6 +35,7 @@ export function LoginScreen(): React.ReactElement {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const successMessage = route.params?.message;
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -43,11 +45,14 @@ export function LoginScreen(): React.ReactElement {
     setLoading(true);
     setError("");
     try {
+      const trimmedEmail = email.trim().toLowerCase();
+      const trimmedPassword = password.trim();
+
       const url = `${API}/auth/token/`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword }),
       });
 
       let data: any = {};
@@ -64,11 +69,12 @@ export function LoginScreen(): React.ReactElement {
         return;
       }
 
-      // Store tokens securely (same pattern as web localStorage)
+      // Store tokens (platform-aware: SecureStore on mobile, localStorage on web)
       const accessToken = data.access ?? data.access_token;
       const refreshToken = data.refresh ?? data.refresh_token;
-      if (accessToken) await SecureStore.setItemAsync("access_token", accessToken);
-      if (refreshToken) await SecureStore.setItemAsync("refresh_token", refreshToken);
+      if (accessToken) {
+        await persistTokens(accessToken, refreshToken);
+      }
 
       // Re-bootstrap the API client so Authorization header is set
       await bootstrapApiClient();
@@ -90,7 +96,7 @@ export function LoginScreen(): React.ReactElement {
           `Cannot reach server.\nAPI: ${API}\n\nCheck your network or start the backend.`
         );
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(`Something went wrong: ${err?.message || "Unknown error"}`);
       }
     } finally {
       setLoading(false);
@@ -133,6 +139,12 @@ export function LoginScreen(): React.ReactElement {
 
           {/* Form Card */}
           <View style={styles.card}>
+            {successMessage ? (
+              <View style={styles.successBox}>
+                <Text style={styles.successText}>{successMessage}</Text>
+              </View>
+            ) : null}
+
             <Text style={styles.title}>Welcome back</Text>
             <Text style={styles.subtitle}>Sign in to your account</Text>
 
@@ -353,5 +365,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.mutedForeground,
     textDecorationLine: "underline",
+  },
+  successBox: {
+    backgroundColor: "rgba(34, 197, 94, 0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(34, 197, 94, 0.3)",
+    borderRadius: radii.md,
+    padding: 12,
+    marginBottom: spacing.md,
+  },
+  successText: { 
+    color: "#16a34a", 
+    fontSize: 13,
+    fontWeight: "500",
   },
 });

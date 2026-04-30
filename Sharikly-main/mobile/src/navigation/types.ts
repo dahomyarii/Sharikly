@@ -65,13 +65,13 @@ export type ProfileStackParamList = {
 export type MainTabParamList = {
   HomeTab: NavigatorScreenParams<HomeStackParamList> | undefined;
   ExploreTab: NavigatorScreenParams<ListingsStackParamList> | undefined;
+  InboxTab: NavigatorScreenParams<InboxStackParamList> | undefined;
   BookingsTab: NavigatorScreenParams<BookingsStackParamList> | undefined;
-  HostTab: NavigatorScreenParams<HostStackParamList> | undefined;
   ProfileTab: NavigatorScreenParams<ProfileStackParamList> | undefined;
 };
 
 export type AuthStackParamList = {
-  Login: undefined;
+  Login: { message?: string } | undefined;
   Register: undefined;
   ForgotPassword: undefined;
   ResetPassword: { token?: string } | undefined;

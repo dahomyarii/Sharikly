@@ -2,11 +2,13 @@ import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, shadows, spacing, layout } from "@/core/theme/tokens";
 import type { ProfileStackParamList } from "@/navigation/types";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { getEarningsDashboard } from "@/services/api/endpoints/earnings";
 import { clearStoredTokens } from "@/services/storage/tokenStore";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { hapticImpact } from "@/utils/haptics";
 import {
   Bell,
   ChevronRight,
@@ -18,15 +20,19 @@ import {
   Star,
   User,
   Package,
+  Camera,
+  AlertCircle,
 } from "lucide-react-native";
-import React from "react";
+import React, { useState, useCallback } from "react";
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -36,6 +42,7 @@ export function ProfileScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
   const { hasSession, setHasSession } = useAuthStore();
   const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
 
   const userQ = useQuery({
     queryKey: ["auth", "me"],
@@ -46,7 +53,18 @@ export function ProfileScreen(): React.ReactElement {
   const user = userQ.data;
   const avatarUrl = user?.avatar ? (user.avatar.startsWith("http") ? user.avatar : `${process.env.EXPO_PUBLIC_API_BASE?.replace("/api", "") || ""}${user.avatar}`) : null;
 
+  const earningsQ = useQuery({
+    queryKey: ["earnings", "dashboard"],
+    queryFn: () => getEarningsDashboard(),
+    enabled: hasSession,
+  });
+  const dash: any = earningsQ.data;
+  const rentalsCount = dash?.summary?.rentals_count ?? 0;
+  const rentalsTarget = 15;
+  const rentalsProgress = Math.min(100, Math.max(0, (rentalsCount / rentalsTarget) * 100));
+
   const handleLogout = async () => {
+    hapticImpact();
     try {
       await clearStoredTokens();
     } catch {
@@ -55,6 +73,15 @@ export function ProfileScreen(): React.ReactElement {
     setHasSession(false);
     queryClient.clear();
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    hapticImpact();
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] }),
+      queryClient.invalidateQueries({ queryKey: ["earnings", "dashboard"] })
+    ]).finally(() => setRefreshing(false));
+  }, [queryClient]);
 
   if (!hasSession) {
     return (
@@ -78,12 +105,55 @@ export function ProfileScreen(): React.ReactElement {
     );
   }
 
+  if (userQ.isError) {
+    return (
+      <SafeAreaView style={styles.safe} edges={["top"]}>
+        <View style={styles.guestContainer}>
+          <View style={[styles.guestIconWrap, { backgroundColor: "rgba(239, 68, 68, 0.1)" }]}>
+            <AlertCircle size={64} color={colors.destructive} />
+          </View>
+          <Text style={styles.guestTitle}>Oops! Something went wrong.</Text>
+          <Text style={styles.guestSubtitle}>
+            We couldn't load your profile. Please check your connection and try again.
+          </Text>
+          <PrimaryButton
+            label="Retry"
+            onPress={() => {
+              hapticImpact();
+              queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+            }}
+            size="lg"
+            variant="outline"
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (userQ.isPending || earningsQ.isPending) {
+    return (
+      <SafeAreaView style={styles.safe} edges={["top"]}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            tintColor={colors.primary} 
+            colors={[colors.primary]} 
+          />
+        }
       >
         {/* Profile Header */}
         <View style={styles.header}>
@@ -98,12 +168,19 @@ export function ProfileScreen(): React.ReactElement {
               </View>
             )}
             <Pressable
-              style={styles.editAvatarBtn}
-              onPress={() => navigation.navigate("Settings")}
+              style={({ pressed }) => [
+                styles.editAvatarBtn,
+                pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] }
+              ]}
+              onPress={() => {
+                hapticImpact();
+                navigation.navigate("Settings");
+              }}
               accessibilityRole="button"
-              accessibilityLabel="Edit profile settings"
+              accessibilityLabel="Edit profile picture"
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
             >
-              <Settings size={16} color="#FFF" />
+              <Camera size={14} color="#FFF" />
             </Pressable>
           </View>
           <View style={styles.userInfo}>
@@ -115,7 +192,7 @@ export function ProfileScreen(): React.ReactElement {
           </View>
         </View>
 
-        {/* Super Host Progress (Mock) */}
+        {/* Super Host Progress */}
         <View style={styles.hostCard}>
           <View style={styles.hostCardHeader}>
             <View>
@@ -126,9 +203,9 @@ export function ProfileScreen(): React.ReactElement {
           </View>
           <View style={styles.progressWrap}>
             <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: "65%" }]} />
+              <View style={[styles.progressFill, { width: `${rentalsProgress}%` }]} />
             </View>
-            <Text style={styles.progressText}>9 / 15 rentals completed</Text>
+            <Text style={styles.progressText}>{rentalsCount} / {rentalsTarget} rentals completed</Text>
           </View>
         </View>
 
@@ -205,7 +282,12 @@ function MenuItem({
         !isLast && styles.menuItemBorder,
         pressed && styles.menuItemPressed,
       ]}
-      onPress={onPress}
+      onPress={() => {
+        hapticImpact();
+        onPress();
+      }}
+      accessibilityRole="button"
+      accessibilityLabel={`Navigate to ${label}`}
     >
       <View style={styles.menuItemIcon}>{icon}</View>
       <Text style={styles.menuItemLabel}>{label}</Text>

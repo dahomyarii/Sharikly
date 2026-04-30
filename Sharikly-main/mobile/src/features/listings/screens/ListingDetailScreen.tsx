@@ -1,7 +1,7 @@
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, shadows, spacing, typography, layout } from "@/core/theme/tokens";
 import type { ListingsStackParamList } from "@/navigation/types";
-import { getListing, getListings } from "@/services/api/endpoints/listings";
+import { getListing, getSimilarListings } from "@/services/api/endpoints/listings";
 import type { RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -77,11 +77,6 @@ function buildMapboxStaticUrl(args: {
 }
 
 
-const FALLBACK_SIMILAR = [
-  { id: -1, title: "Lighting Kit", image: require("../../../../assets/images/featured_canon.png") },
-  { id: -2, title: "DJI Ronin Gimbal", image: require("../../../../assets/images/hero_canyon.png") },
-  { id: -3, title: "DJI Mini 4 Combo", image: require("../../../../assets/images/featured_canon.png") },
-];
 
 export function ListingDetailScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
@@ -152,7 +147,7 @@ export function ListingDetailScreen(): React.ReactElement {
 
   const similarQ = useQuery({
     queryKey: ["listings", "similar", id],
-    queryFn: () => getListings({ page_size: 6 }),
+    queryFn: () => getSimilarListings(id),
     enabled: !!q.data,
   });
 
@@ -566,44 +561,47 @@ export function ListingDetailScreen(): React.ReactElement {
             );
           })()}
 
-          {/* ── SIMILAR LISTINGS ── */}
-          <View style={styles.similarHeader}>
-            <Text style={styles.sectionLabel}>Similar Listings</Text>
-            <Pressable onPress={() => (navigation as any).navigate("ListingsExplore")}>
-              <Text style={styles.viewAllLink}>View All</Text>
-            </Pressable>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.similarScroll}
-          >
-            {(similarListings.length > 0 ? similarListings : FALLBACK_SIMILAR).map((item: any, i: number) => {
-              const thumbUrl = item.images?.[0]?.image
-                ? getFullUrl(item.images[0].image)
-                : null;
-              return (
-                <Pressable
-                  key={item.id ?? i}
-                  style={styles.similarCard}
-                  onPress={() => {
-                    if (typeof item.id === "number" && item.id > 0) {
-                      navigation.push("ListingDetail", { id: item.id });
-                    }
-                  }}
-                >
-                  <Image
-                    source={thumbUrl ? { uri: thumbUrl } : item.image ?? require("../../../../assets/images/featured_canon.png")}
-                    style={styles.similarImg}
-                    resizeMode="cover"
-                  />
-                  <Text style={styles.similarName} numberOfLines={1}>
-                    {item.title ?? item.name}
-                  </Text>
+          {similarListings.length > 0 && (
+            <>
+              <View style={styles.similarHeader}>
+                <Text style={styles.sectionLabel}>Similar Listings</Text>
+                <Pressable onPress={() => (navigation as any).navigate("ListingsExplore")}>
+                  <Text style={styles.viewAllLink}>View All</Text>
                 </Pressable>
-              );
-            })}
-          </ScrollView>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.similarScroll}
+              >
+                {similarListings.map((item: any, i: number) => {
+                  const thumbUrl = item.images?.[0]?.image
+                    ? getFullUrl(item.images[0].image)
+                    : null;
+                  return (
+                    <Pressable
+                      key={item.id ?? i}
+                      style={styles.similarCard}
+                      onPress={() => {
+                        if (typeof item.id === "number" && item.id > 0) {
+                          navigation.push("ListingDetail", { id: item.id });
+                        }
+                      }}
+                    >
+                      <Image
+                        source={thumbUrl ? { uri: thumbUrl } : require("../../../../assets/images/featured_canon.png")}
+                        style={styles.similarImg}
+                        resizeMode="cover"
+                      />
+                      <Text style={styles.similarName} numberOfLines={1}>
+                        {item.title ?? item.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </>
+          )}
 
           <View style={{ height: layout.tabBarHeight + 40 }} />
         </View>

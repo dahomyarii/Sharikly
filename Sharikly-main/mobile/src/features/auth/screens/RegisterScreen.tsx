@@ -6,7 +6,7 @@ import type { AuthStackParamList } from "@/navigation/types";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
-import * as SecureStore from "expo-secure-store";
+import { persistTokens } from "@/services/storage/tokenStore";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
@@ -51,14 +51,18 @@ export function RegisterScreen(): React.ReactElement {
     setLoading(true);
     setError("");
     try {
+      const trimmedEmail = email.trim().toLowerCase();
+      const trimmedPassword = password.trim();
+      const trimmedUsername = username.trim();
+
       const url = `${API}/auth/register/`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
-          username,
-          password,
+          email: trimmedEmail,
+          username: trimmedUsername,
+          password: trimmedPassword,
           phone_number: phone,
         }),
       });
@@ -86,18 +90,15 @@ export function RegisterScreen(): React.ReactElement {
       const accessToken = data.access ?? data.access_token;
       const refreshToken = data.refresh ?? data.refresh_token;
       if (accessToken) {
-        await SecureStore.setItemAsync("access_token", accessToken);
-        if (refreshToken) await SecureStore.setItemAsync("refresh_token", refreshToken);
+        await persistTokens(accessToken, refreshToken);
         await bootstrapApiClient();
         setHasSession(true);
         navigation.getParent()?.goBack();
       } else {
         // Email verification required
-        Alert.alert(
-          "Check your email",
-          "We sent a verification link to " + email + ". Please verify your account to continue.",
-          [{ text: "OK", onPress: () => navigation.navigate("Login") }]
-        );
+        navigation.navigate("Login", {
+          message: "Account created successfully. Please check your email to verify your account.",
+        });
       }
     } catch (err: any) {
       const isNetworkError =
@@ -109,7 +110,7 @@ export function RegisterScreen(): React.ReactElement {
           `Cannot reach server.\nAPI: ${API}\n\nCheck your network or start the backend.`
         );
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(`Something went wrong: ${err?.message || "Unknown error"}`);
       }
     } finally {
       setLoading(false);

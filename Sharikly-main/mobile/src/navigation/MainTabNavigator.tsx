@@ -1,6 +1,7 @@
 import { BookingsStackNavigator } from "@/navigation/BookingsStackNavigator";
 import { HomeStackNavigator } from "@/navigation/HomeStackNavigator";
 import { HostStackNavigator } from "@/navigation/HostStackNavigator";
+import { InboxStackNavigator } from "@/navigation/InboxStackNavigator";
 import { ListingsStackNavigator } from "@/navigation/ListingsStackNavigator";
 import { ProfileStackNavigator } from "@/navigation/ProfileStackNavigator";
 import type { MainTabParamList } from "@/navigation/types";
@@ -18,6 +19,7 @@ import {
   Package,
   Rocket,
   User as UserIcon,
+  MessageCircle,
 } from "lucide-react-native";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -112,11 +114,11 @@ export function MainTabNavigator(): React.ReactElement {
         } as any}
       />
       <Tab.Screen
-        name="HostTab"
-        component={HostStackNavigator}
+        name="InboxTab"
+        component={InboxStackNavigator}
         options={{
-          title: "My Items",
-          tabBarIcon: Package,
+          title: "Inbox",
+          tabBarIcon: MessageCircle,
         } as any}
       />
       <Tab.Screen
