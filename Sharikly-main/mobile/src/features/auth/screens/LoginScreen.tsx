@@ -20,6 +20,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeIn, FadeInDown, SlideInDown } from "react-native-reanimated";
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, "Login">;
 
@@ -138,7 +139,7 @@ export function LoginScreen(): React.ReactElement {
           </LinearGradient>
 
           {/* Form Card */}
-          <View style={styles.card}>
+          <Animated.View entering={SlideInDown.springify().damping(18)} style={styles.card}>
             {successMessage ? (
               <View style={styles.successBox}>
                 <Text style={styles.successText}>{successMessage}</Text>
@@ -155,7 +156,7 @@ export function LoginScreen(): React.ReactElement {
             ) : null}
 
             {/* Email */}
-            <View style={styles.fieldWrap}>
+            <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.fieldWrap}>
               <Text style={styles.label}>Email</Text>
               <View style={styles.inputWrap}>
                 <Mail size={16} color={colors.mutedForeground} />
@@ -171,10 +172,10 @@ export function LoginScreen(): React.ReactElement {
                   autoCorrect={false}
                 />
               </View>
-            </View>
+            </Animated.View>
 
             {/* Password */}
-            <View style={styles.fieldWrap}>
+            <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.fieldWrap}>
               <Text style={styles.label}>Password</Text>
               <View style={styles.inputWrap}>
                 <Lock size={16} color={colors.mutedForeground} />
@@ -198,19 +199,20 @@ export function LoginScreen(): React.ReactElement {
                   )}
                 </Pressable>
               </View>
-            </View>
+            </Animated.View>
 
             {/* Forgot password & Resend verification */}
-            <View style={styles.linksRow}>
+            <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.linksRow}>
               <Pressable onPress={() => navigation.navigate("ResendVerification")}>
                 <Text style={styles.secondaryLink}>Resend verification</Text>
               </Pressable>
               <Pressable onPress={() => navigation.navigate("ForgotPassword")}>
                 <Text style={styles.forgotText}>Forgot password?</Text>
               </Pressable>
-            </View>
+            </Animated.View>
 
             {/* Login button */}
+            <Animated.View entering={FadeInDown.delay(400).springify()}>
             <PrimaryButton
               label="Log In"
               onPress={handleLogin}
@@ -220,21 +222,26 @@ export function LoginScreen(): React.ReactElement {
             />
 
             {/* Sign up link */}
-            <View style={styles.switchRow}>
+            </Animated.View>
+
+            {/* Sign up link */}
+            <Animated.View entering={FadeInDown.delay(500).springify()} style={styles.switchRow}>
               <Text style={styles.switchText}>Don&apos;t have an account? </Text>
               <Pressable onPress={() => navigation.navigate("Register")}>
                 <Text style={styles.switchLink}>Sign up free</Text>
               </Pressable>
-            </View>
+            </Animated.View>
 
             {/* Browse without account */}
+            <Animated.View entering={FadeInDown.delay(600).springify()}>
             <Pressable
               style={styles.guestBtn}
               onPress={() => navigation.getParent()?.goBack()}
             >
               <Text style={styles.guestText}>Continue browsing without signing in</Text>
             </Pressable>
-          </View>
+            </Animated.View>
+          </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -6,7 +6,7 @@ import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import type { CompositeNavigationProp } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
   ChevronRight,
@@ -20,8 +20,21 @@ import {
   Trash2,
   User,
   UserX,
+  Smartphone,
+  MessageSquare,
+  Wallet,
+  Tag,
+  CreditCard,
+  Landmark,
+  Calendar,
+  Activity,
+  Zap,
+  Clock,
+  Headphones,
+  Flag,
+  ArrowLeft
 } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import {
   Alert,
   Pressable,
@@ -29,6 +42,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -41,28 +55,51 @@ function SettingsRow({
   icon: Icon,
   label,
   sublabel,
+  value,
   onPress,
   danger = false,
+  hasSwitch = false,
+  switchValue = false,
+  onSwitchChange,
 }: {
   icon: React.ElementType;
   label: string;
   sublabel?: string;
-  onPress: () => void;
+  value?: string;
+  onPress?: () => void;
   danger?: boolean;
+  hasSwitch?: boolean;
+  switchValue?: boolean;
+  onSwitchChange?: (v: boolean) => void;
 }) {
   return (
     <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      style={({ pressed }) => [styles.row, pressed && !hasSwitch && styles.rowPressed]}
       onPress={onPress}
+      disabled={hasSwitch}
     >
-      <View style={[styles.rowIcon, danger && styles.rowIconDanger]}>
-        <Icon size={18} color={danger ? colors.destructive : colors.primary} />
+      <View style={styles.rowIconWrap}>
+        <Icon size={20} color={danger ? colors.destructive : colors.primary} strokeWidth={2} />
       </View>
       <View style={styles.rowContent}>
         <Text style={[styles.rowLabel, danger && styles.rowLabelDanger]}>{label}</Text>
         {sublabel && <Text style={styles.rowSublabel}>{sublabel}</Text>}
       </View>
-      <ChevronRight size={16} color={danger ? colors.destructive : colors.mutedForeground} />
+      {value ? (
+        <View style={styles.rowValueWrap}>
+          <Text style={styles.rowValue}>{value}</Text>
+          <ChevronRight size={16} color={colors.mutedForeground} />
+        </View>
+      ) : hasSwitch ? (
+        <Switch
+          value={switchValue}
+          onValueChange={onSwitchChange}
+          trackColor={{ false: "#E5E7EB", true: colors.primary }}
+          thumbColor="#FFF"
+        />
+      ) : (
+        <ChevronRight size={16} color={danger ? colors.destructive : colors.mutedForeground} />
+      )}
     </Pressable>
   );
 }
@@ -70,18 +107,44 @@ function SettingsRow({
 export function SettingsScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
   const setHasSession = useAuthStore((s) => s.setHasSession);
+  
+  const queryClient = useQueryClient();
 
-  const meQ = useQuery({
+  const userQ = useQuery({
     queryKey: ["auth", "me"],
-    queryFn: async () => {
-      const { data } = await axiosInstance.get(buildApiUrl("/auth/me/"));
-      return data;
-    },
-    retry: false,
+    queryFn: () => axiosInstance.get(buildApiUrl("/auth/me/")).then((res) => res.data),
   });
 
-  const user: any = meQ.data;
+  const paymentMethodsQ = useQuery({
+    queryKey: ["payment_methods"],
+    queryFn: () => axiosInstance.get(buildApiUrl("/users/payment-methods/")).then((res) => res.data),
+  });
 
+  const hostPrefsQ = useQuery({
+    queryKey: ["host_preferences"],
+    queryFn: () => axiosInstance.get(buildApiUrl("/users/host-preferences/")).then((res) => res.data),
+  });
+  
+  const userData = userQ.data;
+  const paymentMethods = Array.isArray(paymentMethodsQ.data) ? paymentMethodsQ.data : (paymentMethodsQ.data?.results || []);
+  const defaultPayment = paymentMethods.find((m: any) => m.is_default) || paymentMethods[0];
+  const hostPrefs = hostPrefsQ.data || {};
+  
+  const prefsQ = useQuery({
+    queryKey: ["notifications", "preferences"],
+    queryFn: () => axiosInstance.get(buildApiUrl("/notifications/preferences/")).then((res) => res.data),
+  });
+
+  const prefsMutation = useMutation({
+    mutationFn: (data: any) => axiosInstance.patch(buildApiUrl("/notifications/preferences/"), data).then((res) => res.data),
+    onSuccess: (data) => queryClient.setQueryData(["notifications", "preferences"], data),
+  });
+
+  const prefs = prefsQ.data || {};
+
+  const handleToggle = (key: string, value: boolean) => {
+    prefsMutation.mutate({ [key]: value });
+  };
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
@@ -122,124 +185,184 @@ export function SettingsScreen(): React.ReactElement {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.header}>
+        <Pressable onPress={() => navigation.goBack()} style={styles.backBtn} hitSlop={8}>
+          <ArrowLeft size={24} color={colors.primary} />
+        </Pressable>
         <Text style={styles.screenTitle}>Settings</Text>
+        <View style={{ width: 24 }} /> {/* Spacer */}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Account section */}
-        {user && (
-          <View style={styles.profileCard}>
-            <View style={styles.profileAvatar}>
-              <Text style={styles.profileAvatarLetter}>
-                {(user.username ?? user.first_name ?? "U").charAt(0).toUpperCase()}
-              </Text>
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>
-                {user.first_name && user.last_name
-                  ? `${user.first_name} ${user.last_name}`
-                  : user.username ?? "User"}
-              </Text>
-              <Text style={styles.profileEmail}>{user.email}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Account */}
+        {/* ACCOUNT */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+          <Text style={styles.sectionTitle}>ACCOUNT</Text>
           <View style={styles.sectionCard}>
             <SettingsRow
               icon={User}
               label="Profile"
-              sublabel="Edit your name, bio, and avatar"
-              onPress={() => navigation.navigate("Profile")}
+              onPress={() => navigation.navigate("EditProfile")}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={Smartphone}
+              label="Phone & Email"
+              onPress={() => navigation.navigate("PhoneAndEmail")}
             />
             <View style={styles.divider} />
             <SettingsRow
               icon={Lock}
-              label="Change Password"
-              sublabel="Update your account password"
-              onPress={() => {
-                // Navigate to change password using auth endpoints
-                Alert.alert("Change Password", "Feature coming soon.");
-              }}
-            />
-            <View style={styles.divider} />
-            <SettingsRow
-              icon={Bell}
-              label="Notification Preferences"
-              sublabel="Manage what you receive"
-              onPress={() => Alert.alert("Notification preferences coming soon.")}
-            />
-          </View>
-        </View>
-
-        {/* Privacy & Security */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Privacy & Security</Text>
-          <View style={styles.sectionCard}>
-            <SettingsRow
-              icon={Shield}
-              label="Privacy"
-              sublabel="Manage your data and visibility"
-              onPress={() => navigation.navigate("Privacy")}
-            />
-            <View style={styles.divider} />
-            <SettingsRow
-              icon={UserX}
-              label="Blocked Users"
-              sublabel="Manage blocked accounts"
-              onPress={() => Alert.alert("Blocked users list coming soon.")}
-            />
-          </View>
-        </View>
-
-        {/* Help & About */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Help & About</Text>
-          <View style={styles.sectionCard}>
-            <SettingsRow
-              icon={HelpCircle}
-              label="How Ekra Works"
-              onPress={() => navigation.navigate("HowItWorks")}
-            />
-            <View style={styles.divider} />
-            <SettingsRow
-              icon={Info}
-              label="About Ekra"
-              onPress={() => navigation.navigate("About")}
+              label="Password"
+              onPress={() => navigation.navigate("ChangePassword")}
             />
             <View style={styles.divider} />
             <SettingsRow
               icon={Globe}
-              label="Terms of Service"
-              onPress={() => navigation.navigate("Terms")}
-            />
-            <View style={styles.divider} />
-            <SettingsRow
-              icon={Heart}
-              label="Favorites"
-              onPress={() => navigation.navigate("Favorites")}
+              label="Language"
+              value={userData?.language === 'ar' ? 'Arabic' : 'English'}
+              onPress={() => navigation.navigate("Language")}
             />
           </View>
         </View>
 
-        {/* Danger zone */}
+        {/* NOTIFICATIONS */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account Actions</Text>
+          <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
+          <View style={styles.sectionCard}>
+            <SettingsRow
+              icon={Bell}
+              label="Booking updates"
+              sublabel="Get notified about your bookings"
+              hasSwitch
+              switchValue={prefs.inapp_booking_updates ?? true}
+              onSwitchChange={(v) => handleToggle("inapp_booking_updates", v)}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={MessageSquare}
+              label="Messages"
+              sublabel="New messages and replies"
+              hasSwitch
+              switchValue={prefs.inapp_messages ?? true}
+              onSwitchChange={(v) => handleToggle("inapp_messages", v)}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={Wallet}
+              label="Earnings"
+              sublabel="Important updates about your earnings"
+              hasSwitch
+              switchValue={prefs.earnings_updates ?? true}
+              onSwitchChange={(v) => handleToggle("earnings_updates", v)}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={Tag}
+              label="Promotions"
+              sublabel="Offers and discounts"
+              hasSwitch
+              switchValue={prefs.promotions_updates ?? false}
+              onSwitchChange={(v) => handleToggle("promotions_updates", v)}
+            />
+          </View>
+        </View>
+
+        {/* PAYMENTS */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>PAYMENTS</Text>
+          <View style={styles.sectionCard}>
+            <SettingsRow
+              icon={CreditCard}
+              label="Payment methods"
+              value={defaultPayment ? `${defaultPayment.brand} •••• ${defaultPayment.card_last4}` : "Add a card"}
+              onPress={() => navigation.navigate("PaymentMethods")}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={Landmark}
+              label="Payout methods"
+              value={userData?.payout_bank ? `IBAN: •••• ${userData.payout_bank.slice(-4)}` : "Not set"}
+              onPress={() => navigation.navigate("PayoutMethods")}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={Calendar}
+              label="Payout schedule"
+              value={userData?.payout_schedule === 'MONTHLY' ? 'Monthly' : 'Weekly'}
+              onPress={() => navigation.navigate("PayoutSchedule")}
+            />
+          </View>
+        </View>
+
+        {/* HOSTING */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>HOSTING</Text>
+          <View style={styles.sectionCard}>
+            <SettingsRow
+              icon={Activity}
+              label="Smart Pricing"
+              value={hostPrefs.smart_pricing ? 'On' : 'Off'}
+              onPress={() => navigation.navigate("SmartPricing")}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={Zap}
+              label="Instant Booking"
+              value={hostPrefs.instant_booking ? 'On' : 'Off'}
+              onPress={() => navigation.navigate("InstantBooking")}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={Shield}
+              label="Deposit settings"
+              value={hostPrefs.default_deposit != null ? `SAR ${Number(hostPrefs.default_deposit).toLocaleString('en-SA')}` : 'SAR 500'}
+              onPress={() => navigation.navigate("DepositSettings")}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={Clock}
+              label="Availability defaults"
+              onPress={() => navigation.navigate("AvailabilityDefaults")}
+            />
+          </View>
+        </View>
+
+        {/* SUPPORT */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>SUPPORT</Text>
+          <View style={styles.sectionCard}>
+            <SettingsRow
+              icon={HelpCircle}
+              label="Help center"
+              onPress={() => navigation.navigate("HelpCenter")}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={Headphones}
+              label="Contact support"
+              onPress={() => navigation.navigate("ContactSupport")}
+            />
+            <View style={styles.divider} />
+            <SettingsRow
+              icon={Flag}
+              label="Report an issue"
+              onPress={() => navigation.navigate("ReportIssue")}
+            />
+          </View>
+        </View>
+
+        {/* ACCOUNT DANGER */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>ACCOUNT</Text>
           <View style={styles.sectionCard}>
             <SettingsRow
               icon={LogOut}
-              label="Sign Out"
+              label="Log out"
               onPress={handleSignOut}
-              danger
             />
             <View style={styles.divider} />
             <SettingsRow
               icon={Trash2}
-              label="Delete Account"
-              sublabel="Permanently remove your account"
+              label="Delete account"
               onPress={handleDeleteAccount}
               danger
             />
@@ -253,81 +376,52 @@ export function SettingsScreen(): React.ReactElement {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: '#F9FAFB' },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.background,
+    backgroundColor: '#FFF',
   },
-  screenTitle: { fontSize: 26, fontWeight: "900", color: colors.foreground, letterSpacing: -0.5 },
+  backBtn: {},
+  screenTitle: { fontSize: 18, fontWeight: "700", color: colors.foreground },
   scrollContent: { padding: spacing.md },
 
-  profileCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    backgroundColor: "rgba(255,255,255,0.92)",
-    borderRadius: radii.xl,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    ...shadows.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  profileAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: radii.full,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  profileAvatarLetter: { color: "#fff", fontSize: 22, fontWeight: "700" },
-  profileInfo: { flex: 1 },
-  profileName: { fontSize: 17, fontWeight: "700", color: colors.foreground },
-  profileEmail: { fontSize: 13, color: colors.mutedForeground, marginTop: 2 },
-
-  section: { marginBottom: spacing.md },
+  section: { marginBottom: spacing.lg },
   sectionTitle: {
     fontSize: 12,
     fontWeight: "700",
     color: colors.mutedForeground,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 8,
+    letterSpacing: 0.5,
+    marginBottom: 10,
     marginLeft: 4,
   },
   sectionCard: {
-    backgroundColor: "rgba(255,255,255,0.92)",
+    backgroundColor: "#FFF",
     borderRadius: radii.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: "hidden",
-    ...shadows.card,
   },
-  divider: { height: 1, backgroundColor: colors.border, marginLeft: 56 },
+  divider: { height: 1, backgroundColor: 'rgba(0,0,0,0.03)', marginLeft: 52 },
   row: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: spacing.md,
-    paddingVertical: 14,
+    paddingVertical: 16,
     gap: 12,
   },
-  rowPressed: { backgroundColor: colors.accent + "44" },
-  rowIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: radii.md,
-    backgroundColor: colors.accent,
+  rowPressed: { backgroundColor: 'rgba(0,0,0,0.02)' },
+  rowIconWrap: {
+    width: 24,
     alignItems: "center",
     justifyContent: "center",
   },
-  rowIconDanger: { backgroundColor: "rgba(220,38,38,0.08)" },
-  rowContent: { flex: 1 },
+  rowContent: { flex: 1, justifyContent: 'center' },
   rowLabel: { fontSize: 15, fontWeight: "600", color: colors.foreground },
   rowLabelDanger: { color: colors.destructive },
-  rowSublabel: { fontSize: 12, color: colors.mutedForeground, marginTop: 1 },
+  rowSublabel: { fontSize: 13, color: colors.mutedForeground, marginTop: 2 },
+  rowValueWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  rowValue: { fontSize: 14, color: colors.mutedForeground, fontWeight: '500' },
 });

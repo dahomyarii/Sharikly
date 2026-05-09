@@ -380,10 +380,45 @@ class NotificationPreference(models.Model):
     inapp_messages = models.BooleanField(default=True)
     email_booking_updates = models.BooleanField(default=True)
     email_messages = models.BooleanField(default=False)
+    earnings_updates = models.BooleanField(default=True)
+    promotions_updates = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Notification prefs for {self.user.email}"
+
+
+# ==========================
+# PAYMENT METHODS
+# ==========================
+class PaymentMethod(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="payment_methods")
+    card_last4 = models.CharField(max_length=4)
+    brand = models.CharField(max_length=50) # e.g. Visa, MasterCard
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-is_default", "-created_at"]
+
+    def __str__(self):
+        return f"{self.brand} ending in {self.card_last4} for {self.user.email}"
+
+
+# ==========================
+# HOST PREFERENCES
+# ==========================
+class HostPreference(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="host_preferences")
+    smart_pricing = models.BooleanField(default=False)
+    instant_booking = models.BooleanField(default=False)
+    default_deposit = models.DecimalField(max_digits=8, decimal_places=2, default=500.00)
+    availability_defaults = models.CharField(max_length=100, default="ALWAYS_AVAILABLE")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Host prefs for {self.user.email}"
+
 
 
 # ==========================

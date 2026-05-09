@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import axiosInstance from "@/lib/axios";
+import { fetcher, API_BASE } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import ListingCard from "@/components/ListingCard";
 import { useLocale } from "@/components/LocaleProvider";
 import { buildListingsQuery, toListingsArray } from "@/lib/listingsUtils";
+import type { Listing, Category } from "@/types";
 import {
   Camera,
   ChevronRight,
@@ -23,24 +24,24 @@ import {
   Speaker,
   Sparkles,
   Tent,
+  type LucideIcon,
 } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_API_BASE;
+const API = API_BASE;
 
-const fetcher = async (url: string) => {
-  const res = await axiosInstance.get(url);
-  return res.data;
+const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
+  camera: Camera, photo: Camera,
+  audio: Headphones, head: Headphones,
+  camp: Tent, tent: Tent,
+  home: Home, house: Home,
+  game: Gamepad2, console: Gamepad2,
+  speaker: Speaker,
 };
 
-function getCategoryIcon(categoryName: string) {
-  const normalized = categoryName.toLowerCase();
-  if (normalized.includes("camera") || normalized.includes("photo")) return Camera;
-  if (normalized.includes("audio") || normalized.includes("head")) return Headphones;
-  if (normalized.includes("camp") || normalized.includes("tent")) return Tent;
-  if (normalized.includes("home") || normalized.includes("house")) return Home;
-  if (normalized.includes("game") || normalized.includes("console")) return Gamepad2;
-  if (normalized.includes("speaker")) return Speaker;
-  return MoreHorizontal;
+function getCategoryIcon(categoryName: string): LucideIcon {
+  const lower = categoryName.toLowerCase();
+  const match = Object.keys(CATEGORY_ICON_MAP).find((key) => lower.includes(key));
+  return match ? CATEGORY_ICON_MAP[match] : MoreHorizontal;
 }
 
 function HostEarningsHighlightsCard({ className = "" }: { className?: string }) {
@@ -97,8 +98,8 @@ export default function HomePage() {
     { revalidateOnFocus: false }
   );
 
-  const listings = useMemo(() => toListingsArray(listingsData), [listingsData]);
-  const categories = Array.isArray(categoriesData) ? categoriesData : [];
+  const listings: Listing[] = useMemo(() => toListingsArray(listingsData), [listingsData]);
+  const categories: Category[] = Array.isArray(categoriesData) ? categoriesData : [];
   const popularListings = listings.slice(0, 4);
   const visibleCategories = categories.slice(0, 6);
   const exploreListings = listings.slice(4, 7);

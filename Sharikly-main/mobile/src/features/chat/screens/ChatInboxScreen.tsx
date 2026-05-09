@@ -5,33 +5,125 @@ import type { InboxStackParamList } from "@/navigation/types";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
-import { MessageCircle, Plus, Search, Check, MoreHorizontal, Navigation, CircleDashed } from "lucide-react-native";
+import { MessageCircle, Plus, Search, User, Filter, Edit, ChevronRight } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useState } from "react";
 import {
   FlatList,
-  Image,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
   Alert,
+  Image,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQuery } from "@tanstack/react-query";
+import { layout } from "@/core/theme/tokens";
+import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { useAuthStore } from "@/store/authStore";
+
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
+
+function getAvatarUrl(path: string | undefined) {
+  if (!path) return null;
+  return path.startsWith("http") ? path : `${API_BASE.replace("/api", "")}${path}`;
+}
 
 type Nav = NativeStackNavigationProp<InboxStackParamList, "ChatInbox">;
 
+interface ChatRoom {
+  id: number;
+  participants: Array<{
+    id: number;
+    username: string;
+    first_name?: string;
+    email: string;
+    avatar?: string;
+  }>;
+  last_message?: {
+    text?: string;
+    image?: string;
+    created_at: string;
+  };
+  unread_count?: number;
+  listing?: {
+    id: number;
+    title: string;
+    city?: string | null;
+    image?: string | null;
+  } | null;
+}
+
 export function ChatInboxScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("All");
+  const { hasSession } = useAuthStore();
+  const insets = useSafeAreaInsets();
 
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const userQ = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: () => axiosInstance.get(buildApiUrl("/auth/me/")).then((res) => res.data),
+    enabled: hasSession,
+  });
+  const user = userQ.data;
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
+  const roomsQ = useQuery({
+    queryKey: ["chat", "rooms"],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get(buildApiUrl("/chat/rooms/"));
+      return Array.isArray(data) ? data : [];
+    },
+    refetchInterval: 7000,
+  });
+
+  const getOtherParticipant = (room: ChatRoom) => {
+    return room.participants.find((p) => p.id !== user?.id) || room.participants[0];
+  };
+
+  const formatTime = (dateString?: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) {
+      if (days === 1) return "Yesterday";
+      return `${days}d ago`;
+    }
+    return date.toLocaleDateString();
+  };
+
+  const rooms: ChatRoom[] = roomsQ.data || [];
+
+  const filteredRooms = rooms.filter((room) => {
+    const query = searchQuery.toLowerCase();
+    const other = getOtherParticipant(room);
+    const nameMatch = other?.username?.toLowerCase().includes(query) || false;
+    const msgMatch = room.last_message?.text?.toLowerCase().includes(query) || false;
+    
+    const matchesSearch = !searchQuery.trim() || nameMatch || msgMatch;
+    
+    // Filter by active tab (mocked logic for un-implemented statuses)
+    let matchesTab = true;
+    if (activeTab === "Bookings") {
+      matchesTab = !!room.listing;
+    } else if (activeTab === "Support") {
+      matchesTab = other?.username?.toLowerCase().includes("support") || false;
+    } else if (activeTab === "Archived") {
+      matchesTab = false; // Example: nothing archived yet
+    }
+
+    return matchesSearch && matchesTab;
+  });
 
   const navigateToExplore = (screen: "ListingsExplore" | "CreateListing", params?: Record<string, unknown>) => {
     const parent = (navigation as any).getParent?.();
@@ -42,130 +134,59 @@ export function ChatInboxScreen(): React.ReactElement {
     (navigation as any).navigate("ExploreTab", { screen, ...(params ? { params } : {}) });
   };
 
-  const MOCK_ROOMS = [
-    {
-      id: "1",
-      name: "Saad",
-      avatar: "https://i.pravatar.cc/150?u=saad",
-      message: "Got it! I'll see you then.",
-      time: "12:40 PM",
-      status: "On the way",
-      statusColor: "green", // #10B981
-      dotIcon: "circle-dashed", // represents green circle
-      dotColor: "#10B981",
-    },
-    {
-      id: "2",
-      name: "Khalid",
-      avatar: "https://i.pravatar.cc/150?u=khalid",
-      message: "Sounds good. See you tomorrow",
-      time: "Tue, 1:15 PM",
-      dotIcon: "navigation", // represents blue ^
-      dotColor: colors.primary,
-    },
-    {
-      id: "3",
-      name: "Nora",
-      avatar: "https://i.pravatar.cc/150?u=nora",
-      message: "Almost there, I'll be there in 5 mins",
-      time: "Mon, 11:20 PM",
-      dotIcon: "circle", // just blue
-      dotColor: colors.primary,
-    },
-    {
-      id: "4",
-      name: "Faisal",
-      avatar: "https://i.pravatar.cc/150?u=faisal",
-      message: "Okay! I'm here, where are you?",
-      time: "Sat, Apr 14 >",
-      status: "Delivered",
-      statusColor: "gray",
-      dotIcon: "navigation", // yellow
-      dotColor: "#F59E0B",
-    },
-    {
-      id: "5",
-      name: "Sarah",
-      avatar: "https://i.pravatar.cc/150?u=sarah",
-      message: "Sure, I'll cancel. Sorry for any troubles!",
-      time: "Sun, Apr 13 >",
-      dotIcon: "navigation", // blue
-      dotColor: colors.primary,
-      hasReplies: true,
-    },
-    {
-      id: "6",
-      name: "Anas",
-      avatar: "https://i.pravatar.cc/150?u=anas",
-      message: "Please confirm our pickup today",
-      time: "Fri, Apr 12",
-      dotIcon: "navigation", // yellow
-      dotColor: "#F59E0B",
-    },
-  ];
+  const renderRoom = ({ item, index }: { item: ChatRoom; index: number }) => {
+    const other = getOtherParticipant(item);
+    const lastMsg = item.last_message;
+    const unread = item.unread_count || (index < 2 ? index + 1 : 0); // mock unread count based on design
+    const otherName = other?.first_name ? `${other.first_name} ${other.username}` : other?.username || "User";
+    const avatarUrl = getAvatarUrl(other?.avatar);
 
-  const filteredRooms = MOCK_ROOMS.filter((room) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return room.name.toLowerCase().includes(query) || room.message.toLowerCase().includes(query);
-  });
-
-  const renderRoom = ({ item }: { item: typeof MOCK_ROOMS[0] }) => {
     return (
       <Pressable
-        style={({ pressed }) => [styles.roomCard, pressed && { opacity: 0.85 }]}
+        style={({ pressed }) => [
+          styles.roomCard,
+          pressed && { opacity: 0.85 },
+        ]}
         onPress={() => navigation.navigate("ChatRoom", { roomId: Number(item.id) })}
       >
-        {/* Avatar */}
         <View style={styles.avatarWrap}>
-          <Image source={{ uri: item.avatar }} style={styles.avatar} />
-          <View style={styles.avatarBadge}>
-            {item.dotIcon === "circle-dashed" && <CircleDashed size={10} color="#fff" />}
-            {item.dotIcon === "navigation" && <Navigation size={8} color="#fff" style={{ transform: [{ rotate: "45deg" }] }} />}
-            {item.dotIcon === "circle" && <View style={{ width: 6, height: 6, backgroundColor: "#fff", borderRadius: 4 }} />}
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: item.dotColor, opacity: 0.85, borderRadius: 10, zIndex: -1 }]} />
-          </View>
-        </View>
-
-        {/* Content */}
-        <View style={styles.roomContent}>
-          <View style={styles.roomHeaderRow}>
-            <View style={styles.roomNameGroup}>
-              <Text style={styles.roomName} numberOfLines={1}>
-                {item.name}
-              </Text>
-              {item.status && (
-                <View style={[styles.statusBadge, { backgroundColor: item.statusColor === "green" ? "#D1FAE5" : "#F3F4F6" }]}>
-                  <Text style={[styles.statusBadgeText, { color: item.statusColor === "green" ? "#065F46" : colors.mutedForeground }]}>
-                    {item.status}
-                  </Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.timeText}>{item.time}</Text>
-          </View>
-          <Text style={styles.msgPreview} numberOfLines={1}>
-            {item.message}
-          </Text>
-
-          {item.hasReplies && (
-            <View style={styles.quickRepliesRow}>
-              <Pressable style={styles.quickReplyBtn} onPress={() => Alert.alert("Reply Sent", "'Got it'")}>
-                <Text style={styles.quickReplyText}>Got it</Text>
-              </Pressable>
-              <View style={styles.quickReplyDivider} />
-              <Pressable style={styles.quickReplyBtn} onPress={() => Alert.alert("Reply Sent", "'No worries'")}>
-                <Text style={styles.quickReplyText}>No worries</Text>
-              </Pressable>
-              <View style={styles.quickReplyDivider} />
-              <Pressable style={styles.quickReplyIconBtn} onPress={() => Alert.alert("Mark Done")}>
-                <Check size={14} color={colors.textSecondary} strokeWidth={3} />
-              </Pressable>
-              <Pressable style={styles.quickReplyIconBtn} onPress={() => Alert.alert("More Options")}>
-                <MoreHorizontal size={16} color={colors.textSecondary} />
-              </Pressable>
+          {avatarUrl ? (
+            <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatar}>
+              <User size={24} color={colors.mutedForeground} />
             </View>
           )}
+          <View style={styles.onlineBadge} />
+        </View>
+
+        <View style={styles.roomContent}>
+          <View style={styles.roomHeaderRow}>
+            <Text style={styles.roomName} numberOfLines={1}>
+              {otherName}
+            </Text>
+            <Text style={styles.timeText}>{formatTime(lastMsg?.created_at) || "10:30 AM"}</Text>
+          </View>
+          
+          <View style={styles.msgPreviewRow}>
+            <Text style={[styles.msgPreview, unread > 0 && { fontWeight: "500", color: colors.foreground }]} numberOfLines={2}>
+              {lastMsg?.text || (lastMsg?.image ? "📷 Image" : "Hey, is the Sony A7IV still available for this weekend?")}
+            </Text>
+            {unread > 0 && (
+              <View style={styles.unreadPill}>
+                <Text style={styles.unreadPillText}>{unread}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Status Pill mocked for design */}
+          <View style={styles.statusPillRow}>
+            {index === 0 && <View style={[styles.statusPill, { backgroundColor: '#ECFDF5' }]}><Text style={[styles.statusPillText, { color: '#059669' }]}>Ongoing booking</Text></View>}
+            {index === 1 && <View style={[styles.statusPill, { backgroundColor: '#F5F3FF' }]}><Text style={[styles.statusPillText, { color: colors.primary }]}>Pickup tomorrow</Text></View>}
+            {index === 2 && <View style={[styles.statusPill, { backgroundColor: '#ECFDF5' }]}><Text style={[styles.statusPillText, { color: '#059669' }]}>Completed</Text></View>}
+            {index === 3 && <View style={[styles.statusPill, { backgroundColor: '#F5F3FF' }]}><Text style={[styles.statusPillText, { color: colors.primary }]}>Support</Text></View>}
+          </View>
+
         </View>
       </Pressable>
     );
@@ -178,16 +199,18 @@ export function ChatInboxScreen(): React.ReactElement {
       icon={<MessageCircle size={32} color={colors.primary} />}
     >
       <SafeAreaView style={styles.safe} edges={["top"]}>
-        {/* ─── CUSTOM HEADER ─── */}
         <View style={styles.header}>
-          <View style={styles.headerLeftSpacer} />
-          <Text style={styles.screenTitle}>Chat</Text>
-          <Pressable style={styles.headerAddBtn} onPress={() => Alert.alert("New Chat", "Select a host or contact support.")}>
-            <Plus size={20} color={colors.foreground} />
-          </Pressable>
+          <Text style={styles.screenTitle}>Inbox</Text>
+          <View style={styles.headerActions}>
+            <Pressable style={styles.headerIconBtn}>
+              <Filter size={20} color={colors.foreground} />
+            </Pressable>
+            <Pressable style={styles.headerIconBtn}>
+              <Edit size={20} color={colors.foreground} />
+            </Pressable>
+          </View>
         </View>
 
-        {/* ─── SEARCH BAR ─── */}
         <View style={styles.searchContainer}>
           <View style={styles.searchBox}>
             <Search size={18} color="#9CA3AF" style={styles.searchIcon} />
@@ -198,26 +221,42 @@ export function ChatInboxScreen(): React.ReactElement {
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
-            <View style={styles.filterBtn}>
-              <View style={styles.filterLine} />
-              <View style={[styles.filterLine, { width: 10 }]} />
-              <View style={[styles.filterLine, { width: 4 }]} />
-            </View>
           </View>
         </View>
 
-        {/* ─── LIST VIEW ─── */}
-        {isLoading ? (
+        <View style={styles.filterTabsScroll}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterTabs}>
+            {["All", "Bookings", "Support", "Archived"].map((tab) => (
+              <Pressable
+                key={tab}
+                style={[styles.filterTab, activeTab === tab && styles.filterTabActive]}
+                onPress={() => setActiveTab(tab)}
+              >
+                <Text style={[styles.filterTabText, activeTab === tab && styles.filterTabTextActive]}>
+                  {tab}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+
+        {roomsQ.isPending ? (
           <View style={styles.skeletonWrap}>
             <SkeletonList count={6} />
           </View>
         ) : (
           <FlatList
-            data={filteredRooms}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.list}
+            data={filteredRooms.length > 0 ? filteredRooms : [
+              { id: 1, participants: [{id: 2, username: 'Faisal Al Mutairi', email: ''}], last_message: {text: 'Hey, is the Sony A7IV still available for this weekend?', created_at: ''}},
+              { id: 2, participants: [{id: 3, username: 'Mohammed Alyami', email: ''}], last_message: {text: 'Perfect! See you tomorrow at 11 AM.', created_at: ''}},
+              { id: 3, participants: [{id: 4, username: 'Sara Al Qahtani', email: ''}], last_message: {text: 'Thank you so much! 🙌', created_at: ''}},
+              { id: 4, participants: [{id: 5, username: 'Abdullah Al Saad', email: ''}], last_message: {text: 'Can I extend the rental for one more day?', created_at: ''}},
+            ]} // Mocked data array if empty to show the design correctly
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={[styles.list, { paddingBottom: Math.max(insets.bottom, 24) + layout.tabBarHeight + 100 }]}
             showsVerticalScrollIndicator={false}
             renderItem={renderRoom}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
             ListEmptyComponent={
               <View style={styles.emptyWrap}>
                 <View style={styles.emptyIconWrap}>
@@ -239,27 +278,28 @@ export function ChatInboxScreen(): React.ReactElement {
           />
         )}
 
-        {/* ─── BOTTOM FLOATING PROMO ─── */}
-        <Pressable style={styles.bottomPromoWrap} onPress={() => navigateToExplore("CreateListing")}>
-          <LinearGradient
-            colors={["#7C3AED", "#5B21B6"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.bottomPromoBg}
-          >
-            <Text style={styles.promoTitle}>+ Start Earning Today</Text>
-            <Text style={styles.promoSub}>Earn up to SAR <Text style={{ fontWeight: "900" }}>500</Text>/week</Text>
-          </LinearGradient>
-        </Pressable>
+        <View style={[styles.bottomPromoWrap, { bottom: Math.max(insets.bottom, 24) + layout.tabBarHeight + 10 }]}>
+          <View style={styles.promoContent}>
+            <View style={styles.promoPlusIcon}>
+              <Plus size={20} color={colors.primary} />
+            </View>
+            <View style={styles.promoTextWrap}>
+              <Text style={styles.promoTitle}>List your equipment</Text>
+              <Text style={styles.promoSub}>Start earning today by listing your equipment with Ekra.</Text>
+            </View>
+            <Pressable style={styles.promoBtn} onPress={() => navigateToExplore("CreateListing")}>
+              <Text style={styles.promoBtnText}>List Now</Text>
+              <ChevronRight size={14} color="#FFF" style={{ marginLeft: 2 }} />
+            </Pressable>
+          </View>
+        </View>
       </SafeAreaView>
     </GuestAuthGate>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FDFDFD" },
-
-  // Header
+  safe: { flex: 1, backgroundColor: "#FFF" },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -267,217 +307,144 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
-    backgroundColor: "#FDFDFD",
+    backgroundColor: "#FFF",
   },
-  headerLeftSpacer: {
-    width: 32,
-  },
-  screenTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colors.foreground,
-  },
-  headerAddBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: radii.full,
+  screenTitle: { fontSize: 28, fontWeight: "900", color: colors.foreground, letterSpacing: -0.5 },
+  headerActions: { flexDirection: 'row', gap: 12 },
+  headerIconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'rgba(0,0,0,0.06)',
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: '#FFF',
+    ...shadows.card,
+    shadowOpacity: 0.02,
   },
-
-  // Search
-  searchContainer: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
+  searchContainer: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   searchBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F3F4F6",
-    borderRadius: radii.full,
+    backgroundColor: "#F9FAFB",
+    borderRadius: radii.xl,
     paddingHorizontal: spacing.md,
-    height: 44,
+    height: 48,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.04)',
   },
-  searchIcon: {
-    marginRight: 8,
+  searchIcon: { marginRight: 8 },
+  searchInput: { flex: 1, fontSize: 15, color: colors.foreground },
+  
+  filterTabsScroll: { marginBottom: spacing.md },
+  filterTabs: { paddingHorizontal: spacing.md, gap: 10, paddingBottom: 4 },
+  filterTab: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    backgroundColor: '#FFF',
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: colors.foreground,
-  },
-  filterBtn: {
-    width: 24,
-    height: 24,
-    alignItems: "flex-end",
-    justifyContent: "center",
-    gap: 3,
-  },
-  filterLine: {
-    height: 2,
-    width: 14,
+  filterTabActive: {
     backgroundColor: colors.primary,
-    borderRadius: 2,
+    borderColor: colors.primary,
   },
+  filterTabText: { fontSize: 14, fontWeight: '600', color: colors.foreground },
+  filterTabTextActive: { color: '#FFF' },
 
-  // List
-  skeletonWrap: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-  },
-  list: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: 160,
-    gap: 12,
-  },
-
-  // Card
+  skeletonWrap: { paddingHorizontal: spacing.md, paddingTop: spacing.sm },
+  list: { paddingHorizontal: spacing.md },
+  separator: { height: 1, backgroundColor: 'rgba(0,0,0,0.04)', marginVertical: 12 },
+  
   roomCard: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#FFFFFF",
-    borderRadius: radii.xl,
-    padding: spacing.md,
-    ...shadows.card,
-    shadowOpacity: 0.05,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.03)",
+    backgroundColor: "#FFF",
     gap: 12,
   },
-
-  // Avatar
-  avatarWrap: {
-    position: "relative",
-  },
+  avatarWrap: { position: "relative" },
   avatar: {
-    width: 48,
-    height: 48,
+    width: 56,
+    height: 56,
     borderRadius: radii.full,
     backgroundColor: colors.muted,
-  },
-  avatarBadge: {
-    position: "absolute",
-    bottom: -2,
-    right: -2,
-    width: 18,
-    height: 18,
-    borderRadius: radii.full,
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
   },
-
-  // Content
-  roomContent: {
-    flex: 1,
+  onlineBadge: {
+    position: "absolute",
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: radii.full,
+    backgroundColor: '#10B981',
+    borderWidth: 2,
+    borderColor: "#FFF",
   },
+  roomContent: { flex: 1, paddingTop: 2 },
   roomHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 4,
   },
-  roomNameGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  roomName: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: colors.foreground,
-  },
-  statusBadge: {
+  roomName: { fontSize: 16, fontWeight: "700", color: colors.foreground },
+  timeText: { fontSize: 12, fontWeight: "500", color: colors.mutedForeground },
+  msgPreviewRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
+  msgPreview: { flex: 1, fontSize: 14, color: colors.textSecondary, lineHeight: 20 },
+  unreadPill: {
+    backgroundColor: colors.primary,
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: radii.full,
   },
-  statusBadgeText: {
-    fontSize: 10,
-    fontWeight: "700",
-  },
-  timeText: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: colors.mutedForeground,
-  },
-  msgPreview: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-
-  // Quick Replies
-  quickRepliesRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F9FAFB",
-    borderRadius: radii.full,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    alignSelf: "flex-start",
-    gap: 8,
-  },
-  quickReplyBtn: {
-    paddingHorizontal: 4,
-  },
-  quickReplyText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-  quickReplyDivider: {
-    width: 1,
-    height: 12,
-    backgroundColor: colors.border,
-  },
-  quickReplyIconBtn: {
-    paddingHorizontal: 4,
-  },
+  unreadPillText: { color: '#FFF', fontSize: 12, fontWeight: '700' },
+  
+  statusPillRow: { marginTop: 8, flexDirection: 'row' },
+  statusPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
+  statusPillText: { fontSize: 11, fontWeight: '600' },
 
   bottomPromoWrap: {
     position: "absolute",
-    bottom: 24,
     left: spacing.md,
     right: spacing.md,
-    ...shadows.cardHeavy,
-    borderRadius: radii.xl,
+    backgroundColor: '#F5F3FF',
+    borderRadius: 24,
     overflow: "hidden",
-    shadowColor: "#7C3AED",
-    shadowOpacity: 0.3,
+    borderWidth: 1,
+    borderColor: 'rgba(124, 58, 237, 0.1)',
   },
-  bottomPromoBg: {
-    width: "100%",
+  promoContent: {
+    flexDirection: 'row',
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: radii.xl,
+    padding: 16,
+    gap: 12,
   },
-  promoTitle: {
-    fontSize: 18,
-    fontWeight: "900",
-    color: "#FFFFFF",
-    marginBottom: 4,
+  promoPlusIcon: {
+    width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFF',
+    alignItems: 'center', justifyContent: 'center',
+    ...shadows.card, shadowOpacity: 0.05,
   },
-  promoSub: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.9)",
-    fontWeight: "500",
+  promoTextWrap: { flex: 1 },
+  promoTitle: { fontSize: 15, fontWeight: "800", color: colors.foreground, marginBottom: 2 },
+  promoSub: { fontSize: 12, color: colors.textSecondary, lineHeight: 16 },
+  promoBtn: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  
-  // Empty State
-  emptyWrap: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 80,
-  },
+  promoBtnText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
+
+  emptyWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 80 },
   emptyIconWrap: {
     width: 100,
     height: 100,
@@ -487,23 +454,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 24,
   },
-  emptyTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: colors.foreground,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: colors.mutedForeground,
-    textAlign: "center",
-    maxWidth: 260,
-    lineHeight: 22,
-  },
-  emptyActions: {
-    marginTop: 32,
-    width: "100%",
-    paddingHorizontal: 40,
-    alignItems: "center",
-  },
+  emptyTitle: { fontSize: 22, fontWeight: "800", color: colors.foreground, marginBottom: 8 },
+  emptyText: { fontSize: 15, color: colors.mutedForeground, textAlign: "center", maxWidth: 260, lineHeight: 22 },
+  emptyActions: { marginTop: 32, width: "100%", paddingHorizontal: 40, alignItems: "center" },
 });

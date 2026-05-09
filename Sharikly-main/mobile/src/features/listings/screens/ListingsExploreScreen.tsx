@@ -18,6 +18,7 @@ import {
   Inbox as EmptyIcon,
 } from "lucide-react-native";
 import React, { useState, useRef } from "react";
+import AnimatedReanimated, { FadeInRight, FadeInDown } from "react-native-reanimated";
 import {
   Animated,
   Pressable,
@@ -92,7 +93,7 @@ export function ListingsExploreScreen(): React.ReactElement {
       {/* Header / Search bar (Glassy) */}
       <Animated.View style={[styles.headerContainer, { transform: [{ translateY: headerTranslateY }] }]}>
         <BlurView tint="light" intensity={80} style={[styles.header, { paddingTop: headerTopInset }]}>
-        <View style={styles.searchRow}>
+        <AnimatedReanimated.View entering={FadeInDown.springify().damping(15)} style={styles.searchRow}>
           <View style={styles.searchWrap}>
             <Search size={18} color={colors.primary} />
             <TextInput
@@ -107,7 +108,7 @@ export function ListingsExploreScreen(): React.ReactElement {
               autoCapitalize="none"
             />
           </View>
-        </View>
+        </AnimatedReanimated.View>
 
         {/* Category chips */}
         {categories.length > 0 && (
@@ -122,16 +123,17 @@ export function ListingsExploreScreen(): React.ReactElement {
               active={activeCategory === null}
               onPress={() => setActiveCategory(null)}
             />
-            {categories.slice(0, 12).map((cat: any) => {
+            {categories.slice(0, 12).map((cat: any, index: number) => {
               const Icon = getCategoryIcon(cat.name);
               return (
-                <CategoryChip
-                  key={cat.id}
-                  label={cat.name}
-                  icon={<Icon size={13} color={activeCategory === cat.id ? "#fff" : colors.primary} />}
-                  active={activeCategory === cat.id}
-                  onPress={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
-                />
+                <AnimatedReanimated.View key={cat.id} entering={FadeInRight.delay(index * 50).springify()}>
+                  <CategoryChip
+                    label={cat.name}
+                    icon={<Icon size={13} color={activeCategory === cat.id ? "#fff" : colors.primary} />}
+                    active={activeCategory === cat.id}
+                    onPress={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
+                  />
+                </AnimatedReanimated.View>
               );
             })}
           </ScrollView>
@@ -176,10 +178,11 @@ export function ListingsExploreScreen(): React.ReactElement {
             { useNativeDriver: true }
           )}
           scrollEventThrottle={16}
-          renderItem={({ item }: { item: any }) => (
+          renderItem={({ item, index }: { item: any; index: number }) => (
             <View style={styles.gridItem}>
               <ListingCard
                 listing={item}
+                index={index}
                 onPress={() => navigation.navigate("ListingDetail", { id: item.id })}
               />
             </View>

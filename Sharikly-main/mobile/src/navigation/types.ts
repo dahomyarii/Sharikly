@@ -40,6 +40,7 @@ export type InboxStackParamList = {
 
 export type ProfileStackParamList = {
   Profile: undefined;
+  EditProfile: undefined;
   Settings: undefined;
   Favorites: undefined;
   MyReports: undefined;
@@ -59,7 +60,23 @@ export type ProfileStackParamList = {
   ChatInbox: undefined;
   ChatRoom: { roomId: number };
   AdminSupportThread: undefined;
+  ChangePassword: undefined;
+  NotificationPreferences: undefined;
+  BlockedUsers: undefined;
   Notifications: undefined;
+  // Settings placeholders
+  PhoneAndEmail: undefined;
+  Language: undefined;
+  PaymentMethods: undefined;
+  PayoutMethods: undefined;
+  PayoutSchedule: undefined;
+  SmartPricing: undefined;
+  InstantBooking: undefined;
+  DepositSettings: undefined;
+  AvailabilityDefaults: undefined;
+  HelpCenter: undefined;
+  ContactSupport: undefined;
+  ReportIssue: undefined;
 };
 
 export type MainTabParamList = {

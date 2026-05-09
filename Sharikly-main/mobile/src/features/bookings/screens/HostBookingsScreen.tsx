@@ -72,12 +72,7 @@ export function HostBookingsScreen(): React.ReactElement {
     ? Array.isArray(q.data) ? q.data : (q.data as any)?.results ?? []
     : [];
 
-  // Mock data if API empty
-  const displayBookings = bookings.length > 0 ? bookings : [
-    { id: 1, status: "pending", listing: { title: "Sony A7III Camera" }, renter: { username: "Ahmed", average_rating: 4.7, review_count: 24 }, start_date: "2026-04-25", end_date: "2026-04-27", total_price: "340", currency: "SAR", city: "Al Murooj, Riyadh" },
-    { id: 2, status: "pending", listing: { title: "DJI Mini 4" }, renter: { username: "Saad", average_rating: 4.8, review_count: 56 }, start_date: "2026-04-30", end_date: "2026-05-02", total_price: "600", currency: "SAR", city: "Olaya, Riyadh" },
-    { id: 3, status: "approved", listing: { title: "Camping Kit" }, renter: { username: "Khalid", average_rating: 4.8, review_count: 56 }, start_date: "2026-04-23", end_date: "2026-04-25", total_price: "270", currency: "SAR", city: "Drom 126, 1.7km" },
-  ];
+  const displayBookings = bookings;
 
   const pendingBookings = displayBookings.filter((b) => b.status === "pending");
   const activeBookings = displayBookings.filter((b) => b.status === "approved" || b.status === "active");

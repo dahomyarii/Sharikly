@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ekra.com";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ekra.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),

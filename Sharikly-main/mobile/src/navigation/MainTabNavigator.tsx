@@ -11,7 +11,8 @@ import { BlurView } from "expo-blur";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import {
   Calendar,
   Compass,
@@ -45,13 +46,14 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     };
 
     return (
-      <Pressable
+      <AnimatedPressable
         key={route.key}
         onPress={onPress}
         style={styles.tabItem}
         accessibilityRole="button"
         accessibilityState={{ selected: isFocused }}
         accessibilityLabel={label}
+        disableHaptics // hapticSelection is called in onPress
       >
         <View style={styles.iconContainer}>
           <Icon
@@ -68,7 +70,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
           {label}
         </Text>
-      </Pressable>
+      </AnimatedPressable>
     );
   }
 
@@ -146,9 +148,9 @@ const styles = StyleSheet.create({
   tabBarContainer: {
     borderRadius: radii.xxl,
     overflow: "hidden",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "rgba(255, 255, 255, 0.6)", // semi-transparent to allow blur
     borderWidth: 1,
-    borderColor: "rgba(124, 58, 237, 0.05)",
+    borderColor: "rgba(255, 255, 255, 0.8)",
     ...shadows.cardHeavy,
     shadowOpacity: 0.15,
     elevation: 12,

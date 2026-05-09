@@ -1,26 +1,43 @@
 import { colors, radii } from "@/core/theme/tokens";
 import React from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+  withSequence,
+  interpolateColor,
+} from "react-native-reanimated";
 
 interface SkeletonCardProps {
   count?: number;
 }
 
 function SkeletonBlock({ style }: { style: any }) {
-  const anim = React.useRef(new Animated.Value(0)).current;
+  const progress = useSharedValue(0);
 
   React.useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(anim, { toValue: 1, duration: 800, useNativeDriver: true }),
-        Animated.timing(anim, { toValue: 0, duration: 800, useNativeDriver: true }),
-      ])
-    ).start();
-  }, [anim]);
+    progress.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 1000 }),
+        withTiming(0, { duration: 1000 })
+      ),
+      -1,
+      true
+    );
+  }, []);
 
-  const opacity = anim.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.9] });
+  const animatedStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      progress.value,
+      [0, 1],
+      [colors.muted, "#E5E7EB"]
+    );
+    return { backgroundColor };
+  });
 
-  return <Animated.View style={[style, { opacity }]} />;
+  return <Animated.View style={[style, animatedStyle]} />;
 }
 
 export function SkeletonCard() {

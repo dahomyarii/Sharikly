@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "./LocaleProvider";
 import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
 import axiosInstance from "@/lib/axios";
+import { API_BASE } from "@/lib/api";
+import type { User, Notification, NavItem } from "@/types";
 import {
   Bell,
   Calendar,
@@ -26,16 +28,15 @@ import {
 const SignupModal = dynamic(() => import("./SignupModal"), { ssr: false });
 const LoginModal = dynamic(() => import("./LoginModal"), { ssr: false });
 
-const API = process.env.NEXT_PUBLIC_API_BASE;
-
 export default function Header() {
   const { t } = useLocale();
   const pathname = usePathname();
-  const [user, setUser] = React.useState<any>(null);
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
   const [showSignup, setShowSignup] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
@@ -46,22 +47,30 @@ export default function Header() {
   const notificationsBellRef = useRef<HTMLButtonElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    if (!isMobileMenuOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        mobileMenuRef.current &&
-        !mobileMenuRef.current.contains(e.target as Node) &&
-        menuButtonRef.current &&
-        !menuButtonRef.current.contains(e.target as Node)
-      ) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMobileMenuOpen]);
+  // Closes a panel when the user clicks outside of it.
+  // Each panel needs its own handler because they have different open states.
+  const useOutsideClick = (
+    isOpen: boolean,
+    containerRef: React.RefObject<HTMLElement | null>,
+    onClose: () => void,
+    excludeRef?: React.RefObject<HTMLElement | null>,
+  ) => {
+    useEffect(() => {
+      if (!isOpen) return;
+      const handler = (e: MouseEvent) => {
+        const clickedInside = containerRef.current?.contains(e.target as Node);
+        const clickedExcluded = excludeRef?.current?.contains(e.target as Node);
+        if (!clickedInside && !clickedExcluded) onClose();
+      };
+      document.addEventListener("mousedown", handler);
+      return () => document.removeEventListener("mousedown", handler);
+    }, [isOpen, containerRef, excludeRef, onClose]);
+  };
+
+  useOutsideClick(isMobileMenuOpen, mobileMenuRef, () => setIsMobileMenuOpen(false), menuButtonRef);
+  useOutsideClick(showNotificationsDropdown, notificationsDropdownRef, () => setShowNotificationsDropdown(false), notificationsBellRef);
+  useOutsideClick(showProfileMenu, profileMenuRef, () => setShowProfileMenu(false));
+
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -70,131 +79,68 @@ export default function Header() {
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
-    const previousOverflow = document.body.style.overflow;
+    const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
+    return () => { document.body.style.overflow = prev; };
   }, [isMobileMenuOpen]);
 
-  // Close notifications dropdown when clicking outside
+  // Auth state: read from localStorage on mount and sync across tabs/focus.
+  // We avoid a context here intentionally — the header is the only consumer
+  // that needs the full user object at the shell level.
+  const loadUser = useCallback(() => {
+    const stored = localStorage.getItem("user");
+    const token = localStorage.getItem("access_token");
+    if (stored && token) {
+      try { setUser(JSON.parse(stored)); }
+      catch { setUser(null); }
+    } else {
+      setUser(null);
+    }
+  }, []);
+
   useEffect(() => {
-    if (!showNotificationsDropdown) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        notificationsDropdownRef.current &&
-        !notificationsDropdownRef.current.contains(e.target as Node) &&
-        notificationsBellRef.current &&
-        !notificationsBellRef.current.contains(e.target as Node)
-      ) {
-        setShowNotificationsDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showNotificationsDropdown]);
-
-  // Close profile menu when clicking outside
-  useEffect(() => {
-    if (!showProfileMenu) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(e.target as Node)
-      ) {
-        setShowProfileMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showProfileMenu]);
-
-  const unreadCount = notificationsUnreadCount || notifications.filter((n) => !n.read).length;
-
-  React.useEffect(() => {
-    const loadUser = () => {
-      const stored = localStorage.getItem("user");
-      const token = localStorage.getItem("access_token");
-      if (stored && token) {
-        try {
-          setUser(JSON.parse(stored));
-        } catch {
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-    };
-
-    // Load user on mount
     loadUser();
 
-    // Listen for login events
-    const handleLogin = (event: CustomEvent) => {
-      if (event.detail?.user) {
-        setUser(event.detail.user);
-      } else {
-        loadUser();
-      }
+    const handleLogin = (e: CustomEvent) => {
+      if (e.detail?.user) setUser(e.detail.user);
+      else loadUser();
     };
-
-    // Listen for logout events
-    const handleLogoutEvent = () => {
-      setUser(null);
-    };
-
-    // Listen for storage changes (other tabs)
+    const handleLogout = () => setUser(null);
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === "access_token" || e.key === "user") {
-        loadUser();
-      }
-    };
-
-    // Re-check on focus (e.g. token expired while tab was in background)
-    const handleFocus = () => {
-      loadUser();
+      if (e.key === "access_token" || e.key === "user") loadUser();
     };
 
     window.addEventListener("userLogin", handleLogin as EventListener);
-    window.addEventListener("userLogout", handleLogoutEvent);
+    window.addEventListener("userLogout", handleLogout);
     window.addEventListener("storage", handleStorage);
-    window.addEventListener("focus", handleFocus);
+    window.addEventListener("focus", loadUser);
 
     return () => {
       window.removeEventListener("userLogin", handleLogin as EventListener);
-      window.removeEventListener("userLogout", handleLogoutEvent);
+      window.removeEventListener("userLogout", handleLogout);
       window.removeEventListener("storage", handleStorage);
-      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("focus", loadUser);
     };
-  }, []);
+  }, [loadUser]);
 
-  // Fetch chat unread count when user is logged in
+  const unreadCount = notificationsUnreadCount || notifications.filter((n) => !n.read).length;
+
   useEffect(() => {
-    if (!user || !API) {
-      setChatUnreadCount(0);
-      return;
-    }
+    if (!user || !API_BASE) { setChatUnreadCount(0); return; }
     const token = localStorage.getItem("access_token");
     if (!token) return;
     axiosInstance
-      .get(`${API}/chat/unread-count/`, { headers: { Authorization: `Bearer ${token}` } })
+      .get(`${API_BASE}/chat/unread-count/`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => setChatUnreadCount(typeof res.data?.count === "number" ? res.data.count : 0))
       .catch(() => setChatUnreadCount(0));
   }, [user, pathname]);
 
-  // Fetch notifications when user is logged in
   useEffect(() => {
-    if (!user || !API) {
-      setNotifications([]);
-      setNotificationsUnreadCount(0);
-      return;
-    }
+    if (!user || !API_BASE) { setNotifications([]); setNotificationsUnreadCount(0); return; }
     const token = localStorage.getItem("access_token");
     if (!token) return;
     axiosInstance
-      .get(`${API}/notifications/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get(`${API_BASE}/notifications/`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => {
         const data = res.data;
         setNotifications(Array.isArray(data) ? data : data?.results || []);
@@ -202,48 +148,44 @@ export default function Header() {
       .catch(() => setNotifications([]));
   }, [user]);
 
-  // Fetch unread notifications count (fast)
   useEffect(() => {
-    if (!user || !API) {
-      setNotificationsUnreadCount(0);
-      return;
-    }
+    if (!user || !API_BASE) { setNotificationsUnreadCount(0); return; }
     const token = localStorage.getItem("access_token");
     if (!token) return;
     axiosInstance
-      .get(`${API}/notifications/unread-count/`, { headers: { Authorization: `Bearer ${token}` } })
+      .get(`${API_BASE}/notifications/unread-count/`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => setNotificationsUnreadCount(typeof res.data?.count === "number" ? res.data.count : 0))
       .catch(() => setNotificationsUnreadCount(0));
   }, [user, pathname]);
 
   const markNotificationRead = async (id: number) => {
-    if (!API) return;
+    if (!API_BASE) return;
     const token = localStorage.getItem("access_token");
     if (!token) return;
     try {
       await axiosInstance.patch(
-        `${API}/notifications/mark-read/`,
+        `${API_BASE}/notifications/mark-read/`,
         { id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setNotifications((prev) => (Array.isArray(prev) ? prev : []).map((n) => (n?.id === id ? { ...n, read: true } : n)));
-      setNotificationsUnreadCount((c) => Math.max(0, (typeof c === "number" ? c : 0) - 1));
-    } catch (_) {}
+      setNotifications((prev) => prev.map((n) => (n?.id === id ? { ...n, read: true } : n)));
+      setNotificationsUnreadCount((c) => Math.max(0, c - 1));
+    } catch { /* optimistic update — ignore if request fails */ }
   };
 
   const markAllNotificationsRead = async () => {
-    if (!API) return;
+    if (!API_BASE) return;
     const token = localStorage.getItem("access_token");
     if (!token) return;
     try {
       await axiosInstance.patch(
-        `${API}/notifications/mark-read/`,
+        `${API_BASE}/notifications/mark-read/`,
         { all: true },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setNotifications((prev) => (Array.isArray(prev) ? prev : []).map((n) => ({ ...n, read: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setNotificationsUnreadCount(0);
-    } catch (_) {}
+    } catch { /* optimistic update — ignore if request fails */ }
   };
 
   function handleLogout() {
@@ -251,7 +193,7 @@ export default function Header() {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
     setUser(null);
-    window.location.href = "/"; // refresh UI after logout
+    router.push("/");
   }
 
   const desktopLinks = [
@@ -529,7 +471,6 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <button
@@ -562,7 +503,6 @@ export default function Header() {
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {user ? (
             <div className="py-2">
-              {/* User info */}
               <div className="mb-1 flex items-center gap-3 border-b border-border px-5 py-4">
                 <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted">
                   {user.avatar ? (
@@ -578,8 +518,6 @@ export default function Header() {
                   <div className="text-xs text-muted-foreground">{user.email}</div>
                 </div>
               </div>
-
-              {/* Menu links */}
               <Link
                 href="/bookings"
                 className="flex items-center gap-3 px-5 py-3 text-sm text-muted-foreground transition hover:bg-accent/60 hover:text-foreground"
@@ -706,7 +644,6 @@ export default function Header() {
                 {t("settings")}
               </Link>
 
-              {/* Divider + Logout */}
               <div className="mt-1 border-t border-border pt-1">
                 <button
                   onClick={() => {
@@ -819,7 +756,6 @@ export default function Header() {
         />
       )}
 
-      {/* Mobile Bottom Navigation — Premium Edition */}
       {!hideMobileBottomNav && !isMobileMenuOpen && (
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-bottom-nav-enter"
@@ -830,7 +766,6 @@ export default function Header() {
         }}
       >
         <div className="mx-auto mb-2.5 flex max-w-[380px] items-end justify-between rounded-[30px] border border-white/65 bg-background/96 px-2 py-2.5 shadow-[0_-8px_32px_rgba(124,58,237,0.18),0_2px_8px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
-          {/* First two nav items */}
           {mobileNavItems.slice(0, 2).map((item) => {
             const Icon = item.icon;
             return (
@@ -862,7 +797,6 @@ export default function Header() {
             );
           })}
 
-          {/* Center Item — List an Item */}
           <Link
             href="/listings/new"
             className={`mobile-nav-item tap-highlight relative flex min-h-[52px] min-w-[62px] flex-col items-center justify-center gap-[2px] rounded-[18px] px-1.5 text-[10px] font-semibold transition-colors duration-200 ${
@@ -885,7 +819,6 @@ export default function Header() {
             <span className={`mobile-nav-dot ${pathname === "/listings/new" ? "active" : ""}`} />
           </Link>
 
-          {/* Last two nav items */}
           {mobileNavItems.slice(2).map((item) => {
             const Icon = item.icon;
             return (

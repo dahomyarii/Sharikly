@@ -21,6 +21,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeInDown, SlideInDown } from "react-native-reanimated";
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, "Register">;
 
@@ -196,7 +197,7 @@ export function RegisterScreen(): React.ReactElement {
           </LinearGradient>
 
           {/* Form */}
-          <View style={styles.card}>
+          <Animated.View entering={SlideInDown.springify().damping(18)} style={styles.card}>
             <Text style={styles.title}>Join Ekra</Text>
             <Text style={styles.subtitle}>Start renting and listing in minutes</Text>
 
@@ -206,6 +207,7 @@ export function RegisterScreen(): React.ReactElement {
               </View>
             ) : null}
 
+            <Animated.View entering={FadeInDown.delay(100).springify()}>
             <Field
               label="Username *"
               icon={User}
@@ -213,6 +215,8 @@ export function RegisterScreen(): React.ReactElement {
               onChange={setUsername}
               placeholder="janedoe"
             />
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(200).springify()}>
             <Field
               label="Email *"
               icon={Mail}
@@ -221,6 +225,8 @@ export function RegisterScreen(): React.ReactElement {
               placeholder="you@example.com"
               keyboard="email-address"
             />
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(300).springify()}>
             <Field
               label="Phone"
               icon={User}
@@ -229,6 +235,8 @@ export function RegisterScreen(): React.ReactElement {
               placeholder="05xxxxxxxx"
               keyboard="phone-pad"
             />
+            </Animated.View>
+            <Animated.View entering={FadeInDown.delay(400).springify()}>
             <Field
               label="Password *"
               icon={Lock}
@@ -239,7 +247,9 @@ export function RegisterScreen(): React.ReactElement {
               showSecure={showPassword}
               toggleSecure={() => setShowPassword((v) => !v)}
             />
+            </Animated.View>
 
+            <Animated.View entering={FadeInDown.delay(500).springify()}>
             <PrimaryButton
               label="Create Account"
               onPress={handleRegister}
@@ -247,21 +257,24 @@ export function RegisterScreen(): React.ReactElement {
               fullWidth
               size="lg"
             />
+            </Animated.View>
 
-            <View style={styles.switchRow}>
+            <Animated.View entering={FadeInDown.delay(600).springify()} style={styles.switchRow}>
               <Text style={styles.switchText}>Already have an account? </Text>
               <Pressable onPress={() => navigation.navigate("Login")}>
                 <Text style={styles.switchLink}>Sign in</Text>
               </Pressable>
-            </View>
+            </Animated.View>
 
+            <Animated.View entering={FadeInDown.delay(700).springify()}>
             <Pressable
               style={styles.guestBtn}
               onPress={() => navigation.getParent()?.goBack()}
             >
               <Text style={styles.guestText}>Continue browsing without account</Text>
             </Pressable>
-          </View>
+            </Animated.View>
+          </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

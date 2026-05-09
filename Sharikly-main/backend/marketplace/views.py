@@ -18,8 +18,52 @@ from datetime import datetime as dt
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
-from .models import *
-from .serializers import *
+from .models import (
+    AvailabilityBlock,
+    BlockedUser,
+    BlogPost,
+    Booking,
+    Category,
+    ChatRoom,
+    ContactMessage,
+    Favorite,
+    HostPreference,
+    Listing,
+    ListingImage,
+    Message,
+    Notification,
+    NotificationPreference,
+    ParticipantLastRead,
+    PaymentMethod,
+    Report,
+    Review,
+    ReviewVote,
+    SavedSearch,
+    UserAdminMessage,
+)
+from .serializers import (
+    AvailabilityBlockSerializer,
+    BlogPostSerializer,
+    BookingSerializer,
+    CategorySerializer,
+    ChatRoomSerializer,
+    ContactMessageSerializer,
+    EarningsCalculatorInputSerializer,
+    FavoriteSerializer,
+    HostPreferenceSerializer,
+    ListingSerializer,
+    MessageSerializer,
+    NotificationPreferenceSerializer,
+    NotificationSerializer,
+    PaymentMethodSerializer,
+    PublicCommunityEarningsSerializer,
+    PublicUserSerializer,
+    ReportSerializer,
+    ReviewSerializer,
+    SavedSearchSerializer,
+    UserAdminMessageSerializer,
+    UserSerializer,
+)
 from .earnings import (
     build_landlord_dashboard,
     build_public_community_earnings,
@@ -242,6 +286,40 @@ class NotificationPreferenceView(APIView):
     def patch(self, request):
         prefs, _ = NotificationPreference.objects.get_or_create(user=request.user)
         serializer = NotificationPreferenceSerializer(prefs, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PaymentMethodListView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PaymentMethodSerializer
+
+    def get_queryset(self):
+        return PaymentMethod.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class PaymentMethodDetailView(generics.DestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PaymentMethodSerializer
+
+    def get_queryset(self):
+        return PaymentMethod.objects.filter(user=self.request.user)
+
+
+class HostPreferenceView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        prefs, _ = HostPreference.objects.get_or_create(user=request.user)
+        return Response(HostPreferenceSerializer(prefs).data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        prefs, _ = HostPreference.objects.get_or_create(user=request.user)
+        serializer = HostPreferenceSerializer(prefs, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -522,28 +600,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         return super().post(request, *args, **kwargs)
 
 
-class ResendVerificationView(APIView):
-    """POST email -> resend verification email if user exists and is not verified."""
-    permission_classes = [permissions.AllowAny]
 
-    def post(self, request):
-        email = (request.data.get("email") or "").strip().lower()
-        if not email:
-            return Response(
-                {"detail": "Email is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        user = User.objects.filter(email__iexact=email).first()
-        if user and not user.is_email_verified:
-            try:
-                send_verification_email(user)
-            except Exception:
-                logger.error("Resend verification email delivery failed")
-        # Same message whether we sent or not (avoid email enumeration)
-        return Response(
-            {"detail": "If your email is not verified, we've sent a new verification link. Please check your inbox."},
-            status=status.HTTP_200_OK,
-        )
 
 
 # --- Listings Views ---

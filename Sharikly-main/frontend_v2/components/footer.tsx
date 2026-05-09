@@ -1,8 +1,6 @@
-// frontend/components/Footer.tsx
 'use client'
-import React from 'react'
 import Link from 'next/link'
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'
+import { Mail, Phone, MapPin, Instagram, Linkedin } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -87,16 +85,22 @@ export default function Footer() {
                 Follow us
               </h3>
               <div className="flex flex-wrap gap-3">
-                <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
-                  <Facebook className="h-4 w-4" />
-                </Link>
-                <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
-                  <Twitter className="h-4 w-4" />
-                </Link>
-                <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
+                <Link
+                  href="https://instagram.com/ekra.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Ekra on Instagram"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70"
+                >
                   <Instagram className="h-4 w-4" />
                 </Link>
-                <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70">
+                <Link
+                  href="https://linkedin.com/company/ekra"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Ekra on LinkedIn"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-sm transition hover:bg-accent/70"
+                >
                   <Linkedin className="h-4 w-4" />
                 </Link>
               </div>

@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import { useAuthStore } from "@/store/authStore";
 import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import {
   Bell,
   CalendarDays,
@@ -201,14 +202,20 @@ export function HomeScreen(): React.ReactElement {
 
               {/* Filters overlay */}
               <View style={styles.heroFilters}>
-                <View style={styles.filterPill}>
+                <Pressable 
+                  style={styles.filterPill}
+                  onPress={() => navigation.navigate("ExploreTab", { screen: "ListingsExplore" } as any)}
+                >
                   <MapPin size={14} color={colors.primary} />
-                  <Text style={styles.filterPillText}>Riyadh ▾</Text>
-                </View>
-                <View style={styles.filterPill}>
+                  <Text style={styles.filterPillText}>Near me ▾</Text>
+                </Pressable>
+                <Pressable 
+                  style={styles.filterPill}
+                  onPress={() => navigation.navigate("ExploreTab", { screen: "ListingsExplore" } as any)}
+                >
                   <CalendarDays size={14} color={colors.primary} />
                   <Text style={styles.filterPillText}>Any date ▾</Text>
-                </View>
+                </Pressable>
               </View>
             </View>
           </ImageBackground>
@@ -242,7 +249,7 @@ export function HomeScreen(): React.ReactElement {
         />
 
         {/* ─── POPULAR NEAR YOU ─── */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.duration(400).delay(100)} style={styles.section}>
           <Text style={styles.sectionTitle}>Popular near you</Text>
           {listingsQ.isPending ? (
             <SkeletonGrid count={2} />
@@ -258,11 +265,11 @@ export function HomeScreen(): React.ReactElement {
               ))}
             </View>
           )}
-        </View>
+        </Animated.View>
 
         {/* ─── PEOPLE ALSO RENTED ─── */}
         {exploreListings.length > 0 && (
-          <View style={styles.section}>
+          <Animated.View entering={FadeInDown.duration(400).delay(200)} style={styles.section}>
             <Text style={styles.sectionTitle}>People also rented</Text>
             <ScrollView
               horizontal
@@ -285,12 +292,12 @@ export function HomeScreen(): React.ReactElement {
                 </Pressable>
               ))}
             </ScrollView>
-          </View>
+          </Animated.View>
         )}
 
         {/* ─── PEOPLE ARE LOOKING FOR ─── */}
         {trending.length > 0 && (
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.duration(400).delay(300)} style={styles.section}>
           <Text style={styles.sectionTitle}>People are looking for</Text>
           <View style={styles.requestsCard}>
             <View style={styles.requestsList}>
@@ -314,11 +321,11 @@ export function HomeScreen(): React.ReactElement {
               />
             </View>
           </View>
-        </View>
+        </Animated.View>
         )}
 
         {/* ─── BOTTOM PROMO HERO ─── */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.duration(400).delay(400)} style={styles.section}>
           <LinearGradient
             colors={["#7C3AED", "#5B21B6"]}
             start={{ x: 0, y: 0 }}
@@ -338,7 +345,7 @@ export function HomeScreen(): React.ReactElement {
               <Text style={styles.bottomPromoBtnText}>List Your Item</Text>
             </Pressable>
           </LinearGradient>
-        </View>
+        </Animated.View>
 
         {/* System Padding for Tab Bar */}
         <View style={{ height: layout.tabBarHeight + 40 }} />

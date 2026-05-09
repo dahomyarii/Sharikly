@@ -2,7 +2,8 @@ import { colors, shadows } from "@/core/theme/tokens";
 import { hapticImpact } from "@/utils/haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 
 interface PrimaryButtonProps {
   label: string;
@@ -41,16 +42,16 @@ export function PrimaryButton({
 
   if (variant === "gradient") {
     return (
-      <Pressable
+      <AnimatedPressable
         onPress={handlePress}
-        style={({ pressed }) => [
+        style={[
           styles.base,
           { alignSelf: fullWidth ? "stretch" : "flex-start" },
-          pressed && !isDisabled && styles.pressed,
           isDisabled && styles.disabled,
         ]}
         accessibilityRole="button"
         accessibilityState={{ disabled: isDisabled }}
+        disableHaptics // haptics are already fired in handlePress
       >
         <LinearGradient
           colors={["#9356F5", "#6D28D9"]}
@@ -74,15 +75,15 @@ export function PrimaryButton({
             </View>
           )}
         </LinearGradient>
-      </Pressable>
+      </AnimatedPressable>
     );
   }
 
   if (variant === "outline") {
     return (
-      <Pressable
+      <AnimatedPressable
         onPress={handlePress}
-        style={({ pressed }) => [
+        style={[
           styles.outline,
           {
             height: sizeStyles.height,
@@ -90,10 +91,10 @@ export function PrimaryButton({
             borderRadius: sizeStyles.borderRadius,
             alignSelf: fullWidth ? "stretch" : "flex-start",
           },
-          pressed && !isDisabled && styles.pressed,
           isDisabled && styles.disabled,
         ]}
         accessibilityRole="button"
+        disableHaptics
       >
         {loading ? (
           <ActivityIndicator color={colors.primary} size="small" />
@@ -103,15 +104,15 @@ export function PrimaryButton({
             <Text style={[styles.outlineLabel, { fontSize: sizeStyles.fontSize }]}>{label}</Text>
           </View>
         )}
-      </Pressable>
+      </AnimatedPressable>
     );
   }
 
   // ghost
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={handlePress}
-      style={({ pressed }) => [
+      style={[
         styles.ghost,
         {
           height: sizeStyles.height,
@@ -119,10 +120,10 @@ export function PrimaryButton({
           borderRadius: sizeStyles.borderRadius,
           alignSelf: fullWidth ? "stretch" : "flex-start",
         },
-        pressed && !isDisabled && { opacity: 0.7 },
         isDisabled && styles.disabled,
       ]}
       accessibilityRole="button"
+      disableHaptics
     >
       {loading ? (
         <ActivityIndicator color={colors.primary} size="small" />
@@ -132,7 +133,7 @@ export function PrimaryButton({
           <Text style={[styles.ghostLabel, { fontSize: sizeStyles.fontSize }]}>{label}</Text>
         </View>
       )}
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 

@@ -7,7 +7,7 @@ const defineConfig = (): ExpoConfig => ({
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "automatic",
-  newArchEnabled: true,
+  newArchEnabled: false, // Expo Go uses the old bridge — new arch requires a custom build (EAS/expo run)
   scheme: "ekra",
   splash: {
     image: "./assets/splash-icon.png",

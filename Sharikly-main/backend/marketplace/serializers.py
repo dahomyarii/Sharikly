@@ -109,19 +109,31 @@ class UserSerializer(serializers.ModelSerializer):
     response_rate = serializers.SerializerMethodField()
     typical_response_minutes = serializers.SerializerMethodField()
     is_super_host = serializers.SerializerMethodField()
+    listings_count = serializers.SerializerMethodField()
+    bookings_count = serializers.SerializerMethodField()
+    total_earnings = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
             "id",
             "username",
+            "first_name",
+            "last_name",
             "email",
             "avatar",
             "bio",
             "is_email_verified",
+            "phone_number",
+            "language",
+            "payout_bank",
+            "payout_schedule",
             "response_rate",
             "typical_response_minutes",
             "is_super_host",
+            "listings_count",
+            "bookings_count",
+            "total_earnings",
         ]
 
     def _get_cached_response_stats(self, obj: User):
@@ -142,6 +154,23 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_super_host(self, obj):
         return _compute_is_super_host(obj)
+
+    def get_listings_count(self, obj):
+        return obj.listings.count()
+
+    def get_bookings_count(self, obj):
+        from .models import Booking
+        return Booking.objects.filter(renter=obj, payment_status=Booking.PaymentStatus.PAID).count()
+
+    def get_total_earnings(self, obj):
+        from django.db.models import Sum, Coalesce
+        from decimal import Decimal
+        from .models import Booking
+        result = Booking.objects.filter(
+            listing__owner=obj,
+            payment_status=Booking.PaymentStatus.PAID
+        ).aggregate(total=Coalesce(Sum('total_price'), Decimal('0.00')))
+        return float(result['total'])
 
 
 class PublicUserSerializer(serializers.ModelSerializer):
@@ -790,9 +819,32 @@ class NotificationPreferenceSerializer(serializers.ModelSerializer):
             "inapp_messages",
             "email_booking_updates",
             "email_messages",
+            "earnings_updates",
+            "promotions_updates",
             "updated_at",
         ]
         read_only_fields = ["updated_at"]
+
+
+class PaymentMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentMethod
+        fields = ["id", "card_last4", "brand", "is_default", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+
+class HostPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HostPreference
+        fields = [
+            "smart_pricing",
+            "instant_booking",
+            "default_deposit",
+            "availability_defaults",
+            "updated_at",
+        ]
+        read_only_fields = ["updated_at"]
+
 
 
 class SavedSearchSerializer(serializers.ModelSerializer):

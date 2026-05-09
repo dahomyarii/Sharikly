@@ -3,6 +3,8 @@ import { hapticSelection } from "@/utils/haptics";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
+
 interface CategoryChipProps {
   label: string;
   icon?: React.ReactNode;
@@ -12,22 +14,22 @@ interface CategoryChipProps {
 
 export function CategoryChip({ label, icon, active = false, onPress }: CategoryChipProps) {
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={() => {
         hapticSelection();
         onPress?.();
       }}
-      style={({ pressed }) => [
+      style={[
         styles.chip,
         active && styles.chipActive,
-        pressed && styles.chipPressed,
       ]}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
+      disableHaptics // we are using hapticSelection manually
     >
       {icon && <View style={styles.iconWrap}>{icon}</View>}
       <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 

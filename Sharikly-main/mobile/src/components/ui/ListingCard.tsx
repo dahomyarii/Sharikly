@@ -1,7 +1,7 @@
 import { colors, spacing } from "@/core/theme/tokens";
 
 import { LinearGradient } from "expo-linear-gradient";
-import Animated from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { Star } from "lucide-react-native";
 import React from "react";
 import {
@@ -12,13 +12,15 @@ import {
   View,
 } from "react-native";
 
+import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 
 interface ListingCardProps {
   listing: any;
   onPress: () => void;
+  index?: number;
 }
 
-export const ListingCard = React.memo(({ listing, onPress }: ListingCardProps) => {
+export const ListingCard = React.memo(({ listing, onPress, index = 0 }: ListingCardProps) => {
   const imageUrl = listing.images?.[0]?.image || "https://via.placeholder.com/300";
   const title = listing.title || "Untitled Listing";
   const price = listing.price_per_day || "0";
@@ -34,15 +36,13 @@ export const ListingCard = React.memo(({ listing, onPress }: ListingCardProps) =
   const avatarUrl = listing.owner?.avatar ? (listing.owner.avatar.startsWith("http") ? listing.owner.avatar : `${process.env.EXPO_PUBLIC_API_BASE?.replace("/api", "") || ""}${listing.owner.avatar}`) : null;
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        pressed && styles.cardPressed
-      ]}
-    >
-      <View style={styles.imageContainer}>
-        <Animated.Image
+    <Animated.View entering={FadeInDown.delay(index * 100).springify().damping(14).mass(0.8)}>
+      <AnimatedPressable
+        onPress={onPress}
+        style={styles.card}
+      >
+        <View style={styles.imageContainer}>
+          <Animated.Image
           source={{ uri: imageUrl }}
           style={styles.image}
           resizeMode="cover"
@@ -82,7 +82,8 @@ export const ListingCard = React.memo(({ listing, onPress }: ListingCardProps) =
           {currency} {price} <Text style={styles.period}>/ day</Text>
         </Text>
       </View>
-    </Pressable>
+    </AnimatedPressable>
+    </Animated.View>
   );
 });
 

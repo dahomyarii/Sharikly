@@ -622,9 +622,7 @@
   }
 }
 
-/* ============================================================
-   PREMIUM MOBILE NAV — active dot indicator
-   ============================================================ */
+/* Mobile nav — active dot indicator */
 .mobile-nav-dot {
   width: 4px;
   height: 4px;
@@ -652,9 +650,7 @@
   transition: transform 0.1s ease;
 }
 
-/* ============================================================
-   CENTER FLOATING ACTION BUTTON
-   ============================================================ */
+/* Mobile nav — center floating action button */
 .mobile-fab {
   position: relative;
   flex-shrink: 0;
@@ -678,9 +674,7 @@
   transition: transform 0.1s ease;
 }
 
-/* ============================================================
-   NATIVE-FEEL TOUCH FEEDBACK
-   ============================================================ */
+/* Native-feel touch feedback */
 .tap-highlight {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -705,9 +699,7 @@
   }
 }
 
-/* ============================================================
-   SCROLL PHYSICS - MOMENTUM & SNAP
-   ============================================================ */
+/* Scroll physics — momentum & snap */
 .scroll-snap-x {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
@@ -722,9 +714,7 @@
   overscroll-behavior-x: contain;
 }
 
-/* ============================================================
-   SEARCH BAR FLOAT ANIMATION
-   ============================================================ */
+/* Search bar float animation */
 .mobile-search-float {
   animation: searchFloat 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -739,9 +729,7 @@
   }
 }
 
-/* ============================================================
-   SHIMMER SKELETON LOADING
-   ============================================================ */
+/* Shimmer skeleton loading */
 .shimmer {
   background: linear-gradient(
     90deg,
@@ -757,9 +745,7 @@
   to   { background-position: -200% 0; }
 }
 
-/* ============================================================
-   BOTTOM SHEET DRAG HANDLE
-   ============================================================ */
+/* Bottom sheet drag handle */
 .drag-handle {
   width: 36px;
   height: 4px;

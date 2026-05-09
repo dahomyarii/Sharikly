@@ -48,61 +48,30 @@ function formatRelativeTime(iso: string) {
 }
 
 function getRichData(notif: any, idx: number) {
-  const type = notif.notification_type ?? notif.type ?? "";
   const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
-  const avatarLetter = notif.title?.charAt(0)?.toUpperCase() ?? "N";
+  const avatarLetter = (notif.title || "N").charAt(0).toUpperCase();
 
-  if (type.includes("booking_completed") || type.includes("completed")) {
-    return {
-      name: "Khalid",
-      statusLabel: "On the way",
-      boldTitle: "Booking Completed",
-      body: `Khalid completed their booking.\nYou've earned 130 SAR!`,
-      actions: ["View Details", "Rate Guest"],
-      avatarColor,
-      avatarLetter: "K",
-    };
+  const title = notif.title || "Notification";
+  const body = notif.body || notif.message || "";
+  const type = String(notif.notification_type || notif.type || "").toLowerCase();
+
+  const actions: string[] = [];
+  if (notif.booking_id) {
+    if (type.includes("request")) {
+      actions.push("Decline", "Accept");
+    } else {
+      actions.push("View Details");
+    }
+  } else if (notif.actor_id || notif.user_id) {
+    actions.push("View Profile");
   }
-  if (type.includes("payment") || type.includes("payment_received")) {
-    return {
-      name: "Saad",
-      statusLabel: "Paid",
-      boldTitle: "Payment Received",
-      body: `You've earned 930 SAR from Saad's booking.\n10% fee is applied in the total amount.`,
-      actions: ["View Earnings"],
-      avatarColor: "#10B981",
-      avatarLetter: "S",
-    };
-  }
-  if (type.includes("pickup") || type.includes("reminder")) {
-    return {
-      name: "Saad",
-      statusLabel: "",
-      boldTitle: "Reminder Pickup Today",
-      boldTitlePrefix: "Reminder ",
-      body: `Saad is scheduled to pick up\nthe DJI Mini A! ✨ today at 5:30 PM.\nDon't forget to prepare the item!`,
-      actions: ["Decline", "Accept →"],
-      avatarColor: "#F59E0B",
-      avatarLetter: "S",
-    };
-  }
-  if (type.includes("new_booking") || type.includes("request")) {
-    return {
-      name: "Faisal",
-      statusLabel: "",
-      boldTitle: "New Booking Request",
-      body: `Faisal requested to rent your GoPro Hero10\nstarting Apr 27. Confirm pickup?`,
-      actions: ["Decline", "Accept"],
-      avatarColor: "#7C3AED",
-      avatarLetter: "F",
-    };
-  }
+
   return {
-    name: notif.title ?? "Notification",
+    name: "Notification",
     statusLabel: "",
-    boldTitle: notif.message ?? notif.title ?? "New notification",
-    body: "",
-    actions: [],
+    boldTitle: title,
+    body: body,
+    actions,
     avatarColor,
     avatarLetter,
   };
@@ -160,14 +129,7 @@ export function NotificationsScreen(): React.ReactElement {
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  // ── Fallback mock notifications if API returns nothing ──────────────────
-  const displayNotifs = notifications.length > 0 ? notifications : [
-    { id: 1, notification_type: "booking_completed", is_read: false, created_at: new Date().toISOString() },
-    { id: 2, notification_type: "payment_received", is_read: false, created_at: new Date(Date.now() - 3600000).toISOString() },
-    { id: 3, notification_type: "pickup_reminder", is_read: true, created_at: new Date(Date.now() - 86400000).toISOString() },
-    { id: 4, notification_type: "new_booking_request", is_read: true, created_at: new Date(Date.now() - 172800000).toISOString() },
-  ];
-  const filteredNotifs = displayNotifs.filter((notif) => matchesFilterTab(notif, activeTab));
+  const filteredNotifs = notifications.filter((notif) => matchesFilterTab(notif, activeTab));
 
   const renderItem = ({ item: notif, index }: { item: any; index: number }) => {
     const rich = getRichData(notif, index);
@@ -177,8 +139,7 @@ export function NotificationsScreen(): React.ReactElement {
     const hasDecline = rich.actions.some((a) => a === "Decline" || a === "Decline");
     const hasAccept = rich.actions.some((a) => a.startsWith("Accept"));
     const hasViewDetails = rich.actions.some((a) => a === "View Details");
-    const hasRateGuest = rich.actions.some((a) => a === "Rate Guest");
-    const hasViewEarnings = rich.actions.some((a) => a === "View Earnings");
+    const hasViewProfile = rich.actions.some((a) => a === "View Profile");
 
     return (
       <Pressable
@@ -229,7 +190,7 @@ export function NotificationsScreen(): React.ReactElement {
                 <Text style={styles.actionBtnOutlineText}>View Details</Text>
               </Pressable>
             )}
-            {hasRateGuest && (
+            {hasViewProfile && (
               <Pressable
                 style={styles.actionBtnPrimary}
                 onPress={() => {
@@ -239,24 +200,10 @@ export function NotificationsScreen(): React.ReactElement {
                       screen: "PublicProfile",
                       params: { userId },
                     });
-                    return;
                   }
-                  const bookingId = notif.booking_id ?? notif.id;
-                  (navigation as any).navigate("BookingsTab", {
-                    screen: "BookingReceipt",
-                    params: { id: bookingId },
-                  });
                 }}
               >
-                <Text style={styles.actionBtnPrimaryText}>Rate Guest</Text>
-              </Pressable>
-            )}
-            {hasViewEarnings && (
-              <Pressable
-                style={[styles.actionBtnOutline, { flex: 0, paddingHorizontal: 20 }]}
-                onPress={() => (navigation as any).navigate("ProfileTab", { screen: "HostArea" })}
-              >
-                <Text style={styles.actionBtnOutlineText}>View Earnings</Text>
+                <Text style={styles.actionBtnPrimaryText}>View Profile</Text>
               </Pressable>
             )}
             {hasDecline && (

@@ -11,6 +11,12 @@ class User(AbstractUser):
     # Tap Payments marketplace: destination_id for receiving 85% of rental payments (15% platform fee)
     tap_destination_id = models.CharField(max_length=64, blank=True, null=True)
 
+    # New preference fields
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    language = models.CharField(max_length=10, default="en")
+    payout_bank = models.CharField(max_length=100, blank=True, null=True)
+    payout_schedule = models.CharField(max_length=20, default="WEEKLY")
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
 

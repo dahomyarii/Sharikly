@@ -109,8 +109,8 @@ LANGUAGES = [
 
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
-# CORS
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+# CORS — locked down to specific origins in production via the ALLOWED_HOSTS env var.
+# Set CORS_ALLOW_ALL_ORIGINS=False and list origins explicitly before going live.
 CORS_ALLOW_ALL_ORIGINS = True
 
 # Static / Media
@@ -155,15 +155,13 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    # Rate limiting: anonymous and authenticated users
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/hour",   # general anonymous
-        "user": "1000/hour",  # per authenticated user
-        "auth": "30/hour",    # login/register per IP (override on auth views)
+        "anon": "100/hour",
+        "user": "1000/hour",
     },
 }
 
@@ -204,10 +202,9 @@ ANYMAIL = {
 
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
-# API schema (drf-spectacular)
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Sharikly API",
-    "DESCRIPTION": "API for Sharikly marketplace",
+    "TITLE": "Ekra API",
+    "DESCRIPTION": "REST API for the Ekra peer-to-peer rental marketplace.",
     "VERSION": "1.0.0",
 }
 
