@@ -163,7 +163,8 @@ class UserSerializer(serializers.ModelSerializer):
         return Booking.objects.filter(renter=obj, payment_status=Booking.PaymentStatus.PAID).count()
 
     def get_total_earnings(self, obj):
-        from django.db.models import Sum, Coalesce
+        from django.db.models import Sum
+        from django.db.models.functions import Coalesce
         from decimal import Decimal
         from .models import Booking
         result = Booking.objects.filter(
