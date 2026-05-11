@@ -43,9 +43,8 @@ local_settings.py
 /staticfiles
 /static
 
-# Django migrations
-**/migrations/*.py
-!**/migrations/__init__.py
+# Django migrations — DO NOT ignore these; they are source code.
+# Without them the VPS database schema will be out of sync.
 
 # IDE
 .vscode/
