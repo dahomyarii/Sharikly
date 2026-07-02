@@ -17,6 +17,7 @@ import {
   View,
   Alert,
   Image,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";

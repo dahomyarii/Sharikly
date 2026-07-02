@@ -14,6 +14,8 @@ interface PrimaryButtonProps {
   size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
   icon?: React.ReactNode;
+  style?: import("react-native").StyleProp<import("react-native").ViewStyle>;
+  textStyle?: import("react-native").StyleProp<import("react-native").TextStyle>;
 }
 
 export function PrimaryButton({
@@ -25,6 +27,8 @@ export function PrimaryButton({
   size = "md",
   fullWidth = false,
   icon,
+  style,
+  textStyle,
 }: PrimaryButtonProps) {
   const sizeStyles = {
     sm: { height: 38, paddingHorizontal: 16, fontSize: 13, borderRadius: 12 },
@@ -48,6 +52,7 @@ export function PrimaryButton({
           styles.base,
           { alignSelf: fullWidth ? "stretch" : "flex-start" },
           isDisabled && styles.disabled,
+          style,
         ]}
         accessibilityRole="button"
         accessibilityState={{ disabled: isDisabled }}
@@ -71,7 +76,7 @@ export function PrimaryButton({
           ) : (
             <View style={styles.row}>
               {icon && <View style={styles.iconWrap}>{icon}</View>}
-              <Text style={[styles.label, { fontSize: sizeStyles.fontSize }]}>{label}</Text>
+              <Text style={[styles.label, { fontSize: sizeStyles.fontSize }, textStyle]}>{label}</Text>
             </View>
           )}
         </LinearGradient>
@@ -92,6 +97,7 @@ export function PrimaryButton({
             alignSelf: fullWidth ? "stretch" : "flex-start",
           },
           isDisabled && styles.disabled,
+          style,
         ]}
         accessibilityRole="button"
         disableHaptics
@@ -101,7 +107,7 @@ export function PrimaryButton({
         ) : (
           <View style={styles.row}>
             {icon && <View style={styles.iconWrap}>{icon}</View>}
-            <Text style={[styles.outlineLabel, { fontSize: sizeStyles.fontSize }]}>{label}</Text>
+            <Text style={[styles.outlineLabel, { fontSize: sizeStyles.fontSize }, textStyle]}>{label}</Text>
           </View>
         )}
       </AnimatedPressable>
@@ -121,6 +127,7 @@ export function PrimaryButton({
           alignSelf: fullWidth ? "stretch" : "flex-start",
         },
         isDisabled && styles.disabled,
+        style,
       ]}
       accessibilityRole="button"
       disableHaptics
@@ -130,7 +137,7 @@ export function PrimaryButton({
       ) : (
         <View style={styles.row}>
           {icon && <View style={styles.iconWrap}>{icon}</View>}
-          <Text style={[styles.ghostLabel, { fontSize: sizeStyles.fontSize }]}>{label}</Text>
+          <Text style={[styles.ghostLabel, { fontSize: sizeStyles.fontSize }, textStyle]}>{label}</Text>
         </View>
       )}
     </AnimatedPressable>

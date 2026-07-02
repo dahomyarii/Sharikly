@@ -1,7 +1,9 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
+
 
 # Load .env first
 load_dotenv()

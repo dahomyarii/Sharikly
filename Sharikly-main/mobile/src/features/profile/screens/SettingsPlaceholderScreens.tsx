@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   backBtn: {},
-  headerTitle: { ...typography.h3, fontSize: 18, color: colors.foreground },
+  headerTitle: { ...typography.heading, fontSize: 18, color: colors.foreground },
   content: { padding: spacing.lg },
   label: { fontSize: 14, fontWeight: "600", color: colors.foreground, marginBottom: 8, marginTop: 12 },
   input: {
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   center: { alignItems: 'center', justifyContent: 'center', paddingVertical: 32 },
-  title: { ...typography.h2, marginBottom: 12, textAlign: 'center' },
+  title: { ...typography.title, marginBottom: 12, textAlign: 'center' },
   subtitle: { ...typography.body, textAlign: 'center', color: colors.mutedForeground, lineHeight: 24 },
   loadingText: { textAlign: 'center', marginTop: 24, color: colors.mutedForeground },
 });

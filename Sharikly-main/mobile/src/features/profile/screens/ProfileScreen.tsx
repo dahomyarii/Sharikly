@@ -124,7 +124,7 @@ export function ProfileScreen(): React.ReactElement {
           </View>
           <Text style={styles.guestTitle}>Oops! Something went wrong.</Text>
           <Text style={styles.guestSubtitle}>
-            We couldn't load your profile. Please check your connection and try again.
+            We couldn&apos;t load your profile. Please check your connection and try again.
           </Text>
           <PrimaryButton
             label="Retry"

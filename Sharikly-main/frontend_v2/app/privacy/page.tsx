@@ -139,10 +139,6 @@ export default function PrivacyPage() {
               handle financial transactions.
             </li>
             <li>
-              <strong className="text-foreground">Insurance Partners:</strong> If a claim is filed
-              for a damaged or stolen item.
-            </li>
-            <li>
               <strong className="text-foreground">Authorities:</strong> When required by Saudi law or
               for the protection of our rights.
             </li>

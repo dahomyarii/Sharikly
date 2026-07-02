@@ -76,10 +76,7 @@ export default function CareersPage() {
               <span className="text-blue-600 font-bold">✓</span>
               <span>Competitive salary</span>
             </li>
-            <li className="flex gap-3">
-              <span className="text-blue-600 font-bold">✓</span>
-              <span>Health insurance</span>
-            </li>
+
             <li className="flex gap-3">
               <span className="text-blue-600 font-bold">✓</span>
               <span>Flexible work hours</span>

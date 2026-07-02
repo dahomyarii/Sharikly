@@ -476,7 +476,7 @@ export function LandlordEarningsDashboardClient() {
     )
   }
 
-  if (!isLoggedIn || !data) {
+  if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-[#f3edff] flex items-center justify-center">
         <Card className="rounded-3xl border-none shadow-lg bg-white/90 max-w-sm w-full mx-4">
@@ -486,6 +486,23 @@ export function LandlordEarningsDashboardClient() {
             <p className="text-sm text-muted-foreground mb-6">Track your earnings, bookings, and ranking in one place.</p>
             <Button className="w-full rounded-xl bg-violet-500 hover:bg-violet-600" onClick={() => router.push("/auth/login")}>
               Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className="min-h-screen bg-[#f3edff] flex items-center justify-center">
+        <Card className="rounded-3xl border-none shadow-lg bg-white/90 max-w-sm w-full mx-4">
+          <CardContent className="p-8 text-center">
+            <X className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-foreground mb-2">Failed to load dashboard</h2>
+            <p className="text-sm text-muted-foreground mb-6">There was a problem loading your dashboard data. Please try again.</p>
+            <Button className="w-full rounded-xl bg-violet-500 hover:bg-violet-600" onClick={() => window.location.reload()}>
+              Reload
             </Button>
           </CardContent>
         </Card>

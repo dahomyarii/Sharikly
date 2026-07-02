@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 const API = process.env.NEXT_PUBLIC_API_BASE;
 
-export default function SignupPage({ onClose }: { onClose?: () => void }) {
+export default function SignupPage() {
+  const onClose = undefined;
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -45,9 +46,6 @@ export default function SignupPage({ onClose }: { onClose?: () => void }) {
       setIsLoading(false);
 
       // Close signup modal if provided
-      if (onClose) {
-        onClose();
-      }
 
       // Redirect to login page
       setTimeout(() => router.push("/auth/login"), 1000);
