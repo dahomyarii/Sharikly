@@ -27,6 +27,7 @@ import {
   Share2,
   MessageCircle,
   List,
+  MapPin,
 } from "lucide-react";
 import ReportModal from "@/components/ReportModal";
 import { DayPicker } from "react-day-picker";
@@ -667,37 +668,12 @@ export default function ListingDetail() {
 
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <div className="surface-panel overflow-hidden rounded-[34px] p-2 sm:p-3">
-              {/* Mobile: fixed-height Amazon-style slideshow. Desktop: normal flexible layout. */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 p-2 sm:p-4 md:min-h-0">
-                {/* Thumbnails: horizontal strip on mobile (small), vertical on desktop */}
-                <div className="flex flex-row sm:flex-col gap-1.5 sm:gap-2 overflow-x-auto sm:overflow-y-auto sm:max-h-[500px] pb-1 sm:pb-0 shrink-0 md:shrink-0 scrollbar-hide">
-                  {images.map((url: string, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setMainImage(url);
-                      }}
-                      className={`min-w-[56px] w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-2xl overflow-hidden flex-shrink-0 transition-all duration-200 touch-target active:scale-95 ${
-                        mainImage === url
-                          ? "border-primary ring-2 ring-primary/20"
-                          : "border-border hover:border-primary/40 active:border-primary/50"
-                      }`}
-                    >
-                      <img
-                        src={url || "/logo.png"}
-                        alt={`thumbnail ${idx}`}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </button>
-                  ))}
-                </div>
-
-                {/* Main image: forced small box on mobile, flexible on desktop */}
-                <div className="flex-1 relative group min-w-0 min-h-0">
-                  <div className="h-[320px] overflow-hidden rounded-[28px] bg-muted sm:h-auto sm:max-h-[40vh] sm:aspect-[4/3] md:max-h-[420px]">
+            <div className="surface-panel space-y-4 rounded-[34px] p-4 sm:p-5">
+              {/* Image gallery: main image on top, thumbnail slideshow strip below */}
+              <div className="space-y-3">
+                {/* Main image (compact) */}
+                <div className="relative group">
+                  <div className="h-[260px] overflow-hidden rounded-[28px] bg-muted sm:h-auto sm:aspect-[4/3] sm:max-h-[340px]">
                     <img
                       src={mainImage || images[0]}
                       alt={data.title}
@@ -721,16 +697,41 @@ export default function ListingDetail() {
                     <span className="hidden sm:inline">Zoom</span>
                   </Button>
                 </div>
-              </div>
-            </div>
 
-            <div className="surface-panel space-y-4 rounded-[34px] p-5 sm:p-6">
+                {/* Thumbnail slideshow: horizontal strip at all breakpoints */}
+                {images.length > 1 && (
+                  <div className="flex flex-row gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    {images.map((url: string, idx: number) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setMainImage(url);
+                        }}
+                        className={`min-w-[56px] w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-2xl overflow-hidden flex-shrink-0 transition-all duration-200 touch-target active:scale-95 ${
+                          mainImage === url
+                            ? "border-primary ring-2 ring-primary/20"
+                            : "border-border hover:border-primary/40 active:border-primary/50"
+                        }`}
+                      >
+                        <img
+                          src={url || "/logo.png"}
+                          alt={`thumbnail ${idx}`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <h1 className="mb-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
                     {data.title}
                   </h1>
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-4">
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <Star
@@ -749,6 +750,12 @@ export default function ListingDetail() {
                     <span className="text-muted-foreground">
                       ({reviews.length} reviews)
                     </span>
+                    {data.city && (
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <MapPin className="h-4 w-4 shrink-0" />
+                        {data.city}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-1 sm:gap-2 flex-shrink-0">

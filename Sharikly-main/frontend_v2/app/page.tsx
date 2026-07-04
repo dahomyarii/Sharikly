@@ -100,10 +100,8 @@ export default function HomePage() {
 
   const listings: Listing[] = useMemo(() => toListingsArray(listingsData), [listingsData]);
   const categories: Category[] = Array.isArray(categoriesData) ? categoriesData : [];
-  const popularListings = listings.slice(0, 4);
+  const popularListings = listings.slice(0, 6);
   const visibleCategories = categories.slice(0, 6);
-  const exploreListings = listings.slice(4, 7);
-  const exploreShowcase = exploreListings.length > 0 ? exploreListings : popularListings.slice(0, 3);
 
   useEffect(() => {
     try {
@@ -146,14 +144,14 @@ export default function HomePage() {
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: "url(/image.jpeg)", backgroundPosition: "center" }}
           />
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.4),rgba(255,255,255,0.25),rgba(25,17,52,0.15))]" />
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(255,255,255,0.8),rgba(236,233,246,0.72))]" />
           <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/15" />
           <div className="floating-orb bottom-[-2rem] right-[-1rem] h-20 w-20 bg-emerald-300/25" />
           
           <div className="relative z-10 grid gap-8 lg:grid-cols-[1.32fr_0.78fr] px-4 py-5 sm:px-7 sm:py-7 lg:px-9 lg:py-8">
             
             {/* Left Column Area */}
-            <div>
+            <div className="min-w-0">
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/80 sm:text-xs">
                 Ekra marketplace
               </p>
@@ -179,7 +177,7 @@ export default function HomePage() {
               </div>
 
               {/* Desktop: full search bar */}
-              <div className="hidden md:block glass-panel mt-4 rounded-[22px] p-1.5 sm:mt-5 sm:rounded-[26px] sm:p-2 border border-white/40 shadow-sm bg-white/40">
+              <div className="hidden md:block glass-panel mt-4 rounded-[22px] p-1 sm:mt-5 sm:rounded-[26px] sm:p-1.5 border border-white/40 shadow-sm bg-white/40">
                 <div className="grid gap-2 md:grid-cols-[1.7fr_1fr_1fr_auto]">
                   <div className="relative">
                     <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -188,13 +186,13 @@ export default function HomePage() {
                       onChange={(e) => setHeroSearch(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                       placeholder="Search items or location..."
-                      className="h-11 w-full rounded-[18px] border border-transparent bg-white/80 backdrop-blur pl-11 pr-4 text-sm outline-none sm:h-12 sm:rounded-[20px]"
+                      className="h-10 w-full rounded-[18px] border border-transparent bg-white/80 backdrop-blur pl-11 pr-4 text-sm outline-none sm:h-11 sm:rounded-[20px]"
                     />
                   </div>
                   <select
                     value={heroCategory}
                     onChange={(e) => setHeroCategory(e.target.value)}
-                    className="h-11 rounded-[18px] border border-transparent bg-white/80 backdrop-blur px-4 text-sm outline-none sm:h-12 sm:rounded-[20px]"
+                    className="h-10 rounded-[18px] border border-transparent bg-white/80 backdrop-blur px-4 text-sm outline-none sm:h-11 sm:rounded-[20px]"
                   >
                     <option value="">{t("all_categories")}</option>
                     {categories.map((category: any) => (
@@ -209,13 +207,13 @@ export default function HomePage() {
                       value={heroCity}
                       onChange={(e) => setHeroCity(e.target.value)}
                       placeholder="Select city"
-                      className="h-11 w-full rounded-[18px] border border-transparent bg-white/80 backdrop-blur pl-11 pr-4 text-sm outline-none sm:h-12 sm:rounded-[20px]"
+                      className="h-10 w-full rounded-[18px] border border-transparent bg-white/80 backdrop-blur pl-11 pr-4 text-sm outline-none sm:h-11 sm:rounded-[20px]"
                     />
                   </div>
                   <Button
                     size="lg"
                     onClick={handleSearch}
-                    className="h-11 rounded-[18px] px-5 sm:h-12 sm:rounded-[20px] sm:px-6"
+                    className="h-10 rounded-[18px] px-5 sm:h-11 sm:rounded-[20px] sm:px-6"
                   >
                     Search
                   </Button>
@@ -255,8 +253,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right column (desktop): same host highlights card as mobile sees below */}
-            <div className="hidden min-h-[260px] flex-col justify-between lg:flex lg:pl-6 lg:border-l lg:border-white/30 lg:pt-0">
+            {/* Right column: host highlights card, visible at all breakpoints */}
+            <div className="flex min-w-0 flex-col justify-center gap-3 lg:min-h-[260px] lg:justify-between lg:pl-6 lg:border-l lg:border-white/30">
               <HostEarningsHighlightsCard className="border-white/40 bg-white/35 shadow-sm backdrop-blur-sm" />
             </div>
 
@@ -280,9 +278,9 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6">
           {listingsLoading
-            ? Array.from({ length: 4 }).map((_, idx) => <SkeletonLoader key={idx} />)
+            ? Array.from({ length: 6 }).map((_, idx) => <SkeletonLoader key={idx} />)
             : popularListings.map((listing: any) => (
                 <ListingCard key={listing.id} listing={listing} compact />
               ))}
@@ -290,70 +288,21 @@ export default function HomePage() {
       </section>
 
       <section className="marketplace-shell mt-7">
-        <div className="surface-panel rounded-[28px] p-3.5 sm:p-4">
-            <div className="mb-3 flex items-end justify-between">
-              <div>
-                <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
-                  Explore more
-                </p>
-                <h2 className="mt-1.5 text-lg font-black tracking-tight text-foreground sm:text-xl">
-                  Find the right rental for every plan
-                </h2>
-              </div>
-              <Link href="/listings" className="text-sm font-semibold text-primary">
-                Browse all
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {listingsLoading ? (
-                Array.from({ length: 3 }).map((_, idx) => <SkeletonLoader key={idx} />)
-              ) : exploreShowcase.length > 0 ? (
-                exploreShowcase.map((listing: any) => (
-                    <ListingCard key={listing.id} listing={listing} compact />
-                  ))
-              ) : (
-                <div className="col-span-full grid gap-2.5 sm:grid-cols-3">
-                  {(visibleCategories.length > 0 ? visibleCategories.slice(0, 3) : []).map(
-                    (category: any) => {
-                      const Icon = getCategoryIcon(category.name);
-                      return (
-                        <button
-                          key={category.id}
-                          type="button"
-                          onClick={() => handleCategoryOpen(category.id)}
-                          className="rounded-[22px] border border-white/70 bg-white/80 p-3 text-left shadow-sm"
-                        >
-                          <Icon className="h-5 w-5 text-primary" />
-                          <p className="mt-2.5 text-sm font-semibold text-foreground">
-                            {category.name}
-                          </p>
-                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                            Quick access to current rentals in this category.
-                          </p>
-                        </button>
-                      );
-                    }
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {visibleCategories.slice(0, 4).map((category: any) => {
-                const Icon = getCategoryIcon(category.name);
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => handleCategoryOpen(category.id)}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-xs font-medium text-foreground shadow-sm"
-                  >
-                    <Icon className="h-3.5 w-3.5 text-primary" />
-                    {category.name}
-                  </button>
-                );
-              })}
-            </div>
+        <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-r from-[#1b1233] via-[#2a1a4d] to-[#3a2266] px-5 py-5 shadow-lg shadow-primary/10 sm:px-8 sm:py-6">
+          <div className="floating-orb right-[-1rem] top-[-1.5rem] h-24 w-24 bg-primary/25" />
+          <div className="relative z-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+            <h2 className="text-lg font-black tracking-tight text-white sm:text-2xl">
+              Start <span className="text-emerald-300">Earning</span> Today — Turn Your{" "}
+              <span className="text-emerald-300">Items</span> into Income!
+            </h2>
+            <Link href="/listings/new" className="shrink-0">
+              <Button size="lg" variant="soft" className="rounded-full px-6">
+                <Plus className="h-4 w-4" />
+                List Your Item Now
+              </Button>
+            </Link>
           </div>
+        </div>
       </section>
 
       {recentlyViewedListings.length > 0 && !listingsLoading && (
@@ -374,9 +323,6 @@ export default function HomePage() {
         </section>
       )}
 
-      <section className="marketplace-shell mt-7 lg:hidden" aria-label="Host earning highlights">
-        <HostEarningsHighlightsCard />
-      </section>
     </div>
   );
 }

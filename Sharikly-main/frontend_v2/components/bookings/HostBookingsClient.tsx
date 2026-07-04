@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { 
   CalendarDays, Filter, Search, MapPin, MoreHorizontal, Check, 
   MessageCircle, Wallet, Plus, Camera, CheckCircle2, ChevronRight, Share,
-  X, Clock, Phone, ChevronDown, CalendarPlus, ClipboardList
+  X, Clock, ChevronDown, ClipboardList
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -591,37 +591,6 @@ export function HostBookingsClient() {
                     </div>
                   </div>
 
-                  {/* Renter Information */}
-                  <div className="mb-6">
-                    <h3 className="text-[14px] font-semibold text-slate-800 mb-2.5">Renter Information</h3>
-                    <div className="bg-[#fcfaf9] p-3 rounded-[16px] border border-slate-100 flex items-center justify-between shadow-[0_2px_10px_rgb(0,0,0,0.01)] mb-2.5">
-                       <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-full bg-white overflow-hidden shrink-0 shadow-sm border border-slate-100">
-                           {selectedBooking.renter?.avatar ? (
-                             <img src={getImageUrl(selectedBooking.renter.avatar) || undefined} className="h-full w-full object-cover" />
-                           ) : (
-                             <div className="w-full h-full flex items-center justify-center bg-white">
-                               <img src="/logo.png" alt="EKRA" className="h-2/3 w-2/3 object-contain" />
-                             </div>
-                           )}
-                         </div>
-                         <div>
-                           <p className="text-[14px] font-semibold text-slate-800 leading-tight">{selectedBooking.renter?.username || 'User'}</p>
-                           <p className="text-[12px] text-slate-400 mt-0.5">{selectedBooking.renter?.email}</p>
-                         </div>
-                       </div>
-                       <ChevronRight className="h-4 w-4 text-slate-300" />
-                    </div>
-                    
-                    <div className="bg-[#fcfaf9] p-2.5 rounded-[16px] border border-slate-100 flex items-center justify-between shadow-[0_2px_10px_rgb(0,0,0,0.01)]">
-                      <div className="flex items-center gap-2.5 text-[14px] font-medium text-slate-600 pl-1">
-                        <div className="bg-violet-100 p-1.5 rounded-full text-violet-600"><Phone className="h-[14px] w-[14px] fill-current" /></div>
-                        +966-555-123-456
-                      </div>
-                      <Button size="icon" className="h-8 w-8 rounded-[10px] bg-slate-200/60 hover:bg-slate-200 text-slate-500 shadow-none"><Phone className="h-[14px] w-[14px]" /></Button>
-                    </div>
-                  </div>
-                  
                   {/* Rental Payment */}
                   <div className="mb-2">
                      <div className="flex items-center justify-between mb-2.5">
@@ -630,13 +599,6 @@ export function HostBookingsClient() {
                           <CheckCircle2 className="h-3 w-3" /> Paid
                        </div>
                      </div>
-                     <div className="bg-[#fcfaf9] p-3.5 rounded-[16px] border border-slate-100 flex items-center gap-3 mb-4 shadow-[0_2px_10px_rgb(0,0,0,0.01)]">
-                       <div className="bg-violet-100 p-1.5 rounded-full">
-                         <MapPin className="h-4 w-4 text-violet-500" fill="currentColor"/>
-                       </div>
-                       <span className="font-semibold text-slate-700 text-[15px]">infulty</span>
-                     </div>
-                     
                      <div className="w-full h-[120px] rounded-[16px] overflow-hidden bg-slate-100 border border-slate-100 relative shadow-inner">
                         <img src={`https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/46.6753,24.7136,13,0/800x400?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_demo'}`} alt="Map" className="w-full h-full object-cover opacity-80 mix-blend-multiply" />
                         <div className="absolute inset-0 m-auto flex items-center justify-center">

@@ -131,12 +131,12 @@ export default function ListingCard({
     <Link
       href={`/listings/${listing.id}`}
       className={`listing-card-press tap-highlight group block h-full w-full transition-all duration-300 ${
-        highlighted ? "ring-2 ring-primary/40 ring-offset-2 rounded-[20px]" : ""
+        highlighted ? "ring-2 ring-primary/40 ring-offset-2 rounded-tl-[20px] rounded-br-[20px] rounded-tr-none rounded-bl-none" : ""
       }`}
     >
       <article className="flex flex-col h-full bg-transparent">
         {/* Image Container */}
-        <div className={`relative w-full overflow-hidden rounded-[20px] bg-slate-100/50 aspect-square sm:aspect-[0.95]`}>
+        <div className={`relative w-full overflow-hidden rounded-tl-[20px] rounded-br-[20px] rounded-tr-none rounded-bl-none bg-slate-100/50 aspect-square sm:aspect-[0.95]`}>
           <img
             src={imageUrl}
             alt={listing.title}
