@@ -47,7 +47,7 @@ function BookingsPageContent() {
   useEffect(() => {
     if (hasSyncedFromUrl.current) return
     hasSyncedFromUrl.current = true
-    const p = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1)
+    const p = Math.max(1, parseInt(searchParams!.get('page') ?? '1', 10) || 1);
     setPage(p)
     setUrlReady(true)
   }, [searchParams])
