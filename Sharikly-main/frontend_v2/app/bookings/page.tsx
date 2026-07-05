@@ -93,9 +93,9 @@ function BookingsPageContent() {
 
   // Refetch when returning from payment (paid=1 or cancelled=1); redirect to receipt when paid
   useEffect(() => {
-    const paid = searchParams.get('paid')
-    const cancelled = searchParams.get('cancelled')
-    const bookingId = searchParams.get('booking_id')
+    const paid = searchParams?.get('paid')
+    const cancelled = searchParams?.get('cancelled')
+    const bookingId = searchParams?.get('booking_id')
     if ((paid === '1' || cancelled === '1') && user) {
       setPage(1)
       const token = localStorage.getItem('access_token')
