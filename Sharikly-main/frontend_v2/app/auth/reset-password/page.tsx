@@ -21,10 +21,14 @@ function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const { t } = useLocale();
 
-  useEffect(() => {
-    setUid(searchParams.get("uid") || "");
-    setToken(searchParams.get("token") || "");
+useEffect(() => {
+    // Only proceed if searchParams is defined
+    if (searchParams) {
+      setUid(searchParams.get("uid") || "");
+      setToken(searchParams.get("token") || "");
+    }
   }, [searchParams]);
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
