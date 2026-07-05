@@ -8,6 +8,7 @@ import { fetcher, API_BASE } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import ListingCard from "@/components/ListingCard";
+import { CategorySelect } from "@/components/CategorySelect";
 import { useLocale } from "@/components/LocaleProvider";
 import { buildListingsQuery, toListingsArray } from "@/lib/listingsUtils";
 import type { Listing, Category } from "@/types";
@@ -68,7 +69,7 @@ function HostEarningsHighlightsCard({ className = "" }: { className?: string }) 
             List your item
           </Button>
         </Link>
-        <Button variant="ghost" size="sm" className="h-auto w-fit p-0 text-primary hover:bg-transparent hover:text-primary/90" asChild>
+        <Button variant="ghost" size="sm" className="h-auto w-fit self-center p-0 text-primary hover:bg-transparent hover:text-primary/90 sm:self-auto" asChild>
           <Link href="/community-earnings" className="inline-flex items-center gap-1 font-semibold underline-offset-4 hover:underline">
             Community earnings
             <ChevronRight className="h-4 w-4" />
@@ -140,13 +141,9 @@ export default function HomePage() {
     <div className="pb-8">
       <section className="marketplace-shell pt-4 sm:pt-6">
         <div className="surface-panel relative overflow-hidden rounded-[30px] sm:rounded-[34px] lg:rounded-[36px]">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url(/image.jpeg)", backgroundPosition: "center" }}
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(255,255,255,0.8),rgba(236,233,246,0.72))]" />
-          <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/15" />
-          <div className="floating-orb bottom-[-2rem] right-[-1rem] h-20 w-20 bg-emerald-300/25" />
+          <div className="absolute inset-0 bg-[radial-gradient(120%_130%_at_100%_0%,rgba(124,58,237,0.10),transparent_55%),linear-gradient(180deg,#ffffff,#f6f4fc)]" />
+          <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/10" />
+          <div className="floating-orb bottom-[-2rem] right-[-1rem] h-20 w-20 bg-emerald-300/15" />
           
           <div className="relative z-10 grid gap-8 lg:grid-cols-[1.32fr_0.78fr] px-4 py-5 sm:px-7 sm:py-7 lg:px-9 lg:py-8">
             
@@ -155,10 +152,10 @@ export default function HomePage() {
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/80 sm:text-xs">
                 Ekra marketplace
               </p>
-              <h1 className="max-w-2xl text-[2.1rem] font-black leading-[1.02] tracking-tight text-foreground sm:text-[3.25rem] lg:text-[4rem]">
+              <h1 className="max-w-2xl t-display text-foreground">
                 Rent <span className="text-primary">Anything</span> from People Near You
               </h1>
-              <p className="mt-2.5 max-w-xl text-[13px] font-medium leading-5 text-slate-800 sm:mt-3 sm:text-[15px] sm:leading-6">
+              <p className="mt-3 max-w-xl t-body-lg text-muted-foreground">
                 Search trusted local rentals, book in minutes, and start earning from the gear
                 you already own.
               </p>
@@ -177,7 +174,7 @@ export default function HomePage() {
               </div>
 
               {/* Desktop: full search bar */}
-              <div className="hidden md:block glass-panel mt-4 rounded-[22px] p-1 sm:mt-5 sm:rounded-[26px] sm:p-1.5 border border-white/40 shadow-sm bg-white/40">
+              <div className="hidden md:block mt-4 rounded-2xl p-1.5 sm:mt-5 border border-border bg-card shadow-sm">
                 <div className="grid gap-2 md:grid-cols-[1.7fr_1fr_1fr_auto]">
                   <div className="relative">
                     <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -189,18 +186,12 @@ export default function HomePage() {
                       className="h-10 w-full rounded-[18px] border border-transparent bg-white/80 backdrop-blur pl-11 pr-4 text-sm outline-none sm:h-11 sm:rounded-[20px]"
                     />
                   </div>
-                  <select
+                  <CategorySelect
                     value={heroCategory}
-                    onChange={(e) => setHeroCategory(e.target.value)}
-                    className="h-10 rounded-[18px] border border-transparent bg-white/80 backdrop-blur px-4 text-sm outline-none sm:h-11 sm:rounded-[20px]"
-                  >
-                    <option value="">{t("all_categories")}</option>
-                    {categories.map((category: any) => (
-                      <option key={category.id} value={String(category.id)}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setHeroCategory}
+                    options={categories}
+                    placeholder={t("all_categories")}
+                  />
                   <div className="relative">
                     <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <input
@@ -254,8 +245,8 @@ export default function HomePage() {
             </div>
 
             {/* Right column: host highlights card, visible at all breakpoints */}
-            <div className="flex min-w-0 flex-col justify-center gap-3 lg:min-h-[260px] lg:justify-between lg:pl-6 lg:border-l lg:border-white/30">
-              <HostEarningsHighlightsCard className="border-white/40 bg-white/35 shadow-sm backdrop-blur-sm" />
+            <div className="flex min-w-0 flex-col justify-center gap-3 lg:min-h-[260px] lg:justify-between lg:pl-6 lg:border-l lg:border-border">
+              <HostEarningsHighlightsCard className="border-border bg-card shadow-sm" />
             </div>
 
           </div>

@@ -124,6 +124,7 @@ class UserSerializer(serializers.ModelSerializer):
             "avatar",
             "bio",
             "is_email_verified",
+            "is_staff",
             "phone_number",
             "language",
             "payout_bank",
@@ -135,6 +136,7 @@ class UserSerializer(serializers.ModelSerializer):
             "bookings_count",
             "total_earnings",
         ]
+        read_only_fields = ["is_staff"]
 
     def _get_cached_response_stats(self, obj: User):
         cached = getattr(obj, "_cached_response_stats", None)

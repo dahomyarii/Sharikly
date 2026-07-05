@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation'
 import { mutate } from 'swr'
 import LocationPicker from '@/components/LocationPicker'
 import { useToast } from '@/components/ui/toast'
-import { ImagePlus, X, GripVertical, Loader2, ChevronLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { CustomSelect } from '@/components/CustomSelect'
+import { ImagePlus, X, Loader2, ChevronLeft } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_BASE
 
@@ -265,6 +268,9 @@ export default function NewListing() {
     await submitListing(true)
   }
 
+  const labelClasses = "block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2"
+  const cardClasses = "surface-panel rounded-3xl border border-border bg-card p-5 sm:p-6"
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
@@ -272,22 +278,22 @@ export default function NewListing() {
         <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-1 text-sm text-neutral-500 hover:text-black transition-colors"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             Back
           </button>
-          <h1 className="text-sm font-semibold tracking-tight">New Listing</h1>
+          <h1 className="text-base font-bold tracking-tight text-foreground">New Listing</h1>
           <div className="w-14" />
         </div>
       </div>
 
-      <form onSubmit={handleSave} className="mx-auto max-w-2xl px-4 py-8 space-y-8">
+      <form onSubmit={handleSave} className="mx-auto max-w-2xl px-4 py-8 space-y-5">
 
         {/* ── Images ── */}
-        <section>
-          <label className="block text-xs font-medium uppercase tracking-widest text-neutral-400 mb-3">
-            Photos <span className="text-neutral-300">({images.length}/{MAX_IMAGES})</span>
+        <section className={cardClasses}>
+          <label className={labelClasses}>
+            Photos <span className="text-muted-foreground/60">({images.length}/{MAX_IMAGES})</span>
           </label>
 
           <div
@@ -303,7 +309,7 @@ export default function NewListing() {
             {images.map((img, index) => (
               <div
                 key={img.id}
-                className="group relative aspect-square rounded-2xl overflow-hidden bg-neutral-50 border border-neutral-100"
+                className="group relative aspect-square rounded-2xl overflow-hidden bg-muted border border-border"
               >
                 <img
                   src={img.preview}
@@ -312,7 +318,7 @@ export default function NewListing() {
                 />
                 {/* Cover badge */}
                 {index === 0 && (
-                  <div className="absolute top-2 left-2 px-2 py-0.5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium uppercase tracking-wider rounded-full">
+                  <div className="absolute top-2 left-2 px-2 py-0.5 bg-foreground/80 backdrop-blur-sm text-background text-[10px] font-medium uppercase tracking-wider rounded-full">
                     Cover
                   </div>
                 )}
@@ -320,7 +326,7 @@ export default function NewListing() {
                 <button
                   type="button"
                   onClick={() => removeImage(img.id)}
-                  className="absolute top-2 right-2 w-7 h-7 bg-black/60 backdrop-blur-sm text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                  className="absolute top-2 right-2 w-7 h-7 bg-foreground/70 backdrop-blur-sm text-background rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-foreground/85"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -339,24 +345,24 @@ export default function NewListing() {
                   }
                   border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center gap-2 cursor-pointer
                   ${dragOver
-                    ? 'border-black bg-neutral-50 scale-[0.98]'
-                    : 'border-neutral-200 hover:border-neutral-400 hover:bg-neutral-50'
+                    ? 'border-primary bg-primary/5 scale-[0.98]'
+                    : 'border-border hover:border-primary/50 hover:bg-accent/40'
                   }
                 `}
               >
                 <div className={`
-                  rounded-full bg-neutral-100 flex items-center justify-center
+                  rounded-full bg-primary/10 flex items-center justify-center
                   ${images.length === 0 ? 'w-14 h-14' : 'w-10 h-10'}
                 `}>
-                  <ImagePlus className={`text-neutral-400 ${images.length === 0 ? 'w-6 h-6' : 'w-5 h-5'}`} />
+                  <ImagePlus className={`text-primary ${images.length === 0 ? 'w-6 h-6' : 'w-5 h-5'}`} />
                 </div>
                 {images.length === 0 ? (
                   <>
-                    <span className="text-sm font-medium text-neutral-600">Add photos</span>
-                    <span className="text-xs text-neutral-400">Drag & drop or click to browse</span>
+                    <span className="text-sm font-medium text-foreground">Add photos</span>
+                    <span className="text-xs text-muted-foreground">Drag & drop or click to browse</span>
                   </>
                 ) : (
-                  <span className="text-[11px] text-neutral-400">Add more</span>
+                  <span className="text-[11px] text-muted-foreground">Add more</span>
                 )}
               </button>
             )}
@@ -375,93 +381,74 @@ export default function NewListing() {
           />
         </section>
 
-        {/* ── Title ── */}
-        <section>
-          <label className="block text-xs font-medium uppercase tracking-widest text-neutral-400 mb-2">
-            Title
-          </label>
-          <input
-            className="w-full bg-transparent border-b-2 border-neutral-200 focus:border-black outline-none text-lg font-medium py-2 transition-colors placeholder:text-neutral-300"
-            placeholder="What are you listing?"
-            value={title}
-            maxLength={200}
-            onChange={e => setTitle(e.target.value)}
-          />
-        </section>
-
-        {/* ── Price & City ── */}
-        <section className="grid grid-cols-2 gap-6">
+        {/* ── Details ── */}
+        <section className={`${cardClasses} space-y-5`}>
           <div>
-            <label className="block text-xs font-medium uppercase tracking-widest text-neutral-400 mb-2">
-              Price / day
-            </label>
-            <div className="relative">
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-lg text-neutral-300 font-medium">$</span>
-              <input
-                className="w-full bg-transparent border-b-2 border-neutral-200 focus:border-black outline-none text-lg font-medium py-2 pl-5 transition-colors placeholder:text-neutral-300"
-                placeholder="0.00"
-                type="number"
-                min="0"
-                step="0.01"
-                value={price}
-                onChange={e => setPrice(e.target.value)}
+            <label className={labelClasses}>Title</label>
+            <Input
+              placeholder="What are you listing?"
+              value={title}
+              maxLength={200}
+              onChange={e => setTitle(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className={labelClasses}>Price / day</label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                <Input
+                  className="pl-7"
+                  placeholder="0.00"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={price}
+                  onChange={e => setPrice(e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <label className={labelClasses}>City</label>
+              <Input
+                placeholder="e.g. Riyadh"
+                value={city}
+                maxLength={100}
+                onChange={e => setCity(e.target.value)}
               />
             </div>
           </div>
+
           <div>
-            <label className="block text-xs font-medium uppercase tracking-widest text-neutral-400 mb-2">
-              City
+            <label className={labelClasses}>
+              Category <span className="text-destructive">*</span>
             </label>
-            <input
-              className="w-full bg-transparent border-b-2 border-neutral-200 focus:border-black outline-none text-lg font-medium py-2 transition-colors placeholder:text-neutral-300"
-              placeholder="e.g. Riyadh"
-              value={city}
-              maxLength={100}
-              onChange={e => setCity(e.target.value)}
+            <CustomSelect
+              value={categoryId}
+              onChange={setCategoryId}
+              placeholder="Select a category"
+              options={categories.map(category => ({ value: String(category.id), label: category.name }))}
+              triggerClassName="h-11 rounded-2xl bg-background/90"
+            />
+          </div>
+
+          <div>
+            <label className={labelClasses}>Description</label>
+            <textarea
+              className="w-full rounded-2xl border border-border bg-background/90 px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 resize-none"
+              placeholder="Tell people about your item — condition, features, rules..."
+              rows={5}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
             />
           </div>
         </section>
 
-        {/* ── Category ── */}
-        <section>
-          <label className="block text-xs font-medium uppercase tracking-widest text-neutral-400 mb-2">
-            Category <span className="text-red-500">*</span>
-          </label>
-          <select
-            required
-            className="w-full bg-transparent border-b-2 border-neutral-200 focus:border-black outline-none text-lg py-2 transition-colors text-neutral-800 appearance-none cursor-pointer"
-            value={categoryId}
-            onChange={e => setCategoryId(e.target.value)}
-          >
-            <option value="">Select a category (required)</option>
-            {categories.map(category => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </section>
-
-        {/* ── Description ── */}
-        <section>
-          <label className="block text-xs font-medium uppercase tracking-widest text-neutral-400 mb-2">
-            Description
-          </label>
-          <textarea
-            className="w-full bg-transparent border-2 border-neutral-200 focus:border-black outline-none text-base py-3 px-4 rounded-xl transition-colors placeholder:text-neutral-300 resize-none"
-            placeholder="Tell people about your item — condition, features, rules..."
-            rows={5}
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-          />
-        </section>
-
         {/* ── Location ── */}
-        <section>
-          <label className="block text-xs font-medium uppercase tracking-widest text-neutral-400 mb-3">
-            Pickup Location
-          </label>
-          <div className="rounded-2xl overflow-hidden border border-neutral-200">
+        <section className={cardClasses}>
+          <label className={labelClasses}>Pickup Location</label>
+          <div className="rounded-2xl overflow-hidden border border-border">
             <LocationPicker
               onLocationChange={(lat, lng, rad) => {
                 setLatitude(lat)
@@ -473,12 +460,12 @@ export default function NewListing() {
         </section>
 
         {/* ── Submit ── */}
-        <section className="pt-2 pb-8">
+        <section>
           <div className="flex flex-col sm:flex-row gap-3">
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting || cooldownSeconds > 0}
-              className="flex-1 h-12 bg-black text-white text-sm font-semibold uppercase tracking-wider rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-full text-sm font-semibold"
             >
               {isSubmitting ? (
                 <>
@@ -490,18 +477,19 @@ export default function NewListing() {
               ) : (
                 'Publish Listing'
               )}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
               disabled={isSubmitting}
               onClick={() => submitListing(false)}
-              className="flex-1 h-12 border border-neutral-300 text-sm font-semibold uppercase tracking-wider rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-full text-sm font-semibold"
             >
               Save as draft
-            </button>
+            </Button>
           </div>
           {cooldownSeconds > 0 && (
-            <p className="text-center text-xs text-neutral-400 mt-3">
+            <p className="text-center text-xs text-muted-foreground mt-3">
               Please wait {cooldownSeconds} second{cooldownSeconds !== 1 ? 's' : ''} before creating another listing
             </p>
           )}

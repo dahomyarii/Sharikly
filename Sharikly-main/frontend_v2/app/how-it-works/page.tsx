@@ -24,13 +24,13 @@ export default function HowItWorksPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="bg-background border-b border-border sticky top-0 z-40">
+      <header className="sticky top-0 z-40 border-b border-border bg-background">
         <div className="flex items-center justify-between px-4 py-3 md:py-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="text-gray-800 hover:bg-gray-100 h-8 w-8"
+            className="h-8 w-8 text-foreground hover:bg-accent"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -39,7 +39,8 @@ export default function HowItWorksPage() {
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-4 py-12 space-y-12">
+      <div className="marketplace-shell py-12 space-y-12">
+        <div className="max-w-3xl">
         <div className="text-center space-y-2">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground">
             Rent gear in four steps
@@ -49,7 +50,7 @@ export default function HowItWorksPage() {
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-6">
+        <div className="grid sm:grid-cols-2 gap-6 mt-12">
           {steps.map((step, i) => {
             const Icon = step.icon;
             return (
@@ -74,14 +75,14 @@ export default function HowItWorksPage() {
           })}
         </div>
 
-        <div className="pt-8 border-t border-border">
+        <div className="pt-8 border-t border-border mt-12">
           <h3 className="flex items-center gap-2 text-xl font-bold text-foreground mb-6">
             <HelpCircle className="w-5 h-5 text-blue-600" />
             Frequently asked questions
           </h3>
           <ul className="space-y-4">
             {faqs.map((faq, i) => (
-              <li key={i} className="border-b border-gray-100 pb-4 last:border-0">
+              <li key={i} className="border-b border-border pb-4 last:border-0">
                 <p className="font-semibold text-foreground">{faq.q}</p>
                 <p className="text-sm text-muted-foreground mt-1">{faq.a}</p>
               </li>
@@ -89,12 +90,13 @@ export default function HowItWorksPage() {
           </ul>
         </div>
 
-        <div className="text-center pt-4">
+        <div className="text-center pt-4 mt-12">
           <Link href="/listings">
             <Button className="bg-blue-600 hover:bg-blue-700 text-white">
               Browse listings
             </Button>
           </Link>
+        </div>
         </div>
       </div>
     </div>

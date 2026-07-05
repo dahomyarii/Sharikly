@@ -28,13 +28,13 @@ export default function CareersPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="bg-background border-b border-border sticky top-0 z-40">
+      <header className="sticky top-0 z-40 border-b border-border bg-background">
         <div className="flex items-center justify-between px-4 py-3 md:py-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="text-gray-800 hover:bg-gray-100 h-8 w-8"
+            className="h-8 w-8 text-foreground hover:bg-accent"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -44,8 +44,8 @@ export default function CareersPage() {
       </header>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
-        <div className="space-y-4">
+      <div className="marketplace-shell py-12 space-y-8">
+        <div className="max-w-3xl space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground">Join Our Team</h2>
           <p className="text-lg text-muted-foreground">
             Help us build the future of peer-to-peer sharing.
@@ -56,7 +56,7 @@ export default function CareersPage() {
           <h3 className="text-2xl font-bold text-foreground">Open Positions</h3>
           <div className="space-y-3">
             {jobs.map((job, idx) => (
-              <div key={idx} className="border border-border rounded-lg p-4 bg-card hover:shadow-md transition-shadow">
+              <div key={idx} className="border border-border rounded-2xl p-4 bg-card hover:shadow-md transition-shadow">
                 <div className="flex items-start gap-3">
                   <Briefcase className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
                   <div className="flex-1">
@@ -69,7 +69,7 @@ export default function CareersPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="max-w-3xl space-y-4">
           <h3 className="text-2xl font-bold text-foreground">Benefits</h3>
           <ul className="space-y-2 text-muted-foreground">
             <li className="flex gap-3">

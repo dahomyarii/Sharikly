@@ -4,7 +4,7 @@ import Link from "next/link";
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import useSWR from "swr";
-import { Star, Bookmark } from "lucide-react";
+import { Star, Bookmark, MapPin } from "lucide-react";
 import { useLocale } from "./LocaleProvider";
 
 const API = process.env.NEXT_PUBLIC_API_BASE;
@@ -136,7 +136,7 @@ export default function ListingCard({
     >
       <article className="flex flex-col h-full bg-transparent">
         {/* Image Container */}
-        <div className={`relative w-full overflow-hidden rounded-tl-[20px] rounded-br-[20px] rounded-tr-none rounded-bl-none bg-slate-100/50 aspect-square sm:aspect-[0.95]`}>
+        <div className={`relative w-full overflow-hidden rounded-tl-[20px] rounded-br-[20px] rounded-tr-none rounded-bl-none bg-slate-100/50 ${compact ? "aspect-[4/3]" : "aspect-square sm:aspect-[0.95]"}`}>
           <img
             src={imageUrl}
             alt={listing.title}
@@ -157,7 +157,7 @@ export default function ListingCard({
           >
             <Bookmark
               className={`h-[20px] w-[20px] sm:h-[22px] sm:w-[22px] transition-colors drop-shadow-sm ${
-                isFavorited ? "fill-[#7A3E82] text-[#7A3E82]" : "text-white sm:text-[#7A3E82]"
+                isFavorited ? "fill-primary text-primary" : "text-white sm:text-primary"
               }`}
               strokeWidth={2}
             />
@@ -169,7 +169,7 @@ export default function ListingCard({
                <Star 
                  key={star} 
                  className={`h-[13px] w-[13px] sm:h-[15px] sm:w-[15px] ${
-                   star <= ratingValue ? "fill-[#F93B69] text-[#F93B69]" : "fill-white/50 text-transparent"
+                   star <= ratingValue ? "fill-accent-price text-accent-price" : "fill-white/50 text-transparent"
                  }`} 
                />
              ))}
@@ -189,11 +189,17 @@ export default function ListingCard({
 
         {/* Text Container */}
         <div className="pt-2 sm:pt-2.5 px-0.5 flex flex-col flex-1">
-          <h3 className="line-clamp-1 text-[13px] sm:text-[14px] font-[400] text-[#222222] leading-snug">
+          <h3 className="line-clamp-1 text-sm font-medium text-foreground leading-snug">
             {listing.title}
           </h3>
-          <p className="mt-0.5 text-[13px] sm:text-[14px] font-[600] text-[#7A3E82] leading-snug">
-            {currency} {listing.price_per_day}<span className="font-[400] text-[11px] sm:text-[12px] text-muted-foreground"> / {t("day") || "day"}</span>
+          {listing.city && (
+            <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="truncate">{listing.city}</span>
+            </p>
+          )}
+          <p className="mt-0.5 text-sm font-bold text-accent-price leading-snug">
+            {currency} {listing.price_per_day}<span className="font-normal text-xs text-muted-foreground"> / {t("day") || "day"}</span>
           </p>
         </div>
       </article>

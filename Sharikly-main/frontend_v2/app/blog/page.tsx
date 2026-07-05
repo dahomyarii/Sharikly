@@ -44,13 +44,13 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="bg-background border-b border-border sticky top-0 z-40">
+      <header className="sticky top-0 z-40 border-b border-border bg-background">
         <div className="flex items-center justify-between px-4 py-3 md:py-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="text-gray-800 hover:bg-gray-100 h-8 w-8"
+            className="h-8 w-8 text-foreground hover:bg-accent"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -60,8 +60,8 @@ export default function BlogPage() {
       </header>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
-        <div className="space-y-4">
+      <div className="marketplace-shell py-12 space-y-8">
+        <div className="max-w-3xl space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground">Latest News & Tips</h2>
           <p className="text-lg text-muted-foreground">
             Stay updated with insights and stories from the EKRA community.
@@ -69,7 +69,7 @@ export default function BlogPage() {
         </div>
 
         {/* Search */}
-        <div className="">
+        <div className="max-w-3xl">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
             <input
@@ -78,7 +78,7 @@ export default function BlogPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search posts by title, excerpt, or author"
-              className="w-full pl-11 pr-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/60 bg-card text-foreground placeholder:text-muted-foreground"
+              className="w-full pl-11 pr-4 py-3 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/60 bg-card text-foreground placeholder:text-muted-foreground"
             />
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function BlogPage() {
         <div className="space-y-4">
           {filteredPosts.length > 0 ? (
             filteredPosts.map((post, idx) => (
-              <div key={idx} className="border border-border rounded-lg p-6 bg-card hover:shadow-md transition-shadow">
+              <div key={idx} className="border border-border rounded-2xl p-6 bg-card hover:shadow-md transition-shadow">
                 <h3 className="text-xl font-bold text-foreground mb-2">{post.title}</h3>
                 <p className="text-muted-foreground mb-4">{post.excerpt}</p>
                 <div className="flex gap-4 text-sm text-muted-foreground">

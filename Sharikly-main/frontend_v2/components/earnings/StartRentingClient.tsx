@@ -73,12 +73,12 @@ export function StartRentingClient() {
 
   return (
     <div className="min-h-screen bg-background py-8 sm:py-10">
-      <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 mobile-content">
+      <div className="marketplace-shell mobile-content">
         <section className="rounded-3xl bg-gradient-to-br from-primary/10 via-background to-background p-6 sm:p-8">
           <p className="section-label mb-2 text-xs uppercase tracking-wider text-muted-foreground">
             {text.eyebrow}
           </p>
-          <h1 className="text-3xl font-bold text-foreground sm:text-4xl">{text.title}</h1>
+          <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">{text.title}</h1>
           <p className="mt-3 max-w-3xl text-sm text-muted-foreground sm:text-base">{text.description}</p>
           <div className="mt-5">
             <Button asChild>

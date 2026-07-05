@@ -166,6 +166,8 @@ const translations: Record<Lang, Record<string, string>> = {
     failed_to_save: "Failed to save changes",
     please_login: "Please login to continue",
     redirecting_login: "Redirecting to login...",
+    notifications: "Notifications",
+    no_notifications: "No notifications yet",
 
     // Language
     language: "Language",
@@ -393,6 +395,8 @@ const translations: Record<Lang, Record<string, string>> = {
     failed_to_save: "فشل حفظ التغييرات",
     please_login: "يرجى تسجيل الدخول للمتابعة",
     redirecting_login: "جارٍ إعادة التوجيه إلى صفحة الدخول...",
+    notifications: "الإشعارات",
+    no_notifications: "لا توجد إشعارات بعد",
 
     // Language
     language: "اللغة",

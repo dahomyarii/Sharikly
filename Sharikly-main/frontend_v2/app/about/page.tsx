@@ -12,13 +12,13 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="bg-background border-b border-border sticky top-0 z-40">
+      <header className="sticky top-0 z-40 border-b border-border bg-background">
         <div className="flex items-center justify-between px-4 py-3 md:py-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="text-gray-800 hover:bg-gray-100 h-8 w-8"
+            className="h-8 w-8 text-foreground hover:bg-accent"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -28,7 +28,8 @@ export default function AboutPage() {
       </header>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
+      <div className="marketplace-shell py-12 space-y-8">
+        <div className="max-w-3xl">
         <div className="space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground">
             {t("about_ekra")}
@@ -36,14 +37,14 @@ export default function AboutPage() {
           <p className="text-lg text-muted-foreground">{t("ekra_description")}</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 mt-8">
           <h3 className="text-2xl font-bold text-foreground">
             {t("our_mission")}
           </h3>
           <p className="text-muted-foreground leading-relaxed">{t("mission_text")}</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 mt-8">
           <h3 className="text-2xl font-bold text-foreground">{t("why_ekra")}</h3>
           <ul className="space-y-3 text-muted-foreground">
             <li className="flex gap-3">
@@ -63,6 +64,7 @@ export default function AboutPage() {
               <span>{t("verified_sellers")}</span>
             </li>
           </ul>
+        </div>
         </div>
       </div>
     </div>

@@ -89,7 +89,7 @@ export default function ContactPage() {
   if (!authChecked) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     )
   }
@@ -97,7 +97,7 @@ export default function ContactPage() {
   if (authChecked && !user) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <p className="text-gray-500">Redirecting to login...</p>
+        <p className="text-muted-foreground">Redirecting to login...</p>
       </div>
     )
   }
@@ -111,7 +111,7 @@ export default function ContactPage() {
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="text-gray-800 hover:bg-gray-100 h-8 w-8"
+            className="text-foreground hover:bg-muted h-8 w-8"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -131,14 +131,14 @@ export default function ContactPage() {
         {/* Contact Info */}
         <div className="flex flex-col sm:flex-row gap-6 justify-center text-center">
           <a href="mailto:support@ekra.com" className="space-y-2">
-            <Mail className="w-6 h-6 text-blue-600 mx-auto" />
+            <Mail className="w-6 h-6 text-primary mx-auto" />
             <div>
               <p className="text-sm text-muted-foreground">Support Email</p>
               <p className="font-semibold text-foreground">support@ekra.com</p>
             </div>
           </a>
           <a href="tel:+966112345678" className="space-y-2">
-            <Phone className="w-6 h-6 text-blue-600 mx-auto" />
+            <Phone className="w-6 h-6 text-primary mx-auto" />
             <div>
               <p className="text-sm text-muted-foreground">Phone</p>
               <p className="font-semibold text-foreground">+966 11 234 5678</p>
@@ -148,8 +148,8 @@ export default function ContactPage() {
 
         {/* Form — logged in: email sent by default, no payment */}
         <div className="bg-card rounded-xl p-8 border border-border space-y-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
-            <Lock className="w-4 h-4 text-blue-600 flex-shrink-0" />
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
+            <Lock className="w-4 h-4 text-primary flex-shrink-0" />
             <span>Your message will be sent from your account. No payment required.</span>
           </div>
 
@@ -161,19 +161,19 @@ export default function ContactPage() {
           )}
 
           {submitted && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+            <div className="bg-success/15 border border-success/20 rounded-lg p-4 flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
               <div>
-                <p className="font-semibold text-green-900">Success!</p>
-                <p className="text-green-800 text-sm">We'll get back to you within 24 hours.</p>
+                <p className="font-semibold text-success">Success!</p>
+                <p className="text-success text-sm">We'll get back to you within 24 hours.</p>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-              <p className="text-red-800">{error}</p>
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+              <p className="text-destructive">{error}</p>
             </div>
           )}
 
@@ -186,7 +186,7 @@ export default function ContactPage() {
                 onChange={handleChange}
                 placeholder="Tell us how we can help..."
                 rows={5}
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-card text-foreground placeholder:text-muted-foreground"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring resize-none bg-card text-foreground placeholder:text-muted-foreground"
                 required
               />
             </div>
@@ -206,7 +206,7 @@ export default function ContactPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12 rounded-lg flex items-center justify-center gap-2"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 rounded-lg flex items-center justify-center gap-2"
             >
               <Send className="w-4 h-4" />
               {loading ? 'Sending...' : 'Send Message'}
