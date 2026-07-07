@@ -141,7 +141,11 @@ export default function HomePage() {
     <div className="pb-8">
       <section className="marketplace-shell pt-4 sm:pt-6">
         <div className="surface-panel relative overflow-hidden rounded-[30px] sm:rounded-[34px] lg:rounded-[36px]">
-          <div className="absolute inset-0 bg-[radial-gradient(120%_130%_at_100%_0%,rgba(124,58,237,0.10),transparent_55%),linear-gradient(180deg,#ffffff,#f6f4fc)]" />
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url(/image.jpeg)" }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(255,255,255,0.8),rgba(236,233,246,0.72))]" />
           <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/10" />
           <div className="floating-orb bottom-[-2rem] right-[-1rem] h-20 w-20 bg-emerald-300/15" />
           
