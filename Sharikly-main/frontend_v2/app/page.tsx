@@ -145,7 +145,7 @@ export default function HomePage() {
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: "url(/image.jpeg)" }}
           />
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(255,255,255,0.8),rgba(236,233,246,0.72))]" />
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.75),rgba(255,255,255,0.6),rgba(236,233,246,0.45))]" />
           <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/10" />
           <div className="floating-orb bottom-[-2rem] right-[-1rem] h-20 w-20 bg-emerald-300/15" />
           
