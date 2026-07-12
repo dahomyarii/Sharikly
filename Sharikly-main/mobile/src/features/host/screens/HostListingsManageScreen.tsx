@@ -1,4 +1,5 @@
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { getListings } from "@/services/api/endpoints/listings";
 import type { ProfileStackParamList, MainTabParamList } from "@/navigation/types";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -128,18 +129,20 @@ export function HostListingsManageScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>My Listings</Text>
-        <Pressable
-          style={styles.addBtn}
-          onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
-        >
-          <LinearGradient colors={["#9356F5", "#6D28D9"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.addBtnGradient}>
-            <Plus size={16} color="#fff" />
-            <Text style={styles.addBtnText}>Add Item</Text>
-          </LinearGradient>
-        </Pressable>
-      </View>
+      <ScreenHeader
+        title="My Listings"
+        right={
+          <Pressable
+            style={styles.addBtn}
+            onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
+          >
+            <LinearGradient colors={["#C164FF", "#7A5AFF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.addBtnGradient}>
+              <Plus size={16} color="#fff" />
+              <Text style={styles.addBtnText}>Add Item</Text>
+            </LinearGradient>
+          </Pressable>
+        }
+      />
 
       {q.isPending ? (
         <View style={styles.center}>

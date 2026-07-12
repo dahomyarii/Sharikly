@@ -119,7 +119,11 @@ axiosInstance.interceptors.response.use(
         }
       }
 
-      if (!isAuthEndpoint) {
+      // Only treat a 401 as a session invalidation (logout + cache clear) when
+      // the request actually carried a token. A 401 on a request with NO token
+      // is just a guest hitting a protected endpoint — clearing/emitting logout
+      // there would trigger queryClient.clear() → refetch storm → infinite loop.
+      if (!isAuthEndpoint && hadAuthorizationHeader) {
         await clearStoredAuth();
       }
     }

@@ -1,4 +1,5 @@
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { getEarningsDashboard } from "@/services/api/endpoints/earnings";
 import { useQuery } from "@tanstack/react-query";
 import { Wallet } from "lucide-react-native";
@@ -105,10 +106,8 @@ export function HostEarningsScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>Earnings</Text>
-        <Text style={styles.screenSub}>Your host earnings overview</Text>
-      </View>
+      <ScreenHeader title="Earnings" />
+      <Text style={[styles.screenSub, { paddingHorizontal: spacing.md, marginTop: 0, marginBottom: spacing.sm }]}>Your host earnings overview</Text>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {q.isPending ? (

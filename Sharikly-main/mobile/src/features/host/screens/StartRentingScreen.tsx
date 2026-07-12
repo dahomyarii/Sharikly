@@ -7,6 +7,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   ArrowRight,
+  ArrowLeft,
   Calendar,
   Camera,
   CheckCircle,
@@ -67,11 +68,14 @@ export function StartRentingScreen(): React.ReactElement {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Hero */}
         <LinearGradient
-          colors={["#9356F5", "#6D28D9"]}
+          colors={["#C164FF", "#7A5AFF"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.hero}
         >
+          <Pressable onPress={() => navigation.goBack()} style={styles.floatBack} hitSlop={10}>
+            <ArrowLeft size={22} color="#FFF" />
+          </Pressable>
           <Sparkles size={32} color="rgba(255,255,255,0.6)" />
           <Text style={styles.heroTitle}>Start Earning on Ekra</Text>
           <Text style={styles.heroSub}>
@@ -152,7 +156,7 @@ export function StartRentingScreen(): React.ReactElement {
           onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
         >
           <LinearGradient
-            colors={["#9356F5", "#6D28D9"]}
+            colors={["#C164FF", "#7A5AFF"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.finalCtaGradient}
@@ -179,6 +183,18 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     alignItems: "center",
     gap: 10,
+  },
+  floatBack: {
+    position: "absolute",
+    top: spacing.md,
+    left: spacing.md,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
   },
   heroTitle: { fontSize: 28, fontWeight: "900", color: "#fff", textAlign: "center", letterSpacing: -0.5 },
   heroSub: { fontSize: 15, color: "rgba(255,255,255,0.8)", textAlign: "center", lineHeight: 22, maxWidth: 280 },

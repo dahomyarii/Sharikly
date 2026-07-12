@@ -1,5 +1,6 @@
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
 import { getChatMessages, sendMessage } from "@/services/api/endpoints/chat";
+import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import type { InboxStackParamList } from "@/navigation/types";
 import type { RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -81,6 +82,12 @@ export function ChatRoomScreen(): React.ReactElement {
     },
   });
 
+  const userQ = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: () => axiosInstance.get(buildApiUrl("/auth/me/")).then((res: any) => res.data),
+  });
+  const myId = (userQ.data as any)?.id ?? null;
+
   const msgQ = useQuery({
     queryKey: ["chat", "messages", roomId],
     queryFn: () => getChatMessages(roomId),
@@ -104,8 +111,9 @@ export function ChatRoomScreen(): React.ReactElement {
   }, [text, sendMutation]);
 
   const room: any = roomQ.data;
-  const other = room?.other_participant ?? room?.participants?.[0];
-  const otherName = other?.username ?? other?.first_name ?? "Faisal Al Mutairi";
+  const other =
+    room?.participants?.find((p: any) => p.id !== myId) ?? room?.participants?.[0];
+  const otherName = other?.first_name || other?.username || "User";
   const otherAvatar = getAvatarUrl(other?.avatar);
   const listingTitle = room?.listing?.title;
 
@@ -125,8 +133,6 @@ export function ChatRoomScreen(): React.ReactElement {
     displayItems.push({ type: "msg", item: msg });
   }
 
-  const me: any = room?.current_user_id ?? null;
-
   const renderItem = ({ item: entry }: { item: (typeof displayItems)[0] }) => {
     if (entry.type === "date") {
       return (
@@ -136,13 +142,13 @@ export function ChatRoomScreen(): React.ReactElement {
       );
     }
     const msg = entry.item;
-    const isMine = msg.sender?.id === me || msg.is_mine === true || msg.sender_id === me;
+    const isMine = myId != null && msg.sender?.id === myId;
 
     return (
       <View style={[styles.msgRow, isMine && styles.msgRowMine]}>
         <View style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleOther]}>
           <Text style={[styles.bubbleText, isMine && styles.bubbleTextMine]}>
-            {msg.content}
+            {msg.text}
           </Text>
           <View style={styles.timeContainer}>
             <Text style={[styles.timeLabel, isMine && styles.timeLabelMine]}>

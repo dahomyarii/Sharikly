@@ -45,8 +45,8 @@ const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
 export function ProfileStackNavigator(): React.ReactElement {
   return (
-    <Stack.Navigator initialRouteName="Profile">
-      <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: "Profile" }} />
+    <Stack.Navigator initialRouteName="Profile" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
@@ -72,7 +72,7 @@ export function ProfileStackNavigator(): React.ReactElement {
       <Stack.Screen name="Terms" component={TermsScreen} />
       {/* Moved from Inbox */}
       <Stack.Screen name="ChatInbox" component={ChatInboxScreen} options={{ title: "Messages" }} />
-      <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ title: "Conversation" }} />
+      <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ headerShown: false }} />
       <Stack.Screen name="AdminSupportThread" component={AdminSupportThreadScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       

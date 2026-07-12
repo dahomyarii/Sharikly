@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   suggestionChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   chip: {
     borderRadius: radii.full,
-    borderWidth: 1, borderColor: "rgba(124,58,237,0.3)",
+    borderWidth: 1, borderColor: "rgba(176,71,246,0.3)",
     paddingHorizontal: 12, paddingVertical: 6,
     backgroundColor: "#F5F0FF",
   },
@@ -616,12 +616,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0EDFB",
   },
   publishBtn: {
-    backgroundColor: "#5B21B6",
+    backgroundColor: "#7A5AFF",
     borderRadius: radii.xl,
     paddingVertical: 18,
     alignItems: "center",
     ...shadows.cardHeavy,
-    shadowColor: "#5B21B6", shadowOpacity: 0.35,
+    shadowColor: "#7A5AFF", shadowOpacity: 0.35,
   },
   publishBtnTitle: { fontSize: 18, fontWeight: "900", color: "#fff" },
   publishBtnSub: { fontSize: 12, color: "rgba(255,255,255,0.8)", marginTop: 3 },

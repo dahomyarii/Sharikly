@@ -705,7 +705,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F0FF",
     borderRadius: radii.lg,
     padding: 14,
-    borderWidth: 1, borderColor: "rgba(124,58,237,0.12)",
+    borderWidth: 1, borderColor: "rgba(176,71,246,0.12)",
   },
   inviteText: { fontSize: 14, fontWeight: "600", color: "#1C1628" },
   cancelBtn: {

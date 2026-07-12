@@ -83,8 +83,23 @@ export function LoginScreen(): React.ReactElement {
       // Update auth store — this collapses the Auth modal and returns to Main
       setHasSession(true);
 
-      // Dismiss the Auth modal (go back to Main app)
-      navigation.getParent()?.goBack();
+      // If the user was gated into login by an action (e.g. "Send Request"),
+      // run it after dismissing the modal so they return to what they wanted.
+      const pending = useAuthStore.getState().pendingAction;
+      useAuthStore.getState().setPendingAction(null);
+
+      // Dismiss the Auth modal. Prefer goBack() so the screens the user was on
+      // (their tab/stack state) are preserved — this is what lets the pending
+      // action navigate them back to where they wanted to go. Fall back to a
+      // reset only if there's nothing to go back to.
+      const parent = navigation.getParent();
+      if (parent?.canGoBack()) {
+        parent.goBack();
+      } else {
+        parent?.reset({ index: 0, routes: [{ name: "Main" as never }] });
+      }
+
+      if (pending) setTimeout(() => pending(), 80);
 
     } catch (err: any) {
       // Network error (no response at all — server down, wrong IP, no connection)
@@ -104,6 +119,13 @@ export function LoginScreen(): React.ReactElement {
     }
   };
 
+  // Cancel login: discard any pending gated action and dismiss the Auth modal.
+  const closeAuth = () => {
+    useAuthStore.getState().setPendingAction(null);
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.getParent()?.goBack();
+  };
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <KeyboardAvoidingView
@@ -117,7 +139,7 @@ export function LoginScreen(): React.ReactElement {
         >
           {/* Purple gradient header with back button */}
           <LinearGradient
-            colors={["#9356F5", "#6D28D9"]}
+            colors={["#C164FF", "#7A5AFF"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.header}
@@ -125,11 +147,7 @@ export function LoginScreen(): React.ReactElement {
             {/* Back / close button */}
             <Pressable
               style={styles.backBtn}
-              onPress={() =>
-                navigation.canGoBack()
-                  ? navigation.goBack()
-                  : navigation.getParent()?.goBack()
-              }
+              onPress={closeAuth}
               hitSlop={12}
             >
               <ArrowLeft size={22} color="rgba(255,255,255,0.9)" />
@@ -236,7 +254,7 @@ export function LoginScreen(): React.ReactElement {
             <Animated.View entering={FadeInDown.delay(600).springify()}>
             <Pressable
               style={styles.guestBtn}
-              onPress={() => navigation.getParent()?.goBack()}
+              onPress={closeAuth}
             >
               <Text style={styles.guestText}>Continue browsing without signing in</Text>
             </Pressable>

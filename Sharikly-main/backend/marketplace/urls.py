@@ -37,6 +37,7 @@ urlpatterns = [
     # Chat
     path("chat/rooms/", views.ChatRoomListCreateView.as_view(), name="chat_rooms"),
     path("chat/rooms/get-or-create/", views.ChatRoomGetOrCreateView.as_view(), name="chat_room_get_or_create"),
+    path("chat/rooms/<int:pk>/", views.ChatRoomDetailView.as_view(), name="chat_room_detail"),
     path("chat/unread-count/", views.ChatUnreadCountView.as_view(), name="chat_unread_count"),
     path("chat/messages/", views.SendMessageView.as_view(), name="chat_messages"),
     path(

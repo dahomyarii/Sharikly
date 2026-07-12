@@ -14,6 +14,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import { useAuthStore } from "@/store/authStore";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import {
@@ -70,6 +71,10 @@ export function HomeScreen(): React.ReactElement {
   const navigation = useNavigation<HomeNav>();
   const [searchText] = React.useState("");
   const { hasSession } = useAuthStore();
+  const requireAuth = useRequireAuth();
+
+  const goCreateListing = () =>
+    requireAuth(() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any));
   
   const userQ = useQuery({
     queryKey: ["auth", "me"],
@@ -103,6 +108,7 @@ export function HomeScreen(): React.ReactElement {
       : (categoriesQ.data as any)?.results ?? []
     : [];
 
+  const featuredListing = listings[0];
   const popularListings = listings.slice(0, 6);
   const exploreListings = listings.slice(6, 9);
 
@@ -145,29 +151,36 @@ export function HomeScreen(): React.ReactElement {
           />
           <Text style={styles.headerLogoText}>EKRA</Text>
         </View>
-        <View style={styles.headerRight}>
-          <Pressable 
-            style={styles.headerIconBtn}
-            onPress={() => hasSession ? (navigation as any).navigate("ProfileTab", { screen: "Notifications" }) : (navigation as any).navigate("Auth", { screen: "Login" })}
-          >
-            <Bell size={22} color={colors.primary} />
-            {hasSession && <View style={styles.notifDot} />}
-          </Pressable>
-          <Pressable 
-            style={styles.avatarMini}
-            onPress={() => navigation.navigate("ProfileTab")}
-          >
-            {hasSession && avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={styles.avatarImg} />
-            ) : (
-              <View style={[styles.avatarImg, styles.avatarFallback]}>
-                <Text style={styles.avatarFallbackText}>
-                  {hasSession ? firstName?.charAt(0).toUpperCase() : "👤"}
-                </Text>
-              </View>
-            )}
-          </Pressable>
-        </View>
+        {hasSession && (
+          <View style={styles.headerRight}>
+            <Pressable
+              style={styles.headerIconBtn}
+              onPress={() => (navigation as any).navigate("ProfileTab", { screen: "Notifications" })}
+            >
+              <Bell size={22} color={colors.primary} fill={colors.primary} />
+              <View style={styles.notifDot} />
+            </Pressable>
+            <Pressable
+              style={styles.avatarMini}
+              onPress={() => navigation.navigate("ProfileTab")}
+            >
+              {avatarUrl ? (
+                <Image source={{ uri: avatarUrl }} style={styles.avatarImg} />
+              ) : (
+                <LinearGradient
+                  colors={["#C164FF", "#7A5AFF"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[styles.avatarImg, styles.avatarFallback]}
+                >
+                  <Text style={styles.avatarFallbackText}>
+                    {firstName?.charAt(0).toUpperCase()}
+                  </Text>
+                </LinearGradient>
+              )}
+            </Pressable>
+          </View>
+        )}
       </View>
 
       <ScrollView
@@ -180,7 +193,7 @@ export function HomeScreen(): React.ReactElement {
           <ImageBackground
             source={require("../../../../assets/images/hero_canyon.png")}
             style={styles.heroBg}
-            imageStyle={{ borderRadius: radii.xl }}
+            imageStyle={styles.heroBgImage}
           >
             <LinearGradient
               colors={["transparent", "rgba(12, 8, 30, 0.7)"]}
@@ -242,11 +255,14 @@ export function HomeScreen(): React.ReactElement {
                 <CategoryChip label="More ›" onPress={() => navigation.navigate("ExploreTab", { screen: "ListingsExplore" } as any)} />
               </ScrollView>
 
-        {/* ─── FEATURED CANON PROMO ─── */}
-        <FeaturedPromoCard 
-          onPress={() => navigation.navigate("ExploreTab", { screen: "ListingsExplore" } as any)}
-          onBookNow={() => navigation.navigate("ExploreTab", { screen: "ListingsExplore", params: { search: "Canon" } } as any)}
-        />
+        {/* ─── FEATURED LISTING PROMO ─── */}
+        {featuredListing && (
+          <FeaturedPromoCard
+            listing={featuredListing}
+            onPress={() => handleListingPress(featuredListing.id)}
+            onBookNow={() => handleListingPress(featuredListing.id)}
+          />
+        )}
 
         {/* ─── POPULAR NEAR YOU ─── */}
         <Animated.View entering={FadeInDown.duration(400).delay(100)} style={styles.section}>
@@ -305,7 +321,7 @@ export function HomeScreen(): React.ReactElement {
                   const Icon = getCategoryIcon(item.name || "");
                   return (
                     <View key={item.id ?? i} style={styles.requestItem}>
-                      <Icon size={16} color={colors.primary} />
+                      <Icon size={16} color={colors.primary} fill={colors.primary} />
                       <Text style={styles.requestText}>
                         <Text style={styles.requestTextBold}>{item.name}</Text> · {item.booking_count ?? 0} requests
                       </Text>
@@ -316,7 +332,7 @@ export function HomeScreen(): React.ReactElement {
             <View style={styles.requestBtnWrap}>
               <PrimaryButton
                 label="List yours & earn"
-                onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
+                onPress={goCreateListing}
                 size="sm"
               />
             </View>
@@ -327,20 +343,20 @@ export function HomeScreen(): React.ReactElement {
         {/* ─── BOTTOM PROMO HERO ─── */}
         <Animated.View entering={FadeInDown.duration(400).delay(400)} style={styles.section}>
           <LinearGradient
-            colors={["#7C3AED", "#5B21B6"]}
+            colors={["#B047F6", "#7A5AFF"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.bottomPromo}
           >
             <View style={{ flex: 1, paddingRight: 12 }}>
-              <Text style={styles.bottomPromoTitle}>Ready to Earn?</Text>
+              <Text style={styles.bottomPromoTitle}>Start earning with Ekra</Text>
               <Text style={styles.bottomPromoSub}>
                 List your camera, tools, or gear & earn extra income!
               </Text>
             </View>
             <Pressable
               style={styles.bottomPromoBtn}
-              onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
+              onPress={goCreateListing}
             >
               <Text style={styles.bottomPromoBtnText}>List Your Item</Text>
             </Pressable>
@@ -368,7 +384,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     backgroundColor: "rgba(249, 248, 255, 0.94)",
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(124, 58, 237, 0.08)",
+    borderBottomColor: "rgba(176, 71, 246, 0.08)",
   },
   headerLogoWrap: {
     flexDirection: "row",
@@ -393,37 +409,36 @@ const styles = StyleSheet.create({
   headerIconBtn: {
     width: 38,
     height: 38,
-    borderRadius: radii.full,
-    backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
   },
   notifDot: {
     position: "absolute",
-    top: 8,
-    right: 8,
+    top: 6,
+    right: 6,
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: colors.destructive,
     borderWidth: 1.5,
-    borderColor: colors.accent,
+    borderColor: colors.background,
   },
   avatarMini: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     overflow: "hidden",
     borderWidth: 2,
-    borderColor: colors.primary,
+    borderColor: "#FFFFFF",
+    ...shadows.card,
+    shadowOpacity: 0.18,
   },
   avatarImg: {
     width: "100%",
     height: "100%",
   },
   avatarFallback: {
-    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -437,13 +452,22 @@ const styles = StyleSheet.create({
   heroWrap: {
     marginHorizontal: spacing.md,
     marginTop: spacing.sm,
-    borderRadius: radii.xl,
+    borderTopLeftRadius: radii.xl,
+    borderBottomRightRadius: radii.xl,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 0,
     overflow: "hidden",
     ...shadows.card,
   },
   heroBg: {
     minHeight: 280,
     justifyContent: "flex-end",
+  },
+  heroBgImage: {
+    borderTopLeftRadius: radii.xl,
+    borderBottomRightRadius: radii.xl,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 0,
   },
   heroContent: {
     padding: spacing.md,
@@ -566,16 +590,20 @@ const styles = StyleSheet.create({
 
   // Requests block
   requestsCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: "#F8F5FF",
     borderRadius: radii.xl,
     padding: spacing.md,
     ...shadows.card,
     borderWidth: 1,
-    borderColor: "rgba(124, 58, 237, 0.08)",
+    borderColor: "rgba(176, 71, 246, 0.08)",
   },
   requestsList: {
+    flex: 1,
     gap: 12,
-    marginBottom: spacing.md,
+    marginRight: spacing.sm,
   },
   requestItem: {
     flexDirection: "row",
@@ -590,9 +618,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.textPrimary,
   },
-  requestBtnWrap: {
-    alignItems: "flex-end",
-  },
+  requestBtnWrap: {},
 
   // Bottom Promo
   bottomPromo: {

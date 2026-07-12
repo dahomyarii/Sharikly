@@ -10,8 +10,8 @@ const Stack = createNativeStackNavigator<InboxStackParamList>();
 export function InboxStackNavigator(): React.ReactElement {
   return (
     <Stack.Navigator initialRouteName="ChatInbox">
-      <Stack.Screen name="ChatInbox" component={ChatInboxScreen} options={{ title: "Chat" }} />
-      <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ title: "Conversation" }} />
+      <Stack.Screen name="ChatInbox" component={ChatInboxScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ headerShown: false }} />
       <Stack.Screen name="AdminSupportThread" component={AdminSupportThreadScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
     </Stack.Navigator>

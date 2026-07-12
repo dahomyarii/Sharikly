@@ -9,9 +9,9 @@ export const colors = {
   foreground: "#1C1628",
   card: "#FEFCFF",
   cardForeground: "#1C1628",
-  primary: "#7C3AED",         // oklch(0.62 0.25 308)
+  primary: "#B047F6",         // oklch(0.62 0.25 308)
   primaryForeground: "#FFFFFF",
-  primaryLight: "#A78BFA",    // lighter purple accent
+  primaryLight: "#C164FF",    // lighter purple accent
   secondary: "#F4F0FF",
   secondaryForeground: "#3B2A6E",
   muted: "#EDE9FA",
@@ -21,7 +21,7 @@ export const colors = {
   border: "rgba(120, 80, 220, 0.12)",
   borderStrong: "rgba(120, 80, 220, 0.22)",
   input: "rgba(120, 80, 220, 0.10)",
-  ring: "#A78BFA",
+  ring: "#C164FF",
   destructive: "#DC2626",
   destructiveForeground: "#FFFFFF",
   success: "#10B981",
@@ -49,7 +49,7 @@ export const colors = {
 
   // Overlay / shadow
   overlay: "rgba(15, 8, 40, 0.45)",
-  shadowPrimary: "rgba(124, 58, 237, 0.35)",
+  shadowPrimary: "rgba(176, 71, 246, 0.35)",
 } as const;
 
 export const layout = {
@@ -59,8 +59,8 @@ export const layout = {
 } as const;
 
 export const gradients = {
-  primary: ["#9356F5", "#7C3AED"] as [string, string],
-  primaryReverse: ["#7C3AED", "#5B21B6"] as [string, string],
+  primary: ["#C164FF", "#B047F6"] as [string, string],
+  primaryReverse: ["#B047F6", "#7A5AFF"] as [string, string],
   hero: ["rgba(255,255,255,0.38)", "rgba(255,255,255,0.18)"] as [string, string],
   cardBottom: ["transparent", "rgba(0,0,0,0.38)"] as [string, string],
 } as const;
@@ -99,28 +99,28 @@ export const typography = {
 
 export const shadows = {
   card: {
-    shadowColor: "#7C3AED",
+    shadowColor: "#B047F6",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 16,
     elevation: 6,
   },
   cardHeavy: {
-    shadowColor: "#7C3AED",
+    shadowColor: "#B047F6",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.22,
     shadowRadius: 30,
     elevation: 10,
   },
   fab: {
-    shadowColor: "#7C3AED",
+    shadowColor: "#B047F6",
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.44,
     shadowRadius: 24,
     elevation: 14,
   },
   tabBar: {
-    shadowColor: "#7C3AED",
+    shadowColor: "#B047F6",
     shadowOffset: { width: 0, height: -6 },
     shadowOpacity: 0.12,
     shadowRadius: 20,

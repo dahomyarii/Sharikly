@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     backgroundColor: "rgba(255, 255, 255, 0.75)",
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(124, 58, 237, 0.08)",
+    borderBottomColor: "rgba(176, 71, 246, 0.08)",
   },
   searchRow: {
     flexDirection: "row",
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: radii.full,
     borderWidth: 1,
-    borderColor: "rgba(124, 58, 237, 0.15)",
+    borderColor: "rgba(176, 71, 246, 0.15)",
     paddingHorizontal: 14,
     height: 48,
     gap: 10,

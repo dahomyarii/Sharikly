@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   },
   cardSelected: {
     borderColor: colors.primary,
-    backgroundColor: 'rgba(124, 58, 237, 0.05)',
+    backgroundColor: 'rgba(176, 71, 246, 0.05)',
   },
   cardText: { fontSize: 16, fontWeight: '500', color: colors.foreground },
   listItem: {

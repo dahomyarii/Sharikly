@@ -1,5 +1,6 @@
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, spacing } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import { useNavigation } from "@react-navigation/native";
 import { Eye, EyeOff } from "lucide-react-native";
@@ -62,9 +63,7 @@ export function ChangePasswordScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>Change Password</Text>
-      </View>
+      <ScreenHeader title="Change Password" />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}

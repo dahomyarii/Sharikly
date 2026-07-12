@@ -31,9 +31,11 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
-const { width: SCREEN_W } = Dimensions.get("window");
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
+const HERO_HEIGHT = SCREEN_H * 0.2;
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
 const MAPBOX_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? "";
 
@@ -63,7 +65,7 @@ function buildMapboxStaticUrl(args: {
   } = args;
 
   // marker: purple pin, like web styling
-  const marker = `pin-s+7c3aed(${lng},${lat})`;
+  const marker = `pin-s+b047f6(${lng},${lat})`;
   const center = `${lng},${lat},${zoom},0`;
   const size = `${Math.round(width)}x${Math.round(height)}@2x`;
 
@@ -80,9 +82,14 @@ function buildMapboxStaticUrl(args: {
 
 export function ListingDetailScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
+  const insets = useSafeAreaInsets();
+  const requireAuth = useRequireAuth();
   const { id } = useRoute<R>().params;
   const [activeImg, setActiveImg] = useState(0);
   const [isFavorited, setIsFavorited] = useState(false);
+
+  const goRequestBooking = () =>
+    requireAuth(() => navigation.navigate("RequestBooking", { id }));
 
   // Calendar State
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -204,7 +211,7 @@ export function ListingDetailScreen(): React.ReactElement {
     .filter(Boolean);
   if (images.length === 0) images.push("");
 
-  const ownerName = data.owner?.first_name ?? data.owner?.username ?? "User";
+  const ownerName = data.owner?.first_name || data.owner?.username || "User";
   const ownerAvatar = getFullUrl(data.owner?.avatar);
   const currency = data.currency ?? "SAR";
   const avgRating = data.average_rating ?? 4.9;
@@ -499,7 +506,7 @@ export function ListingDetailScreen(): React.ReactElement {
             <View style={styles.availabilityActionBox}>
               <PrimaryButton
                 label="Send Request"
-                onPress={() => navigation.navigate("RequestBooking", { id })}
+                onPress={goRequestBooking}
               />
             </View>
           </View>
@@ -603,12 +610,12 @@ export function ListingDetailScreen(): React.ReactElement {
             </>
           )}
 
-          <View style={{ height: layout.tabBarHeight + 40 }} />
+          <View style={{ height: layout.tabBarHeight + insets.bottom + 150 }} />
         </View>
       </ScrollView>
 
-      {/* ── STICKY bottom bar ── */}
-      <View style={styles.stickyBar}>
+      {/* ── STICKY bottom bar (floats just above the tab bar) ── */}
+      <View style={[styles.stickyBar, { bottom: layout.tabBarHeight + insets.bottom + 8 }]}>
         <View>
           <Text style={styles.stickyPrice}>
             {currency} {data?.price_per_day ?? "0"}
@@ -617,7 +624,7 @@ export function ListingDetailScreen(): React.ReactElement {
         </View>
         <PrimaryButton
           label="Secure Booking"
-          onPress={() => navigation.navigate("RequestBooking", { id })}
+          onPress={goRequestBooking}
           size="md"
         />
       </View>
@@ -640,13 +647,13 @@ const styles = StyleSheet.create({
   // Hero
   heroWrap: {
     width: SCREEN_W,
-    height: SCREEN_W * 0.8,
+    height: HERO_HEIGHT,
     position: "relative",
     backgroundColor: colors.accent,
   },
   heroImage: {
     width: SCREEN_W,
-    height: SCREEN_W * 0.8,
+    height: HERO_HEIGHT,
   },
   floatingHeader: {
     position: "absolute",
@@ -676,7 +683,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 30,
     left: 16,
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#B047F6",
     borderRadius: radii.full,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -753,7 +760,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopWidth: 1,
     borderBottomWidth:1,
-    borderColor: "rgba(124, 58, 237, 0.08)",
+    borderColor: "rgba(176, 71, 246, 0.08)",
   },
   hostAvatar: {
     width: 36,
@@ -767,7 +774,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   hostAvatarLetter: { color: "#fff", fontSize: 16, fontWeight: "800" },
-  hostText: { fontSize: 14, color: colors.textSecondary, flex: 1 },
+  hostText: { fontSize: 14, color: colors.textSecondary },
   hostNameBold: { fontWeight: "800", color: colors.foreground },
   verifiedChip: {
     flexDirection: "row",
@@ -781,15 +788,14 @@ const styles = StyleSheet.create({
   verifiedText: { fontSize: 11, fontWeight: "800", color: "#10B981" },
 
 
-  // Trust (2x2 grid)
+  // Trust (vertical list)
   trustGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: "column",
     marginBottom: spacing.md,
-    gap: 12,
+    gap: 10,
   },
   trustTile: {
-    width: "48%",
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
@@ -811,7 +817,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "rgba(124, 58, 237, 0.06)",
+    backgroundColor: "#F3F4F6",
     borderRadius: radii.lg,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -819,7 +825,7 @@ const styles = StyleSheet.create({
   },
   depositText: {
     fontSize: 14,
-    color: colors.primary,
+    color: colors.foreground,
     fontWeight: "700",
   },
 
@@ -949,7 +955,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
   },
   calendarCellBetween: {
-    backgroundColor: "rgba(124, 58, 237, 0.1)",
+    backgroundColor: "rgba(176, 71, 246, 0.1)",
     borderRadius: 0,
   },
   calendarCellText: {
@@ -1082,7 +1088,7 @@ const styles = StyleSheet.create({
     ...shadows.card,
     shadowOpacity: 0.05,
     borderWidth: 1,
-    borderColor: "rgba(124, 58, 237, 0.08)",
+    borderColor: "rgba(176, 71, 246, 0.08)",
   },
   similarImg: { width: "100%", height: 84, backgroundColor: colors.muted },
   similarName: {
@@ -1095,19 +1101,19 @@ const styles = StyleSheet.create({
   // Sticky bar
   stickyBar: {
     position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+    left: spacing.md,
+    right: spacing.md,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: 34,
-    backgroundColor: "rgba(255, 255, 255, 0.98)",
-    borderTopWidth: 1,
-    borderTopColor: "rgba(124, 58, 237, 0.1)",
-    ...shadows.tabBar,
+    paddingVertical: spacing.md,
+    borderRadius: radii.xl,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "rgba(176, 71, 246, 0.12)",
+    ...shadows.cardHeavy,
+    shadowOpacity: 0.12,
   },
   stickyPrice: {
     fontSize: 22,

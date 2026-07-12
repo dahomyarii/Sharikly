@@ -1,4 +1,5 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { getBookings, updateBookingStatus } from "@/services/api/endpoints/bookings";
 import type { BookingsStackParamList } from "@/navigation/types";
 import { useNavigation } from "@react-navigation/native";
@@ -263,22 +264,24 @@ export function HostBookingsScreen(): React.ReactElement {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>My Bookings</Text>
-        <Pressable
-          style={styles.bellWrap}
-          onPress={() => (navigation as any).navigate("ProfileTab", { screen: "Notifications" })}
-          accessibilityRole="button"
-          accessibilityLabel="Open notifications"
-        >
-          <Bell size={22} color={colors.foreground} />
-          {pendingCount > 0 && (
-            <View style={styles.bellBadge}>
-              <Text style={styles.bellBadgeText}>{pendingCount}</Text>
-            </View>
-          )}
-        </Pressable>
-      </View>
+      <ScreenHeader
+        title="My Bookings"
+        right={
+          <Pressable
+            style={styles.bellWrap}
+            onPress={() => (navigation as any).navigate("ProfileTab", { screen: "Notifications" })}
+            accessibilityRole="button"
+            accessibilityLabel="Open notifications"
+          >
+            <Bell size={22} color={colors.foreground} />
+            {pendingCount > 0 && (
+              <View style={styles.bellBadge}>
+                <Text style={styles.bellBadgeText}>{pendingCount}</Text>
+              </View>
+            )}
+          </Pressable>
+        }
+      />
 
       {/* Tabs */}
       <View style={styles.tabsRow}>

@@ -1,4 +1,5 @@
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { getPublicEarnings } from "@/services/api/endpoints/earnings";
 
 import { useQuery } from "@tanstack/react-query";
@@ -63,12 +64,10 @@ export function CommunityEarningsScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>Community Earnings</Text>
-        <Text style={styles.screenSub}>
-          See how the Ekra community is growing
-        </Text>
-      </View>
+      <ScreenHeader title="Community Earnings" />
+      <Text style={[styles.screenSub, { paddingHorizontal: spacing.md, marginBottom: spacing.sm }]}>
+        See how the Ekra community is growing
+      </Text>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Stat cards */}

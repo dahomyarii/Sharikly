@@ -1,4 +1,5 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { User, UserMinus } from "lucide-react-native";
@@ -83,9 +84,7 @@ export function BlockedUsersScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>Blocked Users</Text>
-      </View>
+      <ScreenHeader title="Blocked Users" />
 
       {usersQ.isPending ? (
         <View style={styles.center}>
@@ -176,7 +175,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "rgba(124, 58, 237, 0.05)",
+    backgroundColor: "rgba(176, 71, 246, 0.05)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: spacing.xl,

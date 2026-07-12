@@ -94,7 +94,17 @@ export function RegisterScreen(): React.ReactElement {
         await persistTokens(accessToken, refreshToken);
         await bootstrapApiClient();
         setHasSession(true);
-        navigation.getParent()?.goBack();
+        const pending = useAuthStore.getState().pendingAction;
+        useAuthStore.getState().setPendingAction(null);
+        // Dismiss the Auth modal, preserving underlying screens (goBack) so a
+        // pending gated action can return the user to where they wanted to go.
+        const parent = navigation.getParent();
+        if (parent?.canGoBack()) {
+          parent.goBack();
+        } else {
+          parent?.reset({ index: 0, routes: [{ name: "Main" as never }] });
+        }
+        if (pending) setTimeout(() => pending(), 80);
       } else {
         // Email verification required
         navigation.navigate("Login", {
@@ -180,7 +190,7 @@ export function RegisterScreen(): React.ReactElement {
         >
           {/* Header */}
           <LinearGradient
-            colors={["#9356F5", "#6D28D9"]}
+            colors={["#C164FF", "#7A5AFF"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.header}

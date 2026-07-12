@@ -5,7 +5,7 @@ import type { InboxStackParamList } from "@/navigation/types";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
-import { MessageCircle, Plus, Search, User, Filter, Edit, ChevronRight } from "lucide-react-native";
+import { MessageCircle, Plus, Search, User, Filter, Edit, ChevronRight, ArrowLeft } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import {
@@ -40,8 +40,10 @@ interface ChatRoom {
     id: number;
     username: string;
     first_name?: string;
+    last_name?: string;
     email: string;
     avatar?: string;
+    is_staff?: boolean;
   }>;
   last_message?: {
     text?: string;
@@ -55,6 +57,7 @@ interface ChatRoom {
     city?: string | null;
     image?: string | null;
   } | null;
+  booking_status?: "ongoing" | "pickup_tomorrow" | "completed" | null;
 }
 
 export function ChatInboxScreen(): React.ReactElement {
@@ -77,7 +80,8 @@ export function ChatInboxScreen(): React.ReactElement {
       const { data } = await axiosInstance.get(buildApiUrl("/chat/rooms/"));
       return Array.isArray(data) ? data : [];
     },
-    refetchInterval: 7000,
+    enabled: hasSession,
+    refetchInterval: hasSession ? 7000 : false,
   });
 
   const getOtherParticipant = (room: ChatRoom) => {
@@ -105,22 +109,30 @@ export function ChatInboxScreen(): React.ReactElement {
 
   const rooms: ChatRoom[] = roomsQ.data || [];
 
-  const filteredRooms = rooms.filter((room) => {
-    const query = searchQuery.toLowerCase();
+  const isSupportRoom = (room: ChatRoom) => {
     const other = getOtherParticipant(room);
-    const nameMatch = other?.username?.toLowerCase().includes(query) || false;
+    return !!other?.is_staff;
+  };
+
+  const filteredRooms = rooms.filter((room) => {
+    const query = searchQuery.trim().toLowerCase();
+    const other = getOtherParticipant(room);
+    const nameMatch =
+      other?.username?.toLowerCase().includes(query) ||
+      other?.first_name?.toLowerCase().includes(query) ||
+      other?.last_name?.toLowerCase().includes(query) ||
+      false;
     const msgMatch = room.last_message?.text?.toLowerCase().includes(query) || false;
-    
-    const matchesSearch = !searchQuery.trim() || nameMatch || msgMatch;
-    
-    // Filter by active tab (mocked logic for un-implemented statuses)
+
+    const matchesSearch = !query || nameMatch || msgMatch;
+
     let matchesTab = true;
     if (activeTab === "Bookings") {
-      matchesTab = !!room.listing;
+      matchesTab = !!room.booking_status;
     } else if (activeTab === "Support") {
-      matchesTab = other?.username?.toLowerCase().includes("support") || false;
+      matchesTab = isSupportRoom(room);
     } else if (activeTab === "Archived") {
-      matchesTab = false; // Example: nothing archived yet
+      matchesTab = false; // No archiving feature yet — always empty
     }
 
     return matchesSearch && matchesTab;
@@ -135,11 +147,13 @@ export function ChatInboxScreen(): React.ReactElement {
     (navigation as any).navigate("ExploreTab", { screen, ...(params ? { params } : {}) });
   };
 
-  const renderRoom = ({ item, index }: { item: ChatRoom; index: number }) => {
+  const renderRoom = ({ item }: { item: ChatRoom }) => {
     const other = getOtherParticipant(item);
     const lastMsg = item.last_message;
-    const unread = item.unread_count || (index < 2 ? index + 1 : 0); // mock unread count based on design
-    const otherName = other?.first_name ? `${other.first_name} ${other.username}` : other?.username || "User";
+    const unread = item.unread_count || 0;
+    const otherName = other?.first_name
+      ? `${other.first_name}${other.last_name ? ` ${other.last_name}` : ""}`
+      : other?.username || "User";
     const avatarUrl = getAvatarUrl(other?.avatar);
 
     return (
@@ -166,12 +180,12 @@ export function ChatInboxScreen(): React.ReactElement {
             <Text style={styles.roomName} numberOfLines={1}>
               {otherName}
             </Text>
-            <Text style={styles.timeText}>{formatTime(lastMsg?.created_at) || "10:30 AM"}</Text>
+            <Text style={styles.timeText}>{formatTime(lastMsg?.created_at)}</Text>
           </View>
           
           <View style={styles.msgPreviewRow}>
             <Text style={[styles.msgPreview, unread > 0 && { fontWeight: "500", color: colors.foreground }]} numberOfLines={2}>
-              {lastMsg?.text || (lastMsg?.image ? "📷 Image" : "Hey, is the Sony A7IV still available for this weekend?")}
+              {lastMsg?.text || (lastMsg?.image ? "📷 Image" : "No messages yet")}
             </Text>
             {unread > 0 && (
               <View style={styles.unreadPill}>
@@ -180,12 +194,16 @@ export function ChatInboxScreen(): React.ReactElement {
             )}
           </View>
 
-          {/* Status Pill mocked for design */}
           <View style={styles.statusPillRow}>
-            {index === 0 && <View style={[styles.statusPill, { backgroundColor: '#ECFDF5' }]}><Text style={[styles.statusPillText, { color: '#059669' }]}>Ongoing booking</Text></View>}
-            {index === 1 && <View style={[styles.statusPill, { backgroundColor: '#F5F3FF' }]}><Text style={[styles.statusPillText, { color: colors.primary }]}>Pickup tomorrow</Text></View>}
-            {index === 2 && <View style={[styles.statusPill, { backgroundColor: '#ECFDF5' }]}><Text style={[styles.statusPillText, { color: '#059669' }]}>Completed</Text></View>}
-            {index === 3 && <View style={[styles.statusPill, { backgroundColor: '#F5F3FF' }]}><Text style={[styles.statusPillText, { color: colors.primary }]}>Support</Text></View>}
+            {isSupportRoom(item) ? (
+              <View style={[styles.statusPill, { backgroundColor: '#F5F3FF' }]}><Text style={[styles.statusPillText, { color: colors.primary }]}>Support</Text></View>
+            ) : item.booking_status === "completed" ? (
+              <View style={[styles.statusPill, { backgroundColor: '#ECFDF5' }]}><Text style={[styles.statusPillText, { color: '#059669' }]}>Completed</Text></View>
+            ) : item.booking_status === "pickup_tomorrow" ? (
+              <View style={[styles.statusPill, { backgroundColor: '#F5F3FF' }]}><Text style={[styles.statusPillText, { color: colors.primary }]}>Pickup tomorrow</Text></View>
+            ) : item.booking_status === "ongoing" ? (
+              <View style={[styles.statusPill, { backgroundColor: '#ECFDF5' }]}><Text style={[styles.statusPillText, { color: '#059669' }]}>Ongoing booking</Text></View>
+            ) : null}
           </View>
 
         </View>
@@ -201,7 +219,12 @@ export function ChatInboxScreen(): React.ReactElement {
     >
       <SafeAreaView style={styles.safe} edges={["top"]}>
         <View style={styles.header}>
-          <Text style={styles.screenTitle}>Inbox</Text>
+          {navigation.canGoBack() && (
+            <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={{ marginRight: 10 }}>
+              <ArrowLeft size={24} color={colors.primary} />
+            </Pressable>
+          )}
+          <Text style={[styles.screenTitle, { flex: 1 }]}>Inbox</Text>
           <View style={styles.headerActions}>
             <Pressable style={styles.headerIconBtn}>
               <Filter size={20} color={colors.foreground} />
@@ -247,12 +270,7 @@ export function ChatInboxScreen(): React.ReactElement {
           </View>
         ) : (
           <FlatList
-            data={filteredRooms.length > 0 ? filteredRooms : [
-              { id: 1, participants: [{id: 2, username: 'Faisal Al Mutairi', email: ''}], last_message: {text: 'Hey, is the Sony A7IV still available for this weekend?', created_at: ''}},
-              { id: 2, participants: [{id: 3, username: 'Mohammed Alyami', email: ''}], last_message: {text: 'Perfect! See you tomorrow at 11 AM.', created_at: ''}},
-              { id: 3, participants: [{id: 4, username: 'Sara Al Qahtani', email: ''}], last_message: {text: 'Thank you so much! 🙌', created_at: ''}},
-              { id: 4, participants: [{id: 5, username: 'Abdullah Al Saad', email: ''}], last_message: {text: 'Can I extend the rental for one more day?', created_at: ''}},
-            ]} // Mocked data array if empty to show the design correctly
+            data={filteredRooms}
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={[styles.list, { paddingBottom: Math.max(insets.bottom, 24) + layout.tabBarHeight + 100 }]}
             showsVerticalScrollIndicator={false}
@@ -419,7 +437,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: 'rgba(124, 58, 237, 0.1)',
+    borderColor: 'rgba(176, 71, 246, 0.1)',
   },
   promoContent: {
     flexDirection: 'row',
@@ -450,7 +468,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "rgba(124, 58, 237, 0.05)",
+    backgroundColor: "rgba(176, 71, 246, 0.05)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,

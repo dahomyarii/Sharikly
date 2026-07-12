@@ -568,7 +568,12 @@ class DeleteAccountView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        user.delete()
+        # Anonymize-and-retain (GDPR/PDPL): scrub personal data + disable the
+        # account, but keep anonymized transaction/moderation records so other
+        # users' bookings/reviews/chats and accounting stay intact.
+        from accounts.services import anonymize_and_close_account
+
+        anonymize_and_close_account(user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -1365,6 +1370,14 @@ class ChatRoomListCreateView(generics.ListCreateAPIView):
 
         serializer = self.get_serializer(room)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ChatRoomDetailView(generics.RetrieveAPIView):
+    serializer_class = ChatRoomSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return ChatRoom.objects.filter(participants=self.request.user).distinct()
 
 
 class ChatRoomGetOrCreateView(APIView):

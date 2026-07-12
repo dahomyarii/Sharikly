@@ -1,4 +1,5 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import React from "react";
@@ -59,9 +60,7 @@ export function NotificationPreferencesScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>Notifications</Text>
-      </View>
+      <ScreenHeader title="Notifications" />
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <Text style={styles.instructions}>

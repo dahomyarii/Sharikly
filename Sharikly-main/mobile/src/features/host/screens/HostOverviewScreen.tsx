@@ -335,7 +335,7 @@ export function HostOverviewScreen(): React.ReactElement {
               style={styles.qaCard}
               onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
             >
-              <LinearGradient colors={["#6D28D9", "#4C1D95"]} style={styles.qaIconBg}>
+              <LinearGradient colors={["#7A5AFF", "#4C1D95"]} style={styles.qaIconBg}>
                 <Plus size={20} color="#fff" />
               </LinearGradient>
               <Text style={styles.qaText}>Add Item</Text>

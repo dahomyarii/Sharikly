@@ -19,12 +19,12 @@ export async function getChatMessages(roomId: number | string): Promise<unknown>
 
 export async function sendMessage(
   roomId: number | string,
-  content: string
+  text: string
 ): Promise<unknown> {
-  // Real endpoint: POST /chat/messages/ with room + content
+  // Real endpoint: POST /chat/messages/ with room + text
   const { data } = await axiosInstance.post(buildApiUrl("/chat/messages/"), {
     room: roomId,
-    content,
+    text,
   });
   return data;
 }

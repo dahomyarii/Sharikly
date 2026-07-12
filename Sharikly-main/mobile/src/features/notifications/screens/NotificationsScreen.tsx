@@ -1,4 +1,5 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "@/services/api/endpoints/notifications";
 import { updateBookingStatus } from "@/services/api/endpoints/bookings";
 import { useNavigation } from "@react-navigation/native";
@@ -22,7 +23,7 @@ type Nav = NativeStackNavigationProp<InboxStackParamList, "Notifications">;
 type FilterTab = "All" | "Rentals" | "Bookings";
 
 // ── Static mock data to enrich the notification cards (matches design) ──────
-const AVATAR_COLORS = ["#7C3AED", "#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
+const AVATAR_COLORS = ["#B047F6", "#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
 
 function getStatusColor(label: string) {
   if (label === "On the way" || label === "Today") return { bg: "#EEE9FC", text: colors.primary };
@@ -247,17 +248,19 @@ export function NotificationsScreen(): React.ReactElement {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>Notifications</Text>
-        <View style={styles.bellWrap}>
-          <Bell size={22} color={colors.foreground} />
-          {unreadCount > 0 && (
-            <View style={styles.bellBadge}>
-              <Text style={styles.bellBadgeText}>{unreadCount}</Text>
-            </View>
-          )}
-        </View>
-      </View>
+      <ScreenHeader
+        title="Notifications"
+        right={
+          <View style={styles.bellWrap}>
+            <Bell size={22} color={colors.foreground} />
+            {unreadCount > 0 && (
+              <View style={styles.bellBadge}>
+                <Text style={styles.bellBadgeText}>{unreadCount}</Text>
+              </View>
+            )}
+          </View>
+        }
+      />
 
       {/* Filter tabs */}
       <View style={styles.tabsRow}>
@@ -315,7 +318,7 @@ export function NotificationsScreen(): React.ReactElement {
           ListFooterComponent={
             /* Bottom CTA Banner */
             <LinearGradient
-              colors={["#7C3AED", "#5B21B6"]}
+              colors={["#B047F6", "#7A5AFF"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.ctaBanner}
@@ -403,7 +406,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(120,80,220,0.07)",
   },
   notifCardUnread: {
-    borderColor: "rgba(124,58,237,0.15)",
+    borderColor: "rgba(176,71,246,0.15)",
     backgroundColor: "#FEFCFF",
   },
   notifCardTop: {

@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
 
   // Pay button
   payBtn: {
-    backgroundColor: "#5B21B6",
+    backgroundColor: "#7A5AFF",
     borderRadius: radii.xl,
     paddingVertical: 18,
     alignItems: "center",
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     ...shadows.card,
-    shadowColor: "#5B21B6",
+    shadowColor: "#7A5AFF",
     shadowOpacity: 0.35,
   },
   payBtnDisabled: {

@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: "100%",
-    aspectRatio: 0.95,
+    aspectRatio: 1.6,
     backgroundColor: colors.muted,
     borderRadius: 20,
     overflow: "hidden",

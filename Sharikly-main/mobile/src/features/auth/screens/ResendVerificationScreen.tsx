@@ -43,7 +43,7 @@ export function ResendVerificationScreen(): React.ReactElement {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <LinearGradient colors={["#9356F5", "#6D28D9"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
+          <LinearGradient colors={["#C164FF", "#7A5AFF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
             <Pressable style={styles.backBtn} onPress={() => navigation.goBack()} hitSlop={12}>
               <ArrowLeft size={22} color="rgba(255,255,255,0.9)" />
             </Pressable>

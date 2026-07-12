@@ -1,8 +1,10 @@
+import { GuestAuthGate } from "@/components/ui/GuestAuthGate";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { SkeletonList } from "@/components/ui/SkeletonCard";
 import { colors, radii, shadows, spacing, layout } from "@/core/theme/tokens";
 import type { BookingsStackParamList } from "@/navigation/types";
 import { getBookings } from "@/services/api/endpoints/bookings";
+import { useAuthStore } from "@/store/authStore";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useQuery } from "@tanstack/react-query";
@@ -28,11 +30,13 @@ type Nav = NativeStackNavigationProp<BookingsStackParamList, "BookingsRenter">;
 
 export function BookingsRenterScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
+  const { hasSession } = useAuthStore();
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
 
   const bookingsQ = useQuery({
     queryKey: ["bookings", "renter"],
     queryFn: () => getBookings({ role: "renter" }),
+    enabled: hasSession,
   });
 
   const ACTIVE_STATUSES = ["pending", "approved", "paid"];
@@ -65,6 +69,11 @@ export function BookingsRenterScreen(): React.ReactElement {
   };
 
   return (
+    <GuestAuthGate
+      title="Your Bookings"
+      subtitle="Sign in to view and manage your rental requests."
+      icon={<Calendar size={32} color={colors.primary} />}
+    >
     <SafeAreaView style={styles.safe} edges={["top"]}>
       {/* Header */}
       <View style={styles.header}>
@@ -89,7 +98,7 @@ export function BookingsRenterScreen(): React.ReactElement {
       </View>
 
       {/* List */}
-      {bookingsQ.isPending && !bookingsQ.isRefetching ? (
+      {hasSession && bookingsQ.isPending && !bookingsQ.isRefetching ? (
         <View style={styles.skeletonWrap}>
           <SkeletonList count={5} />
         </View>
@@ -133,6 +142,7 @@ export function BookingsRenterScreen(): React.ReactElement {
         />
       )}
     </SafeAreaView>
+    </GuestAuthGate>
   );
 }
 
@@ -245,7 +255,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: radii.full,
-    backgroundColor: "rgba(124, 58, 237, 0.05)",
+    backgroundColor: "rgba(176, 71, 246, 0.05)",
     borderWidth: 1,
     borderColor: "transparent",
   },
@@ -278,7 +288,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: "rgba(124, 58, 237, 0.08)",
+    borderColor: "rgba(176, 71, 246, 0.08)",
     ...shadows.card,
     shadowOpacity: 0.06,
   },
@@ -343,7 +353,7 @@ const styles = StyleSheet.create({
   },
   cardDivider: {
     height: 1,
-    backgroundColor: "rgba(124, 58, 237, 0.05)",
+    backgroundColor: "rgba(176, 71, 246, 0.05)",
     marginVertical: 12,
   },
   cardFooter: {
@@ -377,7 +387,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "rgba(124, 58, 237, 0.05)",
+    backgroundColor: "rgba(176, 71, 246, 0.05)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,

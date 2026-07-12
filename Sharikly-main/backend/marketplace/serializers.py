@@ -112,6 +112,8 @@ class UserSerializer(serializers.ModelSerializer):
     listings_count = serializers.SerializerMethodField()
     bookings_count = serializers.SerializerMethodField()
     total_earnings = serializers.SerializerMethodField()
+    reviews_count = serializers.SerializerMethodField()
+    saved_items_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -124,6 +126,7 @@ class UserSerializer(serializers.ModelSerializer):
             "avatar",
             "bio",
             "is_email_verified",
+            "is_staff",
             "phone_number",
             "language",
             "payout_bank",
@@ -134,6 +137,8 @@ class UserSerializer(serializers.ModelSerializer):
             "listings_count",
             "bookings_count",
             "total_earnings",
+            "reviews_count",
+            "saved_items_count",
         ]
 
     def _get_cached_response_stats(self, obj: User):
@@ -172,6 +177,14 @@ class UserSerializer(serializers.ModelSerializer):
             payment_status=Booking.PaymentStatus.PAID
         ).aggregate(total=Coalesce(Sum('total_price'), Decimal('0.00')))
         return float(result['total'])
+
+    def get_reviews_count(self, obj):
+        from .models import Review
+        return Review.objects.filter(listing__owner=obj).count()
+
+    def get_saved_items_count(self, obj):
+        from .models import Favorite
+        return Favorite.objects.filter(user=obj).count()
 
 
 class PublicUserSerializer(serializers.ModelSerializer):
@@ -578,10 +591,19 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     last_message = serializers.SerializerMethodField()
     listing = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
+    booking_status = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
-        fields = ["id", "participants", "created_at", "last_message", "listing", "unread_count"]
+        fields = [
+            "id",
+            "participants",
+            "created_at",
+            "last_message",
+            "listing",
+            "unread_count",
+            "booking_status",
+        ]
 
     def get_last_message(self, obj):
         last_msg = obj.messages.last()
@@ -637,6 +659,40 @@ class ChatRoomSerializer(serializers.ModelSerializer):
             )
         except Exception:
             return 0
+
+    def get_booking_status(self, obj):
+        """
+        Real booking lifecycle status for the room's listing (if any) — matches
+        against any participant in the room who has an actual Booking on file
+        for that listing (whichever participant is the renter).
+        Returns one of: "ongoing", "pickup_tomorrow", "completed", or None.
+        """
+        listing = getattr(obj, "listing", None)
+        if not listing:
+            return None
+
+        participant_ids = [p.id for p in obj.participants.all()]
+        booking = (
+            Booking.objects.filter(listing=listing, renter_id__in=participant_ids)
+            .order_by("-created_at")
+            .first()
+        )
+        if not booking:
+            return None
+
+        if booking.status in (Booking.Status.CANCELLED, Booking.Status.DECLINED):
+            return None
+
+        if booking.status == Booking.Status.PENDING:
+            return "ongoing"
+
+        # CONFIRMED
+        today = timezone.now().date()
+        if booking.end_date < today:
+            return "completed"
+        if booking.start_date == today + timedelta(days=1):
+            return "pickup_tomorrow"
+        return "ongoing"
 
 
 # ==========================
