@@ -5,17 +5,16 @@ import { requestBooking } from "@/services/api/endpoints/bookings";
 import type { RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Calendar,
   CheckCircle,
   Clock,
   MapPin,
-  Shield,
 } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -25,13 +24,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { showToast } from "@/core/events/appEvents";
 import { useAuthStore } from "@/store/authStore";
 
 type Nav = NativeStackNavigationProp<ListingsStackParamList, "RequestBooking">;
 type R = RouteProp<ListingsStackParamList, "RequestBooking">;
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
-const DEPOSIT_SAR = 500;
 
 function getImageUrl(path: string | undefined) {
   if (!path) return null;
@@ -69,12 +68,14 @@ function formatDatesLabel(start: string, end: string, days: number): string {
 
 export function RequestBookingScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
-  const { id } = useRoute<R>().params;
+  const { id, start, end } = useRoute<R>().params;
   const { hasSession } = useAuthStore();
+  const queryClient = useQueryClient();
 
-  const [startDate] = useState(today());
+  // Use the dates the user picked on the listing; fall back to today → +2 days.
+  const [startDate] = useState(start ?? today());
   const [endDate] = useState(
-    (() => { const d = new Date(); d.setDate(d.getDate() + 2); return d.toISOString().split("T")[0]; })()
+    end ?? (() => { const d = new Date(); d.setDate(d.getDate() + 2); return d.toISOString().split("T")[0]; })()
   );
   const [termsAgreed, setTermsAgreed] = useState(false);
 
@@ -89,37 +90,25 @@ export function RequestBookingScreen(): React.ReactElement {
     enabled: hasSession,
   });
 
-  const mutation = useMutation({
-    mutationFn: () =>
-      requestBooking(id, {
-        start_date: startDate,
-        end_date: endDate,
-      }),
-    onSuccess: (_booking: any) => {
-      Alert.alert("Booking Requested! 🎉", "Your booking request has been sent to the host.", [
-        {
-          text: "View Booking",
-          onPress: () => navigation.navigate("BookingsRenter" as any),
-        },
-        { text: "OK", style: "cancel" },
-      ]);
-    },
-    onError: (err: any) => {
-      const detail =
-        err?.response?.data?.detail ??
-        err?.response?.data?.non_field_errors?.[0] ??
-        "Failed to request booking. Please try again.";
-      Alert.alert("Error", String(detail));
-    },
+  const cardsQ = useQuery({
+    queryKey: ["payment-methods"],
+    queryFn: () => axiosInstance.get(buildApiUrl("/users/payment-methods/")).then((res: any) => res.data),
+    enabled: hasSession,
   });
 
   const listing: any = q.data;
   const user: any = userQ.data;
-  const currency = listing?.currency ?? "SAR";
-  const pricePerDay = parseFloat(listing?.price_per_day ?? "180");
+  const currency = "SAR";
   const days = diffDays(startDate, endDate);
+  const pricePerDay = parseFloat(listing?.price_per_day ?? "0") || 0;
   const subtotal = pricePerDay * days;
-  const total = subtotal + DEPOSIT_SAR;
+  const deposit = Number(listing?.deposit ?? 0) || 0;
+  const total = subtotal + deposit;
+
+  const cards: any[] = Array.isArray(cardsQ.data)
+    ? cardsQ.data
+    : (cardsQ.data as any)?.results ?? [];
+  const defaultCard = cards.find((c) => c.is_default) ?? cards[0] ?? null;
 
   const imageUrl = listing?.images?.[0]
     ? getImageUrl(listing.images[0].image)
@@ -129,8 +118,33 @@ export function RequestBookingScreen(): React.ReactElement {
     ? (user.avatar.startsWith("http") ? user.avatar : `${API_BASE.replace("/api", "")}${user.avatar}`)
     : null;
 
-  const city = listing?.city ?? "Aqiq, Riyadh";
+  const city = listing?.city || "Not specified";
   const datesLabel = formatDatesLabel(startDate, endDate, days);
+  const fmtLong = (s: string) => {
+    try { return new Date(s).toLocaleDateString("en", { weekday: "short", month: "short", day: "numeric" }); }
+    catch { return s; }
+  };
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      requestBooking(id, {
+        start_date: startDate,
+        end_date: endDate,
+        total_price: subtotal,
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      showToast("Booking request sent to the host.", "success");
+      (navigation as any).navigate("BookingsTab", { screen: "Bookings" });
+    },
+    onError: (err: any) => {
+      const detail =
+        err?.response?.data?.detail ??
+        err?.response?.data?.non_field_errors?.[0] ??
+        "Couldn't send your booking request. Please try again.";
+      showToast(String(detail), "error");
+    },
+  });
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -140,8 +154,8 @@ export function RequestBookingScreen(): React.ReactElement {
           <ArrowLeft size={20} color={colors.foreground} />
         </Pressable>
         <View style={styles.topBarCenter}>
-          <Text style={styles.topBarIcon}>📋</Text>
-          <Text style={styles.topTitle}>Review & Confirm</Text>
+          <Text style={styles.topBarIcon}>📷</Text>
+          <Text style={styles.topTitle}>Review & Pay</Text>
         </View>
         <View style={styles.avatarMini}>
           {avatarUrl ? (
@@ -162,11 +176,11 @@ export function RequestBookingScreen(): React.ReactElement {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* ── Countdown Banner (commented out — payment not yet active) ── */}
-        {/* <View style={styles.countdownBanner}>
+        {/* ── Countdown Banner ── */}
+        <View style={styles.countdownBanner}>
           <Clock size={16} color="#92400E" />
-          <Text style={styles.countdownText}>Complete your booking in 2 minutes</Text>
-        </View> */}
+          <Text style={styles.countdownText}>You won&apos;t be charged until the host accepts your request.</Text>
+        </View>
 
         {/* ── Listing Summary ── */}
         <View style={styles.card}>
@@ -182,7 +196,7 @@ export function RequestBookingScreen(): React.ReactElement {
             )}
             <View style={styles.listingInfo}>
               <Text style={styles.listingTitle} numberOfLines={2}>
-                {listing?.title ?? "Canon R5 Creator Kit"}
+                {listing?.title ?? ""}
               </Text>
               <View style={styles.metaRow}>
                 <Text style={styles.metaIcon}>📅</Text>
@@ -199,35 +213,49 @@ export function RequestBookingScreen(): React.ReactElement {
         {/* ── Price Breakdown ── */}
         <View style={styles.card}>
           <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Subtotal</Text>
-            <Text style={styles.priceValue}>{currency} {subtotal > 0 ? subtotal.toFixed(0) : "360"}</Text>
+            <Text style={styles.priceLabel}>
+              Subtotal <Text style={styles.priceSub}>({currency} {pricePerDay.toFixed(0)} × {days} {days === 1 ? "day" : "days"})</Text>
+            </Text>
+            <Text style={styles.priceValue}>{currency} {subtotal.toFixed(0)}</Text>
           </View>
-          <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Deposit</Text>
-            <Text style={styles.priceValue}>{currency} {DEPOSIT_SAR}</Text>
-          </View>
+          {deposit > 0 && (
+            <View style={styles.priceRow}>
+              <Text style={styles.priceLabel}>Refundable deposit</Text>
+              <Text style={styles.priceValue}>{currency} {deposit.toFixed(0)}</Text>
+            </View>
+          )}
           <View style={styles.priceDivider} />
           <View style={styles.priceRow}>
             <Text style={styles.priceTotalLabel}>Total</Text>
-            <Text style={styles.priceTotalValue}>{currency} {total > DEPOSIT_SAR ? total.toFixed(0) : "860"}</Text>
+            <Text style={styles.priceTotalValue}>{currency} {total.toFixed(0)}</Text>
           </View>
-          <Text style={styles.serviceFeesNote}>Service fees included</Text>
         </View>
 
-        {/* ── Payment Method (commented out — payment integration coming soon) ── */}
-        {/* <View style={styles.card}>
+        {/* ── Payment Method ── */}
+        <View style={styles.card}>
           <Text style={styles.sectionTitle}>Payment Method</Text>
-          <View style={styles.paymentRow}>
-            <View style={styles.visaChip}>
-              <Text style={styles.visaText}>VISA</Text>
+          {defaultCard ? (
+            <View style={styles.paymentRow}>
+              <View style={styles.visaChip}>
+                <Text style={styles.visaText}>{String(defaultCard.brand || "CARD").toUpperCase()}</Text>
+              </View>
+              <Text style={styles.cardNumber}>•••• {defaultCard.card_last4}</Text>
+              <View style={{ flex: 1 }} />
+              <Pressable onPress={() => (navigation as any).navigate("ProfileTab", { screen: "PaymentMethods" })}>
+                <Text style={styles.addCardText}>Change</Text>
+              </Pressable>
             </View>
-            <Text style={styles.cardNumber}>***** 4242</Text>
-            <View style={{ flex: 1 }} />
-            <Pressable onPress={() => Alert.alert("Add Card", "Card management coming soon.")}>
-              <Text style={styles.addCardText}>Add new card</Text>
+          ) : (
+            <Pressable
+              style={styles.paymentRow}
+              onPress={() => (navigation as any).navigate("ProfileTab", { screen: "PaymentMethods" })}
+            >
+              <Text style={styles.cardNumber}>No card added</Text>
+              <View style={{ flex: 1 }} />
+              <Text style={styles.addCardText}>Add card</Text>
             </Pressable>
-          </View>
-        </View> */}
+          )}
+        </View>
 
         {/* ── Pickup Info ── */}
         <View style={styles.card}>
@@ -237,15 +265,12 @@ export function RequestBookingScreen(): React.ReactElement {
             <Text style={styles.pickupText}>{city}</Text>
           </View>
           <View style={styles.pickupRow}>
-            <Clock size={14} color={colors.mutedForeground} />
-            <Text style={styles.pickupText}>Pickup time: <Text style={{ fontWeight: "700", color: "#1C1628" }}>1:00 PM</Text></Text>
+            <Calendar size={14} color={colors.mutedForeground} />
+            <Text style={styles.pickupText}>Pickup: <Text style={{ fontWeight: "700", color: "#1C1628" }}>{fmtLong(startDate)}</Text></Text>
           </View>
           <View style={[styles.pickupRow, { marginBottom: 14 }]}>
-            <Clock size={14} color={colors.mutedForeground} />
-            <Text style={styles.pickupText}>
-              Drop-off time: <Text style={{ fontWeight: "700", color: "#1C1628" }}>1:00 PM</Text>{" "}
-              <Text style={styles.dropOffDate}>(Apr 27)</Text>
-            </Text>
+            <Calendar size={14} color={colors.mutedForeground} />
+            <Text style={styles.pickupText}>Drop-off: <Text style={{ fontWeight: "700", color: "#1C1628" }}>{fmtLong(endDate)}</Text></Text>
           </View>
 
           {/* Trust bullets */}
@@ -277,7 +302,7 @@ export function RequestBookingScreen(): React.ReactElement {
           </Text>
         </Pressable>
 
-        {/* ── Confirm Booking Button ── */}
+        {/* ── Pay Button ── */}
         <Pressable
           style={({ pressed }) => [
             styles.payBtn,
@@ -286,16 +311,15 @@ export function RequestBookingScreen(): React.ReactElement {
           ]}
           onPress={() => {
             if (!termsAgreed) {
-              Alert.alert("Please agree to the terms before proceeding.");
+              showToast("Please agree to the terms before continuing.", "warning");
               return;
             }
             mutation.mutate();
           }}
           disabled={mutation.isPending}
         >
-          <Shield size={16} color="#fff" />
           <Text style={styles.payBtnText}>
-            {mutation.isPending ? "Sending Request…" : "Confirm Booking Request"}
+            {mutation.isPending ? "Sending request…" : "Request to Book"}
           </Text>
         </Pressable>
 
@@ -406,6 +430,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   priceLabel: { fontSize: 14, color: "#6B5E8F" },
+  priceSub: { fontSize: 12, color: "#9B8DB8", fontWeight: "400" },
   priceValue: { fontSize: 14, fontWeight: "600", color: "#1C1628" },
   priceDivider: { height: 1, backgroundColor: "rgba(120,80,220,0.1)", marginVertical: 8 },
   priceTotalLabel: { fontSize: 16, fontWeight: "700", color: "#1C1628" },

@@ -8,12 +8,15 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { showToast } from "@/core/events/appEvents";
+import { useAuthStore } from "@/store/authStore";
 import { Edit3, Package, Plus, Trash2, ToggleLeft } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import {
-  Alert,
+  ActivityIndicator,
   FlatList,
   Image,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -37,24 +40,41 @@ function getImageUrl(path: string | undefined) {
 export function HostListingsManageScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
+  const hasSession = useAuthStore((s) => s.hasSession);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
   const q = useQuery({
     queryKey: ["listings", "mine"],
     queryFn: () => getListings({ mine: 1 }),
+    enabled: hasSession,
   });
+
+  // Prefix-match invalidation also refreshes the home/explore lists (["listings", ...])
+  // so a deleted/deactivated item disappears everywhere, not just from "My Listings".
+  const invalidateListings = () => {
+    void queryClient.invalidateQueries({ queryKey: ["listings"] });
+  };
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
       axiosInstance.patch(buildApiUrl(`/listings/${id}/`), { is_active: isActive }),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["listings", "mine"] }),
-    onError: () => Alert.alert("Failed to update listing."),
+    onSuccess: () => invalidateListings(),
+    onError: () => showToast("Couldn't update the listing. Please try again.", "error"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => axiosInstance.delete(buildApiUrl(`/listings/${id}/`)),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["listings", "mine"] }),
-    onError: () => Alert.alert("Failed to delete listing."),
+    onSuccess: () => {
+      invalidateListings();
+      showToast("Listing deleted.", "success");
+    },
+    onError: () => showToast("Couldn't delete the listing. Please try again.", "error"),
   });
+
+  const confirmDelete = () => {
+    if (deleteTarget != null) deleteMutation.mutate(deleteTarget);
+    setDeleteTarget(null);
+  };
 
   const listings: any[] = q.data
     ? Array.isArray(q.data)
@@ -108,16 +128,7 @@ export function HostListingsManageScreen(): React.ReactElement {
           </Pressable>
           <Pressable
             style={styles.actionBtn}
-            onPress={() =>
-              Alert.alert("Delete Listing", "Are you sure? This cannot be undone.", [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Delete",
-                  style: "destructive",
-                  onPress: () => deleteMutation.mutate(item.id),
-                },
-              ])
-            }
+            onPress={() => setDeleteTarget(item.id)}
           >
             <Trash2 size={14} color={colors.destructive} />
             <Text style={[styles.actionText, { color: colors.destructive }]}>Delete</Text>
@@ -148,6 +159,15 @@ export function HostListingsManageScreen(): React.ReactElement {
         <View style={styles.center}>
           <Text style={styles.mutedText}>Loading your listings…</Text>
         </View>
+      ) : q.isError ? (
+        <View style={styles.center}>
+          <Package size={48} color={colors.muted} />
+          <Text style={styles.emptyTitle}>Couldn&apos;t load your listings</Text>
+          <Text style={styles.emptyText}>Please check your connection and try again.</Text>
+          <Pressable style={styles.emptyBtn} onPress={() => q.refetch()}>
+            <Text style={styles.emptyBtnText}>Retry</Text>
+          </Pressable>
+        </View>
       ) : listings.length === 0 ? (
         <View style={styles.center}>
           <Package size={48} color={colors.muted} />
@@ -169,6 +189,23 @@ export function HostListingsManageScreen(): React.ReactElement {
           renderItem={renderItem}
         />
       )}
+
+      <Modal visible={deleteTarget != null} transparent animationType="fade" onRequestClose={() => setDeleteTarget(null)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Delete listing</Text>
+            <Text style={styles.modalBody}>This permanently removes the listing. This can&apos;t be undone.</Text>
+            <View style={styles.modalActions}>
+              <Pressable style={[styles.modalBtn, styles.modalBtnGhost]} onPress={() => setDeleteTarget(null)} disabled={deleteMutation.isPending}>
+                <Text style={styles.modalBtnGhostText}>Cancel</Text>
+              </Pressable>
+              <Pressable style={[styles.modalBtn, styles.modalBtnDanger]} onPress={confirmDelete} disabled={deleteMutation.isPending}>
+                {deleteMutation.isPending ? <ActivityIndicator color="#FFF" size="small" /> : <Text style={styles.modalBtnDangerText}>Delete</Text>}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -247,4 +284,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   emptyBtnText: { color: "#fff", fontWeight: "700" },
+
+  modalBackdrop: { flex: 1, backgroundColor: "rgba(15, 8, 40, 0.45)", alignItems: "center", justifyContent: "center", padding: spacing.lg },
+  modalCard: { width: "100%", maxWidth: 360, backgroundColor: "#FFFFFF", borderRadius: radii.xl, padding: spacing.lg, ...shadows.cardHeavy },
+  modalTitle: { fontSize: 18, fontWeight: "800", color: colors.foreground, marginBottom: 8 },
+  modalBody: { fontSize: 14, color: colors.textSecondary, lineHeight: 20, marginBottom: spacing.md },
+  modalActions: { flexDirection: "row", justifyContent: "flex-end", gap: 10, marginTop: 4 },
+  modalBtn: { minWidth: 96, height: 44, borderRadius: radii.md, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
+  modalBtnGhost: { backgroundColor: "#F3F4F6" },
+  modalBtnGhostText: { fontSize: 15, fontWeight: "700", color: colors.foreground },
+  modalBtnDanger: { backgroundColor: colors.destructive },
+  modalBtnDangerText: { fontSize: 15, fontWeight: "700", color: "#FFFFFF" },
 });

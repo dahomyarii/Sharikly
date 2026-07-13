@@ -26,7 +26,6 @@ import {
   Home as HomeIcon,
   MapPin,
   Search,
-  Sparkles,
   Tent,
 } from "lucide-react-native";
 import React from "react";
@@ -83,7 +82,8 @@ export function HomeScreen(): React.ReactElement {
   });
   const user = userQ.data;
 
-  const firstName = user?.first_name || user?.username || "Guest";
+  // Prefer a real first name; fall back to a friendly greeting rather than a raw username.
+  const firstName = (user?.first_name && user.first_name.trim()) || "there";
   const avatarUrl = user?.avatar ? (user.avatar.startsWith("http") ? user.avatar : `${process.env.EXPO_PUBLIC_API_BASE?.replace("/api", "") || ""}${user.avatar}`) : null;
 
   const categoriesQ = useQuery({
@@ -323,7 +323,7 @@ export function HomeScreen(): React.ReactElement {
                     <View key={item.id ?? i} style={styles.requestItem}>
                       <Icon size={16} color={colors.primary} fill={colors.primary} />
                       <Text style={styles.requestText}>
-                        <Text style={styles.requestTextBold}>{item.name}</Text> · {item.booking_count ?? 0} requests
+                        <Text style={styles.requestTextBold}>{item.name}</Text> · {item.booking_count ?? 0} {(item.booking_count ?? 0) === 1 ? "request" : "requests"}
                       </Text>
                     </View>
                   );

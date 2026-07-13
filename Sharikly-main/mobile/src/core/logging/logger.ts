@@ -34,7 +34,9 @@ function redact(value: unknown): unknown {
 }
 
 function emit(level: LogLevel, message: string, meta?: Record<string, unknown>): void {
-  const payload = meta ? { ...meta, metaRedacted: redact(meta) } : undefined;
+  // Only ever emit the REDACTED copy. Never spread the raw `meta` alongside it, or any
+  // token/password passed in meta would be logged in full and defeat redaction.
+  const payload = meta ? (redact(meta) as Record<string, unknown>) : undefined;
   if (__DEV__) {
     console[level === "debug" ? "log" : level](`[Ekra][${level}] ${message}`, payload ?? "");
   } else {

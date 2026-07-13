@@ -1,6 +1,7 @@
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
-import { bootstrapApiClient } from "@/services/api/client";
+import { API_BASE } from "@/core/config/env";
+import { axiosInstance, bootstrapApiClient, buildApiUrl } from "@/services/api/client";
 import type { AuthStackParamList } from "@/navigation/types";
 import { useAuthStore } from "@/store/authStore";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -20,11 +21,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { FadeIn, FadeInDown, SlideInDown } from "react-native-reanimated";
+import Animated, { FadeInDown, SlideInDown } from "react-native-reanimated";
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, "Login">;
-
-const API = process.env.EXPO_PUBLIC_API_BASE ?? "";
 
 export function LoginScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
@@ -49,26 +48,14 @@ export function LoginScreen(): React.ReactElement {
       const trimmedEmail = email.trim().toLowerCase();
       const trimmedPassword = password.trim();
 
-      const url = `${API}/auth/token/`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword }),
+      // Route through the shared axios client (interceptors, timeout, error toasts).
+      // The 401 interceptor deliberately skips /auth/token, so a bad-credentials
+      // response surfaces here instead of triggering a logout.
+      const res = await axiosInstance.post(buildApiUrl("/auth/token/"), {
+        email: trimmedEmail,
+        password: trimmedPassword,
       });
-
-      let data: any = {};
-      try {
-        data = await res.json();
-      } catch {
-        // Server returned non-JSON (e.g. HTML 502/504 error page)
-        setError(`Server error (${res.status}). Please try again later.`);
-        return;
-      }
-
-      if (!res.ok) {
-        setError(data?.detail ?? data?.non_field_errors?.[0] ?? "Login failed.");
-        return;
-      }
+      const data: any = res.data ?? {};
 
       // Store tokens (platform-aware: SecureStore on mobile, localStorage on web)
       const accessToken = data.access ?? data.access_token;
@@ -102,17 +89,15 @@ export function LoginScreen(): React.ReactElement {
       if (pending) setTimeout(() => pending(), 80);
 
     } catch (err: any) {
-      // Network error (no response at all — server down, wrong IP, no connection)
-      const isNetworkError =
-        err?.message?.includes("Network request failed") ||
-        err?.message?.includes("fetch") ||
-        err?.code === "ECONNREFUSED";
-      if (isNetworkError) {
+      if (err?.response) {
+        const data = err.response.data;
         setError(
-          `Cannot reach server.\nAPI: ${API}\n\nCheck your network or start the backend.`
+          data?.detail ??
+          data?.non_field_errors?.[0] ??
+          "Login failed. Check your email and password."
         );
       } else {
-        setError(`Something went wrong: ${err?.message || "Unknown error"}`);
+        setError(`Cannot reach the server.\nAPI: ${API_BASE}\n\nCheck your network or start the backend.`);
       }
     } finally {
       setLoading(false);

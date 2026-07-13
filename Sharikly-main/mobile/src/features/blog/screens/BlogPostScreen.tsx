@@ -50,10 +50,14 @@ export function BlogPostScreen(): React.ReactElement {
 
   const handleShare = async () => {
     if (!post) return;
-    await Share.share({
-      title: post.title,
-      message: `${post.title}\n\nhttps://ekra.app/blog/${post.slug ?? id}`,
-    });
+    try {
+      await Share.share({
+        title: post.title,
+        message: `${post.title}\n\nhttps://ekra.app/blog/${post.slug ?? id}`,
+      });
+    } catch {
+      // Share is unavailable (e.g. react-native-web) or the user dismissed it — ignore.
+    }
   };
 
   return (

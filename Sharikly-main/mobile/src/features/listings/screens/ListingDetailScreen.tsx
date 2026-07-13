@@ -2,11 +2,13 @@ import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, shadows, spacing, typography, layout } from "@/core/theme/tokens";
 import type { ListingsStackParamList } from "@/navigation/types";
 import { getListing, getSimilarListings } from "@/services/api/endpoints/listings";
+import { addFavorite, removeFavorite } from "@/services/api/endpoints/favorites";
+import { showToast } from "@/core/events/appEvents";
 import type { RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { hapticImpact } from "@/utils/haptics";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   CheckCircle,
@@ -15,10 +17,9 @@ import {
   Share2,
   ShieldCheck,
   Star,
-  Zap,
 } from "lucide-react-native";
 import Animated from "react-native-reanimated";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   Dimensions,
@@ -88,13 +89,22 @@ export function ListingDetailScreen(): React.ReactElement {
   const [activeImg, setActiveImg] = useState(0);
   const [isFavorited, setIsFavorited] = useState(false);
 
-  const goRequestBooking = () =>
-    requireAuth(() => navigation.navigate("RequestBooking", { id }));
-
   // Calendar State
   const [currentDate, setCurrentDate] = useState(new Date());
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+
+  const toISO = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+  // Carry the dates the user picked here into the booking flow (falls back to defaults if none).
+  const goRequestBooking = () =>
+    requireAuth(() =>
+      navigation.navigate("RequestBooking", {
+        id,
+        ...(startDate && endDate ? { start: toISO(startDate), end: toISO(endDate) } : {}),
+      }),
+    );
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -158,6 +168,34 @@ export function ListingDetailScreen(): React.ReactElement {
     enabled: !!q.data,
   });
 
+  const queryClient = useQueryClient();
+
+  // Seed the heart from the server's is_favorited flag (was hardcoded to false, so the
+  // heart never reflected reality and reset on remount).
+  useEffect(() => {
+    const fav = (q.data as any)?.is_favorited;
+    if (typeof fav === "boolean") setIsFavorited(fav);
+  }, [q.data]);
+
+  const favoriteMutation = useMutation({
+    mutationFn: (next: boolean) => (next ? addFavorite(id) : removeFavorite(id)),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      void queryClient.invalidateQueries({ queryKey: ["listing", id] });
+    },
+    onError: (_e, next) => {
+      setIsFavorited(!next); // roll back the optimistic toggle
+      showToast("Couldn't update your favorites. Please try again.", "error");
+    },
+  });
+
+  const toggleFavorite = () =>
+    requireAuth(() => {
+      const next = !isFavorited;
+      setIsFavorited(next); // optimistic
+      favoriteMutation.mutate(next);
+    });
+
   // Price Breakdown Calculations
   const pricePerDay = parseFloat((q.data as any)?.price_per_day ?? "0");
   let days = 0;
@@ -214,8 +252,11 @@ export function ListingDetailScreen(): React.ReactElement {
   const ownerName = data.owner?.first_name || data.owner?.username || "User";
   const ownerAvatar = getFullUrl(data.owner?.avatar);
   const currency = data.currency ?? "SAR";
-  const avgRating = data.average_rating ?? 4.9;
   const reviewCount = data.reviews?.length ?? 0;
+  const avgRating = Number(data.average_rating) || 0;
+  const hasRating = reviewCount > 0 && avgRating > 0;
+  const isTopRated = hasRating && avgRating >= 4.5;
+  const depositAmount = Number(data.deposit) || 0;
   const city = data.city ?? "Riyadh";
   const listingTitle: string = data.title ?? "Listing";
 
@@ -296,10 +337,12 @@ export function ListingDetailScreen(): React.ReactElement {
             </View>
           )}
 
-          {/* Status badge */}
-          <View style={styles.stockBadge}>
-            <Text style={styles.stockBadgeText}>⭐ Top Rated</Text>
-          </View>
+          {/* Status badge — only for genuinely well-rated listings */}
+          {isTopRated && (
+            <View style={styles.stockBadge}>
+              <Text style={styles.stockBadgeText}>⭐ Top Rated</Text>
+            </View>
+          )}
 
           {/* Floating header buttons */}
           <SafeAreaView style={styles.floatingHeader} edges={["top"]}>
@@ -312,7 +355,7 @@ export function ListingDetailScreen(): React.ReactElement {
                 hitSlop={8}
                 onPress={() => {
                   hapticImpact();
-                  setIsFavorited((v) => !v);
+                  toggleFavorite();
                 }}
                 accessibilityRole="button"
                 accessibilityLabel={isFavorited ? "Remove from favorites" : "Add to favorites"}
@@ -342,11 +385,17 @@ export function ListingDetailScreen(): React.ReactElement {
           {/* Title */}
           <Text style={styles.title}>{data.title ?? "Listing Title"}</Text>
 
-          {/* Rating row */}
+          {/* Rating row — real rating, or "New" when unreviewed */}
           <View style={styles.ratingRow}>
-            <Star size={16} color="#F59E0B" fill="#F59E0B" />
-            <Text style={styles.ratingNum}>{avgRating}</Text>
-            <Text style={styles.ratingMeta}> · {reviewCount} reviews · {city}</Text>
+            {hasRating ? (
+              <>
+                <Star size={16} color="#F59E0B" fill="#F59E0B" />
+                <Text style={styles.ratingNum}>{avgRating.toFixed(1)}</Text>
+                <Text style={styles.ratingMeta}> · {reviewCount} review{reviewCount === 1 ? "" : "s"} · {city}</Text>
+              </>
+            ) : (
+              <Text style={styles.ratingMeta}>New · {city}</Text>
+            )}
           </View>
 
           {/* Host row */}
@@ -376,7 +425,7 @@ export function ListingDetailScreen(): React.ReactElement {
             </View>
             <View style={styles.trustTile}>
               <CheckCircle size={13} color={colors.success} strokeWidth={2.5} />
-              <Text style={styles.trustText}>Insurance</Text>
+              <Text style={styles.trustText}>Deposit protected</Text>
             </View>
             <View style={styles.trustTile}>
               <ShieldCheck size={13} color={colors.success} strokeWidth={2.5} />
@@ -388,19 +437,17 @@ export function ListingDetailScreen(): React.ReactElement {
             </View>
           </View>
 
-          {/* Deposit info chip */}
-          <View style={styles.depositChip}>
-            <Info size={14} color={colors.primary} />
-            <Text style={styles.depositText}>Refundable deposit: {currency} {data.deposit ?? "500"}</Text>
-          </View>
+          {/* Deposit info chip — only when the listing actually sets one */}
+          {depositAmount > 0 && (
+            <View style={styles.depositChip}>
+              <Info size={14} color={colors.primary} />
+              <Text style={styles.depositText}>Refundable deposit: {currency} {depositAmount.toFixed(0)}</Text>
+            </View>
+          )}
 
           {/* ── DESCRIPTION ── */}
           <Text style={styles.sectionLabel}>Overview</Text>
           <View style={styles.descContainer}>
-            <View style={styles.instantRow}>
-              <Zap size={14} color={colors.primary} fill={colors.primary} />
-              <Text style={styles.instantText}>Instant Booking Available</Text>
-            </View>
             <Text style={styles.descriptionText}>{data.description ?? "No description provided."}</Text>
           </View>
 

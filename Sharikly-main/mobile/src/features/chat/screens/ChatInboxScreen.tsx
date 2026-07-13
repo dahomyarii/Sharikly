@@ -5,8 +5,7 @@ import type { InboxStackParamList } from "@/navigation/types";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
-import { MessageCircle, Plus, Search, User, Filter, Edit, ChevronRight, ArrowLeft } from "lucide-react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { MessageCircle, Plus, Search, User, Edit, ChevronRight, ArrowLeft } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -15,7 +14,6 @@ import {
   Text,
   TextInput,
   View,
-  Alert,
   Image,
   ScrollView,
 } from "react-native";
@@ -48,6 +46,12 @@ interface ChatRoom {
   last_message?: {
     text?: string;
     image?: string;
+    image_url?: string | null;
+    audio_url?: string | null;
+    file_url?: string | null;
+    file_name?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
     created_at: string;
   };
   unread_count?: number;
@@ -147,6 +151,16 @@ export function ChatInboxScreen(): React.ReactElement {
     (navigation as any).navigate("ExploreTab", { screen, ...(params ? { params } : {}) });
   };
 
+  const previewText = (m?: ChatRoom["last_message"]): string => {
+    if (!m) return "No messages yet";
+    if (m.text) return m.text;
+    if (m.image_url || m.image) return "📷 Photo";
+    if (m.audio_url) return "🎤 Voice message";
+    if (m.file_url) return `📎 ${m.file_name || "Attachment"}`;
+    if (m.latitude != null && m.longitude != null) return "📍 Location";
+    return "No messages yet";
+  };
+
   const renderRoom = ({ item }: { item: ChatRoom }) => {
     const other = getOtherParticipant(item);
     const lastMsg = item.last_message;
@@ -185,7 +199,7 @@ export function ChatInboxScreen(): React.ReactElement {
           
           <View style={styles.msgPreviewRow}>
             <Text style={[styles.msgPreview, unread > 0 && { fontWeight: "500", color: colors.foreground }]} numberOfLines={2}>
-              {lastMsg?.text || (lastMsg?.image ? "📷 Image" : "No messages yet")}
+              {previewText(lastMsg)}
             </Text>
             {unread > 0 && (
               <View style={styles.unreadPill}>
@@ -226,10 +240,11 @@ export function ChatInboxScreen(): React.ReactElement {
           )}
           <Text style={[styles.screenTitle, { flex: 1 }]}>Inbox</Text>
           <View style={styles.headerActions}>
-            <Pressable style={styles.headerIconBtn}>
-              <Filter size={20} color={colors.foreground} />
-            </Pressable>
-            <Pressable style={styles.headerIconBtn}>
+            <Pressable
+              style={styles.headerIconBtn}
+              onPress={() => navigateToExplore("ListingsExplore")}
+              accessibilityLabel="Start a new conversation"
+            >
               <Edit size={20} color={colors.foreground} />
             </Pressable>
           </View>

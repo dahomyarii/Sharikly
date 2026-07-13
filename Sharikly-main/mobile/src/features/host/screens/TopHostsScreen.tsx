@@ -24,14 +24,20 @@ export function TopHostsScreen(): React.ReactElement {
   });
 
   const data: any = q.data;
-  const topEarners: any[] = data?.top_earners ?? data?.leaderboard ?? [];
+  // Match the backend key (highest_earning_lessors_per_month); the old top_earners/
+  // leaderboard guesses never existed, so this list was always empty.
+  const topEarners: any[] = data?.highest_earning_lessors_per_month ?? [];
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     const initial = (item.username ?? item.name ?? "H").charAt(0).toUpperCase();
     const rankColors = ["#F59E0B", "#9CA3AF", "#B45309"];
 
     return (
-      <View style={[styles.hostCard, index < topEarners.length - 1 && styles.hostDivider]}>
+      <Pressable
+        style={[styles.hostCard, index < topEarners.length - 1 && styles.hostDivider]}
+        onPress={() => item.id != null && navigation.navigate("PublicProfile", { userId: item.id })}
+        disabled={item.id == null}
+      >
         <View style={[styles.rankBadge, { backgroundColor: rankColors[index] ?? colors.muted }]}>
           <Text style={styles.rankText}>{index + 1}</Text>
         </View>
@@ -45,11 +51,11 @@ export function TopHostsScreen(): React.ReactElement {
           {item.city && <Text style={styles.hostCity}>{item.city}</Text>}
           <View style={styles.ratingRow}>
             <Star size={11} color="#F59E0B" fill="#F59E0B" />
-            <Text style={styles.ratingText}>{(item.rating ?? 5).toFixed(1)}</Text>
+            <Text style={styles.ratingText}>{Number(item.rating ?? 0).toFixed(1)}</Text>
           </View>
         </View>
-        <Text style={styles.earnings}>{formatSar(item.total_earnings ?? item.earnings)}</Text>
-      </View>
+        <Text style={styles.earnings}>{formatSar(item.monthly_earnings)}</Text>
+      </Pressable>
     );
   };
 

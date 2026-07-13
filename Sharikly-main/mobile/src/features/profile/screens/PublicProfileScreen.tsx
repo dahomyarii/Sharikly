@@ -8,6 +8,7 @@ import type { CompositeNavigationProp, RouteProp } from "@react-navigation/nativ
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { showToast } from "@/core/events/appEvents";
 import {
   ArrowLeft,
   Flag,
@@ -15,10 +16,10 @@ import {
   Package,
   Star,
 } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import {
-  Alert,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -67,15 +68,28 @@ export function PublicProfileScreen(): React.ReactElement {
     retry: false,
   });
 
+  const [menuVisible, setMenuVisible] = useState(false);
+
   const blockMutation = useMutation({
     mutationFn: async () => {
       await axiosInstance.post(buildApiUrl(`/users/${userId}/block/`));
     },
     onSuccess: () => {
-      Alert.alert("User blocked.");
+      showToast("User blocked.", "success");
       navigation.goBack();
     },
-    onError: () => Alert.alert("Failed to block user."),
+    onError: () => showToast("Couldn't block that user. Please try again.", "error"),
+  });
+
+  const reportMutation = useMutation({
+    mutationFn: () =>
+      axiosInstance.post(buildApiUrl("/reports/"), {
+        reported_user: userId,
+        reason: "OTHER",
+        details: "Reported from profile",
+      }),
+    onSuccess: () => showToast("Report submitted. Thanks for keeping Ekra safe.", "success"),
+    onError: () => showToast("Couldn't submit your report. Please try again.", "error"),
   });
 
   const chatMutation = useMutation({
@@ -89,7 +103,7 @@ export function PublicProfileScreen(): React.ReactElement {
         } as any);
       }
     },
-    onError: () => Alert.alert("Could not start chat."),
+    onError: () => showToast("Couldn't start the chat. Please try again.", "error"),
   });
 
   const user: any = userQ.data;
@@ -138,33 +152,7 @@ export function PublicProfileScreen(): React.ReactElement {
         <Pressable
           style={styles.iconBtn}
           hitSlop={8}
-          onPress={() =>
-            Alert.alert(
-              "Report or Block",
-              `What would you like to do with ${displayName}?`,
-              [
-                {
-                  text: "Report",
-                  onPress: () =>
-                    Alert.alert("Report submitted", "Thank you for keeping Ekra safe."),
-                },
-                {
-                  text: "Block",
-                  style: "destructive",
-                  onPress: () =>
-                    Alert.alert(
-                      "Block User",
-                      `Block ${displayName}? You won't see their content anymore.`,
-                      [
-                        { text: "Cancel", style: "cancel" },
-                        { text: "Block", style: "destructive", onPress: () => blockMutation.mutate() },
-                      ]
-                    ),
-                },
-                { text: "Cancel", style: "cancel" },
-              ]
-            )
-          }
+          onPress={() => setMenuVisible(true)}
         >
           <Flag size={18} color={colors.mutedForeground} />
         </Pressable>
@@ -197,7 +185,7 @@ export function PublicProfileScreen(): React.ReactElement {
             <View style={styles.statItem}>
               <Star size={14} color="#F59E0B" />
               <Text style={styles.statValue}>
-                {user?.average_rating?.toFixed(1) ?? "—"}
+                {Number(user?.average_rating) > 0 ? Number(user.average_rating).toFixed(1) : "—"}
               </Text>
               <Text style={styles.statLabel}>Rating</Text>
             </View>
@@ -275,6 +263,23 @@ export function PublicProfileScreen(): React.ReactElement {
 
         <View style={{ height: 60 }} />
       </ScrollView>
+
+      <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)}>
+        <Pressable style={styles.sheetBackdrop} onPress={() => setMenuVisible(false)}>
+          <View style={styles.sheetCard}>
+            <Text style={styles.sheetTitle}>{displayName}</Text>
+            <Pressable style={styles.sheetBtn} onPress={() => { setMenuVisible(false); reportMutation.mutate(); }}>
+              <Text style={styles.sheetBtnText}>Report user</Text>
+            </Pressable>
+            <Pressable style={styles.sheetBtn} onPress={() => { setMenuVisible(false); blockMutation.mutate(); }}>
+              <Text style={[styles.sheetBtnText, { color: colors.destructive }]}>Block user</Text>
+            </Pressable>
+            <Pressable style={[styles.sheetBtn, styles.sheetCancel]} onPress={() => setMenuVisible(false)}>
+              <Text style={styles.sheetBtnText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -372,4 +377,11 @@ const styles = StyleSheet.create({
   },
   reviewText: { fontSize: 14, color: colors.textSecondary, lineHeight: 20 },
   reviewerName: { fontSize: 11, color: colors.mutedForeground, fontStyle: "italic", marginTop: 4 },
+
+  sheetBackdrop: { flex: 1, backgroundColor: "rgba(15,8,40,0.45)", justifyContent: "flex-end", padding: spacing.md },
+  sheetCard: { backgroundColor: "#FFF", borderRadius: radii.xl, padding: spacing.sm, gap: 4 },
+  sheetTitle: { ...typography.subheading, color: colors.mutedForeground, textAlign: "center", paddingVertical: 8 },
+  sheetBtn: { paddingVertical: 14, alignItems: "center", borderRadius: radii.md },
+  sheetCancel: { backgroundColor: colors.surface2, marginTop: 4 },
+  sheetBtnText: { fontSize: 15, fontWeight: "700", color: colors.foreground },
 });

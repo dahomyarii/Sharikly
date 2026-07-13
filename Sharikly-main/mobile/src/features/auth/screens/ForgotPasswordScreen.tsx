@@ -9,7 +9,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ArrowLeft, Mail } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -27,16 +26,14 @@ export function ForgotPasswordScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const mut = useMutation({
     mutationFn: async () => postPasswordReset(email),
-    onSuccess: () => {
-      Alert.alert(
-        "Check your email",
-        "If an account exists with that email, you'll receive reset instructions shortly.",
-        [{ text: "Back to Sign In", onPress: () => navigation.navigate("Login") }]
-      );
-    },
+    onSuccess: () =>
+      setSuccessMsg(
+        "If an account exists with that email, we've sent reset instructions. Please check your inbox (and spam folder)."
+      ),
     onError: (e: any) =>
       setError(e?.response?.data?.detail ?? e?.message ?? "Failed to send reset link."),
   });
@@ -44,6 +41,7 @@ export function ForgotPasswordScreen(): React.ReactElement {
   const handleSubmit = () => {
     if (!email) { setError("Please enter your email."); return; }
     setError("");
+    setSuccessMsg("");
     mut.mutate();
   };
 
@@ -66,6 +64,7 @@ export function ForgotPasswordScreen(): React.ReactElement {
             </Text>
 
             {error ? <View style={styles.errorBox}><Text style={styles.errorText}>{error}</Text></View> : null}
+            {successMsg ? <View style={styles.successBox}><Text style={styles.successText}>{successMsg}</Text></View> : null}
 
             <View style={styles.fieldWrap}>
               <Text style={styles.label}>Email address</Text>
@@ -110,6 +109,8 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: colors.mutedForeground, marginTop: 4, marginBottom: spacing.lg, lineHeight: 21 },
   errorBox: { backgroundColor: "rgba(220,38,38,0.08)", borderWidth: 1, borderColor: "rgba(220,38,38,0.2)", borderRadius: radii.md, padding: 12, marginBottom: spacing.md },
   errorText: { color: colors.destructive, fontSize: 13 },
+  successBox: { backgroundColor: "rgba(22,163,74,0.08)", borderWidth: 1, borderColor: "rgba(22,163,74,0.25)", borderRadius: radii.md, padding: 12, marginBottom: spacing.md },
+  successText: { color: "#15803D", fontSize: 13, lineHeight: 19 },
   fieldWrap: { marginBottom: spacing.lg },
   label: { fontSize: 13, fontWeight: "600", color: colors.foreground, marginBottom: 6 },
   inputWrap: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.surface, borderRadius: radii.lg, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, height: 50 },

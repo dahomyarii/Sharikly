@@ -73,6 +73,15 @@ export function MyReportsScreen(): React.ReactElement {
         <View style={styles.center}>
           <Text style={styles.mutedText}>Loading reports…</Text>
         </View>
+      ) : q.isError ? (
+        <View style={styles.center}>
+          <Flag size={48} color={colors.muted} />
+          <Text style={styles.emptyTitle}>Couldn&apos;t load your reports</Text>
+          <Text style={styles.emptyText}>Please check your connection and try again.</Text>
+          <Pressable onPress={() => q.refetch()} hitSlop={8}>
+            <Text style={styles.retryText}>Retry</Text>
+          </Pressable>
+        </View>
       ) : reports.length === 0 ? (
         <View style={styles.center}>
           <Flag size={48} color={colors.muted} />
@@ -141,4 +150,5 @@ const styles = StyleSheet.create({
   mutedText: { ...typography.body, color: colors.mutedForeground },
   emptyTitle: { fontSize: 17, fontWeight: "800", color: colors.foreground },
   emptyText: { fontSize: 13, color: colors.mutedForeground, textAlign: "center" },
+  retryText: { fontSize: 14, color: colors.primary, fontWeight: "600", marginTop: 4 },
 });

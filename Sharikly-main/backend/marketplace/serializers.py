@@ -140,6 +140,10 @@ class UserSerializer(serializers.ModelSerializer):
             "reviews_count",
             "saved_items_count",
         ]
+        # SECURITY: these must never be writable via PATCH /api/auth/me/ (this serializer
+        # is used for both read and update). Without this, any authenticated user could
+        # POST {"is_staff": true} and escalate to admin, or self-verify their email.
+        read_only_fields = ["id", "is_staff", "is_email_verified"]
 
     def _get_cached_response_stats(self, obj: User):
         cached = getattr(obj, "_cached_response_stats", None)
@@ -262,6 +266,25 @@ class CategorySerializer(serializers.ModelSerializer):
 # ==========================
 # REVIEW SERIALIZER (rating + comment)
 # ==========================
+class PublicReviewSerializer(serializers.ModelSerializer):
+    """Reviews a host has received (left on their listings). Public-safe: exposes only
+    the reviewer's public identity (id/username/avatar), never email/phone/bank."""
+    reviewer = serializers.SerializerMethodField()
+    listing_title = serializers.CharField(source="listing.title", read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ["id", "rating", "comment", "created_at", "listing", "listing_title", "reviewer"]
+
+    def get_reviewer(self, obj):
+        u = obj.user
+        try:
+            avatar = u.avatar.url if u.avatar else None
+        except Exception:
+            avatar = None
+        return {"id": u.id, "username": u.username, "avatar": avatar}
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     listing = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -337,6 +360,7 @@ class ListingSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "price_per_day",
+            "deposit",
             "city",
             "is_active",
             "latitude",
@@ -561,6 +585,8 @@ class MessageSerializer(serializers.ModelSerializer):
     sender = UserSerializer(read_only=True)
     image_url = serializers.SerializerMethodField()
     audio_url = serializers.SerializerMethodField()
+    file_url = serializers.SerializerMethodField()
+    file_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
@@ -573,6 +599,12 @@ class MessageSerializer(serializers.ModelSerializer):
             "image_url",
             "audio",
             "audio_url",
+            "audio_duration",
+            "file",
+            "file_url",
+            "file_name",
+            "latitude",
+            "longitude",
             "created_at",
         ]
 
@@ -581,6 +613,15 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def get_audio_url(self, obj):
         return obj.audio.url if obj.audio else None
+
+    def get_file_url(self, obj):
+        return obj.file.url if obj.file else None
+
+    def get_file_name(self, obj):
+        if not obj.file:
+            return None
+        import os
+        return os.path.basename(obj.file.name)
 
 
 # ==========================

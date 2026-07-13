@@ -10,13 +10,10 @@ import {
   ArrowLeft,
   Calendar,
   Camera,
-  CheckCircle,
-  DollarSign,
   Package,
   Search,
   Shield,
   Sparkles,
-  Star,
   TrendingUp,
   Wallet,
 } from "lucide-react-native";
@@ -127,27 +124,6 @@ export function StartRentingScreen(): React.ReactElement {
               </View>
             );
           })}
-        </View>
-
-        {/* Stats */}
-        <View style={styles.statsCard}>
-          <View style={styles.statItem}>
-            <Star size={18} color="#F59E0B" fill="#F59E0B" />
-            <Text style={styles.statValue}>4.9</Text>
-            <Text style={styles.statLabel}>Avg. rating</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <CheckCircle size={18} color={colors.success} />
-            <Text style={styles.statValue}>95%</Text>
-            <Text style={styles.statLabel}>Acceptance rate</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <DollarSign size={18} color={colors.primary} />
-            <Text style={styles.statValue}>SAR 1.2k</Text>
-            <Text style={styles.statLabel}>Avg. monthly</Text>
-          </View>
         </View>
 
         {/* Final CTA */}

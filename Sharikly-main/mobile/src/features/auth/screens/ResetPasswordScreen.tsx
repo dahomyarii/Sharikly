@@ -10,7 +10,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ArrowLeft, Eye, EyeOff, Lock } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -34,6 +33,7 @@ export function ResetPasswordScreen(): React.ReactElement {
   const [confirm, setConfirm] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
 
   const mut = useMutation({
     mutationFn: async () => {
@@ -41,11 +41,7 @@ export function ResetPasswordScreen(): React.ReactElement {
       if (newPassword !== confirm) throw new Error("Passwords do not match.");
       return postPasswordResetConfirm({ uid, token, new_password: newPassword });
     },
-    onSuccess: () => {
-      Alert.alert("Password Updated", "You can now sign in with your new password.", [
-        { text: "Sign In", onPress: () => navigation.navigate("Login") },
-      ]);
-    },
+    onSuccess: () => setDone(true),
     onError: (e: any) =>
       setError(e?.message ?? e?.response?.data?.detail ?? "Failed to reset password."),
   });
@@ -67,6 +63,7 @@ export function ResetPasswordScreen(): React.ReactElement {
             <Text style={styles.subtitle}>Enter the code from your email and set a new password.</Text>
 
             {error ? <View style={styles.errorBox}><Text style={styles.errorText}>{error}</Text></View> : null}
+            {done ? <View style={styles.successBox}><Text style={styles.successText}>Password updated. You can now sign in with your new password.</Text></View> : null}
 
             {[
               { label: "UID (from email link)", value: uid, onChange: setUid, secure: false },
@@ -106,7 +103,11 @@ export function ResetPasswordScreen(): React.ReactElement {
               </View>
             </View>
 
-            <PrimaryButton label="Update Password" onPress={() => { setError(""); mut.mutate(); }} loading={mut.isPending} fullWidth size="lg" />
+            {done ? (
+              <PrimaryButton label="Sign In" onPress={() => navigation.navigate("Login")} fullWidth size="lg" />
+            ) : (
+              <PrimaryButton label="Update Password" onPress={() => { setError(""); mut.mutate(); }} loading={mut.isPending} fullWidth size="lg" />
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -126,6 +127,8 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: colors.mutedForeground, marginTop: 4, marginBottom: spacing.lg, lineHeight: 21 },
   errorBox: { backgroundColor: "rgba(220,38,38,0.08)", borderWidth: 1, borderColor: "rgba(220,38,38,0.2)", borderRadius: radii.md, padding: 12, marginBottom: spacing.md },
   errorText: { color: colors.destructive, fontSize: 13 },
+  successBox: { backgroundColor: "rgba(22,163,74,0.08)", borderWidth: 1, borderColor: "rgba(22,163,74,0.25)", borderRadius: radii.md, padding: 12, marginBottom: spacing.md },
+  successText: { color: "#15803D", fontSize: 13, lineHeight: 19 },
   fieldWrap: { marginBottom: spacing.md },
   label: { fontSize: 13, fontWeight: "600", color: colors.foreground, marginBottom: 6 },
   inputWrap: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.surface, borderRadius: radii.lg, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, height: 50 },

@@ -1,6 +1,7 @@
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
-import { bootstrapApiClient } from "@/services/api/client";
+import { API_BASE } from "@/core/config/env";
+import { axiosInstance, bootstrapApiClient, buildApiUrl } from "@/services/api/client";
 import { useAuthStore } from "@/store/authStore";
 import type { AuthStackParamList } from "@/navigation/types";
 import { useNavigation } from "@react-navigation/native";
@@ -10,7 +11,6 @@ import { persistTokens } from "@/services/storage/tokenStore";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -24,8 +24,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown, SlideInDown } from "react-native-reanimated";
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, "Register">;
-
-const API = process.env.EXPO_PUBLIC_API_BASE ?? "";
 
 export function RegisterScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
@@ -56,36 +54,13 @@ export function RegisterScreen(): React.ReactElement {
       const trimmedPassword = password.trim();
       const trimmedUsername = username.trim();
 
-      const url = `${API}/auth/register/`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: trimmedEmail,
-          username: trimmedUsername,
-          password: trimmedPassword,
-          phone_number: phone,
-        }),
+      const res = await axiosInstance.post(buildApiUrl("/auth/register/"), {
+        email: trimmedEmail,
+        username: trimmedUsername,
+        password: trimmedPassword,
+        phone_number: phone,
       });
-
-      let data: any = {};
-      try {
-        data = await res.json();
-      } catch {
-        setError(`Server error (${res.status}). Please try again later.`);
-        return;
-      }
-
-      if (!res.ok) {
-        const msg =
-          data?.email?.[0] ??
-          data?.username?.[0] ??
-          data?.password?.[0] ??
-          data?.detail ??
-          "Registration failed.";
-        setError(msg);
-        return;
-      }
+      const data: any = res.data ?? {};
 
       // If API returns tokens directly, login immediately
       const accessToken = data.access ?? data.access_token;
@@ -112,16 +87,17 @@ export function RegisterScreen(): React.ReactElement {
         });
       }
     } catch (err: any) {
-      const isNetworkError =
-        err?.message?.includes("Network request failed") ||
-        err?.message?.includes("fetch") ||
-        err?.code === "ECONNREFUSED";
-      if (isNetworkError) {
+      if (err?.response) {
+        const data = err.response.data;
         setError(
-          `Cannot reach server.\nAPI: ${API}\n\nCheck your network or start the backend.`
+          data?.email?.[0] ??
+          data?.username?.[0] ??
+          data?.password?.[0] ??
+          data?.detail ??
+          "Registration failed. Please check your details and try again."
         );
       } else {
-        setError(`Something went wrong: ${err?.message || "Unknown error"}`);
+        setError(`Cannot reach the server.\nAPI: ${API_BASE}\n\nCheck your network or start the backend.`);
       }
     } finally {
       setLoading(false);

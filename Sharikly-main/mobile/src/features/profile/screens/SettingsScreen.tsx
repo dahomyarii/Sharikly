@@ -1,5 +1,6 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
 import { axiosInstance, buildApiUrl, performLogout } from "@/services/api/client";
+import { showToast } from "@/core/events/appEvents";
 import { useAuthStore } from "@/store/authStore";
 import type { ProfileStackParamList, MainTabParamList } from "@/navigation/types";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -32,6 +33,8 @@ import {
   Clock,
   Headphones,
   Flag,
+  FileText,
+  BookOpen,
   ArrowLeft
 } from "lucide-react-native";
 import React, { useState } from "react";
@@ -173,6 +176,7 @@ export function SettingsScreen(): React.ReactElement {
   const prefsMutation = useMutation({
     mutationFn: (data: any) => axiosInstance.patch(buildApiUrl("/notifications/preferences/"), data).then((res) => res.data),
     onSuccess: (data) => queryClient.setQueryData(["notifications", "preferences"], data),
+    onError: () => showToast("Couldn't update your notification settings. Please try again.", "error"),
   });
 
   const prefs = prefsQ.data || {};
@@ -280,6 +284,12 @@ export function SettingsScreen(): React.ReactElement {
             value={userData?.language === 'ar' ? 'Arabic' : 'English'}
             onPress={() => navigation.navigate("Language")}
           />
+          <View style={styles.divider} />
+          <SettingsRow
+            icon={UserX}
+            label="Blocked users"
+            onPress={() => navigation.navigate("BlockedUsers")}
+          />
         </SectionCard>
 
         {/* NOTIFICATIONS */}
@@ -318,6 +328,13 @@ export function SettingsScreen(): React.ReactElement {
             hasSwitch
             switchValue={prefs.promotions_updates ?? false}
             onSwitchChange={(v) => handleToggle("promotions_updates", v)}
+          />
+          <View style={styles.divider} />
+          <SettingsRow
+            icon={Bell}
+            label="Email preferences"
+            sublabel="Choose which emails you receive"
+            onPress={() => navigation.navigate("NotificationPreferences")}
           />
         </SectionCard>
 
@@ -393,6 +410,52 @@ export function SettingsScreen(): React.ReactElement {
             icon={Flag}
             label="Report an issue"
             onPress={() => navigation.navigate("ReportIssue")}
+          />
+          <View style={styles.divider} />
+          <SettingsRow
+            icon={Clock}
+            label="My reports"
+            sublabel="Reports you've submitted"
+            onPress={() => navigation.navigate("MyReports")}
+          />
+        </SectionCard>
+
+        {/* ABOUT & LEGAL */}
+        <SectionCard title="ABOUT & LEGAL">
+          <SettingsRow
+            icon={Info}
+            label="About Ekra"
+            onPress={() => navigation.navigate("About")}
+          />
+          <View style={styles.divider} />
+          <SettingsRow
+            icon={HelpCircle}
+            label="How Ekra works"
+            onPress={() => navigation.navigate("HowItWorks")}
+          />
+          <View style={styles.divider} />
+          <SettingsRow
+            icon={Heart}
+            label="Careers"
+            onPress={() => navigation.navigate("Careers")}
+          />
+          <View style={styles.divider} />
+          <SettingsRow
+            icon={Shield}
+            label="Privacy Policy"
+            onPress={() => navigation.navigate("Privacy")}
+          />
+          <View style={styles.divider} />
+          <SettingsRow
+            icon={FileText}
+            label="Terms of Service"
+            onPress={() => navigation.navigate("Terms")}
+          />
+          <View style={styles.divider} />
+          <SettingsRow
+            icon={BookOpen}
+            label="Blog"
+            onPress={() => navigation.navigate("BlogList")}
           />
         </SectionCard>
 

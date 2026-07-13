@@ -1,7 +1,7 @@
 import { colors, radii, spacing, shadows } from "@/core/theme/tokens";
 import { hapticSelection } from "@/utils/haptics";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 

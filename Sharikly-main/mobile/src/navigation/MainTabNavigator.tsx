@@ -1,6 +1,5 @@
 import { BookingsStackNavigator } from "@/navigation/BookingsStackNavigator";
 import { HomeStackNavigator } from "@/navigation/HomeStackNavigator";
-import { HostStackNavigator } from "@/navigation/HostStackNavigator";
 import { InboxStackNavigator } from "@/navigation/InboxStackNavigator";
 import { ListingsStackNavigator } from "@/navigation/ListingsStackNavigator";
 import { ProfileStackNavigator } from "@/navigation/ProfileStackNavigator";
@@ -9,15 +8,14 @@ import { colors, radii, shadows } from "@/core/theme/tokens";
 import { hapticSelection } from "@/utils/haptics";
 import { BlurView } from "expo-blur";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { AnimatedPressable } from "@/components/ui/AnimatedPressable";
 import {
   Calendar,
-  Compass,
   Home as HomeIcon,
-  Package,
   Rocket,
   User as UserIcon,
   MessageCircle,
@@ -25,10 +23,21 @@ import {
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
+// Full-screen flows that should hide the bottom tab bar (they have their own
+// sticky footer / primary action at the bottom).
+const HIDE_TABBAR_ROUTES = ["CreateListing", "EditListing"];
+
 // Custom Tab Bar matching a premium, modern mobile app design
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
-  
+
+  // Hide the tab bar when the focused tab is deep in a full-screen flow.
+  const focusedTab = state.routes[state.index];
+  const nestedRoute = getFocusedRouteNameFromRoute(focusedTab);
+  if (nestedRoute && HIDE_TABBAR_ROUTES.includes(nestedRoute)) {
+    return null;
+  }
+
   function renderTabItem(route: any, index: number) {
     const descriptor = descriptors[route.key];
     const isFocused = state.index === index;

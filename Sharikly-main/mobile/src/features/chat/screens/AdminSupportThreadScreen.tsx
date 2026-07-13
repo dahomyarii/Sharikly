@@ -1,7 +1,9 @@
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { showToast } from "@/core/events/appEvents";
+import { useAuthStore } from "@/store/authStore";
 import type { InboxStackParamList } from "@/navigation/types";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Send, Shield } from "lucide-react-native";
@@ -42,6 +44,8 @@ function formatDateGroup(iso: string) {
 export function AdminSupportThreadScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
+  const isFocused = useIsFocused();
+  const hasSession = useAuthStore((s) => s.hasSession);
   const flatRef = useRef<FlatList>(null);
   const [text, setText] = useState("");
 
@@ -51,7 +55,9 @@ export function AdminSupportThreadScreen(): React.ReactElement {
       const { data } = await axiosInstance.get(buildApiUrl("/user-admin-messages/"));
       return data;
     },
-    refetchInterval: 5000,
+    enabled: hasSession,
+    // Only poll while focused + signed in (was hitting the network every 5s in the background).
+    refetchInterval: isFocused && hasSession ? 5000 : false,
   });
 
   const sendMutation = useMutation({
@@ -65,17 +71,29 @@ export function AdminSupportThreadScreen(): React.ReactElement {
       void queryClient.invalidateQueries({ queryKey: ["admin-messages"] });
       setTimeout(() => flatRef.current?.scrollToEnd({ animated: true }), 200);
     },
+    onError: () => showToast("Couldn't send your message. Please try again.", "error"),
   });
 
   const rawMessages = q.data;
-  const messages: any[] = Array.isArray(rawMessages)
+  const tickets: any[] = Array.isArray(rawMessages)
     ? rawMessages
     : (rawMessages as any)?.results ?? [];
+
+  // Each ticket holds the user's message and (optionally) the admin's response.
+  // Flatten into a chronological chat of individual bubbles.
+  const bubbles: { id: string; side: "user" | "admin"; text: string; created_at: string }[] = [];
+  for (const t of tickets) {
+    if (t.message) bubbles.push({ id: `u${t.id}`, side: "user", text: t.message, created_at: t.created_at });
+    if (t.admin_response) {
+      bubbles.push({ id: `a${t.id}`, side: "admin", text: t.admin_response, created_at: t.admin_response_date || t.created_at });
+    }
+  }
+  bubbles.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
   // Build display items with date separators
   const displayItems: ({ type: "date"; date: string } | { type: "msg"; item: any })[] = [];
   let lastDate = "";
-  for (const msg of messages) {
+  for (const msg of bubbles) {
     const dateStr = msg.created_at ? formatDateGroup(msg.created_at) : "";
     if (dateStr && dateStr !== lastDate) {
       displayItems.push({ type: "date", date: dateStr });
@@ -100,8 +118,7 @@ export function AdminSupportThreadScreen(): React.ReactElement {
       );
     }
     const msg = entry.item;
-    // is_from_admin = true means support team message
-    const isAdmin = msg.is_from_admin === true || msg.sender === "admin" || msg.direction === "from_admin";
+    const isAdmin = msg.side === "admin";
     return (
       <View style={[styles.msgRow, !isAdmin && styles.msgRowUser]}>
         {isAdmin && (
@@ -112,7 +129,7 @@ export function AdminSupportThreadScreen(): React.ReactElement {
         <View style={[styles.bubble, isAdmin ? styles.bubbleAdmin : styles.bubbleUser]}>
           {isAdmin && <Text style={styles.adminLabel}>Ekra Support</Text>}
           <Text style={[styles.bubbleText, !isAdmin && styles.bubbleTextUser]}>
-            {msg.message ?? msg.content ?? msg.text ?? ""}
+            {msg.text ?? ""}
           </Text>
           {msg.created_at && (
             <Text style={[styles.timeLabel, !isAdmin && styles.timeLabelUser]}>
@@ -151,7 +168,7 @@ export function AdminSupportThreadScreen(): React.ReactElement {
           <View style={styles.center}>
             <Text style={styles.mutedText}>Loading messages…</Text>
           </View>
-        ) : messages.length === 0 ? (
+        ) : bubbles.length === 0 ? (
           <View style={styles.center}>
             <Shield size={40} color={colors.muted} />
             <Text style={styles.emptyTitle}>Start a conversation</Text>

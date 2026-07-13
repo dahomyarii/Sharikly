@@ -9,15 +9,14 @@ export type ListingsStackParamList = {
   CreateListing: undefined;
   ListingDetail: { id: number };
   EditListing: { id: number };
-  RequestBooking: { id: number };
+  RequestBooking: { id: number; start?: string; end?: string };
   ListingAvailability: { id: number };
   ListingAvailabilityBlocks: { id: number };
 };
 
 export type BookingsStackParamList = {
-  BookingsRenter: undefined;
+  Bookings: { segment?: "renting" | "host" } | undefined;
   BookingReceipt: { id: number };
-  HostBookings: undefined;
 };
 
 export type HostStackParamList = {

@@ -11,11 +11,11 @@ export async function getUnreadNotificationCount(): Promise<{ count: number }> {
 }
 
 export async function markNotificationRead(id: number): Promise<unknown> {
-  const { data } = await axiosInstance.patch(buildApiUrl(`/notifications/${id}/`), { is_read: true });
+  const { data } = await axiosInstance.patch(buildApiUrl("/notifications/mark-read/"), { id });
   return data;
 }
 
 export async function markAllNotificationsRead(): Promise<unknown> {
-  const { data } = await axiosInstance.post(buildApiUrl("/notifications/mark-read/"));
+  const { data } = await axiosInstance.patch(buildApiUrl("/notifications/mark-read/"), { all: true });
   return data;
 }

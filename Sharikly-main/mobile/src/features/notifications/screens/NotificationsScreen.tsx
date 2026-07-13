@@ -1,7 +1,6 @@
-import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
+import { colors, layout, radii, shadows, spacing } from "@/core/theme/tokens";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "@/services/api/endpoints/notifications";
-import { updateBookingStatus } from "@/services/api/endpoints/bookings";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { InboxStackParamList } from "@/navigation/types";
@@ -9,14 +8,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, BellOff, CheckCheck } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Alert,
   FlatList,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
 type Nav = NativeStackNavigationProp<InboxStackParamList, "Notifications">;
@@ -26,9 +24,12 @@ type FilterTab = "All" | "Rentals" | "Bookings";
 const AVATAR_COLORS = ["#B047F6", "#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
 
 function getStatusColor(label: string) {
-  if (label === "On the way" || label === "Today") return { bg: "#EEE9FC", text: colors.primary };
-  if (label === "Paid") return { bg: "#D1FAE5", text: "#065F46" };
-  if (label === "Pending") return { bg: "#FEF3C7", text: "#92400E" };
+  if (label === "Confirmed") return { bg: "#D1FAE5", text: "#065F46" };
+  if (label === "Message") return { bg: "#EEE9FC", text: colors.primary };
+  if (label === "Declined") return { bg: "#FEE2E2", text: "#991B1B" };
+  if (label === "Cancelled") return { bg: colors.muted, text: colors.mutedForeground };
+  if (label === "Payment") return { bg: "#DCFCE7", text: "#15803D" };
+  if (label === "Completed") return { bg: "#DBEAFE", text: "#1E40AF" };
   return { bg: colors.muted, text: colors.mutedForeground };
 }
 
@@ -50,32 +51,27 @@ function formatRelativeTime(iso: string) {
 
 function getRichData(notif: any, idx: number) {
   const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
-  const avatarLetter = (notif.title || "N").charAt(0).toUpperCase();
-
   const title = notif.title || "Notification";
   const body = notif.body || notif.message || "";
-  const type = String(notif.notification_type || notif.type || "").toLowerCase();
+  const type = String(notif.notification_type || notif.type || "").toUpperCase();
+  const link = String(notif.link || "");
+  const avatarLetter = title.charAt(0).toUpperCase();
 
+  let statusLabel = "";
+  if (type === "BOOKING_ACCEPTED") statusLabel = "Confirmed";
+  else if (type === "BOOKING_DECLINED") statusLabel = "Declined";
+  else if (type === "BOOKING_CANCELLED") statusLabel = "Cancelled";
+  else if (type === "NEW_MESSAGE") statusLabel = "Message";
+  else if (type === "PAYMENT_RECEIVED") statusLabel = "Payment";
+  else if (type === "RENTAL_COMPLETED") statusLabel = "Completed";
+
+  // Derive a single primary action from the notification's deep-link.
   const actions: string[] = [];
-  if (notif.booking_id) {
-    if (type.includes("request")) {
-      actions.push("Decline", "Accept");
-    } else {
-      actions.push("View Details");
-    }
-  } else if (notif.actor_id || notif.user_id) {
-    actions.push("View Profile");
-  }
+  if (/\/chat\/\d+/.test(link)) actions.push("View Chat");
+  else if (link.toLowerCase().includes("earning")) actions.push("View Earnings");
+  else if (link.toLowerCase().includes("booking")) actions.push("View Details");
 
-  return {
-    name: "Notification",
-    statusLabel: "",
-    boldTitle: title,
-    body: body,
-    actions,
-    avatarColor,
-    avatarLetter,
-  };
+  return { statusLabel, boldTitle: title, body, actions, avatarColor, avatarLetter, link };
 }
 
 function matchesFilterTab(notif: any, tab: FilterTab): boolean {
@@ -99,14 +95,8 @@ function matchesFilterTab(notif: any, tab: FilterTab): boolean {
 export function NotificationsScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<FilterTab>("All");
-
-  const bookingActionMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: "approved" | "rejected" }) =>
-      updateBookingStatus(id, status),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["notifications"] }),
-    onError: () => Alert.alert("Action failed", "Please try again."),
-  });
 
   const q = useQuery({
     queryKey: ["notifications"],
@@ -128,25 +118,35 @@ export function NotificationsScreen(): React.ReactElement {
     ? rawNotifs
     : (rawNotifs as any)?.results ?? [];
 
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const filteredNotifs = notifications.filter((notif) => matchesFilterTab(notif, activeTab));
 
+  const handleAction = (action: string, notif: any, link: string) => {
+    if (!notif.read) markReadMutation.mutate(notif.id);
+    if (action === "View Chat") {
+      const m = link.match(/\/chat\/(\d+)/);
+      const roomId = m ? Number(m[1]) : 0;
+      if (roomId) (navigation as any).navigate("ChatRoom", { roomId });
+    } else if (action === "View Earnings") {
+      (navigation as any).navigate("ProfileTab", { screen: "HostArea" });
+    } else {
+      (navigation as any).navigate("BookingsTab", { screen: "Bookings" });
+    }
+  };
+
   const renderItem = ({ item: notif, index }: { item: any; index: number }) => {
     const rich = getRichData(notif, index);
-    const isUnread = !notif.is_read;
+    const isUnread = !notif.read;
     const timeLabel = formatRelativeTime(notif.created_at);
     const statusColors = rich.statusLabel ? getStatusColor(rich.statusLabel) : null;
-    const hasDecline = rich.actions.some((a) => a === "Decline" || a === "Decline");
-    const hasAccept = rich.actions.some((a) => a.startsWith("Accept"));
-    const hasViewDetails = rich.actions.some((a) => a === "View Details");
-    const hasViewProfile = rich.actions.some((a) => a === "View Profile");
 
     return (
       <Pressable
         style={[styles.notifCard, isUnread && styles.notifCardUnread]}
         onPress={() => { if (isUnread) markReadMutation.mutate(notif.id); }}
       >
+        {isUnread && <View style={styles.unreadDot} />}
         <View style={styles.notifCardTop}>
           {/* Avatar */}
           <View style={[styles.avatar, { backgroundColor: rich.avatarColor }]}>
@@ -156,87 +156,38 @@ export function NotificationsScreen(): React.ReactElement {
             </View>
           </View>
 
-          {/* Header row */}
           <View style={styles.notifRight}>
+            {/* Title + time */}
             <View style={styles.notifHeaderRow}>
-              <Text style={styles.notifName}>{rich.name}</Text>
-              {!!rich.statusLabel && statusColors && (
-                <View style={[styles.statusChip, { backgroundColor: statusColors.bg }]}>
-                  <Text style={[styles.statusChipText, { color: statusColors.text }]}>
-                    {rich.statusLabel}
-                  </Text>
-                </View>
-              )}
-              <View style={{ flex: 1 }} />
+              <Text style={styles.notifBoldTitle} numberOfLines={1}>{rich.boldTitle}</Text>
               <Text style={styles.notifTime}>{timeLabel}</Text>
             </View>
-            <Text style={styles.notifBoldTitle}>{rich.boldTitle}</Text>
+            {/* Status chip */}
+            {!!rich.statusLabel && statusColors && (
+              <View style={[styles.statusChip, { backgroundColor: statusColors.bg }]}>
+                <Text style={[styles.statusChipText, { color: statusColors.text }]}>
+                  {rich.statusLabel}
+                </Text>
+              </View>
+            )}
             {!!rich.body && (
               <Text style={styles.notifBody}>{rich.body}</Text>
             )}
           </View>
         </View>
 
-        {/* Action buttons */}
+        {/* Action button */}
         {rich.actions.length > 0 && (
           <View style={styles.actionRow}>
-            {hasViewDetails && (
+            {rich.actions.map((a) => (
               <Pressable
-                style={styles.actionBtnOutline}
-                onPress={() => {
-                  const bookingId = notif.booking_id ?? notif.id;
-                  (navigation as any).navigate("BookingsTab", { screen: "BookingReceipt", params: { id: bookingId } });
-                }}
-              >
-                <Text style={styles.actionBtnOutlineText}>View Details</Text>
-              </Pressable>
-            )}
-            {hasViewProfile && (
-              <Pressable
+                key={a}
                 style={styles.actionBtnPrimary}
-                onPress={() => {
-                  const userId = Number(notif.actor_id ?? notif.user_id ?? 0);
-                  if (userId > 0) {
-                    (navigation as any).navigate("ProfileTab", {
-                      screen: "PublicProfile",
-                      params: { userId },
-                    });
-                  }
-                }}
+                onPress={() => handleAction(a, notif, rich.link)}
               >
-                <Text style={styles.actionBtnPrimaryText}>View Profile</Text>
+                <Text style={styles.actionBtnPrimaryText}>{a}</Text>
               </Pressable>
-            )}
-            {hasDecline && (
-              <Pressable
-                style={styles.actionBtnGhost}
-                onPress={() => {
-                  const bookingId = notif.booking_id ?? notif.id;
-                  Alert.alert("Decline Booking", "Are you sure?", [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Decline", style: "destructive", onPress: () => bookingActionMutation.mutate({ id: bookingId, status: "rejected" }) },
-                  ]);
-                }}
-              >
-                <Text style={styles.actionBtnGhostText}>Decline</Text>
-              </Pressable>
-            )}
-            {hasAccept && (
-              <Pressable
-                style={styles.actionBtnPrimary}
-                onPress={() => {
-                  const bookingId = notif.booking_id ?? notif.id;
-                  Alert.alert("Accept Booking", "Confirm acceptance?", [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Accept", onPress: () => bookingActionMutation.mutate({ id: bookingId, status: "approved" }) },
-                  ]);
-                }}
-              >
-                <Text style={styles.actionBtnPrimaryText}>
-                  {rich.actions.find((a) => a.startsWith("Accept")) ?? "Accept"}
-                </Text>
-              </Pressable>
-            )}
+            ))}
           </View>
         )}
       </Pressable>
@@ -303,7 +254,7 @@ export function NotificationsScreen(): React.ReactElement {
         <FlatList
           data={filteredNotifs}
           keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: Math.max(insets.bottom, 16) + layout.tabBarHeight + 24 }]}
           showsVerticalScrollIndicator={false}
           renderItem={renderItem}
           ListEmptyComponent={
@@ -404,10 +355,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     borderWidth: 1,
     borderColor: "rgba(120,80,220,0.07)",
+    position: "relative",
   },
   notifCardUnread: {
     borderColor: "rgba(176,71,246,0.15)",
     backgroundColor: "#FEFCFF",
+  },
+  unreadDot: {
+    position: "absolute",
+    top: 14,
+    right: 14,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
   },
   notifCardTop: {
     flexDirection: "row",
@@ -440,22 +401,25 @@ const styles = StyleSheet.create({
   notifHeaderRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 8,
     marginBottom: 2,
   },
-  notifName: { fontSize: 14, fontWeight: "700", color: "#1C1628" },
   statusChip: {
+    alignSelf: "flex-start",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: radii.full,
+    marginTop: 2,
+    marginBottom: 5,
   },
   statusChipText: { fontSize: 10, fontWeight: "700" },
-  notifTime: { fontSize: 11, color: colors.mutedForeground },
+  notifTime: { fontSize: 11, color: colors.mutedForeground, flexShrink: 0 },
   notifBoldTitle: {
-    fontSize: 14,
+    flex: 1,
+    fontSize: 15,
     fontWeight: "800",
     color: "#1C1628",
-    marginBottom: 3,
+    marginRight: 8,
   },
   notifBody: {
     fontSize: 13,
@@ -468,49 +432,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     marginTop: 12,
+    justifyContent: "flex-end",
     flexWrap: "wrap",
   },
-  actionBtnOutline: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: radii.lg,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  actionBtnOutlineText: { fontSize: 13, fontWeight: "700", color: colors.primary },
   actionBtnPrimary: {
-    flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 22,
     borderRadius: radii.lg,
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   actionBtnPrimaryText: { fontSize: 13, fontWeight: "700", color: "#fff" },
-  actionBtnGhost: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FAFAFA",
-  },
-  actionBtnGhostText: { fontSize: 13, fontWeight: "600", color: colors.mutedForeground },
 
   // CTA Banner
   ctaBanner: {
     marginTop: 10,
     borderRadius: radii.xl,
-    padding: spacing.lg,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
     alignItems: "center",
     marginBottom: 20,
   },
-  ctaBannerTitle: { fontSize: 18, fontWeight: "900", color: "#fff" },
-  ctaBannerSub: { fontSize: 13, color: "rgba(255,255,255,0.85)", marginTop: 4 },
+  ctaBannerTitle: { fontSize: 15, fontWeight: "900", color: "#fff" },
+  ctaBannerSub: { fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 1 },
 
   // States
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32, gap: 12 },

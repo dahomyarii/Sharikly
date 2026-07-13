@@ -3,10 +3,11 @@ import { axiosInstance, buildApiUrl } from "@/services/api/client";
 export type BookingParams = { role?: "renter" | "host" };
 
 export async function getBookings(params?: BookingParams): Promise<unknown> {
-  // Both renter and host bookings come from the same endpoint
-  // The backend returns all bookings for the current user (as renter OR host)
+  // Same endpoint for both sides; the `role` param scopes the result:
+  //   role=renter → bookings I made,  role=host → requests for my items.
+  // With no role the backend returns the union of both, so always forward it.
   const { data } = await axiosInstance.get(buildApiUrl("/bookings/"), {
-    params: params?.role === "host" ? { role: "host" } : undefined,
+    params: params?.role ? { role: params.role } : undefined,
   });
   return data;
 }
@@ -18,9 +19,9 @@ export async function getBooking(id: number | string): Promise<unknown> {
 
 export async function requestBooking(
   listingId: number,
-  payload: { start_date: string; end_date: string; message?: string }
+  payload: { start_date: string; end_date: string; total_price: number; message?: string }
 ): Promise<unknown> {
-  // POST to /bookings/ with listing field
+  // POST to /bookings/ with listing field. total_price is required by the API.
   const { data } = await axiosInstance.post(buildApiUrl("/bookings/"), {
     listing: listingId,
     ...payload,

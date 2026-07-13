@@ -1,4 +1,5 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
+import { showToast } from "@/core/events/appEvents";
 import { getBooking, updateBookingStatus } from "@/services/api/endpoints/bookings";
 import type { BookingsStackParamList } from "@/navigation/types";
 import type { RouteProp } from "@react-navigation/native";
@@ -75,7 +76,7 @@ function getTimeline(status: string): TimelineStep[] {
   const steps: { label: string; sub?: string }[] = [
     { label: "Booking Confirmed" },
     { label: "Host Accepted" },
-    { label: "Preparing Item", sub: "Host is getting the item ready · 1:00 PM (Apr 27)" },
+    { label: "Preparing Item", sub: "Host is getting the item ready" },
     { label: "Ready for Pickup" },
     { label: "In Use" },
     { label: "Returned" },
@@ -108,9 +109,9 @@ export function BookingReceiptScreen(): React.ReactElement {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["booking", id] });
       void queryClient.invalidateQueries({ queryKey: ["bookings"] });
-      Alert.alert("Booking cancelled.");
+      showToast("Booking cancelled.", "success");
     },
-    onError: () => Alert.alert("Failed to cancel booking."),
+    onError: () => showToast("Couldn't cancel the booking. Please try again.", "error"),
   });
 
   if (q.isPending) {
@@ -121,22 +122,39 @@ export function BookingReceiptScreen(): React.ReactElement {
     );
   }
 
-  // Use mock data if API fails — so the screen always looks great
-  const booking: any = q.data ?? {
-    id,
-    status: "approved",
-    start_date: "2026-04-25",
-    end_date: "2026-04-27",
-    total_price: "860",
-    currency: "SAR",
-    listing: { title: "Canon R5 Creator Kit", city: "Aqiq, Riyadh" },
-  };
+  // Never fabricate a booking: a failed/forbidden/missing load must show an error,
+  // not a fake "confirmed" receipt.
+  if (q.isError || !q.data) {
+    return (
+      <SafeAreaView style={styles.safe} edges={["top"]}>
+        <View style={styles.topBar}>
+          <Pressable onPress={() => navigation.goBack()} style={styles.iconBtn} hitSlop={8}>
+            <ArrowLeft size={20} color={colors.foreground} />
+          </Pressable>
+          <View style={styles.topBarCenter}>
+            <Text style={styles.topBarTitle}>Booking Details</Text>
+          </View>
+          <View style={styles.iconBtn} />
+        </View>
+        <View style={styles.center}>
+          <AlertTriangle size={40} color={colors.destructive} />
+          <Text style={styles.errorText}>We couldn&apos;t load this booking.</Text>
+          <Pressable onPress={() => void q.refetch()} hitSlop={8}>
+            <Text style={styles.retryText}>Try again</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const booking: any = q.data;
 
   const listing = booking.listing;
   const currency = booking.currency ?? "SAR";
   const imageUrl = listing?.images?.[0] ? getImageUrl(listing.images[0].image) : null;
-  const startLabel = fmt(booking.start_date ?? "2026-04-25");
-  const endLabel = fmt(booking.end_date ?? "2026-04-27");
+  const startLabel = booking.start_date ? fmt(booking.start_date) : "—";
+  const endLabel = booking.end_date ? fmt(booking.end_date) : "—";
+  const depositAmount = Number(listing?.deposit) || 0;
   const canCancel = ["pending", "approved"].includes(booking.status);
   const isUpcomingPickup = booking.status === "approved";
   const steps = getTimeline(booking.status);
@@ -170,10 +188,10 @@ export function BookingReceiptScreen(): React.ReactElement {
               <View style={styles.bookingRow}>
                 <Image source={imageUrl ? {uri:imageUrl} : require("../../../../assets/images/featured_canon.png")} style={styles.bookingThumb} resizeMode="cover" />
                 <View style={styles.bookingInfo}>
-                  <Text style={styles.bookingTitle} numberOfLines={2}>{listing?.title ?? "Canon R5 Creator Kit"}</Text>
+                  <Text style={styles.bookingTitle} numberOfLines={2}>{listing?.title ?? "Your item"}</Text>
                   <View style={styles.metaRow}><Text style={styles.metaIcon}>📅</Text><Text style={styles.metaText}>{startLabel} → {endLabel}</Text></View>
-                  <View style={styles.metaRow}><MapPin size={12} color={colors.primary} /><Text style={styles.metaText}>{listing?.city ?? "Aqiq, Riyadh"}</Text></View>
-                  <View style={styles.metaRow}><Text style={styles.metaIcon}>🪙</Text><Text style={styles.metaText}>{currency} {booking.total_price ?? "860"} <Text style={styles.allFees}>(All fees included)</Text></Text></View>
+                  <View style={styles.metaRow}><MapPin size={12} color={colors.primary} /><Text style={styles.metaText}>{listing?.city ?? ""}</Text></View>
+                  <View style={styles.metaRow}><Text style={styles.metaIcon}>🪙</Text><Text style={styles.metaText}>{currency} {booking.total_price ?? "—"} <Text style={styles.allFees}>(All fees included)</Text></Text></View>
                 </View>
               </View>
             </View>
@@ -192,7 +210,7 @@ export function BookingReceiptScreen(): React.ReactElement {
 
             <Pressable
               style={styles.primaryBtn}
-              onPress={() => (navigation as any).navigate("BookingsTab", { screen: "BookingsRenter" })}
+              onPress={() => (navigation as any).navigate("BookingsTab", { screen: "Bookings" })}
             >
               <Text style={styles.primaryBtnText}>View My Bookings</Text>
             </Pressable>
@@ -288,8 +306,8 @@ export function BookingReceiptScreen(): React.ReactElement {
               <Text style={styles.pickupBannerTitle}>🟡 Upcoming Pickup</Text>
             </View>
             <View style={styles.pickupCountdownRow}>
-              <Text style={styles.pickupBold}>Pickup in:</Text>
-              <Text style={styles.pickupTimer}> ⏳ 2 hours 15 min</Text>
+              <Text style={styles.pickupBold}>Pickup date:</Text>
+              <Text style={styles.pickupTimer}> {startLabel}</Text>
             </View>
           </View>
         )}
@@ -338,14 +356,9 @@ export function BookingReceiptScreen(): React.ReactElement {
                 ]}>
                   {step.label}
                   {step.state === "active" && step.sub ? (
-                    <Text style={styles.timelineActiveSub}> · {step.sub.split("·")[0]}</Text>
+                    <Text style={styles.timelineActiveSub}> · {step.sub}</Text>
                   ) : null}
                 </Text>
-                {step.state === "active" && step.sub && (
-                  <Text style={styles.timelineSubTime}>
-                    🎒 {step.sub.split("·")[1]?.trim() ?? "1:00 PM (Apr 27)"}
-                  </Text>
-                )}
               </View>
             </View>
           ))}
@@ -356,10 +369,10 @@ export function BookingReceiptScreen(): React.ReactElement {
           <View style={styles.bookingRow}>
             <Image source={imageUrl ? {uri:imageUrl} : require("../../../../assets/images/featured_canon.png")} style={styles.bookingThumb} resizeMode="cover" />
             <View style={styles.bookingInfo}>
-              <Text style={styles.bookingTitle} numberOfLines={2}>{listing?.title ?? "Canon R5 Creator Kit"}</Text>
+              <Text style={styles.bookingTitle} numberOfLines={2}>{listing?.title ?? "Your item"}</Text>
               <View style={styles.metaRow}><Text style={styles.metaIcon}>📅</Text><Text style={styles.metaText}>{startLabel} → {endLabel}</Text></View>
-              <View style={styles.metaRow}><MapPin size={12} color={colors.primary} /><Text style={styles.metaText}>{listing?.city ?? "Aqiq, Riyadh"}</Text></View>
-              <View style={styles.metaRow}><Text style={styles.metaIcon}>🪙</Text><Text style={styles.metaText}>{currency} {booking.total_price ?? "860"} <Text style={styles.allFees}>(All included)</Text></Text></View>
+              <View style={styles.metaRow}><MapPin size={12} color={colors.primary} /><Text style={styles.metaText}>{listing?.city ?? ""}</Text></View>
+              <View style={styles.metaRow}><Text style={styles.metaIcon}>🪙</Text><Text style={styles.metaText}>{currency} {booking.total_price ?? "—"} <Text style={styles.allFees}>(All included)</Text></Text></View>
             </View>
           </View>
         </View>
@@ -374,7 +387,7 @@ export function BookingReceiptScreen(): React.ReactElement {
           </View>
           <View style={styles.metaRow}>
             <Clock size={14} color={colors.mutedForeground} />
-            <Text style={styles.metaText}>Pickup time: <Text style={{fontWeight:"700",color:"#1C1628"}}>1:00 PM</Text></Text>
+            <Text style={styles.metaText}>Pickup date: <Text style={{fontWeight:"700",color:"#1C1628"}}>{startLabel}</Text></Text>
             <View style={{flex:1}} />
             <Pressable onPress={() => openMapsToLocation(listing?.city ?? "Riyadh")}><Text style={styles.openMapText}>Open Map</Text></Pressable>
           </View>
@@ -400,14 +413,18 @@ export function BookingReceiptScreen(): React.ReactElement {
             <CheckCircle2 size={16} color={colors.success} />
             <ChevronRight size={16} color={colors.mutedForeground} />
           </View>
-          <View style={styles.infoRowDivider} />
-          <View style={styles.infoRow}>
-            <View style={styles.infoRowLeft}>
-              <Shield size={16} color={colors.primary} />
-              <Text style={styles.infoRowText}>Deposit: <Text style={{fontWeight:"700"}}>SAR 500</Text></Text>
-            </View>
-            <Text style={styles.infoRowRight}>Status: Held 🔒</Text>
-          </View>
+          {depositAmount > 0 && (
+            <>
+              <View style={styles.infoRowDivider} />
+              <View style={styles.infoRow}>
+                <View style={styles.infoRowLeft}>
+                  <Shield size={16} color={colors.primary} />
+                  <Text style={styles.infoRowText}>Deposit: <Text style={{fontWeight:"700"}}>SAR {depositAmount}</Text></Text>
+                </View>
+                <Text style={styles.infoRowRight}>Status: Held 🔒</Text>
+              </View>
+            </>
+          )}
         </View>
 
         {/* Support */}

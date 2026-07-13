@@ -2,11 +2,11 @@ import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, spacing } from "@/core/theme/tokens";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { showToast } from "@/core/events/appEvents";
 import { useNavigation } from "@react-navigation/native";
 import { Eye, EyeOff } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -30,15 +30,15 @@ export function ChangePasswordScreen(): React.ReactElement {
 
   const handleSave = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
-      Alert.alert("Missing Fields", "Please fill in all password fields.");
+      showToast("Please fill in all password fields.", "warning");
       return;
     }
     if (newPassword !== confirmPassword) {
-      Alert.alert("Passwords Mismatch", "The new passwords do not match.");
+      showToast("The new passwords do not match.", "warning");
       return;
     }
     if (newPassword.length < 8) {
-      Alert.alert("Invalid Password", "New password must be at least 8 characters long.");
+      showToast("New password must be at least 8 characters long.", "warning");
       return;
     }
 
@@ -48,13 +48,13 @@ export function ChangePasswordScreen(): React.ReactElement {
         old_password: oldPassword,
         new_password: newPassword,
       });
-      Alert.alert("Success", "Your password has been changed successfully.", [
-        { text: "OK", onPress: () => navigation.goBack() }
-      ]);
+      showToast("Your password has been changed.", "success");
+      navigation.goBack();
     } catch (err: any) {
-      Alert.alert(
-        "Error",
-        err.response?.data?.detail || "Failed to change password. Please check your current password and try again."
+      showToast(
+        err.response?.data?.detail ||
+          "Couldn't change your password. Check your current password and try again.",
+        "error"
       );
     } finally {
       setIsLoading(false);

@@ -12,7 +12,6 @@ import {
   Briefcase,
   Calendar,
   CalendarDays,
-  Camera,
   ChevronRight,
   Hourglass,
   MapPin,
@@ -109,15 +108,21 @@ export function HostOverviewScreen(): React.ReactElement {
     : [];
   const itemCount = myListings.length;
 
-  // ── Average Rating from my listings ──
-  const totalRating = myListings.reduce((sum, l) => {
-    const r = parseFloat(l.average_rating ?? l.rating ?? "0");
-    return isNaN(r) ? sum : sum + r;
-  }, 0);
-  const ratedListings = myListings.filter((l) => l.average_rating != null || l.rating != null);
+  // ── Average Rating across listings that actually have reviews ──
+  // (Unreviewed listings report average_rating 0 — exclude them so they don't drag the average down.)
+  const ratedListings = myListings.filter((l) => parseFloat(l.average_rating ?? l.rating ?? "0") > 0);
+  const totalRating = ratedListings.reduce((sum, l) => sum + parseFloat(l.average_rating ?? l.rating ?? "0"), 0);
   const avgRating = ratedListings.length > 0 ? (totalRating / ratedListings.length).toFixed(1) : "—";
 
   const isLoading = userQ.isPending || earningsQ.isPending || bookingsQ.isPending || listingsQ.isPending;
+  const isError = userQ.isError || earningsQ.isError || bookingsQ.isError || listingsQ.isError;
+
+  const retryAll = () => {
+    void userQ.refetch();
+    void earningsQ.refetch();
+    void bookingsQ.refetch();
+    void listingsQ.refetch();
+  };
 
   if (!hasSession) {
     return (
@@ -163,6 +168,15 @@ export function HostOverviewScreen(): React.ReactElement {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
+      ) : isError ? (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32, gap: 12 }}>
+          <AlertTriangle size={40} color={colors.destructive} />
+          <Text style={styles.notLoggedInTitle}>Couldn&apos;t load your dashboard</Text>
+          <Text style={styles.notLoggedInSub}>Please check your connection and try again.</Text>
+          <Pressable style={styles.signInBtn} onPress={retryAll}>
+            <Text style={styles.signInBtnText}>Retry</Text>
+          </Pressable>
+        </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
@@ -177,7 +191,7 @@ export function HostOverviewScreen(): React.ReactElement {
             <Text style={styles.earningsAmount}>{formatSar(totalEarnings)}</Text>
             <View style={styles.earningsTrendRow}>
               <TrendingUp size={14} color={colors.success} strokeWidth={3} />
-              <Text style={styles.earningsTrendText}>{formatSar(thisWeek)} this period</Text>
+              <Text style={styles.earningsTrendText}>{formatSar(thisWeek)} this month</Text>
             </View>
           </View>
 
@@ -222,7 +236,7 @@ export function HostOverviewScreen(): React.ReactElement {
           {latestBooking ? (
             <Pressable
               style={styles.bookingCard}
-              onPress={() => navigation.navigate("BookingsTab", { screen: "HostBookings" })}
+              onPress={() => (navigation as any).navigate("BookingsTab", { screen: "Bookings", params: { segment: "host" } })}
               accessibilityRole="button"
             >
               {(() => {
@@ -355,6 +369,35 @@ export function HostOverviewScreen(): React.ReactElement {
               <Text style={[styles.qaText, { color: "#D97706", fontWeight: "700" }]}>Earnings</Text>
             </Pressable>
           </View>
+
+          {/* ─── GROW ─── */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitleText}>Grow</Text>
+          </View>
+          <Pressable style={[styles.reportBtn, { marginBottom: spacing.sm }]} onPress={() => navigation.navigate("HostOpportunities")}>
+            <Briefcase size={16} color={colors.primary} />
+            <Text style={styles.reportBtnText}>Rental opportunities near you</Text>
+            <View style={{ flex: 1 }} />
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+          <Pressable style={[styles.reportBtn, { marginBottom: spacing.sm }]} onPress={() => navigation.navigate("TopHosts")}>
+            <Star size={16} color="#F59E0B" />
+            <Text style={styles.reportBtnText}>Top hosts leaderboard</Text>
+            <View style={{ flex: 1 }} />
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+          <Pressable style={[styles.reportBtn, { marginBottom: spacing.sm }]} onPress={() => navigation.navigate("CommunityEarnings")}>
+            <TrendingUp size={16} color={colors.success} />
+            <Text style={styles.reportBtnText}>Community earnings</Text>
+            <View style={{ flex: 1 }} />
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
+          <Pressable style={[styles.reportBtn, { marginBottom: spacing.lg }]} onPress={() => navigation.navigate("StartRenting")}>
+            <BarChart2 size={16} color={colors.primary} />
+            <Text style={styles.reportBtnText}>How hosting works</Text>
+            <View style={{ flex: 1 }} />
+            <ChevronRight size={16} color={colors.mutedForeground} />
+          </Pressable>
 
           {/* ─── REPORT ISSUE ─── */}
           <Pressable

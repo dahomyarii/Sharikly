@@ -3,7 +3,7 @@ import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { getPublicEarnings } from "@/services/api/endpoints/earnings";
 
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Trophy, Users, Wallet } from "lucide-react-native";
+import { TrendingUp, Trophy, Wallet } from "lucide-react-native";
 import React from "react";
 import {
   ScrollView,
@@ -33,10 +33,12 @@ export function CommunityEarningsScreen(): React.ReactElement {
 
   const data: any = q.data;
 
-  const totalEarnings = data?.total_earnings ?? data?.community_total ?? "0";
-  const totalHosts = data?.total_hosts ?? data?.lessors_count ?? 0;
-  const topEarners: any[] = data?.top_earners ?? data?.leaderboard ?? [];
-  const avgEarnings = data?.average_earnings ?? null;
+  // Field names must match the backend PublicCommunityEarningsSerializer exactly —
+  // the old guesses (total_earnings / top_earners / average_earnings) never existed,
+  // so this screen always rendered SAR 0 with an empty leaderboard.
+  const totalEarnings = data?.total_lessor_earnings ?? "0";
+  const topEarners: any[] = data?.highest_earning_lessors_per_month ?? [];
+  const avgEarnings = data?.average_lessor_income_per_month ?? null;
 
   const statCards = [
     {
@@ -45,13 +47,6 @@ export function CommunityEarningsScreen(): React.ReactElement {
       icon: Wallet,
       bg: "#EDE9FE",
       color: colors.primary,
-    },
-    {
-      label: "Active Hosts",
-      value: `${totalHosts}`,
-      icon: Users,
-      bg: "#D1FAE5",
-      color: "#059669",
     },
     {
       label: "Avg. Earnings/Host",
@@ -124,7 +119,7 @@ export function CommunityEarningsScreen(): React.ReactElement {
                         </Text>
                       </View>
                       <Text style={styles.earnerAmount}>
-                        {formatSar(earner.total_earnings ?? earner.earnings ?? 0)}
+                        {formatSar(earner.monthly_earnings ?? 0)}
                       </Text>
                     </View>
                   ))}

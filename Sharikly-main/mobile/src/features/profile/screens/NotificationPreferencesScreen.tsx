@@ -1,11 +1,12 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { showToast } from "@/core/events/appEvents";
+import { useAuthStore } from "@/store/authStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   Switch,
@@ -16,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export function NotificationPreferencesScreen(): React.ReactElement {
   const queryClient = useQueryClient();
+  const hasSession = useAuthStore((s) => s.hasSession);
 
   const prefsQ = useQuery({
     queryKey: ["notifications", "preferences"],
@@ -23,6 +25,7 @@ export function NotificationPreferencesScreen(): React.ReactElement {
       const { data } = await axiosInstance.get(buildApiUrl("/notifications/preferences/"));
       return data;
     },
+    enabled: hasSession,
   });
 
   const updateMutation = useMutation({
@@ -33,7 +36,7 @@ export function NotificationPreferencesScreen(): React.ReactElement {
       queryClient.invalidateQueries({ queryKey: ["notifications", "preferences"] });
     },
     onError: (err: any) => {
-      Alert.alert("Error", err.response?.data?.detail || "Failed to update preferences.");
+      showToast(err.response?.data?.detail || "Couldn't update your preferences. Please try again.", "error");
     },
   });
 

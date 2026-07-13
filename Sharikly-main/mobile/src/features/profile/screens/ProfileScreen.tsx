@@ -2,9 +2,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, shadows, spacing, layout } from "@/core/theme/tokens";
 import type { ProfileStackParamList } from "@/navigation/types";
-import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { axiosInstance, buildApiUrl, performLogout } from "@/services/api/client";
 import { getEarningsDashboard } from "@/services/api/endpoints/earnings";
-import { clearStoredTokens } from "@/services/storage/tokenStore";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -29,6 +28,7 @@ import React, { useState, useCallback } from "react";
 import {
   ActivityIndicator,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -46,6 +46,8 @@ export function ProfileScreen(): React.ReactElement {
   const { hasSession, setHasSession } = useAuthStore();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const [logoutVisible, setLogoutVisible] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const userQ = useQuery({
     queryKey: ["auth", "me"],
@@ -63,7 +65,8 @@ export function ProfileScreen(): React.ReactElement {
   });
   const dash: any = earningsQ.data;
   const rentalsCount = dash?.summary?.rentals_count ?? 0;
-  const averageRating = dash?.summary?.rating ?? 0;
+  // Number(): the API serializes rating as a string (DRF DecimalField); "4.5".toFixed() throws.
+  const averageRating = Number(dash?.summary?.rating) || 0;
   const responseRate = user?.response_rate ?? 0;
   
   const superHostReqs = dash?.super_host?.requirements || [];
@@ -71,13 +74,23 @@ export function ProfileScreen(): React.ReactElement {
   const totalSteps = superHostReqs.length || 3;
   const superHostProgress = Math.min(100, Math.max(0, (completedSteps / totalSteps) * 100));
 
-  const handleLogout = async () => {
+  const openLogoutConfirm = () => {
+    hapticImpact();
+    setLogoutVisible(true);
+  };
+
+  const confirmSignOut = async () => {
+    setLoggingOut(true);
     hapticImpact();
     try {
-      await clearStoredTokens();
+      // Full logout: clears tokens AND the axios Authorization header. Plain
+      // clearStoredTokens left a stale bearer on axios defaults, so subsequent
+      // requests kept authenticating as the logged-out user until the next login.
+      await performLogout();
     } catch {
-      // ignore
+      // ignore — we still drop the local session below
     }
+    setLogoutVisible(false);
     setHasSession(false);
     queryClient.clear();
   };
@@ -278,11 +291,11 @@ export function ProfileScreen(): React.ReactElement {
                 value={user?.listings_count != null ? `${user.listings_count} item${user.listings_count !== 1 ? 's' : ''}` : "—"} 
                 onPress={() => navigation.navigate("HostArea")} 
               />
-              <MenuItem 
-                icon={<Calendar size={20} color="#B047F6" />} 
-                label="My Bookings" 
-                value={user?.bookings_count != null ? `${user.bookings_count} booking${user.bookings_count !== 1 ? 's' : ''}` : "—"} 
-                onPress={() => navigation.navigate("HostArea")} 
+              <MenuItem
+                icon={<Calendar size={20} color="#B047F6" />}
+                label="My Bookings"
+                value={user?.bookings_count != null ? `${user.bookings_count} booking${user.bookings_count !== 1 ? 's' : ''}` : "—"}
+                onPress={() => (navigation as any).navigate("BookingsTab", { screen: "Bookings" })}
               />
               <MenuItem 
                 icon={<Wallet size={20} color="#B047F6" />} 
@@ -294,7 +307,7 @@ export function ProfileScreen(): React.ReactElement {
                 icon={<MessageSquare size={20} color="#B047F6" />}
                 label="Reviews"
                 value={user?.reviews_count != null ? `${user.reviews_count} review${user.reviews_count !== 1 ? 's' : ''}` : "—"}
-                onPress={() => navigation.navigate("HostArea")}
+                onPress={() => user?.id && navigation.navigate("PublicProfile", { userId: user.id })}
               />
               <MenuItem
                 icon={<Heart size={20} color="#B047F6" />}
@@ -328,10 +341,10 @@ export function ProfileScreen(): React.ReactElement {
             </View>
 
             <View style={{ marginTop: spacing.xl, marginBottom: spacing.xxl }}>
-               <PrimaryButton 
-                 label="Log Out" 
-                 onPress={handleLogout} 
-                 variant="outline" 
+               <PrimaryButton
+                 label="Log Out"
+                 onPress={openLogoutConfirm}
+                 variant="outline"
                  style={{ borderColor: colors.destructive }}
                  textStyle={{ color: colors.destructive }}
                />
@@ -340,6 +353,43 @@ export function ProfileScreen(): React.ReactElement {
             <View style={{ height: layout.tabBarHeight + 20 }} />
           </View>
         </ScrollView>
+
+        {/* Log out confirmation */}
+        <Modal
+          visible={logoutVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setLogoutVisible(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Log out</Text>
+              <Text style={styles.modalBody}>
+                Are you sure you want to log out of your account?
+              </Text>
+              <View style={styles.modalActions}>
+                <Pressable
+                  style={[styles.modalBtn, styles.modalBtnGhost]}
+                  onPress={() => setLogoutVisible(false)}
+                  disabled={loggingOut}
+                >
+                  <Text style={styles.modalBtnGhostText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalBtn, styles.modalBtnDanger]}
+                  onPress={confirmSignOut}
+                  disabled={loggingOut}
+                >
+                  {loggingOut ? (
+                    <ActivityIndicator color="#FFF" size="small" />
+                  ) : (
+                    <Text style={styles.modalBtnDangerText}>Log out</Text>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </View>
   );
@@ -721,5 +771,64 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '52%',
     height: '100%',
+  },
+
+  // Log out confirmation modal
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 8, 40, 0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: '#FFFFFF',
+    borderRadius: radii.xl,
+    padding: spacing.lg,
+    ...shadows.cardHeavy,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.foreground,
+    marginBottom: 8,
+  },
+  modalBody: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: spacing.md,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 4,
+  },
+  modalBtn: {
+    minWidth: 96,
+    height: 44,
+    borderRadius: radii.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  modalBtnGhost: {
+    backgroundColor: '#F3F4F6',
+  },
+  modalBtnGhostText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.foreground,
+  },
+  modalBtnDanger: {
+    backgroundColor: colors.destructive,
+  },
+  modalBtnDangerText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
