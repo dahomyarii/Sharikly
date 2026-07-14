@@ -1457,11 +1457,22 @@ class ChatRoomGetOrCreateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        existing = (
+        # Find an existing 1:1 room with EXACTLY these two participants.
+        # The participant count must be computed in a query SEPARATE from the two
+        # "contains X" filters: chaining .filter(participants=me).filter(participants=other)
+        # produces multiple joins that make Count("participants") return 1 instead of 2,
+        # so the old single-query version never matched — and a duplicate room was
+        # created on every open (the "chat doubles" bug).
+        both_room_ids = list(
             ChatRoom.objects.filter(participants=request.user)
             .filter(participants=other)
-            .annotate(pcount=Count("participants"))
+            .values_list("id", flat=True)
+        )
+        existing = (
+            ChatRoom.objects.filter(id__in=both_room_ids)
+            .annotate(pcount=Count("participants", distinct=True))
             .filter(pcount=2)
+            .order_by("created_at")
             .first()
         )
         listing_id = request.data.get("listing_id")
