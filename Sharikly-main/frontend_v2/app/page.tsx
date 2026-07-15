@@ -47,7 +47,7 @@ function getCategoryIcon(categoryName: string): LucideIcon {
 
 function HostEarningsHighlightsCard({ className = "" }: { className?: string }) {
   return (
-    <div className={`surface-panel rounded-[28px] p-3.5 sm:p-4 ${className}`.trim()}>
+    <div className={`surface-panel rounded-[4px] rounded-tl-[28px] rounded-br-[28px] p-3.5 sm:p-4 ${className}`.trim()}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="section-label text-xs uppercase tracking-[0.28em] text-muted-foreground">
@@ -145,7 +145,13 @@ export default function HomePage() {
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: "url(/image.jpeg)" }}
           />
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.75),rgba(255,255,255,0.6),rgba(236,233,246,0.45))]" />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.18), rgba(236,233,246,0.15))",
+            }}
+          />
           <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/10" />
           <div className="floating-orb bottom-[-2rem] right-[-1rem] h-20 w-20 bg-emerald-300/15" />
           
