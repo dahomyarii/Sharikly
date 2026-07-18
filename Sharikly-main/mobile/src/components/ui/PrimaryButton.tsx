@@ -50,7 +50,8 @@ export function PrimaryButton({
         onPress={handlePress}
         style={[
           styles.base,
-          { alignSelf: fullWidth ? "stretch" : "flex-start" },
+          { borderRadius: sizeStyles.borderRadius },
+          fullWidth && { alignSelf: "stretch" },
           isDisabled && styles.disabled,
           style,
         ]}
@@ -59,7 +60,7 @@ export function PrimaryButton({
         disableHaptics // haptics are already fired in handlePress
       >
         <LinearGradient
-          colors={["#9356F5", "#6D28D9"]}
+          colors={["#C164FF", "#7A5AFF"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[
@@ -94,8 +95,8 @@ export function PrimaryButton({
             height: sizeStyles.height,
             paddingHorizontal: sizeStyles.paddingHorizontal,
             borderRadius: sizeStyles.borderRadius,
-            alignSelf: fullWidth ? "stretch" : "flex-start",
           },
+          fullWidth && { alignSelf: "stretch" },
           isDisabled && styles.disabled,
           style,
         ]}
@@ -124,8 +125,8 @@ export function PrimaryButton({
           height: sizeStyles.height,
           paddingHorizontal: sizeStyles.paddingHorizontal,
           borderRadius: sizeStyles.borderRadius,
-          alignSelf: fullWidth ? "stretch" : "flex-start",
         },
+        fullWidth && { alignSelf: "stretch" },
         isDisabled && styles.disabled,
         style,
       ]}

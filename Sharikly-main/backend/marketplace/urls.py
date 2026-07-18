@@ -14,6 +14,7 @@ urlpatterns = [
     path("auth/verify-email/", views.VerifyEmailView.as_view(), name="verify_email"),
     path("auth/resend-verification/", views.ResendVerificationView.as_view(), name="resend_verification"),
     path("users/<int:pk>/", views.PublicUserView.as_view(), name="public_user"),
+    path("users/<int:pk>/reviews/", views.UserReviewsView.as_view(), name="user_reviews"),
     path("users/<int:pk>/block/", views.BlockUserView.as_view(), name="block_user"),
     path("users/<int:pk>/unblock/", views.UnblockUserView.as_view(), name="unblock_user"),
     path("users/blocked/", views.BlockedUsersListView.as_view(), name="blocked_users_list"),
@@ -37,6 +38,7 @@ urlpatterns = [
     # Chat
     path("chat/rooms/", views.ChatRoomListCreateView.as_view(), name="chat_rooms"),
     path("chat/rooms/get-or-create/", views.ChatRoomGetOrCreateView.as_view(), name="chat_room_get_or_create"),
+    path("chat/rooms/<int:pk>/", views.ChatRoomDetailView.as_view(), name="chat_room_detail"),
     path("chat/unread-count/", views.ChatUnreadCountView.as_view(), name="chat_unread_count"),
     path("chat/messages/", views.SendMessageView.as_view(), name="chat_messages"),
     path(

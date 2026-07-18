@@ -89,6 +89,15 @@ export function BlogListScreen(): React.ReactElement {
         <View style={styles.center}>
           <Text style={styles.mutedText}>Loading posts…</Text>
         </View>
+      ) : q.isError ? (
+        <View style={styles.center}>
+          <BookOpen size={48} color={colors.muted} />
+          <Text style={styles.emptyTitle}>Couldn&apos;t load the blog</Text>
+          <Text style={styles.emptyText}>Please check your connection and try again.</Text>
+          <Pressable onPress={() => q.refetch()} hitSlop={8}>
+            <Text style={styles.retryText}>Retry</Text>
+          </Pressable>
+        </View>
       ) : posts.length === 0 ? (
         <View style={styles.center}>
           <BookOpen size={48} color={colors.muted} />
@@ -159,4 +168,5 @@ const styles = StyleSheet.create({
   mutedText: { ...typography.body, color: colors.mutedForeground },
   emptyTitle: { fontSize: 18, fontWeight: "800", color: colors.foreground },
   emptyText: { fontSize: 14, color: colors.mutedForeground, textAlign: "center", lineHeight: 20 },
+  retryText: { fontSize: 14, color: colors.primary, fontWeight: "600", marginTop: 4 },
 });

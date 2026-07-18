@@ -197,8 +197,9 @@ export function PrivacyScreen(): React.ReactElement {
           { h: "How We Use Your Information", b: "We use your information to operate the Ekra platform, process bookings, send notifications, provide customer support, and improve our services." },
           { h: "Information Sharing", b: "We share necessary information between hosts and renters to facilitate bookings. We do not sell your personal information to third parties." },
           { h: "Data Security", b: "We implement industry-standard security measures to protect your information. However, no method of transmission over the Internet is completely secure." },
-          { h: "Your Rights", b: "You can access, correct, or delete your account information at any time through the Settings page. You may also contact us to request data deletion." },
-          { h: "Contact Us", b: "If you have questions about this privacy policy, please contact us through the Support section in the app." },
+          { h: "Your Rights", b: "You can access, correct, or delete your account information at any time. Account deletion can be started directly in the app from Settings → Delete account." },
+          { h: "Account Deletion & Data Retention", b: "When you delete your account, we permanently erase your personal data — including your name, email, phone number, profile photo, bio, payout details, saved payment methods, favorites, saved searches, and notification settings — and disable the account so it can no longer be used. To protect other users and meet legal and accounting obligations, certain records tied to completed transactions (such as past bookings, reviews, and message history) are retained in anonymized form, with your identity removed, and your listings are removed from the marketplace." },
+          { h: "Contact Us", b: "If you have questions about this privacy policy or wish to exercise your data rights, please contact us through the Support section in the app." },
         ].map((section, i) => (
           <View key={i} style={styles.aboutCard}>
             <Text style={styles.aboutHeading}>{section.h}</Text>

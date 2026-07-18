@@ -9,7 +9,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ArrowLeft, Mail } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -27,14 +26,12 @@ export function ResendVerificationScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const mut = useMutation({
     mutationFn: () => postResendVerification(email),
-    onSuccess: () => {
-      navigation.navigate("Login", {
-        message: "Verification email sent. Please check your inbox and click the link.",
-      });
-    },
+    onSuccess: () =>
+      setSuccessMsg("Verification email sent. Please check your inbox (and spam folder) and click the link."),
     onError: (e: any) =>
       setError(e?.response?.data?.detail ?? e?.message ?? "Failed to resend verification."),
   });
@@ -43,7 +40,7 @@ export function ResendVerificationScreen(): React.ReactElement {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <LinearGradient colors={["#9356F5", "#6D28D9"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
+          <LinearGradient colors={["#C164FF", "#7A5AFF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
             <Pressable style={styles.backBtn} onPress={() => navigation.goBack()} hitSlop={12}>
               <ArrowLeft size={22} color="rgba(255,255,255,0.9)" />
             </Pressable>
@@ -58,6 +55,7 @@ export function ResendVerificationScreen(): React.ReactElement {
             </Text>
 
             {error ? <View style={styles.errorBox}><Text style={styles.errorText}>{error}</Text></View> : null}
+            {successMsg ? <View style={styles.successBox}><Text style={styles.successText}>{successMsg}</Text></View> : null}
 
             <View style={styles.fieldWrap}>
               <Text style={styles.label}>Email address</Text>
@@ -105,6 +103,8 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: colors.mutedForeground, marginTop: 4, marginBottom: spacing.lg, lineHeight: 21 },
   errorBox: { backgroundColor: "rgba(220,38,38,0.08)", borderWidth: 1, borderColor: "rgba(220,38,38,0.2)", borderRadius: radii.md, padding: 12, marginBottom: spacing.md },
   errorText: { color: colors.destructive, fontSize: 13 },
+  successBox: { backgroundColor: "rgba(22,163,74,0.08)", borderWidth: 1, borderColor: "rgba(22,163,74,0.25)", borderRadius: radii.md, padding: 12, marginBottom: spacing.md },
+  successText: { color: "#15803D", fontSize: 13, lineHeight: 19 },
   fieldWrap: { marginBottom: spacing.lg },
   label: { fontSize: 13, fontWeight: "600", color: colors.foreground, marginBottom: 6 },
   inputWrap: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.surface, borderRadius: radii.lg, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, height: 50 },

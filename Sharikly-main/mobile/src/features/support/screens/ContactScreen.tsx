@@ -1,11 +1,11 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { showToast } from "@/core/events/appEvents";
 import { useNavigation } from "@react-navigation/native";
 import { ArrowLeft, Send, MessageSquare } from "lucide-react-native";
 import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -25,23 +25,21 @@ export function ContactScreen(): React.ReactElement {
   const sendMutation = useMutation({
     mutationFn: async () => {
       await axiosInstance.post(buildApiUrl("/contact-messages/"), {
-        subject,
-        message,
+        // ContactMessage has no `subject` column on the backend, so fold it into the
+        // message body instead of silently dropping what the user typed.
+        message: `Subject: ${subject.trim()}\n\n${message.trim()}`,
       });
     },
     onSuccess: () => {
-      Alert.alert(
-        "Message Sent! ✅",
-        "Thank you for reaching out. We'll get back to you within 24 hours.",
-        [{ text: "OK", onPress: () => navigation.goBack() }]
-      );
+      showToast("Message sent — we'll reply within 24 hours.", "success");
+      navigation.goBack();
     },
-    onError: () => Alert.alert("Failed to send message. Please try again."),
+    onError: () => showToast("Couldn't send your message. Please try again.", "error"),
   });
 
   const handleSend = () => {
-    if (!subject.trim()) { Alert.alert("Please enter a subject."); return; }
-    if (!message.trim()) { Alert.alert("Please enter a message."); return; }
+    if (!subject.trim()) { showToast("Please enter a subject.", "warning"); return; }
+    if (!message.trim()) { showToast("Please enter a message.", "warning"); return; }
     sendMutation.mutate();
   };
 
@@ -90,7 +88,11 @@ export function ContactScreen(): React.ReactElement {
             maxLength={2000}
           />
 
-          <Pressable style={styles.sendBtn} onPress={handleSend}>
+          <Pressable
+            style={[styles.sendBtn, sendMutation.isPending && { opacity: 0.6 }]}
+            onPress={handleSend}
+            disabled={sendMutation.isPending}
+          >
             <Send size={16} color="#fff" />
             <Text style={styles.sendBtnText}>
               {sendMutation.isPending ? "Sending…" : "Send Message"}

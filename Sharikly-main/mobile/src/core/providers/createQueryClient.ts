@@ -22,7 +22,10 @@ export function createAppQueryClient(): QueryClient {
       },
       mutations: {
         networkMode: "offlineFirst",
-        retry: (failureCount, error) => shouldRetry(failureCount, error),
+        // Do NOT auto-retry mutations — they are non-idempotent (booking requests, chat
+        // messages, listing creates, favorites). A network blip after the server already
+        // committed would double-submit. Queries (idempotent GETs) still retry above.
+        retry: false,
         onError: (error) => {
           logger.warn("mutation failed", { error: String(error) });
         },

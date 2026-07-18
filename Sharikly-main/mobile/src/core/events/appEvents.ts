@@ -2,7 +2,7 @@ import { DeviceEventEmitter } from "react-native";
 
 export type GlobalToastPayload = {
   message: string;
-  type: "warning" | "error" | "info";
+  type: "success" | "warning" | "error" | "info";
 };
 
 export const APP_EVENTS = {
@@ -16,6 +16,15 @@ export function emitUserLogout(): void {
 
 export function emitGlobalToast(payload: GlobalToastPayload): void {
   DeviceEventEmitter.emit(APP_EVENTS.globalShowToast, payload);
+}
+
+/**
+ * Imperative, cross-platform toast. Works from anywhere — components, mutation
+ * callbacks, or the axios interceptor — and renders via <ToastHost /> (an in-app UI,
+ * NOT Alert.alert, which is a silent no-op on web).
+ */
+export function showToast(message: string, type: GlobalToastPayload["type"] = "info"): void {
+  emitGlobalToast({ message, type });
 }
 
 export function subscribeUserLogout(listener: () => void): () => void {

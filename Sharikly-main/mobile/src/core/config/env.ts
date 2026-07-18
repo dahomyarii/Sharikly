@@ -8,9 +8,16 @@ function readExtra(key: string): string | undefined {
 /**
  * Same contract as web `NEXT_PUBLIC_API_BASE`: scheme + host + `/api`, no trailing slash.
  */
-export const API_BASE: string =
-  process.env.EXPO_PUBLIC_API_BASE ??
-  readExtra("apiBase") ??
-  "http://127.0.0.1:8000/api";
+const resolvedApiBase = process.env.EXPO_PUBLIC_API_BASE ?? readExtra("apiBase");
+
+if (!resolvedApiBase && !__DEV__) {
+  // A release build must never silently target localhost — that request will just fail.
+  // eslint-disable-next-line no-console
+  console.error(
+    "[Ekra] EXPO_PUBLIC_API_BASE is not set. Release build is falling back to localhost and will not reach the API."
+  );
+}
+
+export const API_BASE: string = resolvedApiBase ?? "http://127.0.0.1:8000/api";
 
 export const APP_SCHEME = "ekra";

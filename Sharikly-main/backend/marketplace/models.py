@@ -36,6 +36,8 @@ class Listing(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     price_per_day = models.DecimalField(max_digits=8, decimal_places=2)
+    # Optional refundable security deposit the renter authorizes to protect the item.
+    deposit = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     is_active = models.BooleanField(default=True, help_text="Inactive listings are hidden from search and public detail; owner can still see and reactivate.")
     
@@ -124,6 +126,9 @@ class Booking(models.Model):
     stripe_payment_id = models.CharField(
         max_length=255, blank=True, null=True
     )  # Stripe PaymentIntent or Session id
+    # Set once the owner has been notified their rental completed (end_date passed),
+    # so the daily job doesn't re-notify.
+    owner_completion_notified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -180,6 +185,13 @@ class Message(models.Model):
     text = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to="chat_images/", blank=True, null=True)
     audio = models.FileField(upload_to="chat_audio/", blank=True, null=True)
+    # Generic file attachment (documents, etc.)
+    file = models.FileField(upload_to="chat_files/", blank=True, null=True)
+    # Duration of a voice message in seconds (for display before/without playback)
+    audio_duration = models.FloatField(null=True, blank=True)
+    # Shared location (map message)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -348,6 +360,9 @@ class Notification(models.Model):
         BOOKING_DECLINED = "BOOKING_DECLINED", _("Booking declined")
         BOOKING_CANCELLED = "BOOKING_CANCELLED", _("Booking cancelled")
         NEW_MESSAGE = "NEW_MESSAGE", _("New message")
+        # Host-side ("Rentals") notifications — someone renting the owner's item.
+        PAYMENT_RECEIVED = "PAYMENT_RECEIVED", _("Payment received")
+        RENTAL_COMPLETED = "RENTAL_COMPLETED", _("Rental completed")
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="notifications"

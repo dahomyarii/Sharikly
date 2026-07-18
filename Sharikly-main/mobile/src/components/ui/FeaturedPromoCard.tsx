@@ -4,16 +4,32 @@ import React from "react";
 import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
 import { PrimaryButton } from "./PrimaryButton";
 
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
+
+function getFullUrl(url: string | undefined | null) {
+  if (!url) return null;
+  return url.startsWith("http") ? url : `${API_BASE.replace("/api", "")}${url}`;
+}
+
 interface FeaturedPromoCardProps {
+  listing: any;
   onPress?: () => void;
   onBookNow?: () => void;
 }
 
-export function FeaturedPromoCard({ onPress, onBookNow }: FeaturedPromoCardProps) {
+export function FeaturedPromoCard({ listing, onPress, onBookNow }: FeaturedPromoCardProps) {
+  const title = listing?.title ?? "Featured Listing";
+  const price = listing?.price_per_day ?? "0";
+  const currency = listing?.currency ?? "SAR";
+  const city = listing?.city ?? "Riyadh";
+  const rating = listing?.average_rating;
+  const reviewCount = Array.isArray(listing?.reviews) ? listing.reviews.length : 0;
+  const imageUrl = getFullUrl(listing?.images?.[0]?.image);
+
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <ImageBackground
-        source={require("../../../assets/images/featured_canon.png")}
+        source={imageUrl ? { uri: imageUrl } : require("../../../assets/images/featured_canon.png")}
         style={styles.backgroundImage}
         imageStyle={styles.imageStyle}
       >
@@ -24,19 +40,27 @@ export function FeaturedPromoCard({ onPress, onBookNow }: FeaturedPromoCardProps
           style={styles.gradientOverlay}
         >
           <View style={styles.content}>
-            <Text style={styles.title}>Canon R5 Creator Kit</Text>
-            
+            <Text style={styles.title} numberOfLines={2}>{title}</Text>
+
             <View style={styles.metaRow}>
-              <Text style={styles.rating}>4.9</Text>
-              <Text style={styles.star}>⭐</Text>
-              <Text style={styles.metaText}> · 120 rentals · Riyadh</Text>
+              {rating ? (
+                <>
+                  <Text style={styles.rating}>{Number(rating).toFixed(1)}</Text>
+                  <Text style={styles.star}>⭐</Text>
+                  <Text style={styles.metaText}>
+                    {reviewCount > 0 ? ` · ${reviewCount} review${reviewCount !== 1 ? "s" : ""} · ${city}` : ` · ${city}`}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.metaText}>{city}</Text>
+              )}
             </View>
-            
+
             <Text style={styles.priceRow}>
-              <Text style={styles.price}>SAR 180</Text>
+              <Text style={styles.price}>{currency} {price}</Text>
               <Text style={styles.priceUnit}> / day</Text>
             </Text>
-            
+
             <View style={styles.btnWrap}>
               <PrimaryButton label="Book Now" onPress={onBookNow ?? onPress} size="sm" />
             </View>

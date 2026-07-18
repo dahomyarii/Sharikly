@@ -17,7 +17,7 @@ import {
   Tent,
   Inbox as EmptyIcon,
 } from "lucide-react-native";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import AnimatedReanimated, { FadeInRight, FadeInDown } from "react-native-reanimated";
 import {
   Animated,
@@ -49,7 +49,14 @@ export function ListingsExploreScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
   const route = useRoute<R>();
   const [searchText, setSearchText] = useState(route.params?.search ?? "");
+  const [debouncedSearch, setDebouncedSearch] = useState(searchText);
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
+
+  // Debounce the search term so we don't fire a network request on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchText), 350);
+    return () => clearTimeout(t);
+  }, [searchText]);
 
   const categoriesQ = useQuery({
     queryKey: ["categories"],
@@ -57,10 +64,10 @@ export function ListingsExploreScreen(): React.ReactElement {
   });
 
   const listingsQ = useQuery({
-    queryKey: ["listings", "explore", searchText, activeCategory],
+    queryKey: ["listings", "explore", debouncedSearch, activeCategory],
     queryFn: () =>
       getListings({
-        ...(searchText ? { search: searchText } : {}),
+        ...(debouncedSearch ? { search: debouncedSearch } : {}),
         ...(activeCategory ? { category: String(activeCategory) } : {}),
       }),
   });
@@ -207,7 +214,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     backgroundColor: "rgba(255, 255, 255, 0.75)",
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(124, 58, 237, 0.08)",
+    borderBottomColor: "rgba(176, 71, 246, 0.08)",
   },
   searchRow: {
     flexDirection: "row",
@@ -221,7 +228,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: radii.full,
     borderWidth: 1,
-    borderColor: "rgba(124, 58, 237, 0.15)",
+    borderColor: "rgba(176, 71, 246, 0.15)",
     paddingHorizontal: 14,
     height: 48,
     gap: 10,

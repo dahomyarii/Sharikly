@@ -1,6 +1,7 @@
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
-import { bootstrapApiClient } from "@/services/api/client";
+import { API_BASE } from "@/core/config/env";
+import { axiosInstance, bootstrapApiClient, buildApiUrl } from "@/services/api/client";
 import type { AuthStackParamList } from "@/navigation/types";
 import { useAuthStore } from "@/store/authStore";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -20,11 +21,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { FadeIn, FadeInDown, SlideInDown } from "react-native-reanimated";
+import Animated, { FadeInDown, SlideInDown } from "react-native-reanimated";
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, "Login">;
-
-const API = process.env.EXPO_PUBLIC_API_BASE ?? "";
 
 export function LoginScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
@@ -49,26 +48,14 @@ export function LoginScreen(): React.ReactElement {
       const trimmedEmail = email.trim().toLowerCase();
       const trimmedPassword = password.trim();
 
-      const url = `${API}/auth/token/`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword }),
+      // Route through the shared axios client (interceptors, timeout, error toasts).
+      // The 401 interceptor deliberately skips /auth/token, so a bad-credentials
+      // response surfaces here instead of triggering a logout.
+      const res = await axiosInstance.post(buildApiUrl("/auth/token/"), {
+        email: trimmedEmail,
+        password: trimmedPassword,
       });
-
-      let data: any = {};
-      try {
-        data = await res.json();
-      } catch {
-        // Server returned non-JSON (e.g. HTML 502/504 error page)
-        setError(`Server error (${res.status}). Please try again later.`);
-        return;
-      }
-
-      if (!res.ok) {
-        setError(data?.detail ?? data?.non_field_errors?.[0] ?? "Login failed.");
-        return;
-      }
+      const data: any = res.data ?? {};
 
       // Store tokens (platform-aware: SecureStore on mobile, localStorage on web)
       const accessToken = data.access ?? data.access_token;
@@ -83,25 +70,45 @@ export function LoginScreen(): React.ReactElement {
       // Update auth store — this collapses the Auth modal and returns to Main
       setHasSession(true);
 
-      // Dismiss the Auth modal (go back to Main app)
-      navigation.getParent()?.goBack();
+      // If the user was gated into login by an action (e.g. "Send Request"),
+      // run it after dismissing the modal so they return to what they wanted.
+      const pending = useAuthStore.getState().pendingAction;
+      useAuthStore.getState().setPendingAction(null);
+
+      // Dismiss the Auth modal. Prefer goBack() so the screens the user was on
+      // (their tab/stack state) are preserved — this is what lets the pending
+      // action navigate them back to where they wanted to go. Fall back to a
+      // reset only if there's nothing to go back to.
+      const parent = navigation.getParent();
+      if (parent?.canGoBack()) {
+        parent.goBack();
+      } else {
+        parent?.reset({ index: 0, routes: [{ name: "Main" as never }] });
+      }
+
+      if (pending) setTimeout(() => pending(), 80);
 
     } catch (err: any) {
-      // Network error (no response at all — server down, wrong IP, no connection)
-      const isNetworkError =
-        err?.message?.includes("Network request failed") ||
-        err?.message?.includes("fetch") ||
-        err?.code === "ECONNREFUSED";
-      if (isNetworkError) {
+      if (err?.response) {
+        const data = err.response.data;
         setError(
-          `Cannot reach server.\nAPI: ${API}\n\nCheck your network or start the backend.`
+          data?.detail ??
+          data?.non_field_errors?.[0] ??
+          "Login failed. Check your email and password."
         );
       } else {
-        setError(`Something went wrong: ${err?.message || "Unknown error"}`);
+        setError(`Cannot reach the server.\nAPI: ${API_BASE}\n\nCheck your network or start the backend.`);
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  // Cancel login: discard any pending gated action and dismiss the Auth modal.
+  const closeAuth = () => {
+    useAuthStore.getState().setPendingAction(null);
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.getParent()?.goBack();
   };
 
   return (
@@ -117,7 +124,7 @@ export function LoginScreen(): React.ReactElement {
         >
           {/* Purple gradient header with back button */}
           <LinearGradient
-            colors={["#9356F5", "#6D28D9"]}
+            colors={["#C164FF", "#7A5AFF"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.header}
@@ -125,11 +132,7 @@ export function LoginScreen(): React.ReactElement {
             {/* Back / close button */}
             <Pressable
               style={styles.backBtn}
-              onPress={() =>
-                navigation.canGoBack()
-                  ? navigation.goBack()
-                  : navigation.getParent()?.goBack()
-              }
+              onPress={closeAuth}
               hitSlop={12}
             >
               <ArrowLeft size={22} color="rgba(255,255,255,0.9)" />
@@ -236,7 +239,7 @@ export function LoginScreen(): React.ReactElement {
             <Animated.View entering={FadeInDown.delay(600).springify()}>
             <Pressable
               style={styles.guestBtn}
-              onPress={() => navigation.getParent()?.goBack()}
+              onPress={closeAuth}
             >
               <Text style={styles.guestText}>Continue browsing without signing in</Text>
             </Pressable>

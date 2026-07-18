@@ -7,15 +7,13 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   ArrowRight,
+  ArrowLeft,
   Calendar,
   Camera,
-  CheckCircle,
-  DollarSign,
   Package,
   Search,
   Shield,
   Sparkles,
-  Star,
   TrendingUp,
   Wallet,
 } from "lucide-react-native";
@@ -67,11 +65,14 @@ export function StartRentingScreen(): React.ReactElement {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Hero */}
         <LinearGradient
-          colors={["#9356F5", "#6D28D9"]}
+          colors={["#C164FF", "#7A5AFF"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.hero}
         >
+          <Pressable onPress={() => navigation.goBack()} style={styles.floatBack} hitSlop={10}>
+            <ArrowLeft size={22} color="#FFF" />
+          </Pressable>
           <Sparkles size={32} color="rgba(255,255,255,0.6)" />
           <Text style={styles.heroTitle}>Start Earning on Ekra</Text>
           <Text style={styles.heroSub}>
@@ -125,34 +126,13 @@ export function StartRentingScreen(): React.ReactElement {
           })}
         </View>
 
-        {/* Stats */}
-        <View style={styles.statsCard}>
-          <View style={styles.statItem}>
-            <Star size={18} color="#F59E0B" fill="#F59E0B" />
-            <Text style={styles.statValue}>4.9</Text>
-            <Text style={styles.statLabel}>Avg. rating</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <CheckCircle size={18} color={colors.success} />
-            <Text style={styles.statValue}>95%</Text>
-            <Text style={styles.statLabel}>Acceptance rate</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <DollarSign size={18} color={colors.primary} />
-            <Text style={styles.statValue}>SAR 1.2k</Text>
-            <Text style={styles.statLabel}>Avg. monthly</Text>
-          </View>
-        </View>
-
         {/* Final CTA */}
         <Pressable
           style={styles.finalCta}
           onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
         >
           <LinearGradient
-            colors={["#9356F5", "#6D28D9"]}
+            colors={["#C164FF", "#7A5AFF"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.finalCtaGradient}
@@ -179,6 +159,18 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     alignItems: "center",
     gap: 10,
+  },
+  floatBack: {
+    position: "absolute",
+    top: spacing.md,
+    left: spacing.md,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
   },
   heroTitle: { fontSize: 28, fontWeight: "900", color: "#fff", textAlign: "center", letterSpacing: -0.5 },
   heroSub: { fontSize: 15, color: "rgba(255,255,255,0.8)", textAlign: "center", lineHeight: 22, maxWidth: 280 },

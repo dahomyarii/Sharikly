@@ -6,7 +6,6 @@ import { Star } from "lucide-react-native";
 import React from "react";
 import {
   Image,
-  Pressable,
   StyleSheet,
   Text,
   View,
@@ -27,11 +26,9 @@ export const ListingCard = React.memo(({ listing, onPress, index = 0 }: ListingC
   const currency = listing.currency || "SAR";
 
 
-  const rating = listing.average_rating || 4.9;
-
-  const ratingValue = React.useMemo(() => {
-    return Math.round(rating);
-  }, [rating]);
+  // Real rating only — unreviewed listings show a "New" pill, not fake 5 stars.
+  const avgRating = Number(listing.average_rating) || 0;
+  const hasRating = avgRating > 0;
 
   const avatarUrl = listing.owner?.avatar ? (listing.owner.avatar.startsWith("http") ? listing.owner.avatar : `${process.env.EXPO_PUBLIC_API_BASE?.replace("/api", "") || ""}${listing.owner.avatar}`) : null;
 
@@ -54,17 +51,17 @@ export const ListingCard = React.memo(({ listing, onPress, index = 0 }: ListingC
           style={styles.gradient}
         />
         
-        {/* Rating Badge (Bottom Left) */}
-        <View style={styles.ratingBadge}>
-          {[1, 2, 3, 4, 5].map((star) => (
-             <Star
-               key={star}
-               size={12}
-               color={star <= ratingValue ? "#F93B69" : "rgba(255,255,255,0.5)"}
-               fill={star <= ratingValue ? "#F93B69" : "transparent"}
-             />
-          ))}
-        </View>
+        {/* Rating Badge (Bottom Left) — real stars, or "New" when unreviewed */}
+        {hasRating ? (
+          <View style={styles.ratingBadge}>
+            <Star size={12} color="#F93B69" fill="#F93B69" />
+            <Text style={styles.ratingText}>{avgRating.toFixed(1)}</Text>
+          </View>
+        ) : (
+          <View style={styles.newPill}>
+            <Text style={styles.newPillText}>New</Text>
+          </View>
+        )}
 
         {/* Avatar (Bottom Right) */}
         <View style={styles.avatarWrap}>
@@ -101,7 +98,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: "100%",
-    aspectRatio: 0.95,
+    aspectRatio: 1.6,
     backgroundColor: colors.muted,
     borderRadius: 20,
     overflow: "hidden",
@@ -124,12 +121,23 @@ const styles = StyleSheet.create({
     left: 10,
     flexDirection: "row",
     alignItems: "center",
-    gap: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
+    gap: 4,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
+  ratingText: { color: "#fff", fontSize: 12, fontWeight: "700" },
+  newPill: {
+    position: "absolute",
+    bottom: 10,
+    left: 10,
+    backgroundColor: "rgba(176,71,246,0.92)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  newPillText: { color: "#fff", fontSize: 11, fontWeight: "800", letterSpacing: 0.3 },
   wishlistBtn: {
     position: "absolute",
     top: 10,

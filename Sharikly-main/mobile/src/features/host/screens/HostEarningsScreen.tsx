@@ -1,5 +1,7 @@
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { getEarningsDashboard } from "@/services/api/endpoints/earnings";
+import { useAuthStore } from "@/store/authStore";
 import { useQuery } from "@tanstack/react-query";
 import { Wallet } from "lucide-react-native";
 import React from "react";
@@ -92,28 +94,34 @@ function EarningsChart({ data }: { data: { earnings: string; label: string }[] }
 }
 
 export function HostEarningsScreen(): React.ReactElement {
+  const hasSession = useAuthStore((s) => s.hasSession);
   const q = useQuery({
     queryKey: ["earnings", "dashboard"],
     queryFn: () => getEarningsDashboard(),
+    enabled: hasSession,
   });
   const dash: any = q.data;
   const monthly: any[] = dash?.chart?.monthly ?? [];
   const total = dash?.summary?.total_earnings ?? 0;
   const thisMonth = dash?.summary?.this_month_earnings ?? 0;
-  const lastMonth = dash?.summary?.last_month_earnings ?? 0;
+  // The API has no `last_month_earnings` field — derive it from the monthly chart
+  // (second-to-last point) instead of always rendering SAR 0.
+  const lastMonth = monthly.length >= 2 ? monthly[monthly.length - 2]?.earnings ?? 0 : 0;
   const rentals = dash?.summary?.rentals_count ?? 0;
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>Earnings</Text>
-        <Text style={styles.screenSub}>Your host earnings overview</Text>
-      </View>
+      <ScreenHeader title="Earnings" />
+      <Text style={[styles.screenSub, { paddingHorizontal: spacing.md, marginTop: 0, marginBottom: spacing.sm }]}>Your host earnings overview</Text>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {q.isPending ? (
           <View style={styles.center}>
             <Text style={styles.mutedText}>Loading earnings…</Text>
+          </View>
+        ) : q.isError ? (
+          <View style={styles.center}>
+            <Text style={styles.mutedText}>Couldn&apos;t load your earnings. Please try again later.</Text>
           </View>
         ) : (
           <>

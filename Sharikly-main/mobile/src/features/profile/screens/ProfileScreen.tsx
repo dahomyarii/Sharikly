@@ -2,9 +2,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, shadows, spacing, layout } from "@/core/theme/tokens";
 import type { ProfileStackParamList } from "@/navigation/types";
-import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { axiosInstance, buildApiUrl, performLogout } from "@/services/api/client";
 import { getEarningsDashboard } from "@/services/api/endpoints/earnings";
-import { clearStoredTokens } from "@/services/storage/tokenStore";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -14,7 +13,7 @@ import {
   Bell,
   ChevronRight,
   Settings,
-  ShieldCheck,
+  BadgeCheck,
   Star,
   User,
   AlertCircle,
@@ -24,13 +23,12 @@ import {
   Wallet,
   MessageSquare,
   Heart,
-  Camera,
-  Briefcase
 } from "lucide-react-native";
 import React, { useState, useCallback } from "react";
 import {
   ActivityIndicator,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -48,6 +46,8 @@ export function ProfileScreen(): React.ReactElement {
   const { hasSession, setHasSession } = useAuthStore();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const [logoutVisible, setLogoutVisible] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const userQ = useQuery({
     queryKey: ["auth", "me"],
@@ -65,7 +65,8 @@ export function ProfileScreen(): React.ReactElement {
   });
   const dash: any = earningsQ.data;
   const rentalsCount = dash?.summary?.rentals_count ?? 0;
-  const averageRating = dash?.summary?.rating ?? 0;
+  // Number(): the API serializes rating as a string (DRF DecimalField); "4.5".toFixed() throws.
+  const averageRating = Number(dash?.summary?.rating) || 0;
   const responseRate = user?.response_rate ?? 0;
   
   const superHostReqs = dash?.super_host?.requirements || [];
@@ -73,13 +74,23 @@ export function ProfileScreen(): React.ReactElement {
   const totalSteps = superHostReqs.length || 3;
   const superHostProgress = Math.min(100, Math.max(0, (completedSteps / totalSteps) * 100));
 
-  const handleLogout = async () => {
+  const openLogoutConfirm = () => {
+    hapticImpact();
+    setLogoutVisible(true);
+  };
+
+  const confirmSignOut = async () => {
+    setLoggingOut(true);
     hapticImpact();
     try {
-      await clearStoredTokens();
+      // Full logout: clears tokens AND the axios Authorization header. Plain
+      // clearStoredTokens left a stale bearer on axios defaults, so subsequent
+      // requests kept authenticating as the logged-out user until the next login.
+      await performLogout();
     } catch {
-      // ignore
+      // ignore — we still drop the local session below
     }
+    setLogoutVisible(false);
     setHasSession(false);
     queryClient.clear();
   };
@@ -152,11 +163,11 @@ export function ProfileScreen(): React.ReactElement {
 
   return (
     <View style={styles.container}>
-      <LinearGradient 
-        colors={['#EBDDFF', '#F8F5FF', '#FFFFFF']} 
+      <LinearGradient
+        colors={['#C4B0F5', '#E4D8FF', '#FFFFFF']}
         style={StyleSheet.absoluteFillObject}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.3 }}
+        end={{ x: 0, y: 0.32 }}
       />
       
       <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -197,9 +208,11 @@ export function ProfileScreen(): React.ReactElement {
                   </Text>
                 </View>
               )}
-              <View style={styles.verifiedBadge}>
-                <ShieldCheck size={12} color="#FFF" />
-              </View>
+              {user?.is_email_verified && (
+                <View style={styles.verifiedBadge}>
+                  <BadgeCheck size={26} color={colors.primary} fill={colors.primary} strokeWidth={1.5} stroke="#FFF" />
+                </View>
+              )}
             </View>
             <View style={styles.userDetails}>
               <Text style={styles.userName}>{user?.first_name || user?.username || 'User'} {user?.last_name || ''}</Text>
@@ -213,12 +226,6 @@ export function ProfileScreen(): React.ReactElement {
                   </Text>
                 </Text>
               </View>
-              {user?.is_email_verified && (
-                <View style={styles.trustScorePill}>
-                  <ShieldCheck size={14} color="#10B981" />
-                  <Text style={styles.trustScoreText}>Verified Account</Text>
-                </View>
-              )}
             </View>
           </View>
 
@@ -228,7 +235,7 @@ export function ProfileScreen(): React.ReactElement {
               onPress={() => navigation.navigate("HostArea")}
             >
               <LinearGradient
-                colors={['#7C3AED', '#5B21B6']}
+                colors={['#B047F6', '#7A5AFF']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.listEqGradient}
@@ -259,19 +266,19 @@ export function ProfileScreen(): React.ReactElement {
 
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Calendar size={22} color="#7C3AED" />
+                <Calendar size={22} color="#B047F6" />
                 <Text style={styles.statValue}>{rentalsCount}</Text>
                 <Text style={styles.statLabel}>Rentals{"\n"}completed</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Clock size={22} color="#7C3AED" />
+                <Clock size={22} color="#B047F6" />
                 <Text style={styles.statValue}>{responseRate}%</Text>
                 <Text style={styles.statLabel}>Response{"\n"}rate</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Star size={22} color="#7C3AED" />
+                <Star size={22} color="#B047F6" />
                 <Text style={styles.statValue}>{averageRating.toFixed(1)}</Text>
                 <Text style={styles.statLabel}>Average{"\n"}rating</Text>
               </View>
@@ -279,35 +286,35 @@ export function ProfileScreen(): React.ReactElement {
 
             <View style={styles.menuList}>
               <MenuItem 
-                icon={<Calendar size={20} color="#7C3AED" />} 
+                icon={<Calendar size={20} color="#B047F6" />} 
                 label="My Listings" 
                 value={user?.listings_count != null ? `${user.listings_count} item${user.listings_count !== 1 ? 's' : ''}` : "—"} 
                 onPress={() => navigation.navigate("HostArea")} 
               />
-              <MenuItem 
-                icon={<Calendar size={20} color="#7C3AED" />} 
-                label="My Bookings" 
-                value={user?.bookings_count != null ? `${user.bookings_count} booking${user.bookings_count !== 1 ? 's' : ''}` : "—"} 
-                onPress={() => navigation.navigate("HostArea")} 
+              <MenuItem
+                icon={<Calendar size={20} color="#B047F6" />}
+                label="My Bookings"
+                value={user?.bookings_count != null ? `${user.bookings_count} booking${user.bookings_count !== 1 ? 's' : ''}` : "—"}
+                onPress={() => (navigation as any).navigate("BookingsTab", { screen: "Bookings" })}
               />
               <MenuItem 
-                icon={<Wallet size={20} color="#7C3AED" />} 
+                icon={<Wallet size={20} color="#B047F6" />} 
                 label="Earnings" 
                 value={user?.total_earnings != null ? `SAR ${Number(user.total_earnings).toLocaleString('en-SA', { maximumFractionDigits: 0 })}` : "—"} 
                 onPress={() => navigation.navigate("HostArea")} 
               />
-              <MenuItem 
-                icon={<MessageSquare size={20} color="#7C3AED" />} 
-                label="Reviews" 
-                value="View feedback" 
-                onPress={() => navigation.navigate("HostArea")} 
+              <MenuItem
+                icon={<MessageSquare size={20} color="#B047F6" />}
+                label="Reviews"
+                value={user?.reviews_count != null ? `${user.reviews_count} review${user.reviews_count !== 1 ? 's' : ''}` : "—"}
+                onPress={() => user?.id && navigation.navigate("PublicProfile", { userId: user.id })}
               />
-              <MenuItem 
-                icon={<Heart size={20} color="#7C3AED" />} 
-                label="Saved Items" 
-                value="Favorites" 
-                onPress={() => navigation.navigate("Favorites")} 
-                isLast 
+              <MenuItem
+                icon={<Heart size={20} color="#B047F6" />}
+                label="Saved Items"
+                value={user?.saved_items_count != null ? `${user.saved_items_count} item${user.saved_items_count !== 1 ? 's' : ''}` : "—"}
+                onPress={() => navigation.navigate("Favorites")}
+                isLast
               />
             </View>
 
@@ -316,27 +323,28 @@ export function ProfileScreen(): React.ReactElement {
                 colors={['#F5F3FF', '#EDE9FE']}
                 style={StyleSheet.absoluteFillObject}
               />
+              <Image
+                source={require("../../../../assets/images/equipment_promo.png")}
+                style={styles.promoImage}
+                resizeMode="cover"
+              />
               <View style={styles.promoContent}>
                 <Text style={styles.promoTitle}>Start earning today!</Text>
                 <Text style={styles.promoSub}>List more equipment and reach more people around you.</Text>
-                <Pressable 
+                <Pressable
                   style={styles.promoBtn}
                   onPress={() => (navigation as any).navigate("ExploreTab", { screen: "CreateListing" })}
                 >
                   <Text style={styles.promoBtnText}>List Now</Text>
                 </Pressable>
               </View>
-              <View style={styles.promoImagesWrap}>
-                 <Camera size={40} color="#333" style={{ position: 'absolute', bottom: 10, right: 60, opacity: 0.8 }} />
-                 <Briefcase size={50} color="#555" style={{ position: 'absolute', bottom: 0, right: 10, opacity: 0.8 }} />
-              </View>
             </View>
 
             <View style={{ marginTop: spacing.xl, marginBottom: spacing.xxl }}>
-               <PrimaryButton 
-                 label="Log Out" 
-                 onPress={handleLogout} 
-                 variant="outline" 
+               <PrimaryButton
+                 label="Log Out"
+                 onPress={openLogoutConfirm}
+                 variant="outline"
                  style={{ borderColor: colors.destructive }}
                  textStyle={{ color: colors.destructive }}
                />
@@ -345,6 +353,43 @@ export function ProfileScreen(): React.ReactElement {
             <View style={{ height: layout.tabBarHeight + 20 }} />
           </View>
         </ScrollView>
+
+        {/* Log out confirmation */}
+        <Modal
+          visible={logoutVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setLogoutVisible(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Log out</Text>
+              <Text style={styles.modalBody}>
+                Are you sure you want to log out of your account?
+              </Text>
+              <View style={styles.modalActions}>
+                <Pressable
+                  style={[styles.modalBtn, styles.modalBtnGhost]}
+                  onPress={() => setLogoutVisible(false)}
+                  disabled={loggingOut}
+                >
+                  <Text style={styles.modalBtnGhostText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalBtn, styles.modalBtnDanger]}
+                  onPress={confirmSignOut}
+                  disabled={loggingOut}
+                >
+                  {loggingOut ? (
+                    <ActivityIndicator color="#FFF" size="small" />
+                  ) : (
+                    <Text style={styles.modalBtnDangerText}>Log out</Text>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </View>
   );
@@ -399,7 +444,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "rgba(124, 58, 237, 0.08)",
+    backgroundColor: "rgba(176, 71, 246, 0.08)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: spacing.xl,
@@ -482,16 +527,8 @@ const styles = StyleSheet.create({
   avatarLetter: { color: "#FFF", fontSize: 28, fontWeight: "800" },
   verifiedBadge: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: colors.primary,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFF',
+    bottom: -2,
+    right: -2,
   },
   userDetails: {
     flex: 1,
@@ -516,23 +553,6 @@ const styles = StyleSheet.create({
   reviewsText: {
     fontWeight: '400',
     color: colors.textSecondary,
-  },
-  trustScorePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ECFDF5',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-    gap: 4,
-    borderWidth: 1,
-    borderColor: '#D1FAE5',
-  },
-  trustScoreText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#059669',
   },
 
   listEqWrapper: {
@@ -594,7 +614,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(124, 58, 237, 0.1)',
+    borderColor: 'rgba(176, 71, 246, 0.1)',
     ...shadows.card,
     shadowOpacity: 0.03,
   },
@@ -745,12 +765,70 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
-  promoImagesWrap: {
+  promoImage: {
     position: 'absolute',
     right: 0,
     bottom: 0,
-    width: '40%',
+    width: '52%',
     height: '100%',
-    opacity: 0.9,
+  },
+
+  // Log out confirmation modal
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 8, 40, 0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: '#FFFFFF',
+    borderRadius: radii.xl,
+    padding: spacing.lg,
+    ...shadows.cardHeavy,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.foreground,
+    marginBottom: 8,
+  },
+  modalBody: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: spacing.md,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 4,
+  },
+  modalBtn: {
+    minWidth: 96,
+    height: 44,
+    borderRadius: radii.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  modalBtnGhost: {
+    backgroundColor: '#F3F4F6',
+  },
+  modalBtnGhostText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.foreground,
+  },
+  modalBtnDanger: {
+    backgroundColor: colors.destructive,
+  },
+  modalBtnDangerText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

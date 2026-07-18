@@ -17,6 +17,11 @@ class User(AbstractUser):
     payout_bank = models.CharField(max_length=100, blank=True, null=True)
     payout_schedule = models.CharField(max_length=20, default="WEEKLY")
 
+    # Set when the account is deleted (anonymize-and-retain). The row is kept
+    # as an anonymized tombstone so counterparties' bookings/reviews/chats stay
+    # intact; is_active=False is the functional login gate.
+    deleted_at = models.DateTimeField(null=True, blank=True, default=None)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
 
