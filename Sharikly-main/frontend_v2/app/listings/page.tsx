@@ -462,7 +462,7 @@ function ListingsPageContent() {
                     }
                   }}
                   options={[
-                    { value: "", label: t("all_categories") },
+                    { value: "", label: t("all categories") },
                     ...(categories || []).map((cat: any) => ({ value: String(cat.id), label: cat.name })),
                   ]}
                   triggerClassName={`${selectClasses} h-auto sm:h-auto`}

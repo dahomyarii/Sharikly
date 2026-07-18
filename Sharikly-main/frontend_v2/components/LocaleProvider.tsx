@@ -2,7 +2,6 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-import { translations, type Lang } from "./translations";
 
 type TFn = (key: string) => string;
 
@@ -41,7 +40,8 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   }, [lang]);
 
   const t: TFn = (key) => {
-    return translations[lang][key] ?? translations["en"][key] ?? key;
+    const k = key as keyof typeof translations["en"];
+    return translations[lang][k] ?? translations["en"][k] ?? key;
   };
 
   if (!ready) return null; // prevents flash

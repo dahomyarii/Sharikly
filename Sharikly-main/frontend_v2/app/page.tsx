@@ -200,7 +200,7 @@ export default function HomePage() {
                     value={heroCategory}
                     onChange={setHeroCategory}
                     options={categories}
-                    placeholder={t("all_categories")}
+                    placeholder={t("all categories")}
                   />
                   <div className="relative">
                     <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
