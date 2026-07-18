@@ -2,9 +2,91 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-import { translations, type Lang } from "./translations";
 
-type TFn = (key: string) => string;�...",
+type Lang = "en" | "ar";
+type TFn = (key: string) => string;
+const translations = {
+  en: {
+    // General
+    welcome_back: "Welcome back",
+    get_started: "Get started",
+    home: "Home",
+    explore: "Explore",
+    notifications: "Notifications",
+    no_notifications: "No notifications yet",
+
+    // Language
+    language: "Language",
+    english: "English",
+    arabic: "Arabic",
+    select_language: "Select language",
+
+    // Pages
+    about: "About",
+    about_ekra: "About EKRA",
+    our_mission: "Our mission",
+    why_ekra: "Why EKRA?",
+    mission_text:
+      "We believe in empowering communities through sharing. Our platform makes it easy for people to rent and share items and services.",
+    safe_transactions: "Safe and trusted transactions",
+    easy_to_use: "Easy-to-use platform",
+    community_driven: "Community-driven approach",
+    verified_sellers: "Verified sellers and customers",
+    ekra_description:
+      "EKRA is a peer-to-peer marketplace connecting people who want to share services and items.",
+
+    // Search
+    search: "Search",
+    search_placeholder: "Search...",
+    filter: "Filter",
+    filter_results: "Filter results",
+
+    // Chat & Messages
+    messages: "Messages",
+    chat: "Chat",
+    send_message: "Send message",
+    message: "Message",
+    reply: "Reply",
+    no_messages: "No messages yet",
+
+    // Booking
+    booking: "Booking",
+    request_booking: "Request booking",
+    my_bookings: "My bookings",
+    confirm_booking: "Confirm booking",
+    cancel_booking: "Cancel booking",
+    booking_confirmed: "Booking confirmed successfully",
+
+    // Ratings & Reviews
+    rating: "Rating",
+    review: "Review",
+    reviews: "Reviews",
+    leave_review: "Leave a review",
+    no_reviews: "No reviews yet",
+    lender: "Lender",
+    book_now: "Book now",
+    // view: "View", // Removed duplicate
+    listing: "Listing",
+
+    // Categories
+    cameras: "Cameras",
+    lenses: "Lenses",
+    gear: "Gear",
+    tools: "Tools",
+    furniture: "Furniture",
+    clothing: "Clothing",
+    electronics: "Electronics",
+
+    // Misc
+    loading_favorites: "Loading favorites...",
+    something_went_wrong: "Something went wrong",
+  },
+  ar: {
+    // General
+    welcome_back: "أهلاً بعودتك",
+    get_started: "ابدأ الآن",
+    home: "الرئيسية",
+    explore: "استكشف",
     notifications: "الإشعارات",
     no_notifications: "لا توجد إشعارات بعد",
 
@@ -111,7 +193,8 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   }, [lang]);
 
   const t: TFn = (key) => {
-    return translations[lang][key] ?? translations["en"][key] ?? key;
+    const k = key as keyof typeof translations["en"];
+    return translations[lang][k] ?? translations["en"][k] ?? key;
   };
 
   if (!ready) return null; // prevents flash

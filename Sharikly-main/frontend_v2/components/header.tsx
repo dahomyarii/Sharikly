@@ -485,7 +485,7 @@ export default function Header() {
                   onClick={() => setShowLogin(true)}
                   className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-accent/70 hover:text-foreground"
                 >
-                  {t("sign_in") || "Log In"}
+                  {t("sign in") || "Log In"}
                 </button>
                 <button
                   onClick={() => setShowSignup(true)}
@@ -763,7 +763,7 @@ export default function Header() {
                   }}
                   className="mb-3 w-full rounded-full border border-border bg-white px-4 py-3 text-sm font-medium text-foreground"
                 >
-                  {t("sign_in") || "Log in"}
+                  {t("sign in") || "Log in"}
                 </button>
                 <button
                   type="button"
