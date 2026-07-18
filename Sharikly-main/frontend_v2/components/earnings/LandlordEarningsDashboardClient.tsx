@@ -71,7 +71,7 @@ function EarningsSVGChart({ points }: { points: EarningsPoint[] }) {
   const data = points.slice(-6) // last 6 months
   if (!data.length) {
     return (
-      <div className="flex h-48 items-center justify-center text-sm text-slate-400">
+      <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
         No earnings data yet
       </div>
     )
@@ -118,7 +118,7 @@ function EarningsSVGChart({ points }: { points: EarningsPoint[] }) {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-foreground">Earnings Chart</h3>
         {lastGrowth !== null && (
-          <span className={`text-sm font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full ${lastGrowth >= 0 ? "text-emerald-600 bg-emerald-50" : "text-red-500 bg-red-50"}`}>
+          <span className={`text-sm font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full ${lastGrowth >= 0 ? "text-success bg-success/15" : "text-red-500 bg-red-50"}`}>
             {lastGrowth >= 0 ? "▲" : "▼"} {Math.abs(lastGrowth)}%
           </span>
         )}
@@ -393,25 +393,25 @@ export function LandlordEarningsDashboardClient() {
         label: "Rentals",
         value: `${data.summary.rentals_count.toLocaleString()}`,
         icon: Camera,
-        iconBg: "bg-emerald-500/10",
-        iconColor: "text-emerald-500",
+        iconBg: "bg-success/15",
+        iconColor: "text-success",
         accent: null,
       },
       {
         label: "Monthly",
         value: formatCompactSar(data.summary.this_month_earnings),
         icon: Wallet,
-        iconBg: "bg-emerald-500/10",
-        iconColor: "text-emerald-500",
+        iconBg: "bg-success/15",
+        iconColor: "text-success",
         accent: growth !== null ? `${growth >= 0 ? "▲" : "▼"} ${Math.abs(growth)}%` : null,
-        accentColor: growth !== null && growth >= 0 ? "text-emerald-500" : "text-red-500",
+        accentColor: growth !== null && growth >= 0 ? "text-success" : "text-red-500",
       },
       {
         label: "Bookings on your items",
         value: `${activeBookings}`,
         icon: CalendarDays,
-        iconBg: "bg-violet-500/10",
-        iconColor: "text-violet-500",
+        iconBg: "bg-primary/10",
+        iconColor: "text-primary",
         accent: null,
       },
       {
@@ -449,26 +449,26 @@ export function LandlordEarningsDashboardClient() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#f3edff] py-8">
+      <div className="min-h-screen bg-background py-8">
         <div className="mx-auto max-w-[1000px] px-3 sm:px-6 lg:px-8">
           {/* Skeleton */}
-          <div className="grid grid-cols-4 gap-4 mb-6 mt-16">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 mt-16">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-24 rounded-3xl bg-white/60 animate-pulse" />
+              <div key={i} className="h-24 rounded-3xl bg-card animate-pulse" />
             ))}
           </div>
-          <div className="grid grid-cols-[1.8fr_1fr] gap-4 mb-6">
-            <div className="h-64 rounded-3xl bg-white/60 animate-pulse" />
-            <div className="h-64 rounded-3xl bg-white/60 animate-pulse" />
+          <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-4 mb-6">
+            <div className="h-64 rounded-3xl bg-card animate-pulse" />
+            <div className="h-64 rounded-3xl bg-card animate-pulse" />
           </div>
-          <div className="grid grid-cols-[1.8fr_1fr] gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-4">
             <div className="space-y-4">
-              <div className="h-32 rounded-3xl bg-white/60 animate-pulse" />
-              <div className="h-32 rounded-3xl bg-white/60 animate-pulse" />
+              <div className="h-32 rounded-3xl bg-card animate-pulse" />
+              <div className="h-32 rounded-3xl bg-card animate-pulse" />
             </div>
             <div className="space-y-4">
-              <div className="h-40 rounded-3xl bg-white/60 animate-pulse" />
-              <div className="h-40 rounded-3xl bg-white/60 animate-pulse" />
+              <div className="h-40 rounded-3xl bg-card animate-pulse" />
+              <div className="h-40 rounded-3xl bg-card animate-pulse" />
             </div>
           </div>
         </div>
@@ -478,13 +478,13 @@ export function LandlordEarningsDashboardClient() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-[#f3edff] flex items-center justify-center">
-        <Card className="rounded-3xl border-none shadow-lg bg-white/90 max-w-sm w-full mx-4">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="rounded-3xl border-none shadow-lg bg-card max-w-sm w-full mx-4">
           <CardContent className="p-8 text-center">
-            <ShieldCheck className="h-12 w-12 text-violet-500 mx-auto mb-4" />
+            <ShieldCheck className="h-12 w-12 text-primary mx-auto mb-4" />
             <h2 className="text-xl font-bold text-foreground mb-2">Sign in to view your dashboard</h2>
             <p className="text-sm text-muted-foreground mb-6">Track your earnings, bookings, and ranking in one place.</p>
-            <Button className="w-full rounded-xl bg-violet-500 hover:bg-violet-600" onClick={() => router.push("/auth/login")}>
+            <Button className="w-full rounded-xl bg-primary hover:bg-primary/90" onClick={() => router.push("/auth/login")}>
               Go to Login
             </Button>
           </CardContent>
@@ -495,13 +495,13 @@ export function LandlordEarningsDashboardClient() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#f3edff] flex items-center justify-center">
-        <Card className="rounded-3xl border-none shadow-lg bg-white/90 max-w-sm w-full mx-4">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="rounded-3xl border-none shadow-lg bg-card max-w-sm w-full mx-4">
           <CardContent className="p-8 text-center">
             <X className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-foreground mb-2">Failed to load dashboard</h2>
             <p className="text-sm text-muted-foreground mb-6">There was a problem loading your dashboard data. Please try again.</p>
-            <Button className="w-full rounded-xl bg-violet-500 hover:bg-violet-600" onClick={() => window.location.reload()}>
+            <Button className="w-full rounded-xl bg-primary hover:bg-primary/90" onClick={() => window.location.reload()}>
               Reload
             </Button>
           </CardContent>
@@ -511,7 +511,7 @@ export function LandlordEarningsDashboardClient() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f3edff] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_60%)] py-5 sm:py-8 font-sans pb-20">
+    <div className="min-h-screen bg-background bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_60%)] py-5 sm:py-8 font-sans pb-20">
       <div className="mx-auto max-w-[1000px] px-3 sm:px-6 lg:px-8">
 
         {/* Tabs */}
@@ -523,7 +523,7 @@ export function LandlordEarningsDashboardClient() {
                 key={tab.href}
                 type="button"
                 onClick={() => router.push(tab.href)}
-                className={`whitespace-nowrap pb-2 px-2 border-b-[3px] transition-colors ${isActive ? "text-violet-900 border-violet-400 font-semibold" : "text-muted-foreground border-transparent hover:text-foreground"}`}
+                className={`whitespace-nowrap pb-2 px-2 border-b-[3px] transition-colors ${isActive ? "text-primary border-primary font-semibold" : "text-muted-foreground border-transparent hover:text-foreground"}`}
               >
                 {tab.label}
               </button>
@@ -538,7 +538,7 @@ export function LandlordEarningsDashboardClient() {
         <div className="grid gap-6 md:grid-cols-[1.2fr_1fr] mb-6 items-center">
           <div className="flex flex-col justify-center pr-4">
             <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2 mb-2">
-              Ekra <span className="text-violet-500 font-medium">Dashboard</span>
+              Ekra <span className="text-primary font-medium">Dashboard</span>
             </h1>
             <h2 className="text-2xl text-foreground font-medium mb-3">
               Start earning by <span className="font-bold">Your Items</span> on Ekra
@@ -550,7 +550,7 @@ export function LandlordEarningsDashboardClient() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Button
-                className="rounded-xl bg-violet-500 hover:bg-violet-600 text-white px-6 py-5 shadow-lg shadow-violet-500/25 text-base"
+                className="rounded-xl bg-primary hover:bg-primary/90 text-white px-6 py-5 shadow-[var(--shadow-brand)] text-base"
                 onClick={openCreateItemModal}
               >
                 Start Earning Today <ArrowRight className="ml-2 h-4 w-4" />
@@ -559,9 +559,9 @@ export function LandlordEarningsDashboardClient() {
           </div>
 
           {/* Ranking Card */}
-          <Card className="rounded-[24px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.05)] bg-white/80 backdrop-blur">
+          <Card className="rounded-[24px] border-none shadow-[var(--soft-shadow)] bg-card backdrop-blur">
             <CardContent className="p-6 relative">
-              <div className="absolute top-4 right-4 text-emerald-400">
+              <div className="absolute top-4 right-4 text-success">
                 <TrendingUp className="h-8 w-8" strokeWidth={3} />
               </div>
               <p className="text-sm text-foreground font-medium">Your ranking this month</p>
@@ -569,9 +569,9 @@ export function LandlordEarningsDashboardClient() {
                 <p className="text-3xl font-bold text-foreground">#{data.ranking.position}</p>
                 <p className="text-sm text-muted-foreground">of {data.ranking.total_lessors} hosts</p>
               </div>
-              <div className="h-2.5 bg-[#e2e8f0] rounded-full w-3/4 mb-4 overflow-hidden">
+              <div className="h-2.5 bg-muted rounded-full w-3/4 mb-4 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-emerald-300 to-emerald-500 transition-all"
+                  className="h-full bg-gradient-to-r from-success/70 to-success transition-all"
                   style={{
                     width: `${data.ranking.total_lessors > 0
                       ? Math.max(5, Math.round(((data.ranking.total_lessors - data.ranking.position + 1) / data.ranking.total_lessors) * 100))
@@ -582,7 +582,7 @@ export function LandlordEarningsDashboardClient() {
               {/* Mini chart from monthly data */}
               {data.chart.monthly.length > 1 ? (
                 <div className="mt-3">
-                  <svg viewBox="0 0 200 50" className="w-full h-[60px] text-violet-500" preserveAspectRatio="none">
+                  <svg viewBox="0 0 200 50" className="w-full h-[60px] text-primary" preserveAspectRatio="none">
                     {(() => {
                       const pts = data.chart.monthly.slice(-5)
                       const vals = pts.map((p) => parseFloat(p.earnings) || 0)
@@ -629,7 +629,7 @@ export function LandlordEarningsDashboardClient() {
           {statCards.map((card, idx) => {
             const Icon = card.icon
             return (
-              <Card key={idx} className="rounded-[20px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur">
+              <Card key={idx} className="rounded-[20px] border-none shadow-[var(--soft-shadow)] bg-card backdrop-blur">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2.5 mb-2">
                     <div className={`p-2 rounded-xl ${card.iconBg} ${card.iconColor}`}>
@@ -643,7 +643,7 @@ export function LandlordEarningsDashboardClient() {
                       )}
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium">{card.label}</p>
+                  <p className="text-xs text-muted-foreground font-medium">{card.label}</p>
                 </CardContent>
               </Card>
             )
@@ -652,13 +652,13 @@ export function LandlordEarningsDashboardClient() {
 
         {/* Chart and Milestone */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-4 mb-5">
-          <Card className="rounded-[24px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur">
+          <Card className="rounded-[24px] border-none shadow-[var(--soft-shadow)] bg-card backdrop-blur">
             <CardContent className="p-6">
               <EarningsSVGChart points={data.chart.monthly} />
             </CardContent>
           </Card>
 
-          <Card className="rounded-[24px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur">
+          <Card className="rounded-[24px] border-none shadow-[var(--soft-shadow)] bg-card backdrop-blur">
             <CardContent className="p-6 flex flex-col justify-between h-full gap-4">
               <div className="w-full">
                 <h3 className="text-base font-semibold text-foreground mb-1">Next Milestone</h3>
@@ -667,9 +667,9 @@ export function LandlordEarningsDashboardClient() {
                     ? `Reach ${milestone.remaining} more ${milestone.remaining === 1 ? "rental" : "rentals"}`
                     : "You qualify for Super Host!"}
                 </p>
-                <div className="mt-3 bg-[#e2e8f0] h-2.5 rounded-full overflow-hidden w-full">
+                <div className="mt-3 bg-muted h-2.5 rounded-full overflow-hidden w-full">
                   <div
-                    className="bg-gradient-to-r from-emerald-300 to-emerald-500 h-full transition-all duration-700"
+                    className="bg-gradient-to-r from-success/70 to-success h-full transition-all duration-700"
                     style={{ width: `${milestone?.progress ?? 0}%` }}
                   />
                 </div>
@@ -678,7 +678,7 @@ export function LandlordEarningsDashboardClient() {
                 </div>
               </div>
 
-              <div className="rounded-[16px] bg-[#fbf9ff] border border-violet-100 p-4 flex items-start gap-3 shadow-sm">
+              <div className="rounded-[16px] bg-primary/10 border border-primary/20 p-4 flex items-start gap-3 shadow-sm">
                 <div className="h-10 w-10 shrink-0 bg-gradient-to-br from-amber-300 to-yellow-400 rounded-full flex items-center justify-center shadow-sm">
                   <Trophy className="h-5 w-5 text-white" />
                 </div>
@@ -693,7 +693,7 @@ export function LandlordEarningsDashboardClient() {
               </div>
 
               <Button
-                className="w-full rounded-[14px] bg-violet-500 hover:bg-violet-600 text-white shadow-md py-5 font-semibold"
+                className="w-full rounded-[14px] bg-primary hover:bg-primary/90 text-white shadow-md py-5 font-semibold"
                 onClick={openCreateItemModal}
               >
                 <PlusCircle className="h-4 w-4 mr-2" /> Add Item
@@ -709,9 +709,9 @@ export function LandlordEarningsDashboardClient() {
             {(topItems.length > 0 ? topItems : [null, null]).map((item, idx) => {
               const imageUrl = item ? getImageUrl(item.images?.[0]?.image) : null
               return (
-                <Card key={idx} className="rounded-[24px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur overflow-hidden h-[120px]">
+                <Card key={idx} className="rounded-[24px] border-none shadow-[var(--soft-shadow)] bg-card backdrop-blur overflow-hidden h-[120px]">
                   <CardContent className="p-5 h-full flex flex-col justify-center">
-                    <h3 className="text-xs font-medium text-slate-500 mb-3">Your Highest Earning Item</h3>
+                    <h3 className="text-xs font-medium text-muted-foreground mb-3">Your Highest Earning Item</h3>
                     {item ? (
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -724,7 +724,7 @@ export function LandlordEarningsDashboardClient() {
                           </div>
                           <div>
                             <p className="font-semibold text-foreground text-[14px] line-clamp-1">{item.title}</p>
-                            <p className="text-[12px] text-slate-500">
+                            <p className="text-[12px] text-muted-foreground">
                               {formatSar(item.price_per_day)}/day
                             </p>
                           </div>
@@ -732,7 +732,7 @@ export function LandlordEarningsDashboardClient() {
                         {idx === 0 && data.summary.highest_earning_item && (
                           <Button
                             size="sm"
-                            className="rounded-[10px] bg-violet-500 text-white hover:bg-violet-600 text-xs px-3 h-8 shrink-0"
+                            className="rounded-[10px] bg-primary text-white hover:bg-primary/90 text-xs px-3 h-8 shrink-0"
                             onClick={() => router.push(`/listings/${data.summary.highest_earning_item!.id}`)}
                           >
                             Promote Item
@@ -743,7 +743,7 @@ export function LandlordEarningsDashboardClient() {
                       <button
                         type="button"
                         onClick={openCreateItemModal}
-                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-violet-500 transition-colors"
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
                       >
                         <PlusCircle className="h-4 w-4" /> Add your first item to start earning
                       </button>
@@ -757,9 +757,9 @@ export function LandlordEarningsDashboardClient() {
           {/* Right Column */}
           <div className="flex flex-col gap-4">
             {/* Local Rental Requests */}
-            <Card className="rounded-[24px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur">
+            <Card className="rounded-[24px] border-none shadow-[var(--soft-shadow)] bg-card backdrop-blur">
               <CardContent className="p-5">
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-4 pb-2 border-b border-slate-100">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-4 pb-2 border-b border-border">
                   Local Rental Requests <Flame className="h-4 w-4 text-orange-400 fill-orange-400" />
                 </h3>
                 {localRequests.length > 0 ? (
@@ -767,19 +767,19 @@ export function LandlordEarningsDashboardClient() {
                     {localRequests.map((req, idx) => (
                       <div key={req.id} className="flex items-center justify-between group">
                         <div className="flex items-center gap-3">
-                          <div className="p-1.5 rounded-lg bg-violet-100 text-violet-600">
+                          <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
                             <Camera className="h-3.5 w-3.5" />
                           </div>
                           <div>
-                            <p className="text-[13px] font-medium text-slate-700 line-clamp-1">{req.title}</p>
+                            <p className="text-[13px] font-medium text-foreground line-clamp-1">{req.title}</p>
                             {idx === 0 && (
-                              <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                              <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
                                 <CalendarDays className="h-3 w-3" /> SAR {parseFloat(req.price_per_day).toFixed(0)}/day
                               </p>
                             )}
                           </div>
                         </div>
-                        {idx > 0 && <TrendingUp className="h-5 w-5 text-emerald-400 shrink-0" strokeWidth={2.5} />}
+                        {idx > 0 && <TrendingUp className="h-5 w-5 text-success shrink-0" strokeWidth={2.5} />}
                       </div>
                     ))}
                   </div>
@@ -792,11 +792,11 @@ export function LandlordEarningsDashboardClient() {
             </Card>
 
             {/* Trending Searches */}
-            <Card className="rounded-[24px] border-none shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white/80 backdrop-blur">
+            <Card className="rounded-[24px] border-none shadow-[var(--soft-shadow)] bg-card backdrop-blur">
               <CardContent className="p-5 pt-4">
-                <h3 className="text-[13px] font-semibold text-foreground flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                <h3 className="text-[13px] font-semibold text-foreground flex items-center justify-between mb-4 pb-2 border-b border-border">
                   Trending Searches on Ekra
-                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                 </h3>
                 {trendingSearches.length > 0 ? (
                   <div className="space-y-3">
@@ -805,15 +805,15 @@ export function LandlordEarningsDashboardClient() {
                         key={item.id}
                         type="button"
                         onClick={() => router.push(`/listings?category=${item.id}`)}
-                        className="flex items-center justify-between text-slate-600 cursor-pointer hover:bg-slate-50 p-1.5 -mx-1.5 rounded-lg transition-colors w-full text-left"
+                        className="flex items-center justify-between text-foreground cursor-pointer hover:bg-muted p-1.5 -mx-1.5 rounded-lg transition-colors w-full text-left"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="h-7 w-7 bg-slate-100 rounded-md flex items-center justify-center text-base">
+                          <div className="h-7 w-7 bg-muted rounded-md flex items-center justify-center text-base">
                             {item.icon || "🔍"}
                           </div>
                           <p className="text-[13px] font-medium">{item.name}</p>
                         </div>
-                        <ChevronRight className="h-3.5 w-3.5 text-slate-300 shrink-0" />
+                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -852,7 +852,7 @@ export function LandlordEarningsDashboardClient() {
                   <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { if (e.target.files?.length) addItemImages(e.target.files) }} />
                 </label>
                 {itemImages.length > 0 && (
-                  <div className="mt-3 grid grid-cols-4 gap-2">
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {itemImages.map((img) => (
                       <div key={img.id} className="relative overflow-hidden rounded-[16px] border border-border/60">
                         <img src={img.preview} alt="Preview" className="h-20 w-full object-cover" />

@@ -301,8 +301,8 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-black" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-foreground" />
       </div>
     )
   }
@@ -310,12 +310,12 @@ export default function SettingsPage() {
   if (!user) {
     const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('access_token')
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center max-w-sm">
           {fetchError ? (
             <>
-              <p className="text-gray-600 mb-2">{fetchError}</p>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-muted-foreground mb-2">{fetchError}</p>
+              <p className="text-sm text-muted-foreground mb-4">
                 You can try again or log out and log in again.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
@@ -336,12 +336,12 @@ export default function SettingsPage() {
             </>
           ) : hasToken ? (
             <>
-              <p className="text-gray-600 mb-4">Loading your profile failed. Please try again.</p>
+              <p className="text-muted-foreground mb-4">Loading your profile failed. Please try again.</p>
               <Button onClick={() => fetchUser()}>Try again</Button>
             </>
           ) : (
             <>
-              <p className="text-gray-600 mb-4">Please log in to access settings</p>
+              <p className="text-muted-foreground mb-4">Please log in to access settings</p>
               <Button onClick={() => router.push('/auth/login')}>Log In</Button>
             </>
           )}
@@ -355,8 +355,8 @@ export default function SettingsPage() {
   const renderProfile = () => (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">{t('profile')}</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-xl font-semibold text-foreground">{t('profile')}</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Manage your public profile information.
         </p>
       </div>
@@ -364,7 +364,7 @@ export default function SettingsPage() {
       {/* Avatar */}
       <div className="flex items-center gap-5">
         <div className="relative">
-          <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+          <div className="w-20 h-20 rounded-full overflow-hidden bg-muted flex items-center justify-center">
             {avatarPreview ? (
               <img
                 src={getFullImageUrl(avatarPreview)}
@@ -372,12 +372,12 @@ export default function SettingsPage() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <User className="w-10 h-10 text-gray-400" />
+              <User className="w-10 h-10 text-muted-foreground" />
             )}
           </div>
           <button
             onClick={() => avatarInputRef.current?.click()}
-            className="absolute -bottom-1 -right-1 bg-black text-white p-1.5 rounded-full hover:bg-gray-800 transition-colors"
+            className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground p-1.5 rounded-full hover:bg-primary/90 transition-colors"
           >
             <Camera className="w-3.5 h-3.5" />
           </button>
@@ -390,8 +390,8 @@ export default function SettingsPage() {
           />
         </div>
         <div>
-          <p className="font-medium text-gray-900">{user.username}</p>
-          <p className="text-sm text-gray-500">{user.email}</p>
+          <p className="font-medium text-foreground">{user.username}</p>
+          <p className="text-sm text-muted-foreground">{user.email}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button
               type="button"
@@ -418,7 +418,7 @@ export default function SettingsPage() {
 
       {/* Username */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label className="block text-sm font-medium text-muted-foreground mb-1.5">
           {t('username')}
         </label>
         <Input
@@ -432,7 +432,7 @@ export default function SettingsPage() {
 
       {/* Bio */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label className="block text-sm font-medium text-muted-foreground mb-1.5">
           {t('bio')}
         </label>
         <textarea
@@ -441,7 +441,7 @@ export default function SettingsPage() {
             setProfileForm((p) => ({ ...p, bio: e.target.value }))
           }
           rows={4}
-          className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm"
+          className="w-full max-w-md px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm"
           placeholder="Tell us about yourself..."
         />
       </div>
@@ -459,21 +459,21 @@ export default function SettingsPage() {
   const renderAccount = () => (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">{t('account')}</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-xl font-semibold text-foreground">{t('account')}</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Manage your account security and email.
         </p>
       </div>
 
       {/* Email (read-only) */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label className="block text-sm font-medium text-muted-foreground mb-1.5">
           {t('email')}
         </label>
         <div className="flex items-center gap-3 max-w-md">
-          <Input value={user.email} disabled className="flex-1 bg-gray-50" />
+          <Input value={user.email} disabled className="flex-1 bg-muted" />
           {user.is_email_verified && (
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full whitespace-nowrap">
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/15 border border-success/30 px-2.5 py-1 rounded-full whitespace-nowrap">
               <Check className="w-3 h-3" /> Verified
             </span>
           )}
@@ -481,15 +481,15 @@ export default function SettingsPage() {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-gray-200 pt-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="border-t border-border pt-6">
+        <h3 className="text-lg font-medium text-foreground mb-4">
           {t('change_password')}
         </h3>
 
         <div className="space-y-4 max-w-md">
           {/* Current password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-muted-foreground mb-1.5">
               {t('current_password')}
             </label>
             <div className="relative">
@@ -504,7 +504,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setShowOldPassword(!showOldPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showOldPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -517,7 +517,7 @@ export default function SettingsPage() {
 
           {/* New password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-muted-foreground mb-1.5">
               {t('new_password')}
             </label>
             <div className="relative">
@@ -532,7 +532,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showNewPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -545,7 +545,7 @@ export default function SettingsPage() {
 
           {/* Confirm password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-muted-foreground mb-1.5">
               {t('confirm_password')}
             </label>
             <Input
@@ -560,7 +560,7 @@ export default function SettingsPage() {
             />
             {passwordForm.confirm_password &&
               passwordForm.new_password !== passwordForm.confirm_password && (
-                <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+                <p className="text-xs text-destructive mt-1">Passwords do not match</p>
               )}
           </div>
 
@@ -600,24 +600,24 @@ export default function SettingsPage() {
   const renderBlocked = () => (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">{t('blocked_users')}</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-xl font-semibold text-foreground">{t('blocked_users')}</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Users you have blocked. They cannot see you in chat or message you.
         </p>
       </div>
       {blockedLoading ? (
-        <p className="text-sm text-gray-500">Loading...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       ) : blockedUsers.length === 0 ? (
-        <p className="text-sm text-gray-500">You have not blocked anyone.</p>
+        <p className="text-sm text-muted-foreground">You have not blocked anyone.</p>
       ) : (
         <ul className="space-y-3">
           {blockedUsers.map((u: any) => (
             <li
               key={u.id}
-              className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+              className="flex items-center justify-between py-2 border-b border-border last:border-0"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                   {u.avatar ? (
                     <img
                       src={u.avatar.startsWith('http') ? u.avatar : `${API?.replace('/api', '')}${u.avatar}`}
@@ -625,11 +625,11 @@ export default function SettingsPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User className="w-5 h-5 text-gray-400" />
+                    <User className="w-5 h-5 text-muted-foreground" />
                   )}
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">{u.username || u.email}</p>
+                  <p className="font-medium text-foreground">{u.username || u.email}</p>
                 </div>
               </div>
               <Button
@@ -666,8 +666,8 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Theme */}
-      <div className="border border-border/70 bg-card/40 rounded-2xl p-4">
+      {/* Theme — hidden (light-only launch); code kept intact */}
+      <div className="hidden border border-border/70 bg-card/40 rounded-2xl p-4">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-foreground">Dark mode</p>
@@ -712,7 +712,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Notifications */}
-      <div className="border-t border-gray-200 pt-5 mt-2">
+      <div className="border-t border-border pt-5 mt-2">
         <h3 className="text-sm font-semibold text-foreground mb-3">{t('notifications') || 'Notifications'}</h3>
         {notifPrefsLoading ? (
           <p className="text-xs text-muted-foreground">Loading preferences…</p>
@@ -796,13 +796,13 @@ export default function SettingsPage() {
   const renderDangerZone = () => (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-red-600">{t('danger_zone')}</h2>
+        <h2 className="text-xl font-semibold text-destructive">{t('danger_zone')}</h2>
         <p className="text-sm text-muted-foreground mt-1">
           Irreversible actions on your account.
         </p>
       </div>
 
-      <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/40 p-5">
+      <Card className="border-destructive/30 bg-destructive/10 dark:bg-red-950/40 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h3 className="font-medium text-foreground">{t('delete_account')}</h3>
@@ -813,7 +813,7 @@ export default function SettingsPage() {
           <Button
             variant="outline"
             onClick={() => setShowDeleteModal(true)}
-            className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 whitespace-nowrap"
+            className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive whitespace-nowrap"
           >
             {t('delete_account')}
           </Button>
@@ -825,8 +825,8 @@ export default function SettingsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <Card className="w-full max-w-md p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
               </div>
               <h3 className="text-lg font-semibold text-foreground">
                 {t('delete_account')}
@@ -858,9 +858,9 @@ export default function SettingsPage() {
                 {t('cancel')}
               </Button>
               <Button
+                variant="destructive"
                 onClick={handleDeleteAccount}
                 disabled={!deletePassword || isDeleting}
-                className="bg-red-600 hover:bg-red-700 text-white"
               >
                 {isDeleting ? '...' : t('confirm_delete')}
               </Button>
@@ -901,11 +901,11 @@ export default function SettingsPage() {
                   <button
                     key={item.id}
                     onClick={() => setActiveSection(item.id)}
-                    className={`flex items-center gap-2 min-h-[44px] px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all touch-target ${
+                    className={`flex shrink-0 items-center gap-2 min-h-[44px] px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all touch-target ${
                       isActive
                         ? 'ekra-gradient text-white shadow-[0_14px_34px_rgba(124,58,237,0.28)]'
-                        : 'bg-white/90 text-muted-foreground border border-border hover:bg-accent/70'
-                    } ${item.id === 'danger' && !isActive ? 'text-red-500 border-red-200' : ''}`}
+                        : 'bg-card/90 text-muted-foreground border border-border hover:bg-accent/70'
+                    } ${item.id === 'danger' && !isActive ? 'text-destructive border-destructive/30' : ''}`}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
                     {t(item.labelKey)}
@@ -927,7 +927,7 @@ export default function SettingsPage() {
                       isActive
                         ? 'ekra-gradient text-white shadow-[0_14px_34px_rgba(124,58,237,0.22)]'
                         : 'text-muted-foreground hover:bg-accent/70'
-                    } ${item.id === 'danger' && !isActive ? 'text-red-500 hover:bg-red-50' : ''}`}
+                    } ${item.id === 'danger' && !isActive ? 'text-destructive hover:bg-destructive/10' : ''}`}
                   >
                     <Icon className="w-4 h-4" />
                     {t(item.labelKey)}

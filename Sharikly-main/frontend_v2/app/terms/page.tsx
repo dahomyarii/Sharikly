@@ -10,13 +10,13 @@ export default function TermsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-background border-b border-border sticky top-0 z-40">
+      <header className="sticky top-0 z-40 border-b border-border bg-background">
         <div className="flex items-center justify-between px-4 py-3 md:py-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="text-gray-800 hover:bg-gray-100 h-8 w-8"
+            className="h-8 w-8 text-foreground hover:bg-accent"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -25,7 +25,7 @@ export default function TermsPage() {
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-4 py-12 space-y-8 text-foreground">
+      <div className="mx-auto max-w-3xl space-y-8 px-4 py-12 text-foreground">
         <h2 className="text-2xl font-bold text-foreground">EKRA Terms of Service</h2>
         <p className="text-muted-foreground">
           Last updated: {new Date().toLocaleDateString()}
@@ -46,7 +46,7 @@ export default function TermsPage() {
             . If you do not agree, you may not use the Service.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-foreground">
             1. The EKRA platform
           </h3>
           <p>
@@ -61,7 +61,7 @@ export default function TermsPage() {
             us if you use those features.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">2. Eligibility</h3>
+          <h3 className="text-lg font-semibold text-foreground">2. Eligibility</h3>
           <p>
             You may use the Service only if you are able to form a binding contract with EKRA
             and are not barred from using the Service under applicable law. By using the Service,
@@ -75,7 +75,7 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h3 className="text-lg font-semibold text-gray-900">3. Accounts and security</h3>
+          <h3 className="text-lg font-semibold text-foreground">3. Accounts and security</h3>
           <p>
             To use certain features of the Service, you must register for an account. You agree to:
           </p>
@@ -97,7 +97,7 @@ export default function TermsPage() {
             Terms.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">4. Listings</h3>
+          <h3 className="text-lg font-semibold text-foreground">4. Listings</h3>
           <p>
             Users who create listings (&quot;Hosts&quot;) are solely responsible for the accuracy,
             quality, safety, legality and availability of their listings and services. By creating a
@@ -119,7 +119,7 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h3 className="text-lg font-semibold text-gray-900">5. Bookings and payments</h3>
+          <h3 className="text-lg font-semibold text-foreground">5. Bookings and payments</h3>
           <p>
             Users who request or book listings (&quot;Guests&quot;) and Hosts enter into a direct
             contractual relationship with each other. EKRA is not a party to that contract.
@@ -144,7 +144,7 @@ export default function TermsPage() {
             services may be subject to separate terms and privacy policies.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">6. Cancellations, changes and refunds</h3>
+          <h3 className="text-lg font-semibold text-foreground">6. Cancellations, changes and refunds</h3>
           <p>
             Cancellation, change and refund policies may vary by listing and are typically set by
             the Host. Before booking, Guests should carefully review the applicable cancellation
@@ -157,7 +157,7 @@ export default function TermsPage() {
             issues.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">7. User conduct and prohibited activities</h3>
+          <h3 className="text-lg font-semibold text-foreground">7. User conduct and prohibited activities</h3>
           <p>You agree that you will not:</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Use the Service for any unlawful purpose or in violation of any law.</li>
@@ -183,14 +183,14 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h3 className="text-lg font-semibold text-gray-900">8. Reviews and feedback</h3>
+          <h3 className="text-lg font-semibold text-foreground">8. Reviews and feedback</h3>
           <p>
             Users may leave public reviews, ratings or feedback. You agree that your reviews will be
             fair, honest and based on your actual experience. We may remove or hide reviews that
             violate these Terms or applicable law.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">9. Intellectual property</h3>
+          <h3 className="text-lg font-semibold text-foreground">9. Intellectual property</h3>
           <p>
             The Service, including the EKRA name and logo, software, designs, text, graphics,
             images and other content, is owned by or licensed to EKRA and is protected by
@@ -205,7 +205,7 @@ export default function TermsPage() {
             content in connection with operating and promoting the Service.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">10. Third-party services</h3>
+          <h3 className="text-lg font-semibold text-foreground">10. Third-party services</h3>
           <p>
             The Service may contain links to, or integrations with, third-party websites, services
             or applications. We do not control and are not responsible for the content, policies or
@@ -213,7 +213,7 @@ export default function TermsPage() {
             risk and may be subject to their terms and privacy policies.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">11. Termination and suspension</h3>
+          <h3 className="text-lg font-semibold text-foreground">11. Termination and suspension</h3>
           <p>
             We may suspend or terminate your access to the Service, or remove any content you post,
             at any time and for any reason, including if we reasonably believe you have violated
@@ -226,7 +226,7 @@ export default function TermsPage() {
             maintaining necessary records).
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">12. Disclaimers</h3>
+          <h3 className="text-lg font-semibold text-foreground">12. Disclaimers</h3>
           <p>
             The Service is provided on an &quot;as is&quot; and &quot;as available&quot; basis,
             without warranties of any kind, whether express or implied, including implied warranties
@@ -239,7 +239,7 @@ export default function TermsPage() {
             Your interactions with other users and your use of listings are at your own risk.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">13. Limitation of liability</h3>
+          <h3 className="text-lg font-semibold text-foreground">13. Limitation of liability</h3>
           <p>
             To the maximum extent permitted by law, EKRA and its affiliates, officers,
             employees, agents and partners will not be liable for any indirect, incidental, special,
@@ -255,7 +255,7 @@ export default function TermsPage() {
             event giving rise to the claim or (ii) the equivalent of 100 EUR (or local currency).
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">14. Indemnification</h3>
+          <h3 className="text-lg font-semibold text-foreground">14. Indemnification</h3>
           <p>
             You agree to indemnify, defend and hold harmless EKRA and its affiliates, officers,
             employees and agents from and against any claims, liabilities, damages, losses and
@@ -265,7 +265,7 @@ export default function TermsPage() {
             party.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-foreground">
             15. Governing law and dispute resolution
           </h3>
           <p>
@@ -277,7 +277,7 @@ export default function TermsPage() {
             principles.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">16. Changes to the Service and Terms</h3>
+          <h3 className="text-lg font-semibold text-foreground">16. Changes to the Service and Terms</h3>
           <p>
             We may modify, suspend or discontinue any part of the Service at any time, with or
             without notice. We may also update these Terms from time to time. When we make material
@@ -290,7 +290,7 @@ export default function TermsPage() {
             you must stop using the Service.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">17. Contact</h3>
+          <h3 className="text-lg font-semibold text-foreground">17. Contact</h3>
           <p>
             If you have any questions about these Terms or the Service, please{" "}
             <Link href="/contact" className="text-blue-600 hover:underline">

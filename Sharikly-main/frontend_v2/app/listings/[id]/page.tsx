@@ -27,6 +27,7 @@ import {
   Share2,
   MessageCircle,
   List,
+  MapPin,
 } from "lucide-react";
 import ReportModal from "@/components/ReportModal";
 import { DayPicker } from "react-day-picker";
@@ -224,14 +225,14 @@ export default function ListingDetail() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Listing not found</h1>
-          <p className="text-gray-600 mb-6">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Listing not found</h1>
+          <p className="text-muted-foreground mb-6">
             This listing may have been removed or the link is incorrect.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
               onClick={() => router.push("/listings")}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               Browse listings
             </Button>
@@ -247,7 +248,7 @@ export default function ListingDetail() {
   if (!data) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-gray-500 text-lg">Loading...</div>
+        <div className="text-muted-foreground text-lg">Loading...</div>
       </div>
     );
   }
@@ -621,7 +622,7 @@ export default function ListingDetail() {
     <div className="min-h-screen bg-background">
 
       <header className="sticky top-0 z-40 border-b border-white/50 bg-background/75 px-4 py-3 backdrop-blur-xl" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
-        <form onSubmit={handleHeaderSearchSubmit} className="max-w-7xl mx-auto flex items-center gap-3">
+        <form onSubmit={handleHeaderSearchSubmit} className="marketplace-shell flex items-center gap-3">
           <Button
             type="button"
             variant="ghost"
@@ -667,37 +668,12 @@ export default function ListingDetail() {
 
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <div className="surface-panel overflow-hidden rounded-[34px] p-2 sm:p-3">
-              {/* Mobile: fixed-height Amazon-style slideshow. Desktop: normal flexible layout. */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 p-2 sm:p-4 md:min-h-0">
-                {/* Thumbnails: horizontal strip on mobile (small), vertical on desktop */}
-                <div className="flex flex-row sm:flex-col gap-1.5 sm:gap-2 overflow-x-auto sm:overflow-y-auto sm:max-h-[500px] pb-1 sm:pb-0 shrink-0 md:shrink-0 scrollbar-hide">
-                  {images.map((url: string, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setMainImage(url);
-                      }}
-                      className={`min-w-[56px] w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-2xl overflow-hidden flex-shrink-0 transition-all duration-200 touch-target active:scale-95 ${
-                        mainImage === url
-                          ? "border-primary ring-2 ring-primary/20"
-                          : "border-border hover:border-primary/40 active:border-primary/50"
-                      }`}
-                    >
-                      <img
-                        src={url || "/logo.png"}
-                        alt={`thumbnail ${idx}`}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </button>
-                  ))}
-                </div>
-
-                {/* Main image: forced small box on mobile, flexible on desktop */}
-                <div className="flex-1 relative group min-w-0 min-h-0">
-                  <div className="h-[320px] overflow-hidden rounded-[28px] bg-muted sm:h-auto sm:max-h-[40vh] sm:aspect-[4/3] md:max-h-[420px]">
+            <div className="surface-panel space-y-4 rounded-[34px] p-4 sm:p-5">
+              {/* Image gallery: main image on top, thumbnail slideshow strip below */}
+              <div className="space-y-3">
+                {/* Main image (compact) */}
+                <div className="relative group">
+                  <div className="h-[260px] overflow-hidden rounded-[28px] bg-muted sm:h-auto sm:aspect-[4/3] sm:max-h-[340px]">
                     <img
                       src={mainImage || images[0]}
                       alt={data.title}
@@ -721,16 +697,41 @@ export default function ListingDetail() {
                     <span className="hidden sm:inline">Zoom</span>
                   </Button>
                 </div>
-              </div>
-            </div>
 
-            <div className="surface-panel space-y-4 rounded-[34px] p-5 sm:p-6">
+                {/* Thumbnail slideshow: horizontal strip at all breakpoints */}
+                {images.length > 1 && (
+                  <div className="flex flex-row gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    {images.map((url: string, idx: number) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setMainImage(url);
+                        }}
+                        className={`min-w-[56px] w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-2xl overflow-hidden flex-shrink-0 transition-all duration-200 touch-target active:scale-95 ${
+                          mainImage === url
+                            ? "border-primary ring-2 ring-primary/20"
+                            : "border-border hover:border-primary/40 active:border-primary/50"
+                        }`}
+                      >
+                        <img
+                          src={url || "/logo.png"}
+                          alt={`thumbnail ${idx}`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <h1 className="mb-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
                     {data.title}
                   </h1>
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-4">
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <Star
@@ -738,7 +739,7 @@ export default function ListingDetail() {
                           className={`h-5 w-5 ${
                             i < Math.floor(averageRating)
                               ? "fill-orange-500 text-orange-500"
-                              : "text-gray-300"
+                              : "text-muted-foreground/40"
                           }`}
                         />
                       ))}
@@ -749,6 +750,12 @@ export default function ListingDetail() {
                     <span className="text-muted-foreground">
                       ({reviews.length} reviews)
                     </span>
+                    {data.city && (
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <MapPin className="h-4 w-4 shrink-0" />
+                        {data.city}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-1 sm:gap-2 flex-shrink-0">
@@ -757,30 +764,27 @@ export default function ListingDetail() {
                       onClick={() => router.push(`/listings/${id}/edit`)}
                       variant="ghost"
                       size="sm"
-                      className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
+                      className="min-h-[44px] min-w-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                     >
-                      <Pencil className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline"></span>
+                      <Pencil className="h-4 w-4" />
                     </Button>
                   )}
                   <Button
                     onClick={handleShare}
                     variant="ghost"
                     size="sm"
-                    className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
+                    className="min-h-[44px] min-w-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                   >
-                    <Share2 className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline"></span>
+                    <Share2 className="h-4 w-4" />
                   </Button>
                   {similarListings.length > 0 && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={scrollToSimilar}
-                      className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
+                      className="min-h-[44px] min-w-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                     >
-                      <List className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline"></span>
+                      <List className="h-4 w-4" />
                     </Button>
                   )}
                   <Button
@@ -790,7 +794,7 @@ export default function ListingDetail() {
                     }}
                     variant="ghost"
                     size="sm"
-                    className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
+                    className="min-h-[44px] min-w-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                   >
                     <Flag className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">
@@ -801,14 +805,13 @@ export default function ListingDetail() {
                     onClick={toggleFavorite}
                     variant="ghost"
                     size="sm"
-                    className="min-h-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
+                    className="min-h-[44px] min-w-[44px] rounded-full border border-border bg-background/80 text-muted-foreground touch-target hover:bg-accent/70 hover:text-foreground"
                   >
                     <Heart
-                      className={`h-4 w-4 sm:mr-1 transition-all ${
+                      className={`h-4 w-4 transition-all ${
                         isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"
                       }`}
                     />
-                    <span className="hidden sm:inline"></span>
                   </Button>
                 </div>
               </div>
@@ -866,17 +869,17 @@ export default function ListingDetail() {
               </h2>
 
               {userHasReviewed ? (
-                <div className="rounded-[24px] border border-blue-200 bg-blue-50 p-4">
-                  <p className="text-blue-800 font-medium">
+                <div className="rounded-[24px] border border-primary/20 bg-primary/10 p-4">
+                  <p className="text-primary font-medium">
                     ✓ You have already reviewed this listing
                   </p>
-                  <p className="text-blue-600 text-sm mt-1">
+                  <p className="text-primary text-sm mt-1">
                     You can only review a listing once.
                   </p>
                 </div>
               ) : !user ? (
-                <div className="rounded-[24px] border border-gray-200 bg-gray-50 p-4">
-                  <p className="text-gray-700 font-medium">
+                <div className="rounded-[24px] border border-border bg-muted p-4">
+                  <p className="text-foreground font-medium">
                     Please log in to leave a review
                   </p>
                   <Button
@@ -887,8 +890,8 @@ export default function ListingDetail() {
                   </Button>
                 </div>
               ) : isOwner ? (
-                <div className="rounded-[24px] border border-gray-200 bg-gray-50 p-4">
-                  <p className="text-gray-700 font-medium">
+                <div className="rounded-[24px] border border-border bg-muted p-4">
+                  <p className="text-foreground font-medium">
                     You cannot review your own listing
                   </p>
                 </div>
@@ -908,7 +911,7 @@ export default function ListingDetail() {
                             className={`h-6 w-6 cursor-pointer ${
                               n <= newRating
                                 ? "fill-yellow-400 text-yellow-400"
-                                : "text-gray-300"
+                                : "text-muted-foreground/40"
                             }`}
                           />
                         </button>
@@ -966,7 +969,7 @@ export default function ListingDetail() {
                         <img
                           src={review.user.avatar || DEFAULT_AVATAR}
                           alt={review.user.name}
-                          className="w-12 h-12 rounded-full object-cover hover:ring-2 hover:ring-gray-300 transition-all cursor-pointer"
+                          className="w-12 h-12 rounded-full object-cover hover:ring-2 hover:ring-border transition-all cursor-pointer"
                         />
                       </a>
                       <div className="flex-1">
@@ -988,7 +991,7 @@ export default function ListingDetail() {
                                 className={`h-4 w-4 ${
                                   i < review.rating
                                     ? "fill-orange-500 text-orange-500"
-                                    : "text-gray-300"
+                                    : "text-muted-foreground/40"
                                 }`}
                               />
                             ))}
@@ -1000,8 +1003,8 @@ export default function ListingDetail() {
                             onClick={() => handleVote(review.id, "up")}
                             className={`flex items-center gap-2 text-sm transition-colors ${
                               review.userVote === "HELPFUL"
-                                ? "text-blue-600 font-semibold"
-                                : "text-muted-foreground hover:text-blue-600"
+                                ? "text-primary font-semibold"
+                                : "text-muted-foreground hover:text-primary"
                             }`}
                           >
                             <ThumbsUp
@@ -1225,7 +1228,7 @@ export default function ListingDetail() {
                       </h3>
                     </a>
                     {data.owner?.is_email_verified && (
-                      <Check className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                      <Check className="h-4 w-4 flex-shrink-0 text-primary" />
                     )}
                   </div>
                   <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -1364,12 +1367,12 @@ export default function ListingDetail() {
           {similarLoading && (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="rounded-xl overflow-hidden bg-gray-100 border border-gray-200 animate-pulse">
-                  <div className="aspect-[4/3] bg-gray-200" />
+                <div key={i} className="rounded-xl overflow-hidden bg-muted border border-border animate-pulse">
+                  <div className="aspect-[4/3] bg-muted" />
                   <div className="p-3 space-y-2">
-                    <div className="h-3 bg-gray-200 rounded w-1/3" />
-                    <div className="h-4 bg-gray-200 rounded w-full" />
-                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                    <div className="h-3 bg-muted rounded w-1/3" />
+                    <div className="h-4 bg-muted rounded w-full" />
+                    <div className="h-4 bg-muted rounded w-1/2" />
                   </div>
                 </div>
               ))}
@@ -1377,9 +1380,9 @@ export default function ListingDetail() {
           )}
 
           {!similarLoading && similarListings.length === 0 && (
-            <div className="text-center py-8 rounded-xl bg-gray-50 border border-gray-100">
-              <p className="text-gray-500 mb-2">No similar listings right now.</p>
-              <Link href="/listings" className="text-blue-600 hover:underline font-medium">
+            <div className="text-center py-8 rounded-xl bg-muted border border-border">
+              <p className="text-muted-foreground mb-2">No similar listings right now.</p>
+              <Link href="/listings" className="text-primary hover:underline font-medium">
                 Browse all listings →
               </Link>
             </div>
@@ -1419,23 +1422,23 @@ export default function ListingDetail() {
       {/* Mobile full-screen booking flow (Fat Llama style) */}
       {showMobileBooking && (
         <div className="fixed inset-0 z-50 flex flex-col bg-background lg:hidden">
-          <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
-            <h2 className="text-base font-semibold text-gray-900">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3" style={{ paddingTop: "max(0.75rem, var(--safe-area-inset-top))" }}>
+            <h2 className="text-base font-semibold text-foreground">
               Select rental period
             </h2>
             <button
               type="button"
               onClick={() => setShowMobileBooking(false)}
-              className="min-w-[32px] min-h-[32px] flex items-center justify-center rounded-full hover:bg-gray-100"
+              className="min-w-[32px] min-h-[32px] flex items-center justify-center rounded-full hover:bg-accent"
               aria-label="Close"
             >
-              <X className="h-5 w-5 text-gray-600" />
+              <X className="h-5 w-5 text-muted-foreground" />
             </button>
           </div>
 
           <div className="flex-1 overflow-auto px-4 pt-4 pb-28">
             <div className="mb-4 text-center">
-              <p className="text-xs uppercase tracking-wide text-gray-400">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
                 {safeFormatDate(new Date())?.split(" ").slice(1).join(" ")}
               </p>
             </div>
@@ -1471,17 +1474,17 @@ export default function ListingDetail() {
 
             {/* Pickup / Drop-off summary */}
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2">
-                <p className="text-xs text-gray-500">Pickup</p>
-                <p className="text-sm font-medium text-gray-900 mt-1">
+              <div className="rounded-2xl border border-border bg-muted px-3 py-2">
+                <p className="text-xs text-muted-foreground">Pickup</p>
+                <p className="text-sm font-medium text-foreground mt-1">
                   {dateRange?.from
                     ? dateRange.from.toLocaleDateString()
                     : "Select date"}
                 </p>
               </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2">
-                <p className="text-xs text-gray-500">Drop off</p>
-                <p className="text-sm font-medium text-gray-900 mt-1">
+              <div className="rounded-2xl border border-border bg-muted px-3 py-2">
+                <p className="text-xs text-muted-foreground">Drop off</p>
+                <p className="text-sm font-medium text-foreground mt-1">
                   {dateRange?.to
                     ? dateRange.to.toLocaleDateString()
                     : "Select date"}
@@ -1497,7 +1500,7 @@ export default function ListingDetail() {
               const serviceFee = Math.round(subtotal * 0.1 * 100) / 100;
               const total = Math.round((subtotal + serviceFee) * 100) / 100;
               return (
-                <div className="mt-4 space-y-2 text-sm text-gray-700">
+                <div className="mt-4 space-y-2 text-sm text-foreground">
                   <div className="flex justify-between">
                     <span>
                       ${pricePerDay.toFixed(2)} × {days} day
@@ -1509,7 +1512,7 @@ export default function ListingDetail() {
                     <span>Service fee</span>
                     <span>${serviceFee.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between font-semibold pt-2 border-t border-gray-200">
+                  <div className="flex justify-between font-semibold pt-2 border-t border-border">
                     <span>Total</span>
                     <span>${total.toFixed(2)}</span>
                   </div>
@@ -1517,7 +1520,7 @@ export default function ListingDetail() {
               );
             })()}
 
-            <p className="mt-4 text-xs text-blue-600 flex items-start gap-1">
+            <p className="mt-4 text-xs text-primary flex items-start gap-1">
               <span className="mt-[2px]">🛡️</span>
               <span>
                 No commitment when you send a request. You can ask the owner

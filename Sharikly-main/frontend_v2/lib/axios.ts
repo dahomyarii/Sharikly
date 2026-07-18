@@ -61,6 +61,22 @@ const axiosInstance = axios.create({
   timeout: DEFAULT_TIMEOUT_MS,
 })
 
+// Request interceptor: always attach the current access token from localStorage
+// unless a caller already set its own Authorization header. This is the single
+// source of truth for auth headers — callers no longer need to (and shouldn't)
+// manually attach the token per-call, and it survives page reloads/navigations
+// since axios.defaults.headers.common is only ever set transiently at login.
+axiosInstance.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined' && !config.headers?.Authorization) {
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      config.headers = config.headers ?? {}
+      config.headers.Authorization = `Bearer ${token}`
+    }
+  }
+  return config
+})
+
 // Response interceptor: token expiration, 429, timeout, and optional retry
 axiosInstance.interceptors.response.use(
   (response) => response,

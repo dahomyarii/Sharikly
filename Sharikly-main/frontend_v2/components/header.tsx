@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "./LocaleProvider";
@@ -28,6 +29,30 @@ import {
 const SignupModal = dynamic(() => import("./SignupModal"), { ssr: false });
 const LoginModal = dynamic(() => import("./LoginModal"), { ssr: false });
 
+// Tracks a fixed-position anchor (top + right, relative to the viewport) for a
+// portaled dropdown, so it always renders above page content regardless of any
+// local z-index/stacking context a given page's own sticky header might use.
+function useAnchoredPosition(triggerRef: React.RefObject<HTMLElement | null>, isOpen: boolean, gap = 10) {
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const update = () => {
+      const el = triggerRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      setPos({ top: r.bottom + gap, right: window.innerWidth - r.right });
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [isOpen, triggerRef, gap]);
+  return pos;
+}
+
 export default function Header() {
   const { t } = useLocale();
   const pathname = usePathname();
@@ -45,7 +70,10 @@ export default function Header() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const notificationsDropdownRef = useRef<HTMLDivElement>(null);
   const notificationsBellRef = useRef<HTMLButtonElement>(null);
+  const notificationsPanelRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const profilePanelRef = useRef<HTMLDivElement>(null);
 
   // Closes a panel when the user clicks outside of it.
   // Each panel needs its own handler because they have different open states.
@@ -54,22 +82,28 @@ export default function Header() {
     containerRef: React.RefObject<HTMLElement | null>,
     onClose: () => void,
     excludeRef?: React.RefObject<HTMLElement | null>,
+    excludeRef2?: React.RefObject<HTMLElement | null>,
   ) => {
     useEffect(() => {
       if (!isOpen) return;
       const handler = (e: MouseEvent) => {
-        const clickedInside = containerRef.current?.contains(e.target as Node);
-        const clickedExcluded = excludeRef?.current?.contains(e.target as Node);
-        if (!clickedInside && !clickedExcluded) onClose();
+        const target = e.target as Node;
+        const clickedInside = containerRef.current?.contains(target);
+        const clickedExcluded = excludeRef?.current?.contains(target);
+        const clickedExcluded2 = excludeRef2?.current?.contains(target);
+        if (!clickedInside && !clickedExcluded && !clickedExcluded2) onClose();
       };
       document.addEventListener("mousedown", handler);
       return () => document.removeEventListener("mousedown", handler);
-    }, [isOpen, containerRef, excludeRef, onClose]);
+    }, [isOpen, containerRef, excludeRef, excludeRef2, onClose]);
   };
 
   useOutsideClick(isMobileMenuOpen, mobileMenuRef, () => setIsMobileMenuOpen(false), menuButtonRef);
-  useOutsideClick(showNotificationsDropdown, notificationsDropdownRef, () => setShowNotificationsDropdown(false), notificationsBellRef);
-  useOutsideClick(showProfileMenu, profileMenuRef, () => setShowProfileMenu(false));
+  useOutsideClick(showNotificationsDropdown, notificationsDropdownRef, () => setShowNotificationsDropdown(false), notificationsBellRef, notificationsPanelRef);
+  useOutsideClick(showProfileMenu, profileMenuRef, () => setShowProfileMenu(false), profileButtonRef, profilePanelRef);
+
+  const notificationsPos = useAnchoredPosition(notificationsBellRef, showNotificationsDropdown);
+  const profilePos = useAnchoredPosition(profileButtonRef, showProfileMenu);
 
 
   useEffect(() => {
@@ -287,8 +321,12 @@ export default function Header() {
                   </span>
                 )}
               </button>
-              {showNotificationsDropdown && (
-                <div className="surface-panel absolute right-0 top-full z-50 mt-3 flex max-h-[420px] w-[340px] flex-col overflow-hidden rounded-[28px] bg-popover/95">
+              {showNotificationsDropdown && notificationsPos && typeof document !== "undefined" && createPortal(
+                <div
+                  ref={notificationsPanelRef}
+                  style={{ position: "fixed", top: notificationsPos.top, right: notificationsPos.right, zIndex: 9999 }}
+                  className="surface-panel flex max-h-[420px] w-[340px] flex-col overflow-hidden rounded-[28px] bg-popover/95"
+                >
                   <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <span className="font-semibold text-foreground">Notifications</span>
                     {unreadCount > 0 && (
@@ -341,19 +379,21 @@ export default function Header() {
                       View more
                     </Link>
                   </div>
-                </div>
+                </div>,
+                document.body
               )}
             </div>
             {user ? (
               <div className="flex items-center gap-2">
                 <Link
                   href="/listings/new"
-                  className="ekra-gradient inline-flex min-h-[44px] items-center justify-center rounded-full px-5 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)]"
+                  className="bg-primary hover:bg-primary/90 transition-colors inline-flex min-h-[44px] items-center justify-center rounded-full px-5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-brand)]"
                 >
                   List an Item
                 </Link>
                 <div className="relative" ref={profileMenuRef}>
                   <button
+                    ref={profileButtonRef}
                     type="button"
                     onClick={() => setShowProfileMenu((v) => !v)}
                     className="flex h-11 min-w-[44px] items-center justify-center rounded-full border border-white/60 bg-white/85 px-1.5 text-sm font-semibold text-foreground shadow-sm hover:bg-accent/70"
@@ -370,8 +410,11 @@ export default function Header() {
                       <UserIcon className="h-4 w-4" />
                     )}
                   </button>
-                  {showProfileMenu && (
-                    <div className="surface-panel absolute right-0 top-[120%] z-40 w-60 overflow-hidden rounded-[22px] border border-border bg-popover/95 shadow-lg">
+                  {showProfileMenu && profilePos && typeof document !== "undefined" && createPortal(
+                    <div
+                      ref={profilePanelRef}
+                      style={{ position: "fixed", top: profilePos.top, right: profilePos.right, zIndex: 9999 }}
+                      className="surface-panel w-60 overflow-hidden rounded-[22px] border border-border bg-popover/95 shadow-lg">
                       <div className="border-b border-border px-4 py-3">
                         <p className="text-sm font-semibold text-foreground truncate">
                           {user.username || user.email}
@@ -413,9 +456,12 @@ export default function Header() {
                           <Settings2 className="h-4 w-4" />
                           <span>{t("settings")}</span>
                         </Link>
-                        <div className="mt-1 flex items-center justify-between rounded-[18px] bg-background/90 px-3 py-2 text-sm text-muted-foreground">
-                          <span>Dark mode</span>
-                          <ThemeToggle />
+                        {/* Dark-mode toggle hidden (light-only launch); code kept intact */}
+                        <div className="hidden">
+                          <div className="mt-1 flex items-center justify-between rounded-[18px] bg-background/90 px-3 py-2 text-sm text-muted-foreground">
+                            <span>Dark mode</span>
+                            <ThemeToggle />
+                          </div>
                         </div>
                       </div>
                       <button
@@ -428,7 +474,8 @@ export default function Header() {
                       >
                         {t("logout")}
                       </button>
-                    </div>
+                    </div>,
+                    document.body
                   )}
                 </div>
               </div>
@@ -438,11 +485,11 @@ export default function Header() {
                   onClick={() => setShowLogin(true)}
                   className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-accent/70 hover:text-foreground"
                 >
-                  {t("sign_in") || "Log In"}
+                  {t("sign in") || "Log In"}
                 </button>
                 <button
                   onClick={() => setShowSignup(true)}
-                  className="ekra-gradient rounded-full px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)]"
+                  className="bg-primary hover:bg-primary/90 transition-colors rounded-full px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-brand)]"
                 >
                   List an Item
                 </button>
@@ -716,7 +763,7 @@ export default function Header() {
                   }}
                   className="mb-3 w-full rounded-full border border-border bg-white px-4 py-3 text-sm font-medium text-foreground"
                 >
-                  {t("sign_in") || "Log in"}
+                  {t("sign in") || "Log in"}
                 </button>
                 <button
                   type="button"
@@ -724,7 +771,7 @@ export default function Header() {
                     setShowSignup(true);
                     setIsMobileMenuOpen(false);
                   }}
-                  className="ekra-gradient w-full rounded-full px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)]"
+                  className="bg-primary hover:bg-primary/90 transition-colors w-full rounded-full px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-brand)]"
                 >
                   List an Item
                 </button>

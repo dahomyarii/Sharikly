@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "ekra-gradient text-primary-foreground shadow-[0_14px_34px_rgba(124,58,237,0.34)] hover:opacity-95",
+        default: "bg-primary text-primary-foreground shadow-[var(--shadow-brand)] hover:bg-primary/90",
         destructive:
           "bg-destructive text-white shadow-[0_14px_32px_rgba(220,38,38,0.24)] hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:

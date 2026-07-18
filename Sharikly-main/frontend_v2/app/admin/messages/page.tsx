@@ -162,10 +162,10 @@ export default function AdminMessagesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading messages...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading messages...</p>
         </div>
       </div>
     )
@@ -173,9 +173,9 @@ export default function AdminMessagesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="p-6 text-center max-w-md">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="text-destructive mb-4">{error}</p>
           <Button onClick={() => router.push('/')}>Go Home</Button>
         </Card>
       </div>
@@ -183,42 +183,42 @@ export default function AdminMessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen bg-background">
+      <header className="bg-card border-b border-border sticky top-0 z-40">
         <div className="flex items-center justify-between gap-4 px-4 py-4 md:py-5">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => router.back()}
-              className="text-gray-800 hover:bg-gray-100"
+              className="text-foreground hover:bg-muted"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Admin Messages</h1>
-              <p className="text-sm text-gray-600">Manage all customer and user messages</p>
+              <h1 className="text-2xl font-bold text-foreground">Admin Messages</h1>
+              <p className="text-sm text-muted-foreground">Manage all customer and user messages</p>
             </div>
           </div>
           <Button
             onClick={() => router.push('/admin/blog')}
-            className="bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground whitespace-nowrap"
           >
             Manage Blog
           </Button>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="marketplace-shell py-8">
         {/* Tabs */}
-        <div className="mb-6 border-b border-gray-200">
+        <div className="mb-6 border-b border-border">
           <div className="flex gap-1">
             <button
               onClick={() => setActiveTab('contact')}
               className={`px-4 py-3 font-medium border-b-2 transition-colors ${
                 activeTab === 'contact'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               Contact Messages ({contactMessages.length})
@@ -227,8 +227,8 @@ export default function AdminMessagesPage() {
               onClick={() => setActiveTab('user')}
               className={`px-4 py-3 font-medium border-b-2 transition-colors ${
                 activeTab === 'user'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               User Messages ({userMessages.length})
@@ -238,15 +238,15 @@ export default function AdminMessagesPage() {
 
         {/* Contact Messages Tab */}
         {activeTab === 'contact' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg border border-gray-200">
-                <div className="p-4 border-b border-gray-200">
-                  <h2 className="font-semibold text-gray-900">Messages ({contactMessages.length})</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-stretch">
+            <div className="lg:col-span-1 flex flex-col">
+              <div className="surface-panel flex flex-1 flex-col rounded-3xl border border-border bg-card overflow-hidden lg:min-h-[520px]">
+                <div className="p-4 border-b border-border">
+                  <h2 className="font-semibold text-foreground">Messages ({contactMessages.length})</h2>
                 </div>
-                <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+                <div className="divide-y divide-border flex-1 overflow-y-auto">
                   {contactMessages.length === 0 ? (
-                    <div className="p-6 text-center text-gray-500">
+                    <div className="p-6 text-center text-muted-foreground">
                       <p>No contact messages yet</p>
                     </div>
                   ) : (
@@ -254,20 +254,20 @@ export default function AdminMessagesPage() {
                       <button
                         key={message.id}
                         onClick={() => setSelectedContact(message)}
-                        className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
-                          selectedContact?.id === message.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                        className={`w-full p-4 text-left hover:bg-muted transition-colors ${
+                          selectedContact?.id === message.id ? 'bg-primary/10 border-l-4 border-primary' : ''
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 truncate">{message.name}</p>
-                            <p className="text-sm text-gray-600 truncate">{message.email}</p>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="font-semibold text-foreground truncate">{message.name}</p>
+                            <p className="text-sm text-muted-foreground truncate">{message.email}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
                               {new Date(message.created_at).toLocaleDateString()}
                             </p>
                           </div>
                           {message.responded && (
-                            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-1" />
+                            <CheckCircle className="w-4 h-4 text-success flex-shrink-0 mt-1" />
                           )}
                         </div>
                       </button>
@@ -277,46 +277,46 @@ export default function AdminMessagesPage() {
               </div>
             </div>
 
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 flex flex-col">
               {selectedContact ? (
-                <div className="bg-white rounded-lg border border-gray-200">
-                  <div className="p-6 border-b border-gray-200">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">{selectedContact.name}</h2>
+                <div className="surface-panel flex-1 rounded-3xl border border-border bg-card overflow-hidden">
+                  <div className="p-6 border-b border-border">
+                    <h2 className="text-xl font-bold text-foreground mb-4">{selectedContact.name}</h2>
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
-                        <Mail className="w-5 h-5 text-gray-400" />
-                        <a href={`mailto:${selectedContact.email}`} className="text-blue-600 hover:underline">
+                        <Mail className="w-5 h-5 text-muted-foreground" />
+                        <a href={`mailto:${selectedContact.email}`} className="text-primary hover:underline">
                           {selectedContact.email}
                         </a>
                       </div>
                       {selectedContact.phone && (
                         <div className="flex items-center gap-3">
-                          <Phone className="w-5 h-5 text-gray-400" />
-                          <a href={`tel:${selectedContact.phone}`} className="text-blue-600 hover:underline">
+                          <Phone className="w-5 h-5 text-muted-foreground" />
+                          <a href={`tel:${selectedContact.phone}`} className="text-primary hover:underline">
                             {selectedContact.phone}
                           </a>
                         </div>
                       )}
                       <div className="flex items-center gap-3">
-                        <Calendar className="w-5 h-5 text-gray-400" />
-                        <span className="text-gray-700">{formatDate(selectedContact.created_at)}</span>
+                        <Calendar className="w-5 h-5 text-muted-foreground" />
+                        <span className="text-muted-foreground">{formatDate(selectedContact.created_at)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 border-b border-gray-200">
-                    <h3 className="font-semibold text-gray-900 mb-3">Message</h3>
-                    <p className="text-gray-700 whitespace-pre-wrap">{selectedContact.message}</p>
+                  <div className="p-6 border-b border-border">
+                    <h3 className="font-semibold text-foreground mb-3">Message</h3>
+                    <p className="text-muted-foreground whitespace-pre-wrap">{selectedContact.message}</p>
                   </div>
 
                   {selectedContact.responded && selectedContact.admin_response && (
-                    <div className="p-6 border-b border-gray-200 bg-green-50">
+                    <div className="p-6 border-b border-border bg-success/10">
                       <div className="flex items-center gap-2 mb-3">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <h3 className="font-semibold text-gray-900">Admin Response</h3>
+                        <CheckCircle className="w-5 h-5 text-success" />
+                        <h3 className="font-semibold text-foreground">Admin Response</h3>
                       </div>
-                      <p className="text-gray-700 whitespace-pre-wrap mb-3">{selectedContact.admin_response}</p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-muted-foreground whitespace-pre-wrap mb-3">{selectedContact.admin_response}</p>
+                      <p className="text-xs text-muted-foreground">
                         Responded on: {formatDate(selectedContact.admin_response_date || '')}
                       </p>
                     </div>
@@ -324,17 +324,17 @@ export default function AdminMessagesPage() {
 
                   {!selectedContact.responded && (
                     <div className="p-6">
-                      <h3 className="font-semibold text-gray-900 mb-3">Send Response</h3>
+                      <h3 className="font-semibold text-foreground mb-3">Send Response</h3>
                       <textarea
                         value={adminResponse}
                         onChange={(e) => setAdminResponse(e.target.value)}
                         placeholder="Write your response..."
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3 min-h-32"
+                        className="w-full p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring mb-3 min-h-32"
                       />
                       <Button
                         onClick={() => handleSubmitContactResponse(selectedContact.id)}
                         disabled={submittingResponse || !adminResponse.trim()}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                       >
                         <Send className="w-4 h-4 mr-2" />
                         {submittingResponse ? 'Sending...' : 'Send Response'}
@@ -343,9 +343,9 @@ export default function AdminMessagesPage() {
                   )}
                 </div>
               ) : (
-                <Card className="p-12 text-center">
-                  <p className="text-gray-500">Select a message to view details</p>
-                </Card>
+                <div className="surface-panel flex flex-1 flex-col items-center justify-center rounded-3xl border border-border bg-card p-12 text-center lg:min-h-[520px]">
+                  <p className="text-muted-foreground">Select a message to view details</p>
+                </div>
               )}
             </div>
           </div>
@@ -353,15 +353,15 @@ export default function AdminMessagesPage() {
 
         {/* User Messages Tab */}
         {activeTab === 'user' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg border border-gray-200">
-                <div className="p-4 border-b border-gray-200">
-                  <h2 className="font-semibold text-gray-900">Messages ({userMessages.length})</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-stretch">
+            <div className="lg:col-span-1 flex flex-col">
+              <div className="surface-panel flex flex-1 flex-col rounded-3xl border border-border bg-card overflow-hidden lg:min-h-[520px]">
+                <div className="p-4 border-b border-border">
+                  <h2 className="font-semibold text-foreground">Messages ({userMessages.length})</h2>
                 </div>
-                <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+                <div className="divide-y divide-border flex-1 overflow-y-auto">
                   {userMessages.length === 0 ? (
-                    <div className="p-6 text-center text-gray-500">
+                    <div className="p-6 text-center text-muted-foreground">
                       <p>No user messages yet</p>
                     </div>
                   ) : (
@@ -369,20 +369,20 @@ export default function AdminMessagesPage() {
                       <button
                         key={message.id}
                         onClick={() => setSelectedUser(message)}
-                        className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
-                          selectedUser?.id === message.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                        className={`w-full p-4 text-left hover:bg-muted transition-colors ${
+                          selectedUser?.id === message.id ? 'bg-primary/10 border-l-4 border-primary' : ''
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 truncate">{message.subject}</p>
-                            <p className="text-sm text-gray-600 truncate">{message.user.email}</p>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="font-semibold text-foreground truncate">{message.subject}</p>
+                            <p className="text-sm text-muted-foreground truncate">{message.user.email}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
                               {new Date(message.created_at).toLocaleDateString()}
                             </p>
                           </div>
                           {message.responded && (
-                            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-1" />
+                            <CheckCircle className="w-4 h-4 text-success flex-shrink-0 mt-1" />
                           )}
                         </div>
                       </button>
@@ -392,36 +392,36 @@ export default function AdminMessagesPage() {
               </div>
             </div>
 
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 flex flex-col">
               {selectedUser ? (
-                <div className="bg-white rounded-lg border border-gray-200">
-                  <div className="p-6 border-b border-gray-200">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">{selectedUser.subject}</h2>
+                <div className="surface-panel flex-1 rounded-3xl border border-border bg-card overflow-hidden">
+                  <div className="p-6 border-b border-border">
+                    <h2 className="text-xl font-bold text-foreground mb-4">{selectedUser.subject}</h2>
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
-                        <Mail className="w-5 h-5 text-gray-400" />
-                        <span className="text-gray-700">{selectedUser.user.email}</span>
+                        <Mail className="w-5 h-5 text-muted-foreground" />
+                        <span className="text-muted-foreground">{selectedUser.user.email}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Calendar className="w-5 h-5 text-gray-400" />
-                        <span className="text-gray-700">{formatDate(selectedUser.created_at)}</span>
+                        <Calendar className="w-5 h-5 text-muted-foreground" />
+                        <span className="text-muted-foreground">{formatDate(selectedUser.created_at)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 border-b border-gray-200">
-                    <h3 className="font-semibold text-gray-900 mb-3">Message</h3>
-                    <p className="text-gray-700 whitespace-pre-wrap">{selectedUser.message}</p>
+                  <div className="p-6 border-b border-border">
+                    <h3 className="font-semibold text-foreground mb-3">Message</h3>
+                    <p className="text-muted-foreground whitespace-pre-wrap">{selectedUser.message}</p>
                   </div>
 
                   {selectedUser.responded && selectedUser.admin_response && (
-                    <div className="p-6 border-b border-gray-200 bg-green-50">
+                    <div className="p-6 border-b border-border bg-success/10">
                       <div className="flex items-center gap-2 mb-3">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <h3 className="font-semibold text-gray-900">Admin Response</h3>
+                        <CheckCircle className="w-5 h-5 text-success" />
+                        <h3 className="font-semibold text-foreground">Admin Response</h3>
                       </div>
-                      <p className="text-gray-700 whitespace-pre-wrap mb-3">{selectedUser.admin_response}</p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-muted-foreground whitespace-pre-wrap mb-3">{selectedUser.admin_response}</p>
+                      <p className="text-xs text-muted-foreground">
                         Responded on: {formatDate(selectedUser.admin_response_date || '')}
                       </p>
                     </div>
@@ -429,17 +429,17 @@ export default function AdminMessagesPage() {
 
                   {!selectedUser.responded && (
                     <div className="p-6">
-                      <h3 className="font-semibold text-gray-900 mb-3">Send Response</h3>
+                      <h3 className="font-semibold text-foreground mb-3">Send Response</h3>
                       <textarea
                         value={adminResponse}
                         onChange={(e) => setAdminResponse(e.target.value)}
                         placeholder="Write your response..."
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3 min-h-32"
+                        className="w-full p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring mb-3 min-h-32"
                       />
                       <Button
                         onClick={() => handleSubmitUserResponse(selectedUser.id)}
                         disabled={submittingResponse || !adminResponse.trim()}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                       >
                         <Send className="w-4 h-4 mr-2" />
                         {submittingResponse ? 'Sending...' : 'Send Response'}
@@ -448,9 +448,9 @@ export default function AdminMessagesPage() {
                   )}
                 </div>
               ) : (
-                <Card className="p-12 text-center">
-                  <p className="text-gray-500">Select a message to view details</p>
-                </Card>
+                <div className="surface-panel flex flex-1 flex-col items-center justify-center rounded-3xl border border-border bg-card p-12 text-center lg:min-h-[520px]">
+                  <p className="text-muted-foreground">Select a message to view details</p>
+                </div>
               )}
             </div>
           </div>

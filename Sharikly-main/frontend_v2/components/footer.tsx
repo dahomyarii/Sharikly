@@ -48,43 +48,43 @@ export default function Footer() {
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+              <h3 className="mb-4 text-center text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground md:text-left">
                 Marketplace
               </h3>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="/listings" className="hover:text-foreground">Browse listings</Link></li>
-                <li><Link href="/listings/new" className="hover:text-foreground">List your item</Link></li>
-                <li><Link href="/favorites" className="hover:text-foreground">Saved items</Link></li>
-                <li><Link href="/community-earnings" className="hover:text-foreground">Community earnings</Link></li>
+              <ul className="space-y-3 text-center text-sm md:text-left">
+                <li><Link href="/listings" className="hover:text-primary">Browse listings</Link></li>
+                <li><Link href="/listings/new" className="hover:text-primary">List your item</Link></li>
+                <li><Link href="/favorites" className="hover:text-primary">Saved items</Link></li>
+                <li><Link href="/community-earnings" className="hover:text-primary">Community earnings</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+              <h3 className="mb-4 text-center text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground md:text-left">
                 Company
               </h3>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="/about" className="hover:text-foreground">About</Link></li>
-                <li><Link href="/how-it-works" className="hover:text-foreground">How it works</Link></li>
-                <li><Link href="/careers" className="hover:text-foreground">Careers</Link></li>
-                <li><Link href="/blog" className="hover:text-foreground">Blog</Link></li>
+              <ul className="space-y-3 text-center text-sm md:text-left">
+                <li><Link href="/about" className="hover:text-primary">About</Link></li>
+                <li><Link href="/how-it-works" className="hover:text-primary">How it works</Link></li>
+                <li><Link href="/careers" className="hover:text-primary">Careers</Link></li>
+                <li><Link href="/blog" className="hover:text-primary">Blog</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+              <h3 className="mb-4 text-center text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground md:text-left">
                 Support
               </h3>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="/contact" className="hover:text-foreground">Contact</Link></li>
-                <li><Link href="/privacy" className="hover:text-foreground">Privacy policy</Link></li>
-                <li><Link href="/terms" className="hover:text-foreground">Terms of service</Link></li>
-                <li><Link href="/sitemap.xml" className="hover:text-foreground">Sitemap</Link></li>
+              <ul className="space-y-3 text-center text-sm md:text-left">
+                <li><Link href="/contact" className="hover:text-primary">Contact</Link></li>
+                <li><Link href="/privacy" className="hover:text-primary">Privacy policy</Link></li>
+                <li><Link href="/terms" className="hover:text-primary">Terms of service</Link></li>
+                <li><Link href="/sitemap.xml" className="hover:text-primary">Sitemap</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+              <h3 className="mb-4 text-center text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground md:text-left">
                 Follow us
               </h3>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap justify-center gap-3 md:justify-start">
                 <Link
                   href="https://instagram.com/ekra.app"
                   target="_blank"
@@ -107,7 +107,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col gap-2 border-t border-border pt-5 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <div className="mt-6 flex flex-col gap-2 border-t border-border pt-5 text-center text-xs text-muted-foreground md:flex-row md:items-center md:justify-between md:text-left">
             <p>&copy; 2026 EKRA. All rights reserved.</p>
             <p>Built for trusted local renting across Saudi Arabia.</p>
           </div>

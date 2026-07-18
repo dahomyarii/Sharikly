@@ -205,7 +205,7 @@ function BookingsPageContent() {
         </div>
 
         {payError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
             {payError}
           </div>
         )}
@@ -215,14 +215,14 @@ function BookingsPageContent() {
             {[...Array(4)].map((_, i) => (
               <li key={i} className="bg-card rounded-xl border border-border overflow-hidden">
                 <div className="flex gap-3 sm:gap-4 p-3 sm:p-4">
-                  <div className="w-20 h-20 rounded-lg bg-gray-200 animate-pulse flex-shrink-0" />
+                  <div className="w-20 h-20 rounded-lg bg-muted animate-pulse flex-shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
-                    <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
-                    <div className="h-3 bg-gray-200 rounded animate-pulse w-1/3" />
+                    <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
+                    <div className="h-3 bg-muted rounded animate-pulse w-1/2" />
+                    <div className="h-3 bg-muted rounded animate-pulse w-1/3" />
                     <div className="flex gap-2 mt-3">
-                      <div className="h-6 bg-gray-200 rounded animate-pulse w-16" />
-                      <div className="h-6 bg-gray-200 rounded animate-pulse w-14" />
+                      <div className="h-6 bg-muted rounded animate-pulse w-16" />
+                      <div className="h-6 bg-muted rounded animate-pulse w-14" />
                     </div>
                   </div>
                 </div>
@@ -302,10 +302,10 @@ function BookingsPageContent() {
                       >
                         {listing?.title}
                       </Link>
-                      <p className="text-sm text-gray-500 mt-0.5">
+                      <p className="text-sm text-muted-foreground mt-0.5">
                         Owner: {listing?.owner?.username || 'Owner'}
                       </p>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         {new Date(booking.start_date).toLocaleDateString()} –{' '}
                         {new Date(booking.end_date).toLocaleDateString()}
                       </p>
@@ -322,16 +322,16 @@ function BookingsPageContent() {
                                 <div
                                   className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-medium ${
                                     s.done
-                                      ? 'bg-green-600 border-green-600 text-white'
-                                      : 'border-gray-200 bg-white text-gray-400'
+                                      ? 'bg-success border-success text-white'
+                                      : 'border-border bg-card text-muted-foreground'
                                   }`}
                                 >
                                   {s.done ? <Check className="h-3 w-3" /> : i + 1}
                                 </div>
-                                <span className="text-[10px] sm:text-xs text-gray-500 mt-1 truncate w-full text-center">{s.label}</span>
+                                <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate w-full text-center">{s.label}</span>
                               </div>
                               {i < 2 && (
-                                <div className={`flex-1 h-0.5 mx-0.5 ${s.done ? 'bg-green-600' : 'bg-gray-200'}`} />
+                                <div className={`flex-1 h-0.5 mx-0.5 ${s.done ? 'bg-success' : 'bg-muted'}`} />
                               )}
                             </div>
                           ))}
@@ -339,7 +339,7 @@ function BookingsPageContent() {
                       )}
                       {declinedOrCancelled && (
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             Requested → {booking.status === 'DECLINED' ? 'Declined by owner' : 'Cancelled'}
                           </span>
                         </div>
@@ -347,7 +347,7 @@ function BookingsPageContent() {
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <Link
                           href={`/bookings/${booking.id}/receipt`}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-black"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
                         >
                           <Receipt className="h-3.5 w-3.5" /> View receipt
                         </Link>
@@ -383,7 +383,7 @@ function BookingsPageContent() {
                                 : 'Payment pending'}
                           </span>
                         )}
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium text-foreground">
                           ${Number(booking.total_price).toFixed(2)}
                         </span>
                       </div>
@@ -409,7 +409,7 @@ function BookingsPageContent() {
                           <button
                             onClick={() => handleCancel(booking.id)}
                             disabled={actionId !== null}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-3 py-2 border border-border text-muted-foreground text-sm font-medium rounded-lg hover:bg-muted disabled:opacity-50"
                           >
                             {actionId === booking.id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -420,8 +420,8 @@ function BookingsPageContent() {
                           </button>
                         </div>
                       )}
-                      <div className="mt-3 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
-                        <p className="text-[11px] sm:text-xs text-gray-600 leading-snug">
+                      <div className="mt-3 rounded-lg bg-muted border border-border px-3 py-2">
+                        <p className="text-[11px] sm:text-xs text-muted-foreground leading-snug">
                           {getCancellationCopy(booking)}
                           {!declinedOrCancelled && (
                             <>
@@ -444,18 +444,18 @@ function BookingsPageContent() {
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={!paginationMeta.previous}
-              className="inline-flex items-center gap-1 min-h-[44px] px-4 py-2 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+              className="inline-flex items-center gap-1 min-h-[44px] px-4 py-2 border border-border rounded-xl font-medium text-muted-foreground hover:bg-muted disabled:opacity-50 disabled:pointer-events-none"
             >
               <ChevronLeft className="h-5 w-5" /> Previous
             </button>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted-foreground">
               Page {page} of {Math.ceil(paginationMeta.count / 10) || 1} ({paginationMeta.count} bookings)
             </span>
             <button
               type="button"
               onClick={() => setPage((p) => p + 1)}
               disabled={!paginationMeta.next}
-              className="inline-flex items-center gap-1 min-h-[44px] px-4 py-2 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+              className="inline-flex items-center gap-1 min-h-[44px] px-4 py-2 border border-border rounded-xl font-medium text-muted-foreground hover:bg-muted disabled:opacity-50 disabled:pointer-events-none"
             >
               Next <ChevronRight className="h-5 w-5" />
             </button>
@@ -468,8 +468,8 @@ function BookingsPageContent() {
 
 function BookingsFallback() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="animate-pulse text-gray-500">Loading bookings…</div>
+    <div className="min-h-screen bg-muted flex items-center justify-center">
+      <div className="animate-pulse text-muted-foreground">Loading bookings…</div>
     </div>
   )
 }

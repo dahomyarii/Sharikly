@@ -568,7 +568,11 @@ const styles = StyleSheet.create({
   smallCard: {
     width: 140,
     backgroundColor: "#FFF",
-    borderRadius: radii.lg,
+    // Asymmetric corners to match the website's listing cards.
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 4,
     padding: spacing.xs,
     ...shadows.card,
     borderWidth: 1,
@@ -577,7 +581,11 @@ const styles = StyleSheet.create({
   smallCardImg: {
     width: "100%",
     height: 90,
-    borderRadius: radii.md,
+    // Asymmetric corners to match the website's listing cards.
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 16,
+    borderBottomLeftRadius: 4,
     marginBottom: 8,
   },
   smallCardTitle: {

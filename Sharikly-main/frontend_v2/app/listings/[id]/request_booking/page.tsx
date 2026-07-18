@@ -116,6 +116,19 @@ export default function RequestBookingPage() {
     )
   }
 
+  if (listing.owner?.id === user.id) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="max-w-sm text-center">
+          <p className="mb-4 text-foreground font-medium">You own this listing, so you can't send yourself a booking request.</p>
+          <Link href={`/listings/${listing.id}`}>
+            <Button variant="outline">Back to listing</Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   const calculateDays = () => {
     if (!dateRange?.from || !dateRange?.to) return 0
     return countInclusiveRentalDays(dateRange.from, dateRange.to)
@@ -377,7 +390,7 @@ export default function RequestBookingPage() {
             <Card className="p-6 bg-card">
               <h3 className="text-lg font-semibold text-foreground mb-4">Message to Owner</h3>
               <textarea
-                className="w-full border border-border rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500/80 resize-none bg-background text-foreground"
+                className="w-full border border-border rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-ring resize-none bg-background text-foreground"
                 placeholder="Tell the owner about your booking request, any special requirements, or questions..."
                 rows={6}
                 value={message}
@@ -394,79 +407,74 @@ export default function RequestBookingPage() {
 
           {/* Right Column - Booking Summary */}
           <div className="order-1 md:order-2 md:col-span-1">
-            <Card className="rounded-2xl border border-purple-100 bg-card p-5 shadow-[0_18px_45px_rgba(147,51,234,0.25)] md:sticky md:top-24 md:p-6">
-              <h3 className="text-lg font-semibold text-purple-700 mb-6">Booking Summary</h3>
-              
+            <Card className="rounded-2xl border border-border bg-card p-5 shadow-[var(--soft-shadow)] md:sticky md:top-24 md:p-6">
+              <h3 className="text-base font-semibold text-foreground mb-4">Booking Summary</h3>
+
               {dateRange?.from && dateRange?.to ? (
-                <div className="mt-2 overflow-hidden rounded-2xl border border-purple-100/80 shadow-sm shadow-purple-200/80 bg-background">
-                  <table className="w-full text-sm">
-                    <tbody>
-                      <tr className="bg-muted/60">
-                        <th className="px-3 py-2 text-left text-muted-foreground">Dates</th>
-                        <td className="px-3 py-2 font-medium text-foreground">
-                          {dateRange.from.toLocaleDateString()} - {dateRange.to.toLocaleDateString()}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="px-3 py-2 text-left text-muted-foreground">Duration</th>
-                        <td className="px-3 py-2 font-medium text-foreground">
-                          {calculateDays()} day{calculateDays() !== 1 ? 's' : ''}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="px-3 py-2 text-left text-muted-foreground">Price / day</th>
-                        <td className="px-3 py-2 font-medium text-foreground">
-                          ${listing.price_per_day || '0.00'}
-                        </td>
-                      </tr>
-                      <tr className="bg-muted/60">
-                        <th className="px-3 py-2 text-left text-muted-foreground">Total</th>
-                        <td className="px-3 py-2">
-                          <div className="inline-flex items-baseline justify-end w-full rounded-full bg-gradient-to-r from-purple-600 via-purple-500 to-fuchsia-500 text-white px-3 py-1.5 shadow-[0_12px_30px_rgba(147,51,234,0.6)]">
-                            <span className="text-lg font-semibold">
-                              ${calculateTotal().toFixed(2)}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="px-3 py-2 text-left text-muted-foreground align-top">Message</th>
-                        <td className="px-3 py-2 text-foreground whitespace-pre-wrap">
-                          {message.trim() ? (
-                            message
-                          ) : (
-                            <span className="text-muted-foreground/70">No message yet</span>
-                          )}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background text-sm">
+                  <div className="flex items-center justify-between gap-3 px-4 py-3">
+                    <span className="text-muted-foreground">Dates</span>
+                    <span className="font-medium text-foreground text-right">
+                      {dateRange.from.toLocaleDateString()} – {dateRange.to.toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 px-4 py-3">
+                    <span className="text-muted-foreground">Duration</span>
+                    <span className="font-medium text-foreground">
+                      {calculateDays()} day{calculateDays() !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 px-4 py-3">
+                    <span className="text-muted-foreground">Price / day</span>
+                    <span className="font-medium text-foreground">
+                      ${listing.price_per_day || '0.00'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 bg-primary/5 px-4 py-3">
+                    <span className="font-medium text-foreground">Total</span>
+                    <span className="text-base font-bold text-primary">
+                      ${calculateTotal().toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="px-4 py-3">
+                    <span className="mb-1 block text-muted-foreground">Message</span>
+                    <p className="text-foreground whitespace-pre-wrap">
+                      {message.trim() ? (
+                        message
+                      ) : (
+                        <span className="text-muted-foreground/70">No message yet</span>
+                      )}
+                    </p>
+                  </div>
                 </div>
               ) : (
-                <div className="mt-2 text-sm text-muted-foreground text-center py-4">
-                  Select dates on the listing page to see your full price breakdown.
+                <div className="text-sm text-muted-foreground text-center py-4">
+                  <p className="mb-3">Select dates on the listing page to see your full price breakdown.</p>
+                  <Link href={`/listings/${listing.id}`}>
+                    <Button variant="outline" size="sm">Select dates</Button>
+                  </Link>
                 </div>
               )}
 
               <Button
                 onClick={handleSendRequest}
                 disabled={loading || !message.trim() || !dateRange?.from || !dateRange?.to}
-                className="mt-6 w-full rounded-xl bg-primary py-6 text-lg font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-5 w-full rounded-xl bg-primary py-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 animate-spin" />
+                    <Clock className="h-4 w-4 animate-spin" />
                     Sending...
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    <Check className="h-5 w-5" />
+                    <Check className="h-4 w-4" />
                     Send Booking Request
                   </span>
                 )}
               </Button>
 
-              <p className="mt-4 text-center text-xs text-gray-500">
+              <p className="mt-4 text-center text-xs text-muted-foreground">
                 You'll be redirected to chat to continue the conversation
               </p>
             </Card>

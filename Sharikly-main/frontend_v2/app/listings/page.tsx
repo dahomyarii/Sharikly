@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import axiosInstance from "@/lib/axios";
 import ListingCard from "@/components/ListingCard";
 import SkeletonLoader from "@/components/SkeletonLoader";
+import { CustomSelect } from "@/components/CustomSelect";
+import { createPortal } from "react-dom";
 import { Suspense, useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -31,6 +33,7 @@ const fetcher = (url: string) => axiosInstance.get(url).then((res) => res.data);
 function buildListingsUrl(params: {
   search: string;
   category: string;
+  city: string;
   min_price: string;
   max_price: string;
   rating_min: string;
@@ -42,6 +45,7 @@ function buildListingsUrl(params: {
   const sp = new URLSearchParams();
   if (params.search) sp.set("search", params.search);
   if (params.category) sp.set("category", params.category);
+  if (params.city) sp.set("city", params.city);
   if (params.min_price) sp.set("min_price", params.min_price);
   if (params.max_price) sp.set("max_price", params.max_price);
   if (params.rating_min) sp.set("rating_min", params.rating_min);
@@ -81,6 +85,7 @@ function ListingsPageContent() {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [city, setCity] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [ratingMin, setRatingMin] = useState("");
@@ -91,6 +96,7 @@ function ListingsPageContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [draftCategory, setDraftCategory] = useState("");
+  const [draftCity, setDraftCity] = useState("");
   const [draftMinPrice, setDraftMinPrice] = useState("");
   const [draftMaxPrice, setDraftMaxPrice] = useState("");
   const [draftRatingMin, setDraftRatingMin] = useState("");
@@ -101,12 +107,16 @@ function ListingsPageContent() {
   const [selectedListingId, setSelectedListingId] = useState<number | null>(null);
   const [urlReady, setUrlReady] = useState(false);
   const filtersPanelRef = useRef<HTMLDivElement>(null);
+  const filtersDropdownRef = useRef<HTMLDivElement>(null);
+  const filtersButtonRef = useRef<HTMLDivElement>(null);
+  const [filtersPos, setFiltersPos] = useState<{ left: number; top: number; width: number } | null>(null);
   const hasSyncedFromUrl = useRef(false);
   const lastGoodData = useRef<{ listings: unknown[]; totalCount: number; hasNext: boolean; hasPrevious: boolean } | null>(null);
   const [showSuggest, setShowSuggest] = useState(false);
   const [canUseSavedSearches, setCanUseSavedSearches] = useState(false);
 
   const debouncedSearch = useDebounce(search, DEBOUNCE_MS);
+  const debouncedCity = useDebounce(city, DEBOUNCE_MS);
   const debouncedMinPrice = useDebounce(minPrice, DEBOUNCE_MS);
   const debouncedMaxPrice = useDebounce(maxPrice, DEBOUNCE_MS);
   const debouncedRatingMin = useDebounce(ratingMin, DEBOUNCE_MS);
@@ -125,6 +135,7 @@ function ListingsPageContent() {
     hasSyncedFromUrl.current = true;
     const q = searchParams.get("search") ?? "";
     const cat = searchParams.get("category") ?? "";
+    const cty = searchParams.get("city") ?? "";
     const min = searchParams.get("min_price") ?? "";
     const max = searchParams.get("max_price") ?? "";
     const rmin = searchParams.get("rating_min") ?? "";
@@ -134,6 +145,7 @@ function ListingsPageContent() {
     const p = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
     setSearch(q);
     setCategory(cat);
+    setCity(cty);
     setMinPrice(min);
     setMaxPrice(max);
     setRatingMin(rmin);
@@ -149,6 +161,7 @@ function ListingsPageContent() {
     const sp = new URLSearchParams();
     if (search) sp.set("search", search);
     if (category) sp.set("category", category);
+    if (city) sp.set("city", city);
     if (minPrice) sp.set("min_price", minPrice);
     if (maxPrice) sp.set("max_price", maxPrice);
     if (ratingMin) sp.set("rating_min", ratingMin);
@@ -158,7 +171,7 @@ function ListingsPageContent() {
     if (page > 1) sp.set("page", String(page));
     const qs = sp.toString();
     window.history.replaceState(null, "", qs ? `/listings?${qs}` : "/listings");
-  }, [urlReady, search, category, minPrice, maxPrice, ratingMin, availableFrom, availableTo, order, page]);
+  }, [urlReady, search, category, city, minPrice, maxPrice, ratingMin, availableFrom, availableTo, order, page]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -171,27 +184,48 @@ function ListingsPageContent() {
   useEffect(() => {
     if (!showFilters || !isMobileViewport) return;
     setDraftCategory(category);
+    setDraftCity(city);
     setDraftMinPrice(minPrice);
     setDraftMaxPrice(maxPrice);
     setDraftRatingMin(ratingMin);
     setDraftAvailableFrom(availableFrom);
     setDraftAvailableTo(availableTo);
     setDraftOrder(order);
-  }, [showFilters, isMobileViewport, category, minPrice, maxPrice, ratingMin, availableFrom, availableTo, order]);
+  }, [showFilters, isMobileViewport, category, city, minPrice, maxPrice, ratingMin, availableFrom, availableTo, order]);
 
   useEffect(() => {
     if (!showFilters) return;
     const handleOutsideClick = (e: MouseEvent) => {
-      if (filtersPanelRef.current && !filtersPanelRef.current.contains(e.target as Node)) {
-        setShowFilters(false);
-      }
+      const target = e.target as Node;
+      if (filtersPanelRef.current?.contains(target)) return;
+      if (filtersDropdownRef.current?.contains(target)) return;
+      if (filtersButtonRef.current?.contains(target)) return;
+      setShowFilters(false);
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [showFilters]);
 
+  useEffect(() => {
+    if (!showFilters) return;
+    const updatePos = () => {
+      const el = filtersPanelRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      setFiltersPos({ left: r.left, top: r.bottom + 10, width: r.width });
+    };
+    updatePos();
+    window.addEventListener("scroll", updatePos, true);
+    window.addEventListener("resize", updatePos);
+    return () => {
+      window.removeEventListener("scroll", updatePos, true);
+      window.removeEventListener("resize", updatePos);
+    };
+  }, [showFilters]);
+
   const applyDraftFilters = () => {
     setCategory(draftCategory);
+    setCity(draftCity);
     setMinPrice(draftMinPrice);
     setMaxPrice(draftMaxPrice);
     setRatingMin(draftRatingMin);
@@ -207,6 +241,7 @@ function ListingsPageContent() {
       buildListingsUrl({
         search: debouncedSearch,
         category,
+        city: debouncedCity,
         min_price: debouncedMinPrice,
         max_price: debouncedMaxPrice,
         rating_min: debouncedRatingMin,
@@ -215,7 +250,7 @@ function ListingsPageContent() {
         order,
         page,
       }),
-    [debouncedSearch, category, debouncedMinPrice, debouncedMaxPrice, debouncedRatingMin, availableFrom, availableTo, order, page]
+    [debouncedSearch, category, debouncedCity, debouncedMinPrice, debouncedMaxPrice, debouncedRatingMin, availableFrom, availableTo, order, page]
   );
 
   const { data: rawData, error, isLoading } = useSWR(urlReady ? listingsUrl : null, fetcher, {
@@ -303,17 +338,19 @@ function ListingsPageContent() {
                   Map
                 </button>
               </div>
-              <Button
-                variant="soft"
-                onClick={() => setShowFilters(!showFilters)}
-                className="min-h-[44px]"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                Filters
-              </Button>
+              <div ref={filtersButtonRef}>
+                <Button
+                  variant={showFilters ? "default" : "soft"}
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="min-h-[44px]"
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {showFilters ? "Close" : "Filters"}
+                </Button>
+              </div>
               <Button
                 variant="outline"
-                disabled={!canUseSavedSearches || (!search && !category && !minPrice && !maxPrice && !ratingMin && !availableFrom && !availableTo)}
+                disabled={!canUseSavedSearches || (!search && !category && !city && !minPrice && !maxPrice && !ratingMin && !availableFrom && !availableTo)}
                 onClick={async () => {
                   if (!canUseSavedSearches || typeof window === "undefined") return;
                   const qs = window.location.search || "";
@@ -330,7 +367,7 @@ function ListingsPageContent() {
           </div>
 
           <div className="glass-panel relative rounded-[30px] p-2 sm:p-3" ref={filtersPanelRef}>
-            <div className="grid gap-2 lg:grid-cols-[1fr_auto_auto]">
+            <div className="grid gap-2 lg:grid-cols-[1fr_auto]">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
@@ -386,48 +423,67 @@ function ListingsPageContent() {
                   </div>
                 )}
               </div>
-              <select
+              <CustomSelect
                 value={isMobileViewport ? draftOrder : order}
-                onChange={(e) => {
+                onChange={(v) => {
                   if (isMobileViewport) {
-                    setDraftOrder(e.target.value);
+                    setDraftOrder(v);
                   } else {
-                    setOrder(e.target.value);
+                    setOrder(v);
                     setPage(1);
                   }
                 }}
-                className="min-h-[52px] rounded-[22px] border border-transparent bg-white/95 px-4 text-sm outline-none"
-              >
-                <option value="newest">{t("sort_newest")}</option>
-                <option value="price_asc">{t("sort_price_low")}</option>
-                <option value="price_desc">{t("sort_price_high")}</option>
-              </select>
-              <Button size="lg" className="min-h-[52px] px-6" onClick={() => setShowFilters((v) => !v)}>
-                {showFilters ? "Close" : "Customize"}
-              </Button>
+                options={[
+                  { value: "newest", label: t("sort_newest") },
+                  { value: "price_asc", label: t("sort_price_low") },
+                  { value: "price_desc", label: t("sort_price_high") },
+                ]}
+                className="lg:w-56"
+                triggerClassName="min-h-[52px] h-auto rounded-[22px] bg-white/95 sm:h-auto"
+              />
             </div>
 
-            {showFilters && (
-              <div className="surface-panel absolute left-0 right-0 z-20 mt-2.5 grid gap-3 rounded-[26px] bg-popover/95 p-4 sm:grid-cols-2 xl:grid-cols-6">
+            {showFilters && filtersPos && typeof document !== "undefined" && createPortal(
+              <div
+                ref={filtersDropdownRef}
+                style={{ position: "fixed", left: filtersPos.left, top: filtersPos.top, width: filtersPos.width, zIndex: 50 }}
+                className="surface-panel grid gap-3 rounded-[26px] bg-popover/95 p-4 sm:grid-cols-2 xl:grid-cols-7"
+              >
               <div>
                 <label className={labelClasses}>{t("category")}</label>
-                <select
+                <CustomSelect
                   value={isMobileViewport ? draftCategory : category}
-                  onChange={(e) => {
+                  onChange={(v) => {
                     if (isMobileViewport) {
-                      setDraftCategory(e.target.value);
+                      setDraftCategory(v);
                     } else {
-                      setCategory(e.target.value);
+                      setCategory(v);
                       setPage(1);
                     }
                   }}
-                  className={`${selectClasses} w-full`}
-                >
-                  <option value="">{t("all_categories")}</option>
-                  {(categories || []).map((cat: any) => (
-                    <option key={cat.id} value={String(cat.id)}>{cat.name}</option>
-                  ))}
-                </select>
+                  options={[
+                    { value: "", label: t("all categories") },
+                    ...(categories || []).map((cat: any) => ({ value: String(cat.id), label: cat.name })),
+                  ]}
+                  triggerClassName={`${selectClasses} h-auto sm:h-auto`}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>City</label>
+                <input
+                  type="text"
+                  value={isMobileViewport ? draftCity : city}
+                  onChange={(e) => {
+                    if (isMobileViewport) {
+                      setDraftCity(e.target.value);
+                    } else {
+                      setCity(e.target.value);
+                      setPage(1);
+                    }
+                  }}
+                  placeholder="Any city"
+                  className={inputClasses}
+                />
               </div>
               <div>
                 <label className={labelClasses}>{t("min_price")}</label>
@@ -469,23 +525,24 @@ function ListingsPageContent() {
               </div>
               <div>
                 <label className={labelClasses}>Min rating</label>
-                <select
+                <CustomSelect
                   value={isMobileViewport ? draftRatingMin : ratingMin}
-                  onChange={(e) => {
+                  onChange={(v) => {
                     if (isMobileViewport) {
-                      setDraftRatingMin(e.target.value);
+                      setDraftRatingMin(v);
                     } else {
-                      setRatingMin(e.target.value);
+                      setRatingMin(v);
                       setPage(1);
                     }
                   }}
-                  className={`${selectClasses} w-full`}
-                >
-                  <option value="">Any</option>
-                  <option value="4">4+</option>
-                  <option value="4.5">4.5+</option>
-                  <option value="5">5</option>
-                </select>
+                  options={[
+                    { value: "", label: "Any" },
+                    { value: "4", label: "4+" },
+                    { value: "4.5", label: "4.5+" },
+                    { value: "5", label: "5" },
+                  ]}
+                  triggerClassName={`${selectClasses} h-auto sm:h-auto`}
+                />
               </div>
               <div>
                 <label className={labelClasses}>Available from</label>
@@ -520,11 +577,12 @@ function ListingsPageContent() {
                 />
               </div>
                 {isMobileViewport && (
-                  <div className="sm:col-span-2 xl:col-span-6 flex justify-end gap-2 pt-1">
+                  <div className="sm:col-span-2 xl:col-span-7 flex justify-end gap-2 pt-1">
                     <Button
                       variant="outline"
                       onClick={() => {
                         setDraftCategory(category);
+                        setDraftCity(city);
                         setDraftMinPrice(minPrice);
                         setDraftMaxPrice(maxPrice);
                         setDraftRatingMin(ratingMin);
@@ -539,7 +597,8 @@ function ListingsPageContent() {
                     <Button onClick={applyDraftFilters}>Apply</Button>
                   </div>
                 )}
-              </div>
+              </div>,
+              document.body
             )}
           </div>
 
@@ -639,7 +698,7 @@ function ListingsPageContent() {
                   Try adjusting your filters or browse all listings.
                 </p>
                 <div className="flex flex-col justify-center gap-2 sm:flex-row">
-                  {(debouncedSearch || category || debouncedMinPrice || debouncedMaxPrice) && (
+                  {(debouncedSearch || category || debouncedCity || debouncedMinPrice || debouncedMaxPrice) && (
                     <Link
                       href="/listings"
                       className="inline-flex items-center justify-center min-h-[44px] rounded-full border border-primary px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10"

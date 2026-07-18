@@ -165,7 +165,7 @@ export default function LocationPicker({
       />
 
       <div className="space-y-3 pt-4 border-t">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-gray-700">Latitude</label>
             <div className="text-lg font-semibold text-gray-900 mt-1">

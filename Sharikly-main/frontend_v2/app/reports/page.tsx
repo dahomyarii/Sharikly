@@ -58,7 +58,8 @@ export default function MyReportsPage() {
 
   return (
     <div className="min-h-screen bg-background py-4 sm:py-6 pb-24 md:pb-8">
-      <div className="max-w-2xl mx-auto px-3 sm:px-4">
+      <div className="marketplace-shell">
+        <div className="max-w-2xl">
         <div className="flex items-center gap-3 mb-4 sm:mb-6">
           <button
             onClick={() => router.back()}
@@ -166,6 +167,7 @@ export default function MyReportsPage() {
             })}
           </div>
         )}
+        </div>
       </div>
     </div>
   );
