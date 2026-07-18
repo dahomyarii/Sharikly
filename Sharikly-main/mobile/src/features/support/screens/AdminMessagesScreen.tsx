@@ -1,6 +1,8 @@
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
-import { useNavigation } from "@react-navigation/native";
+import { showToast } from "@/core/events/appEvents";
+import { useAuthStore } from "@/store/authStore";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { ArrowLeft, MessageSquare, Send, Shield } from "lucide-react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useRef, useState } from "react";
@@ -29,6 +31,8 @@ function formatTime(iso: string) {
 export function AdminMessagesScreen(): React.ReactElement {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
+  const isFocused = useIsFocused();
+  const hasSession = useAuthStore((s) => s.hasSession);
   const flatRef = useRef<FlatList>(null);
   const [text, setText] = useState("");
 
@@ -38,7 +42,9 @@ export function AdminMessagesScreen(): React.ReactElement {
       const { data } = await axiosInstance.get(buildApiUrl("/user-admin-messages/"));
       return data;
     },
-    refetchInterval: 6000,
+    enabled: hasSession,
+    // Only poll while focused + signed in (was hitting the network every 6s in the background).
+    refetchInterval: isFocused && hasSession ? 6000 : false,
   });
 
   const sendMutation = useMutation({
@@ -53,6 +59,7 @@ export function AdminMessagesScreen(): React.ReactElement {
       setText("");
       setTimeout(() => flatRef.current?.scrollToEnd({ animated: true }), 200);
     },
+    onError: () => showToast("Couldn't send your message. Please try again.", "error"),
   });
 
   const rawMessages = q.data;

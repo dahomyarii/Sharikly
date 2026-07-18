@@ -112,6 +112,8 @@ class UserSerializer(serializers.ModelSerializer):
     listings_count = serializers.SerializerMethodField()
     bookings_count = serializers.SerializerMethodField()
     total_earnings = serializers.SerializerMethodField()
+    reviews_count = serializers.SerializerMethodField()
+    saved_items_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -124,6 +126,7 @@ class UserSerializer(serializers.ModelSerializer):
             "avatar",
             "bio",
             "is_email_verified",
+            "is_staff",
             "phone_number",
             "language",
             "payout_bank",
@@ -134,7 +137,13 @@ class UserSerializer(serializers.ModelSerializer):
             "listings_count",
             "bookings_count",
             "total_earnings",
+            "reviews_count",
+            "saved_items_count",
         ]
+        # SECURITY: these must never be writable via PATCH /api/auth/me/ (this serializer
+        # is used for both read and update). Without this, any authenticated user could
+        # POST {"is_staff": true} and escalate to admin, or self-verify their email.
+        read_only_fields = ["id", "is_staff", "is_email_verified"]
 
     def _get_cached_response_stats(self, obj: User):
         cached = getattr(obj, "_cached_response_stats", None)
@@ -172,6 +181,14 @@ class UserSerializer(serializers.ModelSerializer):
             payment_status=Booking.PaymentStatus.PAID
         ).aggregate(total=Coalesce(Sum('total_price'), Decimal('0.00')))
         return float(result['total'])
+
+    def get_reviews_count(self, obj):
+        from .models import Review
+        return Review.objects.filter(listing__owner=obj).count()
+
+    def get_saved_items_count(self, obj):
+        from .models import Favorite
+        return Favorite.objects.filter(user=obj).count()
 
 
 class PublicUserSerializer(serializers.ModelSerializer):
@@ -249,6 +266,25 @@ class CategorySerializer(serializers.ModelSerializer):
 # ==========================
 # REVIEW SERIALIZER (rating + comment)
 # ==========================
+class PublicReviewSerializer(serializers.ModelSerializer):
+    """Reviews a host has received (left on their listings). Public-safe: exposes only
+    the reviewer's public identity (id/username/avatar), never email/phone/bank."""
+    reviewer = serializers.SerializerMethodField()
+    listing_title = serializers.CharField(source="listing.title", read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ["id", "rating", "comment", "created_at", "listing", "listing_title", "reviewer"]
+
+    def get_reviewer(self, obj):
+        u = obj.user
+        try:
+            avatar = u.avatar.url if u.avatar else None
+        except Exception:
+            avatar = None
+        return {"id": u.id, "username": u.username, "avatar": avatar}
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     listing = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -324,6 +360,7 @@ class ListingSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "price_per_day",
+            "deposit",
             "city",
             "is_active",
             "latitude",
@@ -548,6 +585,8 @@ class MessageSerializer(serializers.ModelSerializer):
     sender = UserSerializer(read_only=True)
     image_url = serializers.SerializerMethodField()
     audio_url = serializers.SerializerMethodField()
+    file_url = serializers.SerializerMethodField()
+    file_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
@@ -560,6 +599,12 @@ class MessageSerializer(serializers.ModelSerializer):
             "image_url",
             "audio",
             "audio_url",
+            "audio_duration",
+            "file",
+            "file_url",
+            "file_name",
+            "latitude",
+            "longitude",
             "created_at",
         ]
 
@@ -568,6 +613,15 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def get_audio_url(self, obj):
         return obj.audio.url if obj.audio else None
+
+    def get_file_url(self, obj):
+        return obj.file.url if obj.file else None
+
+    def get_file_name(self, obj):
+        if not obj.file:
+            return None
+        import os
+        return os.path.basename(obj.file.name)
 
 
 # ==========================
@@ -578,10 +632,19 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     last_message = serializers.SerializerMethodField()
     listing = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
+    booking_status = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
-        fields = ["id", "participants", "created_at", "last_message", "listing", "unread_count"]
+        fields = [
+            "id",
+            "participants",
+            "created_at",
+            "last_message",
+            "listing",
+            "unread_count",
+            "booking_status",
+        ]
 
     def get_last_message(self, obj):
         last_msg = obj.messages.last()
@@ -637,6 +700,40 @@ class ChatRoomSerializer(serializers.ModelSerializer):
             )
         except Exception:
             return 0
+
+    def get_booking_status(self, obj):
+        """
+        Real booking lifecycle status for the room's listing (if any) — matches
+        against any participant in the room who has an actual Booking on file
+        for that listing (whichever participant is the renter).
+        Returns one of: "ongoing", "pickup_tomorrow", "completed", or None.
+        """
+        listing = getattr(obj, "listing", None)
+        if not listing:
+            return None
+
+        participant_ids = [p.id for p in obj.participants.all()]
+        booking = (
+            Booking.objects.filter(listing=listing, renter_id__in=participant_ids)
+            .order_by("-created_at")
+            .first()
+        )
+        if not booking:
+            return None
+
+        if booking.status in (Booking.Status.CANCELLED, Booking.Status.DECLINED):
+            return None
+
+        if booking.status == Booking.Status.PENDING:
+            return "ongoing"
+
+        # CONFIRMED
+        today = timezone.now().date()
+        if booking.end_date < today:
+            return "completed"
+        if booking.start_date == today + timedelta(days=1):
+            return "pickup_tomorrow"
+        return "ongoing"
 
 
 # ==========================

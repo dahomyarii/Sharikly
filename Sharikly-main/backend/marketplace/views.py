@@ -125,6 +125,21 @@ class PublicUserView(generics.RetrieveAPIView):
     lookup_field = "pk"
 
 
+class UserReviewsView(generics.ListAPIView):
+    """Public: reviews a host has received (reviews left on their listings)."""
+    from .serializers import PublicReviewSerializer
+    serializer_class = PublicReviewSerializer
+    permission_classes = [permissions.AllowAny]
+    pagination_class = None
+
+    def get_queryset(self):
+        return (
+            Review.objects.filter(listing__owner_id=self.kwargs["pk"])
+            .select_related("user", "listing")
+            .order_by("-created_at")
+        )
+
+
 def _blocked_user_ids(user):
     """User IDs that cannot interact in chat with `user` (either direction)."""
     from .models import BlockedUser
@@ -156,6 +171,11 @@ def _create_notification(user, notification_type, title, body: str = "", link: s
             Notification.NotificationType.BOOKING_DECLINED,
             Notification.NotificationType.BOOKING_CANCELLED,
         ) and not prefs.inapp_booking_updates:
+            return
+        if notification_type in (
+            Notification.NotificationType.PAYMENT_RECEIVED,
+            Notification.NotificationType.RENTAL_COMPLETED,
+        ) and not prefs.earnings_updates:
             return
     except Exception:
         # If prefs lookup fails, still try to notify in-app
@@ -568,7 +588,12 @@ class DeleteAccountView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        user.delete()
+        # Anonymize-and-retain (GDPR/PDPL): scrub personal data + disable the
+        # account, but keep anonymized transaction/moderation records so other
+        # users' bookings/reviews/chats and accounting stay intact.
+        from accounts.services import anonymize_and_close_account
+
+        anonymize_and_close_account(user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -1002,10 +1027,11 @@ class BookingListCreateView(generics.ListCreateAPIView):
         listing_id = request.data.get("listing")
         start_date = request.data.get("start_date")
         end_date = request.data.get("end_date")
-        total_price = request.data.get("total_price")
-        if not all([listing_id, start_date, end_date, total_price is not None]):
+        # NOTE: total_price is intentionally NOT read from the client — it is recomputed
+        # server-side below from the listing's rate to prevent price tampering.
+        if not all([listing_id, start_date, end_date]):
             return Response(
-                {"detail": "listing, start_date, end_date and total_price are required."},
+                {"detail": "listing, start_date and end_date are required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         listing = get_object_or_404(Listing, pk=listing_id)
@@ -1032,6 +1058,10 @@ class BookingListCreateView(generics.ListCreateAPIView):
                 {"detail": "These dates overlap an existing booking. Please check availability."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        # SECURITY: recompute the price from the listing's own rate. Never trust a
+        # client-supplied total_price, or a renter could book anything for 1 SAR.
+        rental_days = (end - start).days or 1
+        total_price = listing.price_per_day * rental_days
         booking = Booking.objects.create(
             listing=listing,
             renter=request.user,
@@ -1299,9 +1329,21 @@ class MoyasarPaymentCallbackView(APIView):
             if invoice_status != "paid" or not invoice_id:
                 return Response(status=status.HTTP_200_OK)
             booking = Booking.objects.filter(stripe_payment_id=invoice_id).first()
-            if booking:
+            if booking and booking.payment_status != Booking.PaymentStatus.PAID:
                 booking.payment_status = Booking.PaymentStatus.PAID
                 booking.save(update_fields=["payment_status"])
+                # Notify the listing owner that they've been paid ("Rentals" tab).
+                owner = booking.listing.owner
+                renter_name = (booking.renter.first_name or booking.renter.username or "A renter")
+                app_url = getattr(settings, "FRONTEND_APP_URL", "").rstrip("/") or ""
+                link = f"{app_url}/earnings" if app_url else "/earnings"
+                _create_notification(
+                    owner,
+                    Notification.NotificationType.PAYMENT_RECEIVED,
+                    "Payment received",
+                    body=f'You\'ve earned SAR {booking.total_price} from {renter_name}\'s booking of "{booking.listing.title}".',
+                    link=link,
+                )
         except Exception:
             logger.warning("Webhook: failed to update booking payment status")
         return Response(status=status.HTTP_200_OK)
@@ -1367,6 +1409,14 @@ class ChatRoomListCreateView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class ChatRoomDetailView(generics.RetrieveAPIView):
+    serializer_class = ChatRoomSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return ChatRoom.objects.filter(participants=self.request.user).distinct()
+
+
 class ChatRoomGetOrCreateView(APIView):
     """
     POST: get or create a 1:1 chat room with another user.
@@ -1407,11 +1457,22 @@ class ChatRoomGetOrCreateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        existing = (
+        # Find an existing 1:1 room with EXACTLY these two participants.
+        # The participant count must be computed in a query SEPARATE from the two
+        # "contains X" filters: chaining .filter(participants=me).filter(participants=other)
+        # produces multiple joins that make Count("participants") return 1 instead of 2,
+        # so the old single-query version never matched — and a duplicate room was
+        # created on every open (the "chat doubles" bug).
+        both_room_ids = list(
             ChatRoom.objects.filter(participants=request.user)
             .filter(participants=other)
-            .annotate(pcount=Count("participants"))
+            .values_list("id", flat=True)
+        )
+        existing = (
+            ChatRoom.objects.filter(id__in=both_room_ids)
+            .annotate(pcount=Count("participants", distinct=True))
             .filter(pcount=2)
+            .order_by("created_at")
             .first()
         )
         listing_id = request.data.get("listing_id")

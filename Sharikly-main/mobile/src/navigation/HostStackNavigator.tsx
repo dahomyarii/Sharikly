@@ -13,8 +13,8 @@ const Stack = createNativeStackNavigator<HostStackParamList>();
 
 export function HostStackNavigator(): React.ReactElement {
   return (
-    <Stack.Navigator initialRouteName="HostOverview">
-      <Stack.Screen name="HostOverview" component={HostOverviewScreen} options={{ title: "Overview" }} />
+    <Stack.Navigator initialRouteName="HostOverview" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="HostOverview" component={HostOverviewScreen} />
       <Stack.Screen name="HostEarnings" component={HostEarningsScreen} />
       <Stack.Screen name="HostListings" component={HostListingsManageScreen} />
       <Stack.Screen name="HostOpportunities" component={HostOpportunitiesScreen} />

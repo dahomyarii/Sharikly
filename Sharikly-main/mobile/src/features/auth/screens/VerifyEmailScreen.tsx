@@ -36,7 +36,7 @@ export function VerifyEmailScreen(): React.ReactElement {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <LinearGradient
-        colors={["#9356F5", "#6D28D9"]}
+        colors={["#C164FF", "#7A5AFF"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.hero}

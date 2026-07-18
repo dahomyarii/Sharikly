@@ -1,5 +1,6 @@
 import { ListingCard } from "@/components/ui/ListingCard";
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { getFavorites, removeFavorite } from "@/services/api/endpoints/favorites";
 import type { ProfileStackParamList, MainTabParamList } from "@/navigation/types";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -79,10 +80,7 @@ export function FavoritesScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Bookmark size={20} color={colors.primary} />
-        <Text style={styles.screenTitle}>Saved Favorites</Text>
-      </View>
+      <ScreenHeader title="Saved Favorites" icon={<Bookmark size={20} color={colors.primary} />} />
 
       {q.isPending ? (
         <View style={styles.center}>
@@ -171,7 +169,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "rgba(124, 58, 237, 0.05)",
+    backgroundColor: "rgba(176, 71, 246, 0.05)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,

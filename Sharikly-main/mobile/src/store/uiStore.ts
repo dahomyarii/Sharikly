@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 type UiState = {
-  lastToast: { message: string; type: "warning" | "error" | "info" } | null;
+  lastToast: { message: string; type: "success" | "warning" | "error" | "info" } | null;
   setLastToast: (t: UiState["lastToast"]) => void;
 };
 

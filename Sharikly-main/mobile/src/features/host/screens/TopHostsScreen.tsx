@@ -1,9 +1,10 @@
 import { colors, radii, spacing } from "@/core/theme/tokens";
 import { getPublicEarnings } from "@/services/api/endpoints/earnings";
 import { useQuery } from "@tanstack/react-query";
-import { Star, Trophy, Award } from "lucide-react-native";
+import { useNavigation } from "@react-navigation/native";
+import { Star, Trophy, Award, ArrowLeft } from "lucide-react-native";
 import React from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 function formatSar(v: string | number | undefined) {
@@ -15,6 +16,7 @@ function formatSar(v: string | number | undefined) {
 }
 
 export function TopHostsScreen(): React.ReactElement {
+  const navigation = useNavigation<any>();
 
   const q = useQuery({
     queryKey: ["earnings", "public"],
@@ -22,14 +24,20 @@ export function TopHostsScreen(): React.ReactElement {
   });
 
   const data: any = q.data;
-  const topEarners: any[] = data?.top_earners ?? data?.leaderboard ?? [];
+  // Match the backend key (highest_earning_lessors_per_month); the old top_earners/
+  // leaderboard guesses never existed, so this list was always empty.
+  const topEarners: any[] = data?.highest_earning_lessors_per_month ?? [];
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     const initial = (item.username ?? item.name ?? "H").charAt(0).toUpperCase();
     const rankColors = ["#F59E0B", "#9CA3AF", "#B45309"];
 
     return (
-      <View style={[styles.hostCard, index < topEarners.length - 1 && styles.hostDivider]}>
+      <Pressable
+        style={[styles.hostCard, index < topEarners.length - 1 && styles.hostDivider]}
+        onPress={() => item.id != null && navigation.navigate("PublicProfile", { userId: item.id })}
+        disabled={item.id == null}
+      >
         <View style={[styles.rankBadge, { backgroundColor: rankColors[index] ?? colors.muted }]}>
           <Text style={styles.rankText}>{index + 1}</Text>
         </View>
@@ -43,11 +51,11 @@ export function TopHostsScreen(): React.ReactElement {
           {item.city && <Text style={styles.hostCity}>{item.city}</Text>}
           <View style={styles.ratingRow}>
             <Star size={11} color="#F59E0B" fill="#F59E0B" />
-            <Text style={styles.ratingText}>{(item.rating ?? 5).toFixed(1)}</Text>
+            <Text style={styles.ratingText}>{Number(item.rating ?? 0).toFixed(1)}</Text>
           </View>
         </View>
-        <Text style={styles.earnings}>{formatSar(item.total_earnings ?? item.earnings)}</Text>
-      </View>
+        <Text style={styles.earnings}>{formatSar(item.monthly_earnings)}</Text>
+      </Pressable>
     );
   };
 
@@ -55,11 +63,14 @@ export function TopHostsScreen(): React.ReactElement {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       {/* Hero gradient */}
       <LinearGradient
-        colors={["#9356F5", "#6D28D9"]}
+        colors={["#C164FF", "#7A5AFF"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.heroGradient}
       >
+        <Pressable onPress={() => navigation.goBack()} style={styles.floatBack} hitSlop={10}>
+          <ArrowLeft size={22} color="#FFF" />
+        </Pressable>
         <View style={styles.heroIcon}>
           <Trophy size={28} color="#F59E0B" />
         </View>
@@ -103,6 +114,18 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     alignItems: "center",
     gap: 6,
+  },
+  floatBack: {
+    position: "absolute",
+    top: spacing.md,
+    left: spacing.md,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
   },
   heroIcon: {
     width: 64,

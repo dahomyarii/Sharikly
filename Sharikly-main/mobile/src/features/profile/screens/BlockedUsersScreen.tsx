@@ -1,11 +1,12 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { showToast } from "@/core/events/appEvents";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { User, UserMinus } from "lucide-react-native";
 import React from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   Pressable,
@@ -32,17 +33,17 @@ export function BlockedUsersScreen(): React.ReactElement {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users", "blocked"] });
+      showToast("User unblocked.", "success");
     },
     onError: (err: any) => {
-      Alert.alert("Error", err.response?.data?.detail || "Failed to unblock user.");
+      showToast(err.response?.data?.detail || "Couldn't unblock that user. Please try again.", "error");
     },
   });
 
   const handleUnblock = (userId: number) => {
-    Alert.alert("Unblock User", "Are you sure you want to unblock this user?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Unblock", onPress: () => unblockMutation.mutate(userId) },
-    ]);
+    // Unblocking is low-risk and reversible, so act directly. A button-array
+    // Alert.alert confirm is a no-op on web and would break this flow entirely there.
+    unblockMutation.mutate(userId);
   };
 
   const renderItem = ({ item }: { item: any }) => {
@@ -83,15 +84,21 @@ export function BlockedUsersScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>Blocked Users</Text>
-      </View>
+      <ScreenHeader title="Blocked Users" />
 
       {usersQ.isPending ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
-      ) : usersQ.data?.length === 0 ? (
+      ) : usersQ.isError ? (
+        <View style={styles.center}>
+          <Text style={styles.emptyTitle}>Couldn&apos;t load blocked users</Text>
+          <Text style={styles.emptyText}>Please check your connection and try again.</Text>
+          <Pressable style={[styles.unblockBtn, { marginTop: spacing.lg }]} onPress={() => usersQ.refetch()}>
+            <Text style={styles.unblockBtnText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : (usersQ.data?.length ?? 0) === 0 ? (
         <View style={styles.center}>
           <View style={styles.emptyIconWrap}>
             <UserMinus size={48} color={colors.muted} />
@@ -103,7 +110,7 @@ export function BlockedUsersScreen(): React.ReactElement {
         </View>
       ) : (
         <FlatList
-          data={usersQ.data}
+          data={usersQ.data ?? []}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
           renderItem={renderItem}
@@ -176,7 +183,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "rgba(124, 58, 237, 0.05)",
+    backgroundColor: "rgba(176, 71, 246, 0.05)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: spacing.xl,

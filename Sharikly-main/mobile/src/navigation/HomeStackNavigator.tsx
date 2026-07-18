@@ -7,7 +7,7 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 export function HomeStackNavigator(): React.ReactElement {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Home" component={HomeScreen} options={{ title: "Home" }} />
+      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

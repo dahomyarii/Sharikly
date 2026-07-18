@@ -11,7 +11,10 @@ const queuedMutationSchema = z.object({
   path: z.string(),
   body: z.unknown().optional(),
   createdAt: z.number(),
+  tries: z.number().optional(),
 });
+
+const MAX_FLUSH_TRIES = 5;
 
 export type QueuedMutation = z.infer<typeof queuedMutationSchema>;
 
@@ -63,6 +66,7 @@ export async function flushMutationQueue(): Promise<void> {
   if (pending.length === 0) return;
 
   const remaining: QueuedMutation[] = [];
+  let hadConflict = false;
 
   for (const item of pending) {
     try {
@@ -74,19 +78,28 @@ export async function flushMutationQueue(): Promise<void> {
       logger.info("mutationQueue.flushed", { id: item.id });
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } }).response?.status;
-      if (status === 409 || status === 422) {
-        emitGlobalToast({
-          message: "Some offline changes conflicted with the server. Please review and try again.",
-          type: "warning",
-        });
-        logger.warn("mutationQueue.conflict", { id: item.id, status });
-        remaining.push(item);
-        break;
+      // A 4xx (other than 408/429) will never succeed on retry, so drop it instead of
+      // letting it block the queue forever. Everything else retries up to MAX_FLUSH_TRIES.
+      // Crucially we do NOT break — one bad item must not stall the rest of the queue.
+      const isPermanent =
+        status !== undefined && status >= 400 && status < 500 && status !== 408 && status !== 429;
+      const tries = (item.tries ?? 0) + 1;
+      if (isPermanent || tries >= MAX_FLUSH_TRIES) {
+        if (status === 409 || status === 422) hadConflict = true;
+        logger.warn("mutationQueue.dropped", { id: item.id, status, tries });
+        continue;
       }
-      remaining.push(item);
-      logger.warn("mutationQueue.retryLater", { id: item.id, status });
+      remaining.push({ ...item, tries });
+      logger.warn("mutationQueue.retryLater", { id: item.id, status, tries });
     }
   }
 
   writeQueue(remaining);
+
+  if (hadConflict) {
+    emitGlobalToast({
+      message: "Some offline changes conflicted with the server and were discarded.",
+      type: "warning",
+    });
+  }
 }

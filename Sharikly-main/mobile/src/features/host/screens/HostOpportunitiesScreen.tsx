@@ -1,4 +1,5 @@
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { getLocalRequests, getTrendingSearches } from "@/services/api/endpoints/earnings";
 import type { HostStackParamList, MainTabParamList } from "@/navigation/types";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -34,12 +35,10 @@ export function HostOpportunitiesScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>Opportunities</Text>
-        <Text style={styles.screenSub}>
-          Discover what renters want in your area
-        </Text>
-      </View>
+      <ScreenHeader title="Opportunities" />
+      <Text style={[styles.screenSub, { paddingHorizontal: spacing.md, marginBottom: spacing.sm }]}>
+        Discover what renters want in your area
+      </Text>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Local Requests */}

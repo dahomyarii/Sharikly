@@ -2,7 +2,7 @@ import { ErrorBoundary } from "@/core/errors/ErrorBoundary";
 import { NetInfoSubscription } from "@/core/offline/NetInfoSubscription";
 import { AuthHydration } from "@/core/providers/AuthHydration";
 import { QueryProvider } from "@/core/providers/QueryProvider";
-import { ToastBridge } from "@/core/providers/ToastBridge";
+import { ToastHost } from "@/components/ui/ToastHost";
 import { linking } from "@/navigation/linking";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { NavigationContainer } from "@react-navigation/native";
@@ -24,11 +24,11 @@ export function AppProviders({ children }: AppProvidersProps): React.ReactElemen
           <QueryProvider>
             <AuthHydration />
             <NetInfoSubscription />
-            <ToastBridge />
             <NavigationContainer linking={linking}>
               <RootNavigator />
               {children}
             </NavigationContainer>
+            <ToastHost />
             <StatusBar style="auto" />
           </QueryProvider>
         </ErrorBoundary>
