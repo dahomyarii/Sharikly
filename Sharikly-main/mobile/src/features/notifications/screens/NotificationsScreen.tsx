@@ -274,7 +274,7 @@ export function NotificationsScreen(): React.ReactElement {
               end={{ x: 1, y: 0 }}
               style={styles.ctaBanner}
             >
-              <Pressable onPress={() => (navigation as any).navigate("ExploreTab", { screen: "CreateListing" })} style={{ alignItems: "center" }}>
+              <Pressable onPress={() => (navigation as any).navigate("CreateListing")} style={{ alignItems: "center" }}>
                 <Text style={styles.ctaBannerTitle}>+ List Your Equipment</Text>
                 <Text style={styles.ctaBannerSub}>Earn up to SAR 500/week</Text>
               </Pressable>

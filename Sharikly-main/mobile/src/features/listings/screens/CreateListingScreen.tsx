@@ -1,7 +1,7 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import { getCategories } from "@/services/api/endpoints/listings";
-import type { ListingsStackParamList } from "@/navigation/types";
+import type { RootStackParamList } from "@/navigation/types";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,7 +35,7 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-type Nav = NativeStackNavigationProp<ListingsStackParamList, "CreateListing">;
+type Nav = NativeStackNavigationProp<RootStackParamList, "CreateListing">;
 
 export function CreateListingScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();

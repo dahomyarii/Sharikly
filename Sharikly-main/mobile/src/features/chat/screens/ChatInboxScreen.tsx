@@ -1,8 +1,9 @@
 import { SkeletonList } from "@/components/ui/SkeletonCard";
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
 import { GuestAuthGate } from "@/components/ui/GuestAuthGate";
-import type { InboxStackParamList } from "@/navigation/types";
+import type { InboxStackParamList, RootStackParamList } from "@/navigation/types";
 import { useNavigation } from "@react-navigation/native";
+import type { CompositeNavigationProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { MessageCircle, Plus, Search, User, Edit, ChevronRight, ArrowLeft } from "lucide-react-native";
@@ -30,7 +31,10 @@ function getAvatarUrl(path: string | undefined) {
   return path.startsWith("http") ? path : `${API_BASE.replace("/api", "")}${path}`;
 }
 
-type Nav = NativeStackNavigationProp<InboxStackParamList, "ChatInbox">;
+type Nav = CompositeNavigationProp<
+  NativeStackNavigationProp<InboxStackParamList, "ChatInbox">,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 interface ChatRoom {
   id: number;
@@ -143,12 +147,13 @@ export function ChatInboxScreen(): React.ReactElement {
   });
 
   const navigateToExplore = (screen: "ListingsExplore" | "CreateListing", params?: Record<string, unknown>) => {
-    const parent = (navigation as any).getParent?.();
-    if (parent) {
-      parent.navigate("ExploreTab", { screen, ...(params ? { params } : {}) });
-      return;
+    // CreateListing now lives at the root (above the tabs); ListingsExplore is the Explore tab's root.
+    if (screen === "ListingsExplore") {
+      const parent = (navigation as any).getParent?.();
+      (parent ?? navigation).navigate("ExploreTab", { screen, ...(params ? { params } : {}) });
+    } else {
+      (navigation as any).navigate(screen, params);
     }
-    (navigation as any).navigate("ExploreTab", { screen, ...(params ? { params } : {}) });
   };
 
   const previewText = (m?: ChatRoom["last_message"]): string => {

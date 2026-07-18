@@ -80,7 +80,7 @@ export function StartRentingScreen(): React.ReactElement {
           </Text>
           <Pressable
             style={styles.heroCta}
-            onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
+            onPress={() => (navigation as any).navigate("CreateListing")}
           >
             <Text style={styles.heroCtaText}>List Your First Item</Text>
             <ArrowRight size={16} color={colors.primary} />
@@ -129,7 +129,7 @@ export function StartRentingScreen(): React.ReactElement {
         {/* Final CTA */}
         <Pressable
           style={styles.finalCta}
-          onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
+          onPress={() => (navigation as any).navigate("CreateListing")}
         >
           <LinearGradient
             colors={["#C164FF", "#7A5AFF"]}

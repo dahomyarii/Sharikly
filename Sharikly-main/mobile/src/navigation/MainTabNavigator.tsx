@@ -8,7 +8,7 @@ import { colors, radii, shadows } from "@/core/theme/tokens";
 import { hapticSelection } from "@/utils/haptics";
 import { BlurView } from "expo-blur";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import { getFocusedRouteNameFromRoute, StackActions } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -49,7 +49,15 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     const onPress = () => {
       hapticSelection();
       const event = navigation.emit({ type: "tabPress", target: route.key, canPreventDefault: true });
-      if (!isFocused && !event.defaultPrevented) {
+      if (event.defaultPrevented) return;
+      if (isFocused) {
+        // Tapping the tab you're already on returns to that tab's root screen
+        // (instead of leaving you stranded deep in its stack).
+        const targetKey = route.state?.key;
+        if (targetKey) {
+          navigation.dispatch({ ...StackActions.popToTop(), target: targetKey });
+        }
+      } else {
         navigation.navigate(route.name);
       }
     };

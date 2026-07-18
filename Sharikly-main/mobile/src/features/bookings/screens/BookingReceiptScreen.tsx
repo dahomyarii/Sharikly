@@ -176,10 +176,7 @@ export function BookingReceiptScreen(): React.ReactElement {
     try {
       const res: any = await getOrCreateRoom(cpId, listing?.id);
       if (res?.id) {
-        (navigation as any).navigate("InboxTab", {
-          screen: "ChatRoom",
-          params: { roomId: res.id },
-        });
+        (navigation as any).navigate("ChatRoom", { roomId: res.id });
       }
     } catch {
       showToast("Couldn't open the chat. Please try again.", "error");

@@ -2,9 +2,9 @@ import { ListingCard } from "@/components/ui/ListingCard";
 import { CategoryChip } from "@/components/ui/CategoryChip";
 import { SkeletonGrid } from "@/components/ui/SkeletonCard";
 import { colors, radii, spacing, typography, layout, shadows } from "@/core/theme/tokens";
-import type { ListingsStackParamList } from "@/navigation/types";
+import type { ListingsStackParamList, RootStackParamList } from "@/navigation/types";
 import { getCategories, getListings } from "@/services/api/endpoints/listings";
-import type { RouteProp } from "@react-navigation/native";
+import type { CompositeNavigationProp, RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useQuery } from "@tanstack/react-query";
@@ -30,7 +30,10 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type Nav = NativeStackNavigationProp<ListingsStackParamList, "ListingsExplore">;
+type Nav = CompositeNavigationProp<
+  NativeStackNavigationProp<ListingsStackParamList, "ListingsExplore">,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 type R = RouteProp<ListingsStackParamList, "ListingsExplore">;
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {

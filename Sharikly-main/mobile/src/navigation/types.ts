@@ -6,12 +6,6 @@ export type HomeStackParamList = {
 
 export type ListingsStackParamList = {
   ListingsExplore: { search?: string } | undefined;
-  CreateListing: undefined;
-  ListingDetail: { id: number };
-  EditListing: { id: number };
-  RequestBooking: { id: number; start?: string; end?: string };
-  ListingAvailability: { id: number };
-  ListingAvailabilityBlocks: { id: number };
 };
 
 export type BookingsStackParamList = {
@@ -32,7 +26,6 @@ export type HostStackParamList = {
 
 export type InboxStackParamList = {
   ChatInbox: undefined;
-  ChatRoom: { roomId: number };
   AdminSupportThread: undefined;
   Notifications: undefined;
 };
@@ -48,7 +41,6 @@ export type ProfileStackParamList = {
   AdminBlog: undefined;
   BlogList: undefined;
   BlogPost: { id: number };
-  PublicProfile: { userId: number };
   HostArea: undefined;
   About: undefined;
   HowItWorks: undefined;
@@ -57,7 +49,6 @@ export type ProfileStackParamList = {
   Terms: undefined;
   // Moved from Inbox
   ChatInbox: undefined;
-  ChatRoom: { roomId: number };
   AdminSupportThread: undefined;
   ChangePassword: undefined;
   NotificationPreferences: undefined;
@@ -98,7 +89,16 @@ export type AuthStackParamList = {
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
-  ListingDetailModal: { id: number };
+  // Shared "leaf" screens live above the tabs so they open over the current
+  // tab and the back arrow returns to wherever the user came from.
+  ListingDetail: { id: number };
+  CreateListing: undefined;
+  EditListing: { id: number };
+  RequestBooking: { id: number; start?: string; end?: string };
+  ListingAvailability: { id: number };
+  ListingAvailabilityBlocks: { id: number };
+  PublicProfile: { userId: number };
+  ChatRoom: { roomId: number };
 };
 
 declare global {

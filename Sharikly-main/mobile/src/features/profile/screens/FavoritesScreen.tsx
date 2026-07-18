@@ -48,12 +48,13 @@ export function FavoritesScreen(): React.ReactElement {
   const listings = favorites.map((f: any) => f.listing ?? f).filter(Boolean);
 
   const navigateToExplore = (screen: "ListingsExplore" | "ListingDetail", params?: Record<string, unknown>) => {
-    const parent = (navigation as any).getParent?.();
-    if (parent) {
-      parent.navigate("ExploreTab", { screen, ...(params ? { params } : {}) });
-      return;
+    // ListingDetail now lives at the root (above the tabs); ListingsExplore is the Explore tab's root.
+    if (screen === "ListingsExplore") {
+      const parent = (navigation as any).getParent?.();
+      (parent ?? navigation).navigate("ExploreTab", { screen, ...(params ? { params } : {}) });
+    } else {
+      (navigation as any).navigate(screen, params);
     }
-    (navigation as any).navigate("ExploreTab", { screen, ...(params ? { params } : {}) });
   };
 
   const renderItem = ({ item }: { item: any }) => {

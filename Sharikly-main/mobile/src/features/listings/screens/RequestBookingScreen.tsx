@@ -1,5 +1,5 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
-import type { ListingsStackParamList } from "@/navigation/types";
+import type { RootStackParamList } from "@/navigation/types";
 import { getListing } from "@/services/api/endpoints/listings";
 import { requestBooking } from "@/services/api/endpoints/bookings";
 import type { RouteProp } from "@react-navigation/native";
@@ -27,8 +27,8 @@ import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import { showToast } from "@/core/events/appEvents";
 import { useAuthStore } from "@/store/authStore";
 
-type Nav = NativeStackNavigationProp<ListingsStackParamList, "RequestBooking">;
-type R = RouteProp<ListingsStackParamList, "RequestBooking">;
+type Nav = NativeStackNavigationProp<RootStackParamList, "RequestBooking">;
+type R = RouteProp<RootStackParamList, "RequestBooking">;
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
 
@@ -135,7 +135,7 @@ export function RequestBookingScreen(): React.ReactElement {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["bookings"] });
       showToast("Booking request sent to the host.", "success");
-      (navigation as any).navigate("BookingsTab", { screen: "Bookings" });
+      (navigation as any).navigate("Main", { screen: "BookingsTab", params: { screen: "Bookings" } });
     },
     onError: (err: any) => {
       const detail =
@@ -241,14 +241,14 @@ export function RequestBookingScreen(): React.ReactElement {
               </View>
               <Text style={styles.cardNumber}>•••• {defaultCard.card_last4}</Text>
               <View style={{ flex: 1 }} />
-              <Pressable onPress={() => (navigation as any).navigate("ProfileTab", { screen: "PaymentMethods" })}>
+              <Pressable onPress={() => (navigation as any).navigate("Main", { screen: "ProfileTab", params: { screen: "PaymentMethods" } })}>
                 <Text style={styles.addCardText}>Change</Text>
               </Pressable>
             </View>
           ) : (
             <Pressable
               style={styles.paymentRow}
-              onPress={() => (navigation as any).navigate("ProfileTab", { screen: "PaymentMethods" })}
+              onPress={() => (navigation as any).navigate("Main", { screen: "ProfileTab", params: { screen: "PaymentMethods" } })}
             >
               <Text style={styles.cardNumber}>No card added</Text>
               <View style={{ flex: 1 }} />

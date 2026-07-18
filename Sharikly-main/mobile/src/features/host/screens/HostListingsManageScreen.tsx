@@ -110,7 +110,7 @@ export function HostListingsManageScreen(): React.ReactElement {
         <View style={styles.actions}>
           <Pressable
             style={styles.actionBtn}
-            onPress={() => navigation.navigate("ExploreTab", { screen: "EditListing", params: { id: item.id } } as any)}
+            onPress={() => (navigation as any).navigate("EditListing", { id: item.id })}
           >
             <Edit3 size={14} color={colors.primary} />
             <Text style={styles.actionText}>Edit</Text>
@@ -145,7 +145,7 @@ export function HostListingsManageScreen(): React.ReactElement {
         right={
           <Pressable
             style={styles.addBtn}
-            onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
+            onPress={() => (navigation as any).navigate("CreateListing")}
           >
             <LinearGradient colors={["#C164FF", "#7A5AFF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.addBtnGradient}>
               <Plus size={16} color="#fff" />
@@ -175,7 +175,7 @@ export function HostListingsManageScreen(): React.ReactElement {
           <Text style={styles.emptyText}>Add your first item to start earning on Ekra.</Text>
           <Pressable
             style={styles.emptyBtn}
-            onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
+            onPress={() => (navigation as any).navigate("CreateListing")}
           >
             <Text style={styles.emptyBtnText}>Add Item</Text>
           </Pressable>

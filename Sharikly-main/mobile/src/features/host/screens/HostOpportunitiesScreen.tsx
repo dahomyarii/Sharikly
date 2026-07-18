@@ -121,7 +121,7 @@ export function HostOpportunitiesScreen(): React.ReactElement {
         {/* CTA to create listing */}
         <Pressable
           style={styles.ctaBtn}
-          onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
+          onPress={() => (navigation as any).navigate("CreateListing")}
         >
           <Text style={styles.ctaBtnText}>+ List an Item to Capitalize on These Trends</Text>
         </Pressable>

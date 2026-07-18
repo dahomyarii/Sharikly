@@ -64,10 +64,7 @@ export function BookingsList({ role }: { role: "renter" | "host" }): React.React
       const res: any = await getOrCreateRoom(cpId, booking.listing?.id);
       const roomId = res?.id;
       if (roomId) {
-        (navigation.getParent?.() ?? navigation).navigate("InboxTab", {
-          screen: "ChatRoom",
-          params: { roomId },
-        });
+        (navigation as any).navigate("ChatRoom", { roomId });
       }
     } catch {
       setErrorText("Couldn't open the chat. Please try again.");
@@ -75,7 +72,7 @@ export function BookingsList({ role }: { role: "renter" | "host" }): React.React
   };
 
   const goCreateListing = () => {
-    (navigation.getParent?.() ?? navigation).navigate("ExploreTab", { screen: "CreateListing" });
+    (navigation as any).navigate("CreateListing");
   };
   const goExplore = () => {
     (navigation.getParent?.() ?? navigation).navigate("ExploreTab", { screen: "ListingsExplore" });

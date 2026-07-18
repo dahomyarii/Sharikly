@@ -1,7 +1,8 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, shadows, spacing, layout } from "@/core/theme/tokens";
-import type { ProfileStackParamList } from "@/navigation/types";
+import type { ProfileStackParamList, RootStackParamList } from "@/navigation/types";
+import type { CompositeNavigationProp } from "@react-navigation/native";
 import { axiosInstance, buildApiUrl, performLogout } from "@/services/api/client";
 import { getEarningsDashboard } from "@/services/api/endpoints/earnings";
 import { useAuthStore } from "@/store/authStore";
@@ -39,7 +40,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Nav = NativeStackNavigationProp<ProfileStackParamList, "Profile">;
+type Nav = CompositeNavigationProp<
+  NativeStackNavigationProp<ProfileStackParamList, "Profile">,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 export function ProfileScreen(): React.ReactElement {
   const navigation = useNavigation<Nav>();
@@ -333,7 +337,7 @@ export function ProfileScreen(): React.ReactElement {
                 <Text style={styles.promoSub}>List more equipment and reach more people around you.</Text>
                 <Pressable
                   style={styles.promoBtn}
-                  onPress={() => (navigation as any).navigate("ExploreTab", { screen: "CreateListing" })}
+                  onPress={() => (navigation as any).navigate("CreateListing")}
                 >
                   <Text style={styles.promoBtnText}>List Now</Text>
                 </Pressable>

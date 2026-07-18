@@ -10,7 +10,7 @@ import {
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import { showToast } from "@/core/events/appEvents";
 import { useAuthStore } from "@/store/authStore";
-import type { InboxStackParamList } from "@/navigation/types";
+import type { RootStackParamList } from "@/navigation/types";
 import type { RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute, useIsFocused } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -58,8 +58,8 @@ function openInMaps(lat: number, lng: number) {
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
 
-type Nav = NativeStackNavigationProp<InboxStackParamList, "ChatRoom">;
-type R = RouteProp<InboxStackParamList, "ChatRoom">;
+type Nav = NativeStackNavigationProp<RootStackParamList, "ChatRoom">;
+type R = RouteProp<RootStackParamList, "ChatRoom">;
 
 function getAvatarUrl(path: string | undefined) {
   if (!path) return null;
@@ -388,7 +388,12 @@ export function ChatRoomScreen(): React.ReactElement {
         <Pressable onPress={() => navigation.goBack()} style={styles.backBtn} hitSlop={8}>
           <ArrowLeft size={24} color={colors.primary} />
         </Pressable>
-        <View style={styles.headerUser}>
+        <Pressable
+          style={styles.headerUser}
+          onPress={() =>
+            other?.id && navigation.navigate("PublicProfile", { userId: other.id })
+          }
+        >
           <View style={styles.headerAvatarWrap}>
             {otherAvatar ? (
               <Image source={{ uri: otherAvatar }} style={styles.headerAvatar} />
@@ -406,9 +411,9 @@ export function ChatRoomScreen(): React.ReactElement {
               <Text style={styles.onlineText} numberOfLines={1}>{listingTitle}</Text>
             ) : null}
           </View>
-        </View>
+        </Pressable>
         <View style={styles.headerActions}>
-          <Pressable style={styles.viewBookingBtn} onPress={() => (navigation as any).navigate("BookingsTab", { screen: "Bookings" })}>
+          <Pressable style={styles.viewBookingBtn} onPress={() => (navigation as any).navigate("Main", { screen: "BookingsTab", params: { screen: "Bookings" } })}>
             <Text style={styles.viewBookingText}>View booking</Text>
           </Pressable>
         </View>
@@ -434,7 +439,7 @@ export function ChatRoomScreen(): React.ReactElement {
             listingTitle ? (
               <Pressable
                 style={styles.bookingCard}
-                onPress={() => (navigation as any).navigate("BookingsTab", { screen: "Bookings" })}
+                onPress={() => (navigation as any).navigate("Main", { screen: "BookingsTab", params: { screen: "Bookings" } })}
               >
                 <View style={styles.bookingCardImgPlaceholder}>
                   <Camera size={24} color="#555" />

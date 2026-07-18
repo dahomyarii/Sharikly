@@ -73,7 +73,7 @@ export function HomeScreen(): React.ReactElement {
   const requireAuth = useRequireAuth();
 
   const goCreateListing = () =>
-    requireAuth(() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any));
+    requireAuth(() => (navigation as any).navigate("CreateListing"));
   
   const userQ = useQuery({
     queryKey: ["auth", "me"],
@@ -133,10 +133,7 @@ export function HomeScreen(): React.ReactElement {
   };
 
   const handleListingPress = (id: number) => {
-    navigation.navigate("ExploreTab", {
-      screen: "ListingDetail",
-      params: { id },
-    } as any);
+    (navigation as any).navigate("ListingDetail", { id });
   };
 
   return (

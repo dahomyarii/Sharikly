@@ -2,7 +2,6 @@ import { AdminSupportThreadScreen } from "@/features/chat/screens/AdminSupportTh
 import { BlogListScreen } from "@/features/blog/screens/BlogListScreen";
 import { BlogPostScreen } from "@/features/blog/screens/BlogPostScreen";
 import { ChatInboxScreen } from "@/features/chat/screens/ChatInboxScreen";
-import { ChatRoomScreen } from "@/features/chat/screens/ChatRoomScreen";
 import { NotificationsScreen } from "@/features/notifications/screens/NotificationsScreen";
 import {
   AboutScreen,
@@ -13,7 +12,6 @@ import {
 } from "@/features/marketing/screens";
 import { FavoritesScreen } from "@/features/profile/screens/FavoritesScreen";
 import { ProfileScreen } from "@/features/profile/screens/ProfileScreen";
-import { PublicProfileScreen } from "@/features/profile/screens/PublicProfileScreen";
 import { SettingsScreen } from "@/features/profile/screens/SettingsScreen";
 import { AdminBlogScreen } from "@/features/support/screens/AdminBlogScreen";
 import { AdminMessagesScreen } from "@/features/support/screens/AdminMessagesScreen";
@@ -59,7 +57,6 @@ export function ProfileStackNavigator(): React.ReactElement {
       <Stack.Screen name="AdminBlog" component={AdminBlogScreen} />
       <Stack.Screen name="BlogList" component={BlogListScreen} />
       <Stack.Screen name="BlogPost" component={BlogPostScreen} />
-      <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
       <Stack.Screen
         name="HostArea"
         component={HostStackNavigator}
@@ -72,7 +69,6 @@ export function ProfileStackNavigator(): React.ReactElement {
       <Stack.Screen name="Terms" component={TermsScreen} />
       {/* Moved from Inbox */}
       <Stack.Screen name="ChatInbox" component={ChatInboxScreen} options={{ title: "Messages" }} />
-      <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ headerShown: false }} />
       <Stack.Screen name="AdminSupportThread" component={AdminSupportThreadScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       

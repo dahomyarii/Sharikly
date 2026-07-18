@@ -1,7 +1,7 @@
 import { colors, radii, spacing, typography } from "@/core/theme/tokens";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import { getListing, getCategories } from "@/services/api/endpoints/listings";
-import type { ListingsStackParamList } from "@/navigation/types";
+import type { RootStackParamList } from "@/navigation/types";
 import type { RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -30,8 +30,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Nav = NativeStackNavigationProp<ListingsStackParamList, "EditListing">;
-type R = RouteProp<ListingsStackParamList, "EditListing">;
+type Nav = NativeStackNavigationProp<RootStackParamList, "EditListing">;
+type R = RouteProp<RootStackParamList, "EditListing">;
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
 

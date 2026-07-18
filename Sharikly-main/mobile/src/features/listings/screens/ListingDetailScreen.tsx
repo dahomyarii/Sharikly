@@ -1,6 +1,6 @@
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { colors, radii, shadows, spacing, typography, layout } from "@/core/theme/tokens";
-import type { ListingsStackParamList } from "@/navigation/types";
+import type { RootStackParamList } from "@/navigation/types";
 import { getListing, getSimilarListings } from "@/services/api/endpoints/listings";
 import { addFavorite, removeFavorite } from "@/services/api/endpoints/favorites";
 import { showToast } from "@/core/events/appEvents";
@@ -40,8 +40,8 @@ const HERO_HEIGHT = SCREEN_H * 0.2;
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
 const MAPBOX_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? "";
 
-type Nav = NativeStackNavigationProp<ListingsStackParamList, "ListingDetail">;
-type R = RouteProp<ListingsStackParamList, "ListingDetail">;
+type Nav = NativeStackNavigationProp<RootStackParamList, "ListingDetail">;
+type R = RouteProp<RootStackParamList, "ListingDetail">;
 
 function getFullUrl(url: string | undefined) {
   if (!url) return null;
@@ -398,8 +398,14 @@ export function ListingDetailScreen(): React.ReactElement {
             )}
           </View>
 
-          {/* Host row */}
-          <View style={styles.hostRow}>
+          {/* Host row — tap to view the host's public profile */}
+          <Pressable
+            style={styles.hostRow}
+            onPress={() =>
+              data.owner?.id &&
+              navigation.navigate("PublicProfile", { userId: data.owner.id })
+            }
+          >
             {ownerAvatar ? (
               <Image source={{ uri: ownerAvatar }} style={styles.hostAvatar} />
             ) : (
@@ -414,7 +420,7 @@ export function ListingDetailScreen(): React.ReactElement {
               <CheckCircle size={13} color="#10B981" strokeWidth={2.5} />
               <Text style={styles.verifiedText}>Verified</Text>
             </View>
-          </View>
+          </Pressable>
 
 
           {/* Trust badges */}

@@ -347,7 +347,7 @@ export function HostOverviewScreen(): React.ReactElement {
           <View style={styles.quickActionsGrid}>
             <Pressable
               style={styles.qaCard}
-              onPress={() => navigation.navigate("ExploreTab", { screen: "CreateListing" } as any)}
+              onPress={() => (navigation as any).navigate("CreateListing")}
             >
               <LinearGradient colors={["#7A5AFF", "#4C1D95"]} style={styles.qaIconBg}>
                 <Plus size={20} color="#fff" />

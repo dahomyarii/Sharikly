@@ -1,6 +1,6 @@
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
-import type { ListingsStackParamList } from "@/navigation/types";
+import type { RootStackParamList } from "@/navigation/types";
 import type { RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type R = RouteProp<ListingsStackParamList, "ListingAvailabilityBlocks">;
+type R = RouteProp<RootStackParamList, "ListingAvailabilityBlocks">;
 
 function formatDate(iso: string) {
   try { return new Date(iso).toLocaleDateString("en", { month: "short", day: "numeric", year: "numeric" }); }

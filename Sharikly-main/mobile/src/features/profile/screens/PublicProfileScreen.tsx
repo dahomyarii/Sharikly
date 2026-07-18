@@ -2,7 +2,7 @@ import { ListingCard } from "@/components/ui/ListingCard";
 import { colors, radii, shadows, spacing, typography } from "@/core/theme/tokens";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
 import { getListings } from "@/services/api/endpoints/listings";
-import type { ProfileStackParamList, MainTabParamList } from "@/navigation/types";
+import type { RootStackParamList, MainTabParamList } from "@/navigation/types";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import type { CompositeNavigationProp, RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -30,10 +30,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getOrCreateRoom } from "@/services/api/endpoints/chat";
 
 type Nav = CompositeNavigationProp<
-  NativeStackNavigationProp<ProfileStackParamList, "PublicProfile">,
+  NativeStackNavigationProp<RootStackParamList, "PublicProfile">,
   BottomTabNavigationProp<MainTabParamList>
 >;
-type R = RouteProp<ProfileStackParamList, "PublicProfile">;
+type R = RouteProp<RootStackParamList, "PublicProfile">;
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
 
@@ -97,10 +97,7 @@ export function PublicProfileScreen(): React.ReactElement {
     onSuccess: (room: any) => {
       const roomId = room?.id ?? room?.room_id;
       if (roomId) {
-        navigation.navigate("ProfileTab" as any, {
-          screen: "ChatRoom",
-          params: { roomId },
-        } as any);
+        navigation.navigate("ChatRoom", { roomId });
       }
     },
     onError: () => showToast("Couldn't start the chat. Please try again.", "error"),
@@ -222,10 +219,7 @@ export function PublicProfileScreen(): React.ReactElement {
                   <ListingCard
                     listing={listing}
                     onPress={() =>
-                      navigation.navigate("ExploreTab", {
-                        screen: "ListingDetail",
-                        params: { id: listing.id },
-                      } as any)
+                      navigation.push("ListingDetail", { id: listing.id })
                     }
                   />
                 </View>
@@ -254,7 +248,16 @@ export function PublicProfileScreen(): React.ReactElement {
                   <Text style={styles.reviewText}>{review.comment}</Text>
                 )}
                 {review.reviewer?.username && (
-                  <Text style={styles.reviewerName}>— {review.reviewer.username}</Text>
+                  <Text
+                    style={styles.reviewerName}
+                    onPress={
+                      review.reviewer?.id && review.reviewer.id !== userId
+                        ? () => navigation.push("PublicProfile", { userId: review.reviewer.id })
+                        : undefined
+                    }
+                  >
+                    — {review.reviewer.username}
+                  </Text>
                 )}
               </View>
             ))}

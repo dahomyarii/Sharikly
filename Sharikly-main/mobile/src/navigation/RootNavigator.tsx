@@ -5,6 +5,15 @@ import { useAuthStore } from "@/store/authStore";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import type { RootStackParamList } from "@/navigation/types";
+// Shared "leaf" screens hoisted above the tabs (see RootStackParamList).
+import { ListingDetailScreen } from "@/features/listings/screens/ListingDetailScreen";
+import { CreateListingScreen } from "@/features/listings/screens/CreateListingScreen";
+import { EditListingScreen } from "@/features/listings/screens/EditListingScreen";
+import { RequestBookingScreen } from "@/features/listings/screens/RequestBookingScreen";
+import { ListingAvailabilityScreen } from "@/features/listings/screens/ListingAvailabilityScreen";
+import { ListingAvailabilityBlocksScreen } from "@/features/listings/screens/ListingAvailabilityBlocksScreen";
+import { PublicProfileScreen } from "@/features/profile/screens/PublicProfileScreen";
+import { ChatRoomScreen } from "@/features/chat/screens/ChatRoomScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -30,6 +39,16 @@ export function RootNavigator(): React.ReactElement {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {/* Always rendered first — guests and logged-in users both see Main */}
       <Stack.Screen name="Main" component={MainTabNavigator} />
+
+      {/* Shared leaf screens — open over the current tab; back returns to origin. */}
+      <Stack.Screen name="ListingDetail" component={ListingDetailScreen} />
+      <Stack.Screen name="CreateListing" component={CreateListingScreen} />
+      <Stack.Screen name="EditListing" component={EditListingScreen} />
+      <Stack.Screen name="RequestBooking" component={RequestBookingScreen} />
+      <Stack.Screen name="ListingAvailability" component={ListingAvailabilityScreen} />
+      <Stack.Screen name="ListingAvailabilityBlocks" component={ListingAvailabilityBlocksScreen} />
+      <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
+      <Stack.Screen name="ChatRoom" component={ChatRoomScreen} />
 
       {/* Auth presented as a full-screen modal over Main.
           Accessible from ProfileTab guest screen Sign In / Register buttons.
