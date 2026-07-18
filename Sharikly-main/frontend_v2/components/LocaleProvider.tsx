@@ -2,6 +2,7 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
+import { translations, type Lang } from "./translations";
 
 type TFn = (key: string) => string;
 

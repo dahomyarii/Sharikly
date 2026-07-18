@@ -4,6 +4,8 @@ export const translations: Record<Lang, Record<string, string>> = {
   en: {
     // Navigation & Header
     home: "Home",
+    get_started: "Get started",
+    explore: "Explore",
     hero_title: "Rent almost anything near you",
     hero_sub: "Cameras, lenses, gear, and more—save money and reduce waste.",
     list_item: "List an item",
@@ -245,6 +247,8 @@ export const translations: Record<Lang, Record<string, string>> = {
   ar: {
     // Navigation & Header
     home: "الرئيسية",
+    get_started: "ابدأ الآن",
+    explore: "استكشف",
     hero_title: "استأجر أي شيء بالقرب منك",
     hero_sub: "كاميرات، عدسات، معدات والمزيد — وفّر المال وقلّل الهدر.",
     list_item: "أضف إعلانًا",
