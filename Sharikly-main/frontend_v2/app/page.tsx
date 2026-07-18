@@ -140,7 +140,7 @@ export default function HomePage() {
   return (
     <div className="pb-8">
       <section className="marketplace-shell pt-4 sm:pt-6">
-        <div className="surface-panel relative overflow-hidden rounded-[30px] sm:rounded-[34px] lg:rounded-[36px]">
+        <div className="surface-panel border-border relative overflow-hidden rounded-[4px] rounded-tl-[30px] rounded-br-[30px] sm:rounded-tl-[34px] sm:rounded-br-[34px] lg:rounded-tl-[36px] lg:rounded-br-[36px]">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: "url(/image.jpeg)" }}
@@ -149,7 +149,7 @@ export default function HomePage() {
             className="absolute inset-0"
             style={{
               backgroundImage:
-                "linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.18), rgba(236,233,246,0.15))",
+                "linear-gradient(135deg, rgba(255,255,255,0.72), rgba(255,255,255,0.57), rgba(236,233,246,0.42))",
             }}
           />
           <div className="floating-orb left-[-3rem] top-[-2rem] h-24 w-24 bg-primary/10" />
