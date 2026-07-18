@@ -100,7 +100,12 @@ const styles = StyleSheet.create({
     width: "100%",
     aspectRatio: 1.6,
     backgroundColor: colors.muted,
-    borderRadius: 20,
+    // Asymmetric corners to match the website's listing cards:
+    // top-left + bottom-right rounded, top-right + bottom-left sharp.
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 28,
+    borderBottomLeftRadius: 4,
     overflow: "hidden",
     position: "relative",
   },

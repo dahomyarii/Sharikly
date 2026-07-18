@@ -1129,7 +1129,11 @@ const styles = StyleSheet.create({
   similarScroll: { gap: 12, paddingRight: spacing.md },
   similarCard: {
     width: 120,
-    borderRadius: radii.lg,
+    // Asymmetric corners to match the website's listing cards (scaled for this small thumb).
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 16,
+    borderBottomLeftRadius: 4,
     overflow: "hidden",
     backgroundColor: "#FFFFFF",
     ...shadows.card,

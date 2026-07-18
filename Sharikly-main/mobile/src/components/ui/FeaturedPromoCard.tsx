@@ -1,4 +1,4 @@
-import { colors, radii, spacing } from "@/core/theme/tokens";
+import { colors, spacing } from "@/core/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
@@ -75,7 +75,12 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: spacing.md,
     marginTop: spacing.md,
-    borderRadius: radii.xl,
+    // Asymmetric corners to match the website's listing cards:
+    // top-left + bottom-right rounded, top-right + bottom-left sharp.
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 28,
+    borderBottomLeftRadius: 4,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },

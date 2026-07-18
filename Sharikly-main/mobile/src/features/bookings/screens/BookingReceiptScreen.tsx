@@ -1,6 +1,9 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
 import { showToast } from "@/core/events/appEvents";
 import { getBooking, updateBookingStatus } from "@/services/api/endpoints/bookings";
+import { getOrCreateRoom } from "@/services/api/endpoints/chat";
+import { axiosInstance, buildApiUrl } from "@/services/api/client";
+import { useAuthStore } from "@/store/authStore";
 import type { BookingsStackParamList } from "@/navigation/types";
 import type { RouteProp } from "@react-navigation/native";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -104,6 +107,14 @@ export function BookingReceiptScreen(): React.ReactElement {
     queryFn: () => getBooking(id),
   });
 
+  // Current user — used to pick the correct chat counterparty (renter ↔ host).
+  const hasSession = useAuthStore((s) => s.hasSession);
+  const meQ = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: () => axiosInstance.get(buildApiUrl("/auth/me/")).then((r) => r.data),
+    enabled: hasSession,
+  });
+
   const cancelMutation = useMutation({
     mutationFn: () => updateBookingStatus(id, "cancelled"),
     onSuccess: () => {
@@ -150,6 +161,30 @@ export function BookingReceiptScreen(): React.ReactElement {
   const booking: any = q.data;
 
   const listing = booking.listing;
+
+  // Open (or create) a chat with the other party and jump straight into the room.
+  // Previously "Contact Host" just dumped the user on the empty inbox list.
+  const openHostChat = async () => {
+    const myId = meQ.data?.id;
+    const hostId = listing?.owner?.id;
+    const renterId = booking.renter?.id;
+    const cpId = myId && myId === hostId ? renterId : hostId;
+    if (!cpId) {
+      showToast("Couldn't find who to message.", "error");
+      return;
+    }
+    try {
+      const res: any = await getOrCreateRoom(cpId, listing?.id);
+      if (res?.id) {
+        (navigation as any).navigate("InboxTab", {
+          screen: "ChatRoom",
+          params: { roomId: res.id },
+        });
+      }
+    } catch {
+      showToast("Couldn't open the chat. Please try again.", "error");
+    }
+  };
   const currency = booking.currency ?? "SAR";
   const imageUrl = listing?.images?.[0] ? getImageUrl(listing.images[0].image) : null;
   const startLabel = booking.start_date ? fmt(booking.start_date) : "—";
@@ -216,7 +251,7 @@ export function BookingReceiptScreen(): React.ReactElement {
             </Pressable>
             <Pressable
               style={styles.outlineBtn}
-              onPress={() => (navigation as any).navigate("ProfileTab", { screen: "ChatInbox" })}
+              onPress={openHostChat}
             >
               <Text style={styles.outlineBtnText}>Contact Host</Text>
             </Pressable>
@@ -396,7 +431,7 @@ export function BookingReceiptScreen(): React.ReactElement {
               <Navigation2 size={16} color="#fff" />
               <Text style={styles.navigateBtnText}>Navigate</Text>
             </Pressable>
-            <Pressable style={styles.contactBtn} onPress={() => (navigation as any).navigate("ProfileTab",{screen:"ChatInbox"})}>
+            <Pressable style={styles.contactBtn} onPress={openHostChat}>
               <MessageCircle size={16} color={colors.primary} />
               <Text style={styles.contactBtnText}>Contact Host</Text>
             </Pressable>

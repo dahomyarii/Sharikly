@@ -87,7 +87,12 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     aspectRatio: 1,
-    borderRadius: radii.lg,
+    // Asymmetric corners to match the website's listing cards (so the shape
+    // doesn't change when the real card loads in).
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 28,
+    borderBottomLeftRadius: 4,
     backgroundColor: colors.muted,
   },
   body: {
