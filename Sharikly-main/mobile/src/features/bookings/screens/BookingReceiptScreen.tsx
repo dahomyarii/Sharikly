@@ -1,6 +1,7 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
 import { showToast } from "@/core/events/appEvents";
 import { LeaveReviewButton } from "@/features/reviews/LeaveReviewButton";
+import { findMyReview } from "@/features/reviews/myReview";
 import { deriveStatus } from "../status";
 import { getBooking, updateBookingStatus } from "@/services/api/endpoints/bookings";
 import { getOrCreateRoom } from "@/services/api/endpoints/chat";
@@ -170,6 +171,7 @@ export function BookingReceiptScreen(): React.ReactElement {
     !!meQ.data?.id &&
     meQ.data.id === booking.renter?.id &&
     !!listing?.id;
+  const myReview = findMyReview(listing?.reviews, meQ.data?.id);
 
   // Open (or create) a chat with the other party and jump straight into the room.
   // Previously "Contact Host" just dumped the user on the empty inbox list.
@@ -421,11 +423,15 @@ export function BookingReceiptScreen(): React.ReactElement {
         {/* Leave a review — completed rentals only */}
         {canReview && (
           <View style={[styles.card, { marginHorizontal: spacing.md, marginTop: 10 }]}>
-            <Text style={styles.pickupInfoTitle}>Rate your experience</Text>
-            <Text style={[styles.metaText, { marginTop: 4, marginBottom: 12 }]}>
-              Your rental is complete — let others know how it went.
-            </Text>
-            <LeaveReviewButton listingId={listing.id} fullWidth />
+            {!myReview && (
+              <>
+                <Text style={styles.pickupInfoTitle}>Rate your experience</Text>
+                <Text style={[styles.metaText, { marginTop: 4, marginBottom: 12 }]}>
+                  Your rental is complete — let others know how it went.
+                </Text>
+              </>
+            )}
+            <LeaveReviewButton listingId={listing.id} reviews={listing?.reviews} showComment fullWidth />
           </View>
         )}
 

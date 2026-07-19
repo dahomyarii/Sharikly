@@ -197,7 +197,7 @@ export function BookingCard({
         </Pressable>
         {canReview && (
           <View style={styles.fullBtn}>
-            <LeaveReviewButton listingId={listing.id} size="sm" fullWidth />
+            <LeaveReviewButton listingId={listing.id} reviews={listing.reviews} size="sm" fullWidth />
           </View>
         )}
       </View>

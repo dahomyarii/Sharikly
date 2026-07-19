@@ -1,10 +1,11 @@
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { StarRating } from "@/components/ui/StarRating";
+import { useCurrentUserId } from "@/features/auth/hooks/useCurrentUserId";
+import { findMyReview, type MyReview } from "@/features/reviews/myReview";
 import { showToast } from "@/core/events/appEvents";
 import { colors, radii, spacing } from "@/core/theme/tokens";
 import { submitReview } from "@/services/api/endpoints/listings";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2 } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Modal,
@@ -19,6 +20,11 @@ import {
 
 interface LeaveReviewButtonProps {
   listingId: number | string;
+  /** The listing's reviews (as embedded on the booking/listing payload); used to
+   *  detect the current user's own review so the reviewed state survives remounts. */
+  reviews?: any[];
+  /** Show the review comment under the stars in the reviewed state (receipt view). */
+  showComment?: boolean;
   size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -35,37 +41,50 @@ function errorMessage(err: any): string {
 
 export function LeaveReviewButton({
   listingId,
+  reviews,
+  showComment = false,
   size = "md",
   fullWidth = false,
   style,
   onReviewed,
 }: LeaveReviewButtonProps): React.ReactElement {
   const queryClient = useQueryClient();
+  const myId = useCurrentUserId();
   const [visible, setVisible] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [reviewed, setReviewed] = useState(false);
+  // Optimistic fallback for the same session before the booking refetch lands.
+  const [justReviewed, setJustReviewed] = useState<MyReview | null>(null);
+
+  // Server truth (survives remounts) wins; the local optimistic value is a fallback.
+  const done: MyReview | null = findMyReview(reviews, myId) ?? justReviewed;
+
+  const refreshReviewData = () => {
+    void queryClient.invalidateQueries({ queryKey: ["listing", listingId] });
+    void queryClient.invalidateQueries({ queryKey: ["reviews"] });
+    void queryClient.invalidateQueries({ queryKey: ["bookings"] });
+    void queryClient.invalidateQueries({ queryKey: ["booking"] });
+  };
 
   const mutation = useMutation({
     // "always" so an offline submit fails visibly instead of silently pausing.
     networkMode: "always",
     mutationFn: () => submitReview(listingId, { rating, comment: comment.trim() }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["listing", listingId] });
-      void queryClient.invalidateQueries({ queryKey: ["reviews"] });
-      void queryClient.invalidateQueries({ queryKey: ["bookings"] });
-      void queryClient.invalidateQueries({ queryKey: ["booking"] });
-      setReviewed(true);
+      setJustReviewed({ rating, comment: comment.trim() });
       setVisible(false);
+      refreshReviewData();
       showToast("Thanks for your review!", "success");
       onReviewed?.();
     },
     onError: (err: any) => {
       const msg = errorMessage(err);
-      // Backend says we already reviewed → stop inviting another attempt.
+      // Already reviewed (e.g. from another device): reflect the reviewed state and
+      // refetch so the real review shows.
       if (err?.response?.status === 400 && /already reviewed/i.test(msg)) {
-        setReviewed(true);
+        setJustReviewed({ rating, comment: comment.trim() });
         setVisible(false);
+        refreshReviewData();
         showToast("You've already reviewed this item.", "info");
         return;
       }
@@ -73,11 +92,16 @@ export function LeaveReviewButton({
     },
   });
 
-  if (reviewed) {
+  if (done) {
     return (
-      <View style={[styles.doneRow, style]}>
-        <CheckCircle2 size={16} color={colors.success} />
-        <Text style={styles.doneText}>Review submitted</Text>
+      <View style={[styles.doneWrap, style]}>
+        <Text style={styles.doneLabel}>Your review</Text>
+        <StarRating value={done.rating} size={showComment ? 22 : 16} />
+        {showComment && done.comment ? (
+          <Text style={styles.doneComment} numberOfLines={5}>
+            “{done.comment}”
+          </Text>
+        ) : null}
       </View>
     );
   }
@@ -141,8 +165,9 @@ export function LeaveReviewButton({
 }
 
 const styles = StyleSheet.create({
-  doneRow: { flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 8 },
-  doneText: { fontSize: 14, fontWeight: "700", color: colors.success },
+  doneWrap: { gap: 6, alignItems: "flex-start" },
+  doneLabel: { fontSize: 13, fontWeight: "700", color: colors.foreground },
+  doneComment: { fontSize: 14, color: colors.mutedForeground, fontStyle: "italic", lineHeight: 20 },
   backdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
