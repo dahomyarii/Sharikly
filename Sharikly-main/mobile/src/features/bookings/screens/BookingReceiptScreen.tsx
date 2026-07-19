@@ -1,5 +1,7 @@
 import { colors, radii, shadows, spacing } from "@/core/theme/tokens";
 import { showToast } from "@/core/events/appEvents";
+import { LeaveReviewButton } from "@/features/reviews/LeaveReviewButton";
+import { deriveStatus } from "../status";
 import { getBooking, updateBookingStatus } from "@/services/api/endpoints/bookings";
 import { getOrCreateRoom } from "@/services/api/endpoints/chat";
 import { axiosInstance, buildApiUrl } from "@/services/api/client";
@@ -161,6 +163,13 @@ export function BookingReceiptScreen(): React.ReactElement {
   const booking: any = q.data;
 
   const listing = booking.listing;
+
+  // Only the renter on a finished rental may review (server also enforces this).
+  const canReview =
+    deriveStatus(booking) === "completed" &&
+    !!meQ.data?.id &&
+    meQ.data.id === booking.renter?.id &&
+    !!listing?.id;
 
   // Open (or create) a chat with the other party and jump straight into the room.
   // Previously "Contact Host" just dumped the user on the empty inbox list.
@@ -408,6 +417,17 @@ export function BookingReceiptScreen(): React.ReactElement {
             </View>
           </View>
         </View>
+
+        {/* Leave a review — completed rentals only */}
+        {canReview && (
+          <View style={[styles.card, { marginHorizontal: spacing.md, marginTop: 10 }]}>
+            <Text style={styles.pickupInfoTitle}>Rate your experience</Text>
+            <Text style={[styles.metaText, { marginTop: 4, marginBottom: 12 }]}>
+              Your rental is complete — let others know how it went.
+            </Text>
+            <LeaveReviewButton listingId={listing.id} fullWidth />
+          </View>
+        )}
 
         {/* Pickup Info */}
         <View style={[styles.card, {marginHorizontal:spacing.md, marginTop:10}]}>
