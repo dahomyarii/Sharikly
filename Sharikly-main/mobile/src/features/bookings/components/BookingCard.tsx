@@ -12,6 +12,7 @@ import {
 import React from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { bookingTab, deriveStatus, STATUS_LABELS, type BookingTab } from "../status";
+import { LeaveReviewButton } from "@/features/reviews/LeaveReviewButton";
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "";
 
@@ -186,13 +187,19 @@ export function BookingCard({
         </View>
       );
     }
-    // Completed / declined / cancelled — details only.
+    // Completed / declined / cancelled. Renters can review a completed rental.
+    const canReview = role === "renter" && deriveStatus(booking) === "completed" && !!listing?.id;
     return (
       <View style={styles.actionRow}>
-        <Pressable style={[styles.detailsBtn, styles.fullBtn]} onPress={onPress}>
+        <Pressable style={[styles.detailsBtn, !canReview && styles.fullBtn]} onPress={onPress}>
           <FileText size={15} color={colors.primary} />
           <Text style={styles.detailsText}>View Details</Text>
         </Pressable>
+        {canReview && (
+          <View style={styles.fullBtn}>
+            <LeaveReviewButton listingId={listing.id} size="sm" fullWidth />
+          </View>
+        )}
       </View>
     );
   }
